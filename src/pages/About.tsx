@@ -1,8 +1,8 @@
-
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link } from 'react-router-dom';
-import { CheckCircle, Users, Target, TrendingUp } from 'lucide-react';
+import { CheckCircle, Users, Target, TrendingUp, Linkedin, Mail, Phone } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const About = () => {
   const teamMembers = [
@@ -10,25 +10,56 @@ const About = () => {
       name: 'Dr. Grace Adebayo',
       role: 'Founder & CEO',
       bio: 'With over 20 years of experience in real estate investment and development across West Africa.',
-      imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+      imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+      social: {
+        linkedin: 'https://linkedin.com',
+        email: 'grace.adebayo@bridgefort.com',
+        phone: '+234 801 234 5001'
+      }
     },
     {
       name: 'Samuel Okafor',
       role: 'Chief Investment Officer',
       bio: 'Former investment banker with expertise in real estate portfolio management and optimization.',
-      imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+      imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+      social: {
+        linkedin: 'https://linkedin.com',
+        email: 'samuel.okafor@bridgefort.com',
+        phone: '+234 801 234 5002'
+      }
     },
     {
       name: 'Amina Mohammed',
       role: 'Head of Property Acquisitions',
       bio: 'Specializes in identifying high-potential properties and negotiating favorable terms for investors.',
-      imageUrl: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+      imageUrl: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+      social: {
+        linkedin: 'https://linkedin.com',
+        email: 'amina.mohammed@bridgefort.com',
+        phone: '+234 801 234 5003'
+      }
     },
     {
       name: 'Daniel Eze',
       role: 'Director of Client Relations',
       bio: 'Dedicated to ensuring an exceptional experience for all PWAN Bridgefort clients and investors.',
-      imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+      imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+      social: {
+        linkedin: 'https://linkedin.com',
+        email: 'daniel.eze@bridgefort.com',
+        phone: '+234 801 234 5004'
+      }
+    },
+    {
+      name: 'Dalvin Silva',
+      role: 'MD/CEO',
+      bio: 'Visionary leader driving PWAN Bridgefort\'s mission to create wealth through strategic real estate investments.',
+      imageUrl: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+      social: {
+        linkedin: 'https://linkedin.com',
+        email: 'dalvin.silva@bridgefort.com',
+        phone: '+234 801 234 5000'
+      }
     }
   ];
 
@@ -129,6 +160,48 @@ const About = () => {
         </div>
       </section>
 
+      {/* Our Team - Enhanced Section */}
+      <section className="section-padding bg-white">
+        <div className="container-custom">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Meet Our Leadership Team</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Get to know the experts behind PWAN Bridgefort's success in delivering premium real estate investment opportunities.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {teamMembers.map((member, index) => (
+              <div key={index} className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100">
+                <div className="relative group">
+                  <img 
+                    src={member.imageUrl} 
+                    alt={member.name} 
+                    className="w-full h-64 object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-estate-blue bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold mb-1 text-gray-900">{member.name}</h3>
+                  <p className="text-estate-blue font-medium mb-3">{member.role}</p>
+                  <p className="text-gray-600 mb-4">{member.bio}</p>
+                  
+                  <div className="flex space-x-3 mt-4">
+                    <a href={member.social.linkedin} className="text-gray-400 hover:text-estate-blue transition-colors" aria-label={`${member.name}'s LinkedIn`}>
+                      <Linkedin size={18} />
+                    </a>
+                    <a href={`mailto:${member.social.email}`} className="text-gray-400 hover:text-estate-blue transition-colors" aria-label={`Email ${member.name}`}>
+                      <Mail size={18} />
+                    </a>
+                    <a href={`tel:${member.social.phone}`} className="text-gray-400 hover:text-estate-blue transition-colors" aria-label={`Call ${member.name}`}>
+                      <Phone size={18} />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Our History */}
       <section className="section-padding">
         <div className="container-custom">
@@ -191,33 +264,6 @@ const About = () => {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Our Team */}
-      <section className="section-padding bg-gray-50">
-        <div className="container-custom">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Our Leadership Team</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">Meet the experts behind PWAN Bridgefort's success.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300">
-                <img 
-                  src={member.imageUrl} 
-                  alt={member.name} 
-                  className="w-full h-64 object-cover object-center"
-                />
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-1">{member.name}</h3>
-                  <p className="text-estate-blue font-medium mb-3">{member.role}</p>
-                  <p className="text-gray-600">{member.bio}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
