@@ -1,10 +1,11 @@
-
-import { Link } from 'react-router-dom';
+import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PropertySearch from '../components/PropertySearch';
 import PropertyCard from '../components/PropertyCard';
 import TestimonialCard from '../components/TestimonialCard';
+import MissionStatement from '../components/MissionStatement';
+import { Link } from 'react-router-dom';
 import { ArrowRight, Home as HomeIcon, Building, Wallet, Clock, Shield, Award } from 'lucide-react';
 
 // Sample data
@@ -109,9 +110,13 @@ const Home = () => {
           <PropertySearch />
         </div>
       </section>
+
+      {/* Add Mission Statement Component */}
+      <MissionStatement />
       
-      {/* Featured Properties */}
+      {/* Existing Sections */}
       <section className="section-padding bg-gray-50">
+        {/* Featured Properties */}
         <div className="container-custom">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Featured Properties</h2>
