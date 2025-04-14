@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
 
@@ -48,7 +47,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <MapPin size={20} className="mr-2 mt-1 flex-shrink-0 text-estate-blue" />
-                <span className="text-gray-300">123 Victoria Island, Lagos, Nigeria</span>
+                <span className="text-gray-300">Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, VGC bus stop, Lekki-Ajah, Lagos</span>
               </li>
               <li className="flex items-center">
                 <Phone size={20} className="mr-2 flex-shrink-0 text-estate-blue" />

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -69,7 +68,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold mb-1">Our Location</h3>
-                      <p className="text-gray-600">123 Victoria Island, Lagos, Nigeria</p>
+                      <p className="text-gray-600">Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, VGC bus stop, Lekki-Ajah, Lagos</p>
                     </div>
                   </div>
 
