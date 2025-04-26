@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Phone } from 'lucide-react';
@@ -39,7 +38,7 @@ const Navbar = () => {
               <span>+234 801 234 5678</span>
             </a>
             <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-6 rounded transition duration-300">
-              Get Consultation
+              Send us a Message
             </Link>
           </div>
 
@@ -59,7 +58,7 @@ const Navbar = () => {
               <Link to="/services" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Investment Services</Link>
               <Link to="/contact" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Contact</Link>
               <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded text-center transition duration-300" onClick={toggleMenu}>
-                Get Consultation
+                Send us a Message
               </Link>
             </div>
           </nav>
