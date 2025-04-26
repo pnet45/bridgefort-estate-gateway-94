@@ -5,6 +5,7 @@ import PropertySearch from '../components/PropertySearch';
 import PropertyCard from '../components/PropertyCard';
 import TestimonialCard from '../components/TestimonialCard';
 import MissionStatement from '../components/MissionStatement';
+import PropertyShowcase from '../components/PropertyShowcase';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Home as HomeIcon, Building, Wallet, Clock, Shield, Award } from 'lucide-react';
 
@@ -111,6 +112,9 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Property Showcase - New Section */}
+      <PropertyShowcase />
+      
       {/* Add Mission Statement Component */}
       <MissionStatement />
       
