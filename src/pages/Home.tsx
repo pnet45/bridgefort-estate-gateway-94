@@ -13,35 +13,35 @@ import { ArrowRight, Home as HomeIcon, Building, Wallet, Clock, Shield, Award } 
 const featuredProperties = [
   {
     id: '1',
-    title: 'Luxury Villa with Ocean View',
-    location: 'Victoria Island, Lagos',
-    price: '₦75,000,000',
+    title: 'Hampton Vile Estate',
+    location: 'Itoikin, Epe, Lagos',
+    price: '₦3,250,000',
     imageUrl: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 5,
-    baths: 6,
-    sqft: 4500,
+    beds: ,
+    baths: ,
+    sqft: 500,
     propertyType: 'Villa'
   },
   {
     id: '2',
-    title: 'Modern Apartment in City Center',
-    location: 'Ikeja, Lagos',
-    price: '₦45,000,000',
+    title: 'Fortress Hills Estate',
+    location: 'Imota, Ikorodu, Lagos',
+    price: '₦4,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 3,
-    baths: 2,
-    sqft: 1800,
+    beds: ,
+    baths: ,
+    sqft: 500,
     propertyType: 'Apartment'
   },
   {
     id: '3',
-    title: 'Commercial Building for Investment',
-    location: 'Lekki, Lagos',
-    price: '₦120,000,000',
+    title: 'Greenfield County',
+    location: 'Agbara, Ogun State',
+    price: '₦1,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 0,
-    baths: 2,
-    sqft: 5000,
+    beds: ,
+    baths: ,
+    sqft: 500,
     propertyType: 'Commercial'
   }
 ];
@@ -56,14 +56,14 @@ const testimonials = [
   },
   {
     name: 'Chioma Okafor',
-    role: 'First-time Homebuyer',
+    role: 'First-time Property buyer',
     testimonial: 'The team at Bridgefort made my first home buying experience smooth and stress-free. They were professional and responsive throughout the process.',
     rating: 5,
     imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'
   },
   {
     name: 'Mohammed Ibrahim',
-    role: 'Business Owner',
+    role: 'PWAN Business Owner',
     testimonial: 'I purchased a commercial property through PWAN Bridgefort and the return on investment has been incredible. Their market knowledge is outstanding.',
     rating: 4,
     imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'
@@ -201,7 +201,7 @@ const Home = () => {
                 <Award size={28} className="text-white" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Expertise</h3>
-              <p className="opacity-90">Over 15 years of experience in the Nigerian real estate market.</p>
+              <p className="opacity-90">With our years of experience and knowledge in the Nigerian real estate market.</p>
             </div>
             
             <div className="text-center">
@@ -209,7 +209,7 @@ const Home = () => {
                 <Shield size={28} className="text-white" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Security</h3>
-              <p className="opacity-90">All properties have verified titles and necessary documentation.</p>
+              <p className="opacity-90">All properties have verified titles, Surveys and necessary documentation.</p>
             </div>
             
             <div className="text-center">
