@@ -15,9 +15,12 @@ const Navbar = () => {
       <div className="container-custom py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-estate-blue font-montserrat">PWAN</span>
-            <span className="text-xl font-semibold text-gray-800 font-montserrat">Bridgefort</span>
+          <Link to="/" className="flex items-center">
+            <img 
+              src="/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png" 
+              alt="PWAN Bridgefort Logo" 
+              className="h-12 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -35,7 +38,9 @@ const Navbar = () => {
               <Phone size={18} className="mr-2" />
               <span>+234 801 234 5678</span>
             </a>
-            <Link to="/contact" className="btn-cta">Get Consultation</Link>
+            <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-6 rounded transition duration-300">
+              Get Consultation
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -53,7 +58,9 @@ const Navbar = () => {
               <Link to="/properties" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Properties</Link>
               <Link to="/services" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Investment Services</Link>
               <Link to="/contact" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Contact</Link>
-              <Link to="/contact" className="btn-cta inline-block text-center" onClick={toggleMenu}>Get Consultation</Link>
+              <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded text-center transition duration-300" onClick={toggleMenu}>
+                Get Consultation
+              </Link>
             </div>
           </nav>
         )}
