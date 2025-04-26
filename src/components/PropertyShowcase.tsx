@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Download } from 'lucide-react';
+import { Download, MapPin } from 'lucide-react';
 import { Button } from './ui/button';
 import { AspectRatio } from './ui/aspect-ratio';
 
@@ -18,7 +18,7 @@ const PropertyShowcase = () => {
 
   return (
     <section className="container-custom py-16">
-      <div className="flex flex-col md:flex-row items-center gap-8">
+      <div className="flex flex-col md:flex-row items-start gap-8">
         <div className="w-full md:w-1/2">
           <div className="rounded-full overflow-hidden w-80 h-80 mx-auto border-4 border-estate-blue">
             <AspectRatio ratio={1}>
@@ -31,14 +31,21 @@ const PropertyShowcase = () => {
           </div>
         </div>
         
-        <div className="w-full md:w-1/2 space-y-6">
+        <div className="w-full md:w-1/2 space-y-8">
           <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-estate-blue">Fortress Hills Estate</h2>
-            <p className="text-xl">A Place of Refuge</p>
-            <p className="text-lg font-semibold">Location: IMOTA-IKORODU, LAGOS</p>
+            <h2 className="text-3xl font-bold text-estate-blue">Fortress Hills Estate 🏡</h2>
+            <p className="text-xl font-medium">Exclusive Land Deals in Imota, Ikorodu, Lagos!</p>
+            <p className="text-lg">Subscribe to our formidable estate at Fortress Hills with our unbeatable Price!</p>
             
-            <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-estate-red">PROMO PRICE</h3>
+            <div className="flex items-center gap-2 text-lg">
+              <MapPin className="text-estate-blue" />
+              <p>Imota, Ikorodu, Lagos</p>
+            </div>
+            
+            <p className="font-medium">📜 Title: Survey Plan & Deed</p>
+            
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-2xl font-bold text-estate-red mb-4">PRICE ALERT</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="font-semibold">PHASE 1</p>
@@ -49,7 +56,59 @@ const PropertyShowcase = () => {
                   <p className="text-xl font-bold">₦3.5M</p>
                 </div>
               </div>
-              <p className="text-lg font-semibold">500SQM</p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">WHY INVEST IN THE FORTRESS HILLS ESTATES?</h3>
+              <ul className="list-none space-y-2">
+                <li>✓ Rapidly Developing Area – Prime location with high appreciation potential.</li>
+                <li>✓ Secure Investment – Comes with Deed of Assignment & Survey Plan.</li>
+                <li>✓ Flexible Payment Plan – Invest with ease and grow your wealth effortlessly.</li>
+                <li>✓ Secure your plot today at Fortress Hills and enjoy our promo offer!</li>
+              </ul>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">🛣️ STRATEGIC LOCATION & LANDMARKS</h3>
+              <ul className="list-none grid grid-cols-2 gap-2">
+                <li>✓ Caleb University</li>
+                <li>✓ Imota Palace</li>
+                <li>✓ Lagos State University of Science & Technology</li>
+                <li>✓ Ikorodu-Epe Expressway</li>
+                <li>✓ Caleb Powerplant</li>
+                <li>✓ Agbowa Market</li>
+                <li>✓ Sagamu Road</li>
+              </ul>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">🏗️ ESTATE FEATURES</h3>
+              <ul className="list-none grid grid-cols-2 gap-2">
+                <li>✓ Gated Community 🏘️</li>
+                <li>✓ Security & Surveillance 🔒</li>
+                <li>✓ Green Parks & Recreation 🌳</li>
+                <li>✓ Modern Road Network 🛣️</li>
+                <li>✓ WiFi Connectivity 📶</li>
+                <li>✓ Shopping & Commercial Hubs 🏬</li>
+              </ul>
+            </div>
+
+            <div className="bg-estate-blue bg-opacity-5 p-4 rounded-lg space-y-4">
+              <p className="font-semibold">📢 Don't Miss This Opportunity!</p>
+              <p>Secure your dream property now with PWAN Bridgefort Estates & Investment Ltd.</p>
+              
+              <div>
+                <p className="font-medium">📞 Call/WhatsApp: For Further Inquiries & Site Inspection</p>
+                <p className="font-medium">💳 Payments To: Zenith Bank – PWAN Bridgefort Estates & Investment Ltd</p>
+                <p className="font-medium">Account Number: 1310702860</p>
+              </div>
+              
+              <div>
+                <p className="font-medium">Follow us for updates:</p>
+                <p>Instagram | Facebook | YouTube | TikTok: @pwanbridgefort.official</p>
+              </div>
+              
+              <p className="font-bold text-estate-blue">Your Future Starts Here – Invest in Fortress Hills Today!</p>
             </div>
 
             <div className="pt-4">
