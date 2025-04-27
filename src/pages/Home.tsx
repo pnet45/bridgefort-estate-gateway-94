@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -17,8 +18,8 @@ const featuredProperties = [
     location: 'Itoikin, Epe, Lagos',
     price: '₦3,250,000',
     imageUrl: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: ,
-    baths: ,
+    beds: 3,
+    baths: 2,
     sqft: 500,
     propertyType: 'Villa'
   },
@@ -28,8 +29,8 @@ const featuredProperties = [
     location: 'Imota, Ikorodu, Lagos',
     price: '₦4,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: ,
-    baths: ,
+    beds: 4,
+    baths: 3,
     sqft: 500,
     propertyType: 'Apartment'
   },
@@ -39,8 +40,8 @@ const featuredProperties = [
     location: 'Agbara, Ogun State',
     price: '₦1,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: ,
-    baths: ,
+    beds: 0,
+    baths: 0,
     sqft: 500,
     propertyType: 'Commercial'
   }
