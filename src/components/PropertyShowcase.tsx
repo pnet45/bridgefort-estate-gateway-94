@@ -20,8 +20,8 @@ const PropertyShowcase = () => {
     <section className="container-custom py-16">
       <div className="flex flex-col md:flex-row items-start gap-8">
         <div className="w-full md:w-1/2">
-          <div className="rounded-full overflow-hidden w-80 h-80 mx-auto border-4 border-estate-blue">
-            <AspectRatio ratio={1}>
+          <div className="rounded-xl overflow-hidden border-4 border-estate-blue w-full max-w-2xl mx-auto">
+            <AspectRatio ratio={16/9}>
               <img 
                 src="/lovable-uploads/731e5107-538f-41a5-9af8-5b864bd49831.png"
                 alt="Fortress Hills Estate"
