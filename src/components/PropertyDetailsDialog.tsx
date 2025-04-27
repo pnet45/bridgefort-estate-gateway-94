@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PropertyDetailsDialogProps {
   property: {
@@ -23,30 +24,37 @@ interface PropertyDetailsDialogProps {
 }
 
 const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProps) => {
+  const isMobile = useIsMobile();
+  
   const handleDownload = () => {
     // Create a sample PDF with property details
     const pdfUrl = `https://docs.google.com/document/d/1234/export?format=pdf`;
     const link = document.createElement('a');
     link.href = pdfUrl;
-    link.download = `${property.title}-details.pdf`;
+    link.download = `${property.title}-subscription-form.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
+  // Use specific image for Fortress Hills Estate, otherwise use provided imageUrl
+  const displayImageUrl = property.title === "Fortress Hills Estate" 
+    ? "/lovable-uploads/f79aaed2-c246-4c4d-8b88-8c601683c0d1.png"
+    : property.imageUrl;
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-6xl p-0 gap-0">
-        <div className="flex h-[80vh]">
+      <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
+        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[80vh]`}>
           {/* Left side - Image */}
-          <div className="w-1/2 h-full">
+          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2 h-full'}`}>
             <div className="h-full">
-              <AspectRatio ratio={16/9}>
+              <AspectRatio ratio={isMobile ? 16/9 : 4/3}>
                 <img 
-                  src={property.imageUrl}
+                  src={displayImageUrl}
                   alt={property.title}
                   className="object-cover w-full h-full"
                 />
@@ -55,14 +63,14 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
           </div>
 
           {/* Right side - Scrollable Content */}
-          <div className="w-1/2 p-6">
+          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2'} p-6`}>
             <ScrollArea className="h-full pr-4">
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <h2 className="text-3xl font-bold text-estate-blue">{property.title} 🏡</h2>
-                  <p className="text-xl font-medium">Exclusive Land Deals in {property.location}!</p>
+                  <h2 className="text-2xl md:text-3xl font-bold text-estate-blue">{property.title} 🏡</h2>
+                  <p className="text-lg md:text-xl font-medium">Exclusive Land Deals in {property.location}!</p>
                   
-                  <div className="flex items-center gap-2 text-lg">
+                  <div className="flex items-center gap-2 text-base md:text-lg">
                     <MapPin className="text-estate-blue" />
                     <p>{property.location}</p>
                   </div>
@@ -70,12 +78,12 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                   <p className="font-medium">📜 Title: Survey Plan & Deed</p>
                   
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="text-2xl font-bold text-estate-red mb-4">PRICE ALERT</h3>
-                    <p className="text-xl font-bold">{property.price}</p>
+                    <h3 className="text-xl md:text-2xl font-bold text-estate-red mb-4">PRICE ALERT</h3>
+                    <p className="text-lg md:text-xl font-bold">{property.price}</p>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-xl font-semibold">WHY INVEST IN THIS PROPERTY?</h3>
+                    <h3 className="text-lg md:text-xl font-semibold">WHY INVEST IN THIS PROPERTY?</h3>
                     <ul className="list-none space-y-2">
                       <li>✓ Rapidly Developing Area – Prime location with high appreciation potential.</li>
                       <li>✓ Secure Investment – Comes with Deed of Assignment & Survey Plan.</li>
@@ -98,7 +106,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                       className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
                     >
                       <Download className="mr-2" />
-                      Download Property Details
+                      Download Subscription Form
                     </Button>
                   </div>
                 </div>
