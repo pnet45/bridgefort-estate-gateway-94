@@ -1,6 +1,5 @@
-
 import { MapPin, Home, Maximize2, Bed, Bath } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import PropertyDetailsDialog from './PropertyDetailsDialog';
 
 interface PropertyCardProps {
   id: string;
@@ -64,12 +63,15 @@ const PropertyCard = ({
         </div>
 
         <div className="mt-4">
-          <Link 
-            to={`/properties/${id}`} 
-            className="block text-center py-2 bg-white border border-estate-blue text-estate-blue rounded font-medium hover:bg-estate-blue hover:text-white transition duration-300"
+          <PropertyDetailsDialog 
+            property={{ id, title, location, price, imageUrl, propertyType }}
           >
-            View Details
-          </Link>
+            <button 
+              className="block w-full text-center py-2 bg-white border border-estate-blue text-estate-blue rounded font-medium hover:bg-estate-blue hover:text-white transition duration-300"
+            >
+              View Details
+            </button>
+          </PropertyDetailsDialog>
         </div>
       </div>
     </div>
