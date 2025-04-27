@@ -1,6 +1,5 @@
-
-import React from 'react';
-import { Download, MapPin } from 'lucide-react';
+import React, { useState } from 'react';
+import { Download, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { AspectRatio } from './ui/aspect-ratio';
 import { ScrollArea } from './ui/scroll-area';
@@ -10,6 +9,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface PropertyDetailsDialogProps {
   property: {
@@ -37,10 +43,15 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
     document.body.removeChild(link);
   };
 
-  // Use specific image for Fortress Hills Estate, otherwise use provided imageUrl
-  const displayImageUrl = property.title === "Fortress Hills Estate" 
-    ? "/lovable-uploads/f79aaed2-c246-4c4d-8b88-8c601683c0d1.png"
-    : property.imageUrl;
+  // Multiple images for the property
+  const propertyImages = property.title === "Fortress Hills Estate" 
+    ? [
+        "/lovable-uploads/f79aaed2-c246-4c4d-8b88-8c601683c0d1.png",
+        "/lovable-uploads/731e5107-538f-41a5-9af8-5b864bd49831.png",
+        "/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png",
+        "/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png"
+      ]
+    : [property.imageUrl];
 
   return (
     <Dialog>
@@ -49,17 +60,29 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
       </DialogTrigger>
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[80vh]`}>
-          {/* Left side - Image */}
-          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2 h-full'}`}>
-            <div className="h-full">
-              <AspectRatio ratio={isMobile ? 16/9 : 4/3}>
-                <img 
-                  src={displayImageUrl}
-                  alt={property.title}
-                  className="object-cover w-full h-full"
-                />
-              </AspectRatio>
-            </div>
+          {/* Left side - Image Carousel */}
+          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2 h-full'} relative`}>
+            <Carousel className="w-full h-full">
+              <CarouselContent className="h-full">
+                {propertyImages.map((img, index) => (
+                  <CarouselItem key={index} className="h-full">
+                    <AspectRatio ratio={isMobile ? 16/9 : 4/3} className="h-full">
+                      <img 
+                        src={img}
+                        alt={`${property.title} view ${index + 1}`}
+                        className="object-contain w-full h-full"
+                      />
+                    </AspectRatio>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              {propertyImages.length > 1 && (
+                <>
+                  <CarouselPrevious className="absolute left-4 z-10" />
+                  <CarouselNext className="absolute right-4 z-10" />
+                </>
+              )}
+            </Carousel>
           </div>
 
           {/* Right side - Scrollable Content */}
@@ -96,7 +119,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                     <div>
                       <p className="font-medium">📞 Call/WhatsApp: For Further Inquiries & Site Inspection</p>
                       <p className="font-medium">💳 Payments To: Zenith Bank – PWAN Bridgefort Estates & Investment Ltd</p>
-                      <p className="font-medium">Account Number: 1310702860</p>
+                      <p className="font-medium">Account Number: 1310762860</p>
                     </div>
                   </div>
 
