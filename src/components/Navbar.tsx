@@ -35,7 +35,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             <a href="tel:+2348012345678" className="flex items-center text-estate-blue font-medium">
               <Phone size={18} className="mr-2" />
-              <span>+234 801 234 5678</span>
+              <span>+234 803 062 4059</span>
             </a>
             <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-6 rounded transition duration-300">
               Send us a Message

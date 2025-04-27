@@ -1,4 +1,4 @@
-import { MapPin, Home, Maximize2, Bed, Bath } from 'lucide-react';
+import { MapPin, Home, Maximize2,} from 'lucide-react';
 import PropertyDetailsDialog from './PropertyDetailsDialog';
 
 interface PropertyCardProps {
