@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Download, MapPin } from 'lucide-react';
 import { Button } from './ui/button';
@@ -44,29 +43,32 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
     document.body.removeChild(link);
   };
 
-  // Multiple images for all properties
   const getPropertyImages = (propertyTitle: string) => {
     switch(propertyTitle) {
+      case "Afaoma Castle Estate":
+        return ["/lovable-uploads/0add771b-8dfc-41da-9ae6-6e80617172e1.png"];
+      case "Akuchi Luxury Estate":
+        return ["/lovable-uploads/fbb073b9-ed7e-4a53-bcb5-54c870b10b6f.png"];
       case "Fortress Hills Estate":
-        return [
-          "/lovable-uploads/f79aaed2-c246-4c4d-8b88-8c601683c0d1.png",
-          "/lovable-uploads/731e5107-538f-41a5-9af8-5b864bd49831.png",
-          "/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png",
-          "/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png"
-        ];
-      case "Hampton Ville Estate":
-        return [
-          "https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-        ];
+        return ["/lovable-uploads/b6b178d0-ae26-4527-9569-dce064d705b9.png"];
+      case "Fountain Springs Estate":
+        return ["/lovable-uploads/1b2d5941-995c-45f5-bd01-f28118b13bee.png"];
       case "Greenfield County":
-        return [
-          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          "https://images.unsplash.com/photo-1494526585095-c41746248156?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-        ];
-      // Add more cases for other properties
+        return ["/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png"];
+      case "Hampton Ville Estate":
+        return ["/lovable-uploads/5f92d89a-e9fc-4c84-a49d-72cb376b8510.png"];
+      case "Olanma Gardens":
+        return ["/lovable-uploads/7da9692b-7a71-4551-9b99-db869f5f0ff7.png"];
+      case "Precious Gardens Estate":
+        return ["/lovable-uploads/d9abd176-c665-44e6-a85f-30c671c4a2db.png"];
+      case "The Big League County":
+        return ["/lovable-uploads/6b46b80b-cf01-4da0-895e-6cdc9516a914.png"];
+      case "The Big League Smart City":
+        return ["/lovable-uploads/c17908c7-c813-490d-b6c2-a1423384caa6.png"];
+      case "The Big League Paradise":
+        return ["/lovable-uploads/5005f040-92cf-4bbe-b16f-6142896e97dd.png"];
+      case "The Big League Heaven":
+        return ["/lovable-uploads/e31d4e61-7436-4a63-a118-84656f87dd4c.png"];
       default:
         return [property.imageUrl];
     }
@@ -81,7 +83,6 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
       </DialogTrigger>
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[80vh]`}>
-          {/* Left side - Image Carousel */}
           <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2 h-full'} relative`}>
             <Carousel className="w-full h-full">
               <CarouselContent className="h-full">
@@ -106,7 +107,6 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
             </Carousel>
           </div>
 
-          {/* Right side - Scrollable Content */}
           <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2'} p-6`}>
             <ScrollArea className="h-full pr-4">
               <div className="space-y-6">
