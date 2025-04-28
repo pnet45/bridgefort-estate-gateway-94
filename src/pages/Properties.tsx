@@ -1,9 +1,10 @@
-
 import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import PropertyCard from '../components/PropertyCard';
-import { Search, Filter } from 'lucide-react';
+import PropertyFilters from '../components/properties/PropertyFilters';
+import PropertyGrid from '../components/properties/PropertyGrid';
+import PropertyPagination from '../components/properties/PropertyPagination';
+import PropertyHero from '../components/properties/PropertyHero';
 
 // Sample properties data
 const allProperties = [
@@ -168,8 +169,8 @@ const allProperties = [
 const Properties = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
-    category: 'all', // 'buy', 'rent', 'all'
-    type: 'all', // 'residential', 'commercial', 'land', 'all'
+    category: 'all',
+    type: 'all',
     minPrice: '',
     maxPrice: ''
   });
@@ -213,140 +214,26 @@ const Properties = () => {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative">
-        <div className="h-[40vh] bg-cover bg-center" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80)' }}>
-          <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center">
-            <div className="container-custom text-white">
-              <h1 className="text-3xl md:text-5xl font-bold mb-4">Our Properties</h1>
-              <p className="text-xl max-w-2xl">Discover our exclusive selection of residential and commercial properties.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PropertyHero />
 
-      {/* Properties Section */}
       <section className="section-padding bg-gray-50">
         <div className="container-custom">
-          {/* Search and Filters */}
-          <div className="mb-10">
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  placeholder="Search by location, property type, or title..."
-                  className="input-field w-full pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Search size={18} className="absolute left-3 top-3 text-gray-400" />
-              </div>
-              
-              <button 
-                onClick={toggleFilters}
-                className="flex items-center justify-center py-2 px-4 border border-estate-blue text-estate-blue rounded hover:bg-estate-blue hover:text-white transition duration-300"
-              >
-                <Filter size={18} className="mr-2" />
-                {showFilters ? 'Hide Filters' : 'Show Filters'}
-              </button>
-            </div>
+          <PropertyFilters 
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            filters={filters}
+            handleFilterChange={handleFilterChange}
+            showFilters={showFilters}
+            toggleFilters={toggleFilters}
+          />
 
-            {/* Collapsible Filters */}
-            {showFilters && (
-              <div className="bg-white p-6 rounded-lg shadow-md mb-6 animate-fade-in">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select
-                      id="category"
-                      name="category"
-                      className="input-field w-full"
-                      value={filters.category}
-                      onChange={handleFilterChange}
-                    >
-                      <option value="all">All</option>
-                      <option value="buy">Buy</option>
-                      <option value="rent">Rent</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
-                    <select
-                      id="type"
-                      name="type"
-                      className="input-field w-full"
-                      value={filters.type}
-                      onChange={handleFilterChange}
-                    >
-                      <option value="all">All Types</option>
-                      <option value="residential">Residential</option>
-                      <option value="commercial">Commercial</option>
-                      <option value="land">Land</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="minPrice" className="block text-sm font-medium text-gray-700 mb-1">Min Price (₦)</label>
-                    <input
-                      type="number"
-                      id="minPrice"
-                      name="minPrice"
-                      placeholder="Minimum Price"
-                      className="input-field w-full"
-                      value={filters.minPrice}
-                      onChange={handleFilterChange}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="maxPrice" className="block text-sm font-medium text-gray-700 mb-1">Max Price (₦)</label>
-                    <input
-                      type="number"
-                      id="maxPrice"
-                      name="maxPrice"
-                      placeholder="Maximum Price"
-                      className="input-field w-full"
-                      value={filters.maxPrice}
-                      onChange={handleFilterChange}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Results Summary */}
-            <div className="mb-6">
-              <p className="text-gray-600">Showing {filteredProperties.length} properties</p>
-            </div>
+          <div className="mb-6">
+            <p className="text-gray-600">Showing {filteredProperties.length} properties</p>
           </div>
 
-          {/* Properties Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProperties.length > 0 ? (
-              filteredProperties.map(property => (
-                <PropertyCard key={property.id} {...property} />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <p className="text-xl text-gray-500">No properties match your search criteria.</p>
-                <p className="text-gray-500 mt-2">Try adjusting your filters or search query.</p>
-              </div>
-            )}
-          </div>
+          <PropertyGrid properties={filteredProperties} />
 
-          {/* Pagination (static for now) */}
-          {filteredProperties.length > 0 && (
-            <div className="mt-12 flex justify-center">
-              <nav className="flex items-center space-x-2">
-                <button className="px-3 py-1 border border-gray-300 rounded text-gray-600 hover:bg-gray-100">Previous</button>
-                <button className="px-3 py-1 bg-estate-blue text-white rounded">1</button>
-                <button className="px-3 py-1 border border-gray-300 rounded text-gray-600 hover:bg-gray-100">2</button>
-                <button className="px-3 py-1 border border-gray-300 rounded text-gray-600 hover:bg-gray-100">3</button>
-                <button className="px-3 py-1 border border-gray-300 rounded text-gray-600 hover:bg-gray-100">Next</button>
-              </nav>
-            </div>
-          )}
+          {filteredProperties.length > 0 && <PropertyPagination />}
         </div>
       </section>
 
