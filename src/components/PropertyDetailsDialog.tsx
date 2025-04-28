@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Download, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+
+import React from 'react';
+import { Download, MapPin } from 'lucide-react';
 import { Button } from './ui/button';
 import { AspectRatio } from './ui/aspect-ratio';
 import { ScrollArea } from './ui/scroll-area';
@@ -43,15 +44,35 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
     document.body.removeChild(link);
   };
 
-  // Multiple images for the property
-  const propertyImages = property.title === "Fortress Hills Estate" 
-    ? [
-        "/lovable-uploads/f79aaed2-c246-4c4d-8b88-8c601683c0d1.png",
-        "/lovable-uploads/731e5107-538f-41a5-9af8-5b864bd49831.png",
-        "/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png",
-        "/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png"
-      ]
-    : [property.imageUrl];
+  // Multiple images for all properties
+  const getPropertyImages = (propertyTitle: string) => {
+    switch(propertyTitle) {
+      case "Fortress Hills Estate":
+        return [
+          "/lovable-uploads/f79aaed2-c246-4c4d-8b88-8c601683c0d1.png",
+          "/lovable-uploads/731e5107-538f-41a5-9af8-5b864bd49831.png",
+          "/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png",
+          "/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png"
+        ];
+      case "Hampton Ville Estate":
+        return [
+          "https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+        ];
+      case "Greenfield County":
+        return [
+          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1494526585095-c41746248156?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+        ];
+      // Add more cases for other properties
+      default:
+        return [property.imageUrl];
+    }
+  };
+
+  const propertyImages = getPropertyImages(property.title);
 
   return (
     <Dialog>
@@ -117,7 +138,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                   <div className="bg-estate-blue bg-opacity-5 p-4 rounded-lg space-y-4">
                     <p className="font-semibold">📢 Don't Miss This Opportunity!</p>
                     <div>
-                      <p className="font-medium">📞 Call/WhatsApp: For Further Inquiries & Site Inspection</p>
+                      <p className="font-medium">📞 Call/WhatsApp: +2348030624059 For Further Inquiries & Site Inspection</p>
                       <p className="font-medium">💳 Payments To: Zenith Bank – PWAN Bridgefort Estates & Investment Ltd</p>
                       <p className="font-medium">Account Number: 1310762860</p>
                     </div>
