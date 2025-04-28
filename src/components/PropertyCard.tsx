@@ -1,4 +1,5 @@
-import { MapPin, Home, Maximize2,} from 'lucide-react';
+
+import { MapPin, Home, Maximize2, BedDouble, Bath } from 'lucide-react';
 import PropertyDetailsDialog from './PropertyDetailsDialog';
 
 interface PropertyCardProps {
@@ -49,7 +50,7 @@ const PropertyCard = ({
 
         <div className="flex justify-between items-center border-t border-gray-100 pt-3">
           <div className="flex items-center text-gray-500">
-            <Bed size={16} className="mr-1" />
+            <BedDouble size={16} className="mr-1" />
             <span className="text-sm">{beds} Beds</span>
           </div>
           <div className="flex items-center text-gray-500">
