@@ -7,36 +7,36 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const About = () => {
   const teamMembers = [
     {
-      name: 'Dr. Grace Adebayo',
-      role: 'Founder & CEO',
-      bio: 'With over 20 years of experience in real estate investment and development across West Africa.',
+      name: 'Dalvin Silva, PhD',
+      role: 'CEO',
+      bio: 'With over 5 years of experience in real estate investment and development in Nigeria and across West Africa.',
       imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com',
-        email: 'grace.adebayo@bridgefort.com',
-        phone: '+234 801 234 5001'
+        email: 'dalvin.silva@pwanbridgefort.ng',
+        phone: '+234 803 062 4059'
       }
     },
     {
-      name: 'Samuel Okafor',
-      role: 'Chief Investment Officer',
-      bio: 'Former investment banker with expertise in real estate portfolio management and optimization.',
+      name: 'Precious Silva',
+      role: 'Chief Operation Officer',
+      bio: 'Network marketing guru with expertise in real estate portfolio management and optimization.',
       imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com',
-        email: 'samuel.okafor@bridgefort.com',
-        phone: '+234 801 234 5002'
+        email: 'precious.sila@pwanbridgefort.ng',
+        phone: '+234 807 244 0090'
       }
     },
     {
-      name: 'Amina Mohammed',
-      role: 'Head of Property Acquisitions',
+      name: 'Gedion Vincent',
+      role: 'Head of Staff',
       bio: 'Specializes in identifying high-potential properties and negotiating favorable terms for investors.',
       imageUrl: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com',
-        email: 'amina.mohammed@bridgefort.com',
-        phone: '+234 801 234 5003'
+        email: 'gedion.vincent@pwanbridgefort.ng',
+        phone: '+234 803 768 8503'
       }
     },
     {
