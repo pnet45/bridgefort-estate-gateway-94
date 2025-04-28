@@ -14,17 +14,20 @@ const Footer = () => {
             </div>
             <p className="text-gray-300 mb-4">Your Gateway to Premium Real Estate Investments</p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-300 hover:text-estate-blue transition duration-300">
+              <a href="https://facebook.com/pwanbridgefortestates" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <Facebook size={20} />
               </a>
-              <a href="#" className="text-gray-300 hover:text-estate-blue transition duration-300">
+              <a href="https://x.com/pwanbridgefort.official" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <Twitter size={20} />
               </a>
-              <a href="#" className="text-gray-300 hover:text-estate-blue transition duration-300">
+              <a href="https://instagram.com/pwanbridgefort.official" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <Instagram size={20} />
               </a>
-              <a href="#" className="text-gray-300 hover:text-estate-blue transition duration-300">
+              <a href="https://linkedln.com/pwanbridgefort.official" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <Linkedin size={20} />
+              </a>
+              <a href="https://wa.me/+2348070710688" className="text-gray-300 hover:text-estate-blue transition duration-300">
+                <WhatsApp size={20} />
               </a>
             </div>
           </div>
@@ -47,7 +50,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <MapPin size={20} className="mr-2 mt-1 flex-shrink-0 text-estate-blue" />
-                <span className="text-gray-300">Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, VGC bus stop, Lekki-Ajah, Lagos</span>
+                <span className="text-gray-300">Head Office | Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, VGC bus stop, Lekki-Ajah, Lagos</span>
               </li>
               <li className="flex items-center">
                 <Phone size={20} className="mr-2 flex-shrink-0 text-estate-blue" />

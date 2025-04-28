@@ -66,23 +66,23 @@ const testimonials = [
 const partnerLogos = [
   {
     name: 'Adept Lessor Ltd',
-    imageUrl: '/lovable-uploads/4e2fbc28-27c2-45e0-8531-84ad9786ee90.png'
-  },
-  {
-    name: 'Eleganza Groups',
     imageUrl: '/lovable-uploads/Adept-lessor.png'
   },
   {
+    name: 'Eleganza Groups',
+    imageUrl: '/lovable-uploads/eleganza Group.png'
+  },
+  {
     name: 'Folkland PDC',
-    imageUrl: '/lovable-uploads/8e587472-3d96-400f-8649-48d9652e39e8.png'
+    imageUrl: '/lovable-uploads/folk land Properties Ltd.png'
   },
   {
     name: 'PWAN Group',
-    imageUrl: '/lovable-uploads/5ec985b8-c228-4b04-8750-03cf0a08d39f.png'
+    imageUrl: '/lovable-uploads/pwanlogo.png'
   },
   {
-    name: 'Zenith',
-    imageUrl: '/lovable-uploads/fd2241e4-c0dd-4ce0-b26c-c7ee8e43d4a6.png'
+    name: 'Zenith Bank',
+    imageUrl: '/lovable-uploads/zenithbank.png'
   }
 ];
 
