@@ -70,7 +70,7 @@ const partnerLogos = [
   },
   {
     name: 'Eleganza Groups',
-    imageUrl: '/lovable-uploads/626de7f6-7b73-487e-8f88-daa59cf2312c.png'
+    imageUrl: '/lovable-uploads/Adept-lessor.png'
   },
   {
     name: 'Folkland PDC',
