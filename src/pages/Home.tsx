@@ -64,11 +64,26 @@ const testimonials = [
 ];
 
 const partnerLogos = [
-  'https://placehold.co/200x80/f5f5f5/888?text=Partner+1',
-  'https://placehold.co/200x80/f5f5f5/888?text=Partner+2',
-  'https://placehold.co/200x80/f5f5f5/888?text=Partner+3',
-  'https://placehold.co/200x80/f5f5f5/888?text=Partner+4',
-  'https://placehold.co/200x80/f5f5f5/888?text=Partner+5'
+  {
+    name: 'Adept Lessor Ltd',
+    imageUrl: '/lovable-uploads/4e2fbc28-27c2-45e0-8531-84ad9786ee90.png'
+  },
+  {
+    name: 'Eleganza Groups',
+    imageUrl: '/lovable-uploads/626de7f6-7b73-487e-8f88-daa59cf2312c.png'
+  },
+  {
+    name: 'Folkland PDC',
+    imageUrl: '/lovable-uploads/8e587472-3d96-400f-8649-48d9652e39e8.png'
+  },
+  {
+    name: 'PWAN Group',
+    imageUrl: '/lovable-uploads/5ec985b8-c228-4b04-8750-03cf0a08d39f.png'
+  },
+  {
+    name: 'Zenith',
+    imageUrl: '/lovable-uploads/fd2241e4-c0dd-4ce0-b26c-c7ee8e43d4a6.png'
+  }
 ];
 
 const Home = () => {
@@ -244,9 +259,15 @@ const Home = () => {
             <h2 className="text-2xl font-bold">Our Trusted Partners</h2>
           </div>
           
-          <div className="flex flex-wrap justify-center items-center gap-8">
-            {partnerLogos.map((logo, index) => (
-              <img key={index} src={logo} alt={`Partner ${index + 1}`} className="h-12 grayscale hover:grayscale-0 transition duration-300" />
+          <div className="flex flex-wrap justify-center items-center gap-8 max-w-4xl mx-auto">
+            {partnerLogos.map((partner, index) => (
+              <div key={index} className="w-40 h-24 relative">
+                <img 
+                  src={partner.imageUrl} 
+                  alt={partner.name}
+                  className="w-full h-full object-contain transition duration-300 filter grayscale hover:grayscale-0" 
+                />
+              </div>
             ))}
           </div>
         </div>
