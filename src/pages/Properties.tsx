@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -15,12 +14,11 @@ const allProperties = [
     location: 'Itoikin, Epe, Lagos',
     price: '₦3,250,000',
     imageUrl: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 3,
-    baths: 2,
     sqft: 500,
     propertyType: 'Villa',
     category: 'buy',
-    type: 'residential'
+    type: 'residential',
+    scheme: 1
   },
   {
     id: '2',
@@ -28,12 +26,11 @@ const allProperties = [
     location: 'Imota, Ikorodu, Lagos',
     price: '₦4,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 4,
-    baths: 3,
     sqft: 500,
     propertyType: 'Apartment',
     category: 'buy',
-    type: 'residential'
+    type: 'residential',
+    scheme: 1
   },
   {
     id: '3',
@@ -41,12 +38,11 @@ const allProperties = [
     location: 'Agbara, Ogun State',
     price: '₦1,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 2,
-    baths: 1,
     sqft: 500,
     propertyType: 'Commercial',
     category: 'buy',
-    type: 'residential'
+    type: 'residential',
+    scheme: 2
   },
   {
     id: '4',
@@ -54,12 +50,11 @@ const allProperties = [
     location: 'Ode-Omi, Ibeju-Lekki',
     price: '₦1,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1598928636135-d146006ff4be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 5,
-    baths: 4,
     sqft: 500,
     propertyType: 'Penthouse',
     category: 'buy',
-    type: 'residential'
+    type: 'residential',
+    scheme: 1
   },
   {
     id: '5',
@@ -67,12 +62,11 @@ const allProperties = [
     location: 'Ode-Omi, Ibeju-Lekki',
     price: '₦2,500/year',
     imageUrl: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 3,
-    baths: 2,
     sqft: 500,
     propertyType: 'Villa',
     category: 'buy',
-    type: 'residential'
+    type: 'residential',
+    scheme: 1
   },
   {
     id: '6',
@@ -80,12 +74,11 @@ const allProperties = [
     location: 'Umuguma, Owerri, Imo State',
     price: '₦4,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 4,
-    baths: 3,
     sqft: 464,
     propertyType: 'House',
     category: 'buy',
-    type: 'residential'
+    type: 'residential',
+    scheme: 1
   },
   {
     id: '7',
@@ -93,12 +86,11 @@ const allProperties = [
     location: 'Warri, Delta State',
     price: '₦10,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 6,
-    baths: 5,
     sqft: 464,
     propertyType: 'House',
     category: 'buy',
-    type: 'residential'
+    type: 'residential',
+    scheme: 1
   },
   {
     id: '8',
@@ -106,12 +98,11 @@ const allProperties = [
     location: 'Omagwa, Port Harcourt',
     price: '₦4,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1604014237800-1c9102c219da?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 0,
-    baths: 0,
     sqft: 464,
     propertyType: 'House',
     category: 'buy',
-    type: 'commercial'
+    type: 'commercial',
+    scheme: 1
   },
   {
     id: '9',
@@ -119,12 +110,11 @@ const allProperties = [
     location: 'Oghara, Ethiope, Delta State',
     price: '₦2,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 0,
-    baths: 0,
     sqft: 464,
     propertyType: 'Land',
     category: 'buy',
-    type: 'land'
+    type: 'land',
+    scheme: 1
   },
   {
     id: '10',
@@ -132,12 +122,11 @@ const allProperties = [
     location: 'Ifite, Awka, Anambra State',
     price: '₦7,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 0,
-    baths: 0,
     sqft: 464,
     propertyType: 'Land',
     category: 'buy',
-    type: 'land'
+    type: 'land',
+    scheme: 1
   },
   {
     id: '11',
@@ -145,12 +134,11 @@ const allProperties = [
     location: 'Uturu, Umuahia, Abia State',
     price: '₦7,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 0,
-    baths: 0,
     sqft: 464,
     propertyType: 'Land',
     category: 'buy',
-    type: 'land'
+    type: 'land',
+    scheme: 1
   },
   {
     id: '12',
@@ -158,12 +146,11 @@ const allProperties = [
     location: 'Ogwashi-Uku, Asaba, Delta State',
     price: '₦7,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    beds: 0,
-    baths: 0,
     sqft: 464,
     propertyType: 'Land',
     category: 'buy',
-    type: 'land'
+    type: 'land',
+    scheme: 1
   }
 ];
 

@@ -1,5 +1,5 @@
 
-import { MapPin, Home, Maximize2, BedDouble, Bath } from 'lucide-react';
+import { MapPin, Home, Maximize2 } from 'lucide-react';
 import PropertyDetailsDialog from './PropertyDetailsDialog';
 
 interface PropertyCardProps {
@@ -8,10 +8,9 @@ interface PropertyCardProps {
   location: string;
   price: string;
   imageUrl: string;
-  beds: number;
-  baths: number;
   sqft: number;
   propertyType: string;
+  scheme?: number;
 }
 
 const PropertyCard = ({
@@ -20,10 +19,9 @@ const PropertyCard = ({
   location,
   price,
   imageUrl,
-  beds,
-  baths,
   sqft,
-  propertyType
+  propertyType,
+  scheme = 1
 }: PropertyCardProps) => {
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 group">
@@ -50,12 +48,8 @@ const PropertyCard = ({
 
         <div className="flex justify-between items-center border-t border-gray-100 pt-3">
           <div className="flex items-center text-gray-500">
-            <BedDouble size={16} className="mr-1" />
-            <span className="text-sm">{beds} Beds</span>
-          </div>
-          <div className="flex items-center text-gray-500">
-            <Bath size={16} className="mr-1" />
-            <span className="text-sm">{baths} Baths</span>
+            <Home size={16} className="mr-1" />
+            <span className="text-sm">Scheme {scheme}</span>
           </div>
           <div className="flex items-center text-gray-500">
             <Maximize2 size={16} className="mr-1" />
@@ -80,3 +74,4 @@ const PropertyCard = ({
 };
 
 export default PropertyCard;
+

@@ -7,10 +7,9 @@ interface Property {
   location: string;
   price: string;
   imageUrl: string;
-  beds: number;
-  baths: number;
   sqft: number;
   propertyType: string;
+  scheme?: number;
 }
 
 interface PropertyGridProps {
@@ -37,3 +36,4 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
 };
 
 export default PropertyGrid;
+
