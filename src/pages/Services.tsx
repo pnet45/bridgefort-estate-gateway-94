@@ -69,6 +69,8 @@ const Services = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Our Investment Packages</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">Choose from our carefully curated investment packages, designed to meet different financial goals and risk profiles.</p>
+            <h2 className="text-3xl font-bold mb-4">Your Path to Guaranteed Real Estate Returns Starts Here: Introducing Buy To Sell.</h2>
+            <p className="text-gray-600 max-w-2x1 mx-auto">Buy To Sell simplifies real estate investment. Imagine earning substantial passive income without the usual risks. With Buy To Sell, you can purchase property in our carefully chosen estates, and we guarantee to facilitate a resale of your property within 12 months, aiming for profits as high as 30%. Enjoy the peace of mind that comes with knowing your income potential is locked in from day one. Secure your financial future with this unique, low-risk investment opportunity.</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -182,7 +184,7 @@ const Services = () => {
                     <span className="font-semibold">₦20,000,000</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div className="bg-estate-blue h-2.5 rounded-full" style={{ width: '100%' }}></div>
+                    <div className="bg-estate-blue h-2.5 rounded-full" style={{ width: '50%' }}></div>
                   </div>
                 </div>
                 
@@ -192,7 +194,7 @@ const Services = () => {
                     <span className="font-semibold">₦26,000,000</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div className="bg-estate-blue h-2.5 rounded-full" style={{ width: '130%' }}></div>
+                    <div className="bg-estate-blue h-2.5 rounded-full" style={{ width: '90%' }}></div>
                   </div>
                 </div>
                 
@@ -202,7 +204,7 @@ const Services = () => {
                     <span className="font-semibold">₦32,000,000</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div className="bg-estate-blue h-2.5 rounded-full" style={{ width: '160%' }}></div>
+                    <div className="bg-estate-blue h-2.5 rounded-full" style={{ width: '100%' }}></div>
                   </div>
                 </div>
                 
@@ -288,7 +290,7 @@ const Services = () => {
           <div className="max-w-3xl mx-auto space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-xl font-semibold mb-3">What is the minimum investment amount?</h3>
-              <p className="text-gray-600">Our investment packages start from ₦5,000,000, depending on the property type and location. We also offer flexible payment plans to make investing more accessible.</p>
+              <p className="text-gray-600">Our investment packages start from ₦500,000, depending on the property type and location. We also offer flexible payment plans to make investing more accessible.</p>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -298,7 +300,7 @@ const Services = () => {
 
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h3 className="text-xl font-semibold mb-3">What returns can I expect from my investment?</h3>
-              <p className="text-gray-600">While returns vary based on property type and location, our residential properties typically yield 8-12% annual rental returns, with capital appreciation of 10-15% annually in prime locations.</p>
+              <p className="text-gray-600">While returns vary based on property type and location, our residential properties typically yield 8-12% annual rental returns, with capital appreciation of 15-30% annually in prime locations.</p>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md">
