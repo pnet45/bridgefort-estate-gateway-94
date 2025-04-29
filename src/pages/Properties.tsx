@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PropertyFilters from '../components/properties/PropertyFilters';
@@ -7,7 +8,7 @@ import PropertyGrid from '../components/properties/PropertyGrid';
 import PropertyPagination from '../components/properties/PropertyPagination';
 import PropertyHero from '../components/properties/PropertyHero';
 
-// Sample properties data
+// Sample properties data with updated property type to Land and Phase = 1
 const allProperties = [
   {
     id: '1',
@@ -16,7 +17,7 @@ const allProperties = [
     price: '₦3,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 500,
-    propertyType: 'Villa',
+    propertyType: 'Land',
     category: 'buy',
     type: 'residential',
     phase: 1
@@ -28,7 +29,7 @@ const allProperties = [
     price: '₦4,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 500,
-    propertyType: 'Apartment',
+    propertyType: 'Land',
     category: 'buy',
     type: 'residential',
     phase: 1
@@ -40,10 +41,10 @@ const allProperties = [
     price: '₦1,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 500,
-    propertyType: 'Commercial',
+    propertyType: 'Land',
     category: 'buy',
     type: 'residential',
-    phase: 2
+    phase: 1
   },
   {
     id: '4',
@@ -52,10 +53,10 @@ const allProperties = [
     price: '₦1,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1598928636135-d146006ff4be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 500,
-    propertyType: 'Penthouse',
+    propertyType: 'Land',
     category: 'buy',
     type: 'residential',
-    phase: 1
+    scheme: 1 // Changed from phase to scheme for this property only
   },
   {
     id: '5',
@@ -64,7 +65,7 @@ const allProperties = [
     price: 'Pre-Launch ₦2,500,000 | Actual Price: ₦3,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 500,
-    propertyType: 'Villa',
+    propertyType: 'Land',
     category: 'buy',
     type: 'residential',
     phase: 1
@@ -76,7 +77,7 @@ const allProperties = [
     price: 'Promo Price: ₦7,500,000 | Actual Price: ₦10,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 464,
-    propertyType: 'House',
+    propertyType: 'Land',
     category: 'buy',
     type: 'residential',
     phase: 1
@@ -88,7 +89,7 @@ const allProperties = [
     price: '₦10,000,000 | Initial Deposit: ₦2,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 464,
-    propertyType: 'House',
+    propertyType: 'Land',
     category: 'buy',
     type: 'residential',
     phase: 1
@@ -97,10 +98,10 @@ const allProperties = [
     id: '8',
     title: 'The Big League Smart City',
     location: 'Omagwa, Port Harcourt',
-    price: '₦4,500,000 | Initail Deposit: ₦1,000,000',
+    price: '₦4,500,000 | Initial Deposit: ₦1,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1604014237800-1c9102c219da?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 464,
-    propertyType: 'House',
+    propertyType: 'Land',
     category: 'buy',
     type: 'commercial',
     phase: 1
@@ -156,6 +157,7 @@ const allProperties = [
 ];
 
 const Properties = () => {
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     category: 'all',
@@ -164,6 +166,43 @@ const Properties = () => {
     maxPrice: ''
   });
   const [showFilters, setShowFilters] = useState(false);
+
+  // Parse URL query parameters
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    
+    // Set filters based on URL parameters
+    if (params.has('location')) {
+      setSearchQuery(params.get('location') || '');
+    }
+    
+    if (params.has('type')) {
+      setFilters(prev => ({
+        ...prev,
+        type: params.get('type') || 'all'
+      }));
+    }
+    
+    if (params.has('price')) {
+      const priceRange = params.get('price') || '';
+      if (priceRange.includes('-')) {
+        const [min, max] = priceRange.split('-');
+        setFilters(prev => ({
+          ...prev,
+          minPrice: min || '',
+          maxPrice: max || ''
+        }));
+      } else if (priceRange.endsWith('+')) {
+        setFilters(prev => ({
+          ...prev,
+          minPrice: priceRange.replace('+', '') || ''
+        }));
+      }
+    }
+    
+    // Scroll to top when page loads or URL changes
+    window.scrollTo(0, 0);
+  }, [location]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
     const { name, value } = e.target;

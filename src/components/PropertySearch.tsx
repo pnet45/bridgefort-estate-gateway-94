@@ -1,16 +1,25 @@
 
 import { useState } from 'react';
 import { Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const PropertySearch = () => {
   const [location, setLocation] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [priceRange, setPriceRange] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here we would typically handle the search logic
-    console.log({ location, propertyType, priceRange });
+    
+    // Build search query parameters
+    const params = new URLSearchParams();
+    if (location) params.append('location', location);
+    if (propertyType) params.append('type', propertyType);
+    if (priceRange) params.append('price', priceRange);
+    
+    // Navigate to properties page with search parameters
+    navigate(`/properties?${params.toString()}`);
   };
 
   return (
@@ -30,6 +39,12 @@ const PropertySearch = () => {
               <option value="abuja">Abuja</option>
               <option value="port-harcourt">Port Harcourt</option>
               <option value="ibadan">Ibadan</option>
+              <option value="imo">Imo State</option>
+              <option value="abia">Abia State</option>
+              <option value="anambra">Anambra State</option>
+              <option value="delta">Delta State</option>
+              <option value="ogun">Ogun State</option>
+              <option value="akwa-ibom">Akwa Ibom State</option>
             </select>
           </div>
 

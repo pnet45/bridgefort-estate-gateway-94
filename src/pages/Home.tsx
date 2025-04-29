@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PropertySearch from '../components/PropertySearch';
 import PropertyCard from '../components/PropertyCard';
 import TestimonialCard from '../components/TestimonialCard';
 import MissionStatement from '../components/MissionStatement';
+import HomeCarousel from '../components/HomeCarousel';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Home as HomeIcon, Building, Wallet, Clock, Shield, Award } from 'lucide-react';
 
@@ -17,7 +18,7 @@ const featuredProperties = [
     price: '₦3,250,000',
     imageUrl: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 500,
-    propertyType: 'Villa',
+    propertyType: 'Land',
     phase: 1
   },
   {
@@ -27,8 +28,8 @@ const featuredProperties = [
     price: '₦4,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 500,
-    propertyType: 'Apartment',
-    phase: 2
+    propertyType: 'Land',
+    phase: 1
   },
   {
     id: '3',
@@ -37,8 +38,8 @@ const featuredProperties = [
     price: '₦1,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqm: 500,
-    propertyType: 'Commercial',
-    phase: 3
+    propertyType: 'Land',
+    phase: 1
   }
 ];
 
@@ -90,32 +91,18 @@ const partnerLogos = [
 ];
 
 const Home = () => {
+  // Scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       
-      {/* Hero Section */}
+      {/* Hero Section - Replaced with HomeCarousel */}
       <section className="relative">
-        <div className="h-[70vh] bg-cover bg-center" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1275&q=80)' }}>
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center">
-            <div className="container-custom text-white">
-              <h1 className="text-3xl md:text-5xl font-bold mb-4 max-w-3xl leading-tight animate-fade-in">
-                Your Gateway to Premium Real Estate Investments
-              </h1>
-              <p className="text-xl md:text-2xl mb-8 max-w-2xl animate-fade-in" style={{ animationDelay: '200ms' }}>
-                Discover exceptional properties and secure high-yield investment opportunities with PWAN Bridgefort.
-              </p>
-              <div className="flex flex-wrap gap-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
-                <Link to="/properties" className="btn-cta text-lg px-8 py-3">
-                  Explore Properties
-                </Link>
-                <Link to="/services" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-estate-blue font-medium text-lg px-8 py-3 rounded transition duration-300">
-                  Investment Services
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
+        <HomeCarousel />
         
         {/* Property Search */}
         <div className="container-custom">

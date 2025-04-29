@@ -8,6 +8,7 @@ import Properties from "./pages/Properties";
 import Services from "./pages/Services";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import ScrollToTop from "./components/ScrollToTop";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as React from "react";
 
@@ -19,6 +20,7 @@ const App = () => (
     <Toaster />
     <Sonner />
     <BrowserRouter>
+      <ScrollToTop /> {/* Add ScrollToTop component */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />

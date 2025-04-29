@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Phone } from 'lucide-react';
@@ -13,12 +14,12 @@ const Navbar = () => {
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="container-custom py-4">
         <div className="flex justify-between items-center">
-          {/* Logo */}
+          {/* Logo - Increased size */}
           <Link to="/" className="flex items-center">
             <img 
               src="/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png" 
               alt="PWAN Bridgefort Logo" 
-              className="h-12 w-auto"
+              className="h-16 w-auto" // Increased from h-12
             />
           </Link>
 
