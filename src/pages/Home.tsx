@@ -16,9 +16,9 @@ const featuredProperties = [
     location: 'Itoikin, Epe, Lagos',
     price: '₦3,250,000',
     imageUrl: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    sqft: 500,
+    sqm: 500,
     propertyType: 'Villa',
-    scheme: 1
+    phase: 1
   },
   {
     id: '2',
@@ -26,9 +26,9 @@ const featuredProperties = [
     location: 'Imota, Ikorodu, Lagos',
     price: '₦4,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    sqft: 500,
+    sqm: 500,
     propertyType: 'Apartment',
-    scheme: 2
+    phase: 2
   },
   {
     id: '3',
@@ -36,9 +36,9 @@ const featuredProperties = [
     location: 'Agbara, Ogun State',
     price: '₦1,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    sqft: 500,
+    sqm: 500,
     propertyType: 'Commercial',
-    scheme: 3
+    phase: 3
   }
 ];
 

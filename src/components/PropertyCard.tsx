@@ -8,9 +8,9 @@ interface PropertyCardProps {
   location: string;
   price: string;
   imageUrl: string;
-  sqft: number;
+  sqm: number;
   propertyType: string;
-  scheme?: number;
+  phase?: number;
 }
 
 const PropertyCard = ({
@@ -19,9 +19,9 @@ const PropertyCard = ({
   location,
   price,
   imageUrl,
-  sqft,
+  sqm,
   propertyType,
-  scheme = 1
+  phase = 1
 }: PropertyCardProps) => {
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 group">
@@ -49,11 +49,11 @@ const PropertyCard = ({
         <div className="flex justify-between items-center border-t border-gray-100 pt-3">
           <div className="flex items-center text-gray-500">
             <Home size={16} className="mr-1" />
-            <span className="text-sm">Scheme {scheme}</span>
+            <span className="text-sm">Phase {phase}</span>
           </div>
           <div className="flex items-center text-gray-500">
             <Maximize2 size={16} className="mr-1" />
-            <span className="text-sm">{sqft} sqft</span>
+            <span className="text-sm">{sqm} sqm</span>
           </div>
         </div>
 
@@ -74,4 +74,3 @@ const PropertyCard = ({
 };
 
 export default PropertyCard;
-
