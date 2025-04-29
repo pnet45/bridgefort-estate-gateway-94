@@ -17,7 +17,8 @@ const featuredProperties = [
     price: '₦3,250,000',
     imageUrl: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqft: 500,
-    propertyType: 'Villa'
+    propertyType: 'Villa',
+    scheme: 1
   },
   {
     id: '2',
@@ -26,7 +27,8 @@ const featuredProperties = [
     price: '₦4,000,000',
     imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqft: 500,
-    propertyType: 'Apartment'
+    propertyType: 'Apartment',
+    scheme: 2
   },
   {
     id: '3',
@@ -35,7 +37,8 @@ const featuredProperties = [
     price: '₦1,500,000',
     imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     sqft: 500,
-    propertyType: 'Commercial'
+    propertyType: 'Commercial',
+    scheme: 3
   }
 ];
 
@@ -134,7 +137,7 @@ const Home = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredProperties.map(property => (
-              <PropertyCard beds={0} baths={0} key={property.id} {...property} />
+              <PropertyCard key={property.id} {...property} />
             ))}
           </div>
           
