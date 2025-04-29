@@ -1,29 +1,25 @@
 
-import { useState } from 'react';
-import { Filter, Search } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
+import { usePropertyContext } from '../../contexts/PropertyContext';
 
-interface PropertyFiltersProps {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  filters: {
-    category: string;
-    type: string;
-    minPrice: string;
-    maxPrice: string;
+const PropertyFilters = () => {
+  const {
+    searchQuery,
+    setSearchQuery,
+    filters,
+    setFilters,
+    showFilters,
+    toggleFilters
+  } = usePropertyContext();
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFilters({
+      ...filters,
+      [name]: value
+    });
   };
-  handleFilterChange: (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => void;
-  showFilters: boolean;
-  toggleFilters: () => void;
-}
 
-const PropertyFilters = ({ 
-  searchQuery, 
-  setSearchQuery, 
-  filters, 
-  handleFilterChange, 
-  showFilters, 
-  toggleFilters 
-}: PropertyFiltersProps) => {
   return (
     <div className="mb-10">
       <div className="flex flex-col md:flex-row gap-4 mb-6">
