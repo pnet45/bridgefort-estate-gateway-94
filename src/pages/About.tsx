@@ -8,8 +8,8 @@ const About = () => {
   const teamMembers = [
     {
       name: 'Dalvin Silva, PhD',
-      role: 'CEO',
-      bio: 'With over 5 years of experience in real estate investment and development in Nigeria and across West Africa.',
+      role: 'MD/CEO',
+      bio: 'As the Managing Director and Chief Executive Officer, Silva brings visionary leadership and over 15 years of real estate expertise to the company. He oversees strategic planning, growth initiatives, and ensures the delivery of top-tier services to clients.',
       imageUrl: './lovable-upload/Dalvin-Silva-MD.png?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com/Dalvinsilva',
@@ -20,7 +20,7 @@ const About = () => {
     {
       name: 'Precious Silva',
       role: 'Chief Operation Officer',
-      bio: 'Network marketing guru with expertise in real estate portfolio management and optimization.',
+      bio: 'Network marketing guru with expertise in real estate portfolio management and optimization. Mrs Precious ensures smooth daily operations across all departments. With a strong background in operations and project management, she streamlines processes and supports organizational efficiency and innovation.',
       imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com',
@@ -31,7 +31,7 @@ const About = () => {
     {
       name: 'Gedion Vincent',
       role: 'Head of Staff',
-      bio: 'Specializes in identifying high-potential properties and negotiating favorable terms for investors.',
+      bio: 'Mr Vincent leads the finance and HR departments, managing budgets, financial reporting, and team coordination. His attention to detail and integrity ensures strong fiscal management and a productive workplace.',
       imageUrl: 'https://images.unsplash.com/photo-1580894732444-8ecded7900cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com',
@@ -42,7 +42,7 @@ const About = () => {
     {
       name: 'Olatunji Paul',
       role: 'Admin Officer',
-      bio: 'Dedicated to ensuring an exceptional experience for all PWAN Bridgefort clients and investors.',
+      bio: 'Mr Paul is the backbone of office administration, handling documentation, internal communications, and record-keeping. His organizational skills keep everything running seamlessly behind the scenes. Dedicated to ensuring an exceptional experience for all PWAN Bridgefort clients and investors.',
       imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com',
@@ -64,7 +64,7 @@ const About = () => {
     {
       name: 'Nehimaiah Onyekibe',
       role: 'Business Development Manager (South-East)',
-      bio: 'Dedicated to ensuring an exceptional experience for all PWAN Bridgefort clients and investors.',
+      bio: 'Specializes in identifying high-potential properties and negotiating favorable terms for investors.',
       imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com',
@@ -84,14 +84,25 @@ const About = () => {
       }
     },
     {
-      name: '',
-      role: 'Admin Officer',
+      name: 'Doris Onyeagwu',
+      role: 'Business Development Executive (South-West)',
       bio: 'Dedicated to ensuring an exceptional experience for all PWAN Bridgefort clients and investors.',
       imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com',
-        email: 'Olatunji.paul@pwanbridgefort.ng',
-        phone: '+234 808 590 9085'
+        email: 'joy.brown@pwanbridgefort.ng',
+        phone: '+234 903 529 2185'
+      }
+    },
+    {
+      name: 'Joy Brown',
+      role: 'Facility/Office Assistant',
+      bio: 'Dedicated to ensuring an exceptional experience for all PWAN Bridgefort clients and investors.',
+      imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+      social: {
+        linkedin: 'https://linkedin.com',
+        email: 'joy.brown@pwanbridgefort.ng',
+        phone: '+234 903 529 2185'
       }
     },
   ];
