@@ -32,7 +32,7 @@ const MissionStatement = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Unlock Your Real Estate Potential</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            At PWAN Bridgefort, we're not just selling properties—we're building legacies and helping you achieve financial freedom.
+            At PWAN Bridgefort, we're not just selling properties—we're building legacies and helping you achieve financial freedom. Making home ownership dream a reality.
           </p>
         </div>
 

@@ -40,19 +40,19 @@ const About = () => {
       }
     },
     {
-      name: 'Daniel Eze',
-      role: 'Director of Client Relations',
+      name: 'Olatunji Paul',
+      role: 'Admin Officer',
       bio: 'Dedicated to ensuring an exceptional experience for all PWAN Bridgefort clients and investors.',
       imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com',
-        email: 'daniel.eze@bridgefort.com',
-        phone: '+234 801 234 5004'
+        email: 'Olatunji.paul@pwanbridgefort.ng',
+        phone: '+234 808 590 9085'
       }
     },
     {
-      name: 'Dalvin Silva',
-      role: 'MD/CEO',
+      name: 'Emmanuel Etokakpan',
+      role: 'Inspection/IT Officer',
       bio: 'Visionary leader driving PWAN Bridgefort\'s mission to create wealth through strategic real estate investments.',
       imageUrl: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
@@ -60,14 +60,36 @@ const About = () => {
         email: 'dalvin.silva@bridgefort.com',
         phone: '+234 801 234 5000'
       }
-    }
+    },
+    {
+      name: 'Nehimaiah Onyekibe',
+      role: 'Business Development Manager (South-East)',
+      bio: 'Dedicated to ensuring an exceptional experience for all PWAN Bridgefort clients and investors.',
+      imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+      social: {
+        linkedin: 'https://linkedin.com',
+        email: 'Nehemiah.Onyekibe@pwanbridgefort.ng',
+        phone: '+234 803 210 7763'
+      }
+    },
+    {
+      name: 'Happiness Anele',
+      role: 'Business Development Executive/Customer Service Rivers State - South-South',
+      bio: 'Dedicated to ensuring an exceptional experience for all PWAN Bridgefort clients and investors.',
+      imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+      social: {
+        linkedin: 'https://linkedin.com',
+        email: 'Olatunji.paul@pwanbridgefort.ng',
+        phone: '+234 808 590 9085'
+      }
+    },
   ];
 
   const achievements = [
-    { number: '500+', text: 'Properties Sold' },
-    { number: '₦15B+', text: 'in Property Value' },
-    { number: '1,200+', text: 'Happy Clients' },
-    { number: '15+', text: 'Years of Experience' }
+    { number: '+', text: 'Properties Sold' },
+    { number: '₦100m+', text: 'in Property Value' },
+    { number: '250+', text: 'Happy Clients' },
+    { number: '2+', text: 'Years of Experience' }
   ];
 
   return (
@@ -164,7 +186,7 @@ const About = () => {
       <section className="section-padding bg-white">
         <div className="container-custom">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Meet Our Leadership Team</h2>
+            <h2 className="text-3xl font-bold mb-4">Meet Our Management Team</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">Get to know the experts behind PWAN Bridgefort's success in delivering premium real estate investment opportunities.</p>
           </div>
 
@@ -215,7 +237,7 @@ const About = () => {
               <div className="mb-8">
                 <h3 className="text-2xl font-semibold mb-4">Our Journey</h3>
                 <p className="text-gray-600 mb-4">
-                  Founded in 2008, PWAN Bridgefort Estate and Investment Ltd began with a vision to transform the Nigerian real estate landscape by providing secure, high-yield investment opportunities.
+                  Founded in 2023, PWAN Bridgefort Estate and Investment Ltd began with a vision to transform the Nigerian real estate landscape by providing secure, high-yield investment opportunities.
                 </p>
                 <p className="text-gray-600 mb-4">
                   Over the years, we have successfully developed numerous residential and commercial properties across Nigeria's major cities, establishing ourselves as a trusted name in real estate investment.
@@ -230,27 +252,27 @@ const About = () => {
                 <ul className="space-y-3">
                   <li className="flex items-start">
                     <span className="text-estate-blue mr-2">•</span>
-                    <span className="text-gray-600">2008 - Founded in Lagos, Nigeria</span>
+                    <span className="text-gray-600">2023 - Founded in Lagos, Nigeria</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-estate-blue mr-2">•</span>
-                    <span className="text-gray-600">2012 - Completed our first major development: Bridgefort Gardens</span>
+                    <span className="text-gray-600">2023 - Completed our first major development: Bridgefort Gardens</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-estate-blue mr-2">•</span>
-                    <span className="text-gray-600">2015 - Expanded operations to Abuja and Port Harcourt</span>
+                    <span className="text-gray-600">2024 - Expanded operations to Abuja, Delta State, Imo State and Port Harcourt</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-estate-blue mr-2">•</span>
-                    <span className="text-gray-600">2018 - Launched our investment advisory services</span>
+                    <span className="text-gray-600">2025 - Launched our investment advisory services</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-estate-blue mr-2">•</span>
-                    <span className="text-gray-600">2020 - Received the "Real Estate Investment Company of the Year" award</span>
+                    <span className="text-gray-600">2025 - Received the "Real Estate Investment Company of the Year" award</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-estate-blue mr-2">•</span>
-                    <span className="text-gray-600">2023 - Surpassed ₦15 billion in property value</span>
+                    <span className="text-gray-600">2025 - Surpassed ₦150 million in property value</span>
                   </li>
                 </ul>
               </div>
