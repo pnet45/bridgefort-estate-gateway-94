@@ -7,9 +7,9 @@ interface Property {
   location: string;
   price: string;
   imageUrl: string;
-  sqft: number;
+  sqm: number;  // Changed from sqft to sqm
   propertyType: string;
-  scheme?: number;
+  phase?: number;  // Changed from scheme to phase
 }
 
 interface PropertyGridProps {
@@ -36,4 +36,3 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
 };
 
 export default PropertyGrid;
-
