@@ -79,6 +79,17 @@ const About = () => {
       imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
         linkedin: 'https://linkedin.com',
+        email: 'Happiness.anele@pwanbridgefort.ng',
+        phone: '+234 818 060 0833'
+      }
+    },
+    {
+      name: '',
+      role: 'Admin Officer',
+      bio: 'Dedicated to ensuring an exceptional experience for all PWAN Bridgefort clients and investors.',
+      imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+      social: {
+        linkedin: 'https://linkedin.com',
         email: 'Olatunji.paul@pwanbridgefort.ng',
         phone: '+234 808 590 9085'
       }
