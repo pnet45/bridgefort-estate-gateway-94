@@ -71,6 +71,17 @@ const Services = () => {
             <p className="text-gray-600 max-w-2xl mx-auto">Choose from our carefully curated investment packages, designed to meet different financial goals and risk profiles.</p>
             <h2 className="text-3xl font-bold mb-4">Your Path to Guaranteed Real Estate Returns Starts Here: Introducing Buy To Sell.</h2>
             <p className="text-gray-600 max-w-2x1 mx-auto">Buy To Sell simplifies real estate investment. Imagine earning substantial passive income without the usual risks. With Buy To Sell, you can purchase property in our carefully chosen estates, and we guarantee to facilitate a resale of your property within 12 months, aiming for profits as high as 30%. Enjoy the peace of mind that comes with knowing your income potential is locked in from day one. Secure your financial future with this unique, low-risk investment opportunity.</p>
+            {investmentPackages.map((pkg, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition duration-300">
+                
+            <div className="px-6 pb-6">
+                  <Link 
+                    to="/contact" 
+                    className="block text-center py-3 bg-estate-red text-white rounded font-medium hover:bg-red-600 transition duration-300"
+                  >
+                    {pkg.cta}
+                  </Link>
+                </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -104,6 +115,7 @@ const Services = () => {
               </div>
             ))}
           </div>
+            ),</div>
         </div>
       </section>
 

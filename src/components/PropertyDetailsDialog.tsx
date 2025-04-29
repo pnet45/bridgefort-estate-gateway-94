@@ -34,7 +34,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
   
   const handleDownload = () => {
     // Create a sample PDF with property details
-    const pdfUrl = `https://docs.google.com/document/d/1234/export?format=pdf`;
+    const pdfUrl = ``;
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = `${property.title}-subscription-form.pdf`;
@@ -119,7 +119,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                     <p>{property.location}</p>
                   </div>
                   
-                  <p className="font-medium">📜 Title: Survey Plan & Deed</p>
+                  <p className="font-medium">📜 Title: Survey Plan & Deed of Assignment</p>
                   
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h3 className="text-xl md:text-2xl font-bold text-estate-red mb-4">PRICE ALERT</h3>

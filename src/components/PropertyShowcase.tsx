@@ -7,7 +7,7 @@ import { AspectRatio } from './ui/aspect-ratio';
 const PropertyShowcase = () => {
   const handleDownload = () => {
     // Replace with actual PDF URL when available
-    const pdfUrl = "/subscription-form.pdf";
+    const pdfUrl = "./lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf";
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = "fortress-hills-subscription-form.pdf";

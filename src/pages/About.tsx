@@ -10,9 +10,9 @@ const About = () => {
       name: 'Dalvin Silva, PhD',
       role: 'CEO',
       bio: 'With over 5 years of experience in real estate investment and development in Nigeria and across West Africa.',
-      imageUrl: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
+      imageUrl: './lovable-upload/Dalvin-Silva-MD.png?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
       social: {
-        linkedin: 'https://linkedin.com',
+        linkedin: 'https://linkedin.com/Dalvinsilva',
         email: 'dalvin.silva@pwanbridgefort.ng',
         phone: '+234 803 062 4059'
       }
