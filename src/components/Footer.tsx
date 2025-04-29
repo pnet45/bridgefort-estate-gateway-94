@@ -53,6 +53,10 @@ const Footer = () => {
                 <MapPin size={20} className="mr-2 mt-1 flex-shrink-0 text-estate-blue" />
                 <span className="text-gray-300">Head Office | Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, VGC bus stop, Lekki-Ajah, Lagos</span>
               </li>
+              <li className="flex items-start">
+                <MapPin size={20} className="mr-2 mt-1 flex-shrink-0 text-estate-blue" />
+                <span className="text-gray-300">Port Harcourt Office | 42 Sani Abacha Road, Port Harcourt, Rivers State</span>
+              </li>
               <li className="flex items-center">
                 <Phone size={20} className="mr-2 flex-shrink-0 text-estate-blue" />
                 <div className="flex flex-col">
@@ -63,6 +67,10 @@ const Footer = () => {
               <li className="flex items-center">
                 <Mail size={20} className="mr-2 flex-shrink-0 text-estate-blue" />
                 <a href="mailto:info@pwanbridgefort.ng" className="text-gray-300 hover:text-white">info@pwanbridgefort.ng</a>
+              </li>
+              <li className="flex items-center">
+                <Mail size={20} className="mr-2 flex-shrink-0 text-estate-blue" />
+                <a href="mailto:sales@pwanbridgefort.ng" className="text-gray-300 hover:text-white">sales@pwanbridgefort.ng</a>
               </li>
             </ul>
           </div>
