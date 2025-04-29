@@ -29,20 +29,16 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {properties.map(property => (
-        <PropertyCard 
-          key={property.id} 
-          id={property.id}
-          title={property.title}
-          location={property.location}
-          price={property.price}
-          imageUrl={property.imageUrl}
-          sqm={property.sqm}
-          propertyType={property.propertyType}
-          phase={property.phase}
-          scheme={property.scheme}
-        />
-      ))}
+      {properties.map(property => {
+        const { scheme, phase, ...rest } = property;
+        return (
+          <PropertyCard 
+            key={property.id} 
+            {...rest}
+            phase={phase}
+          />
+        );
+      })}
     </div>
   );
 };
