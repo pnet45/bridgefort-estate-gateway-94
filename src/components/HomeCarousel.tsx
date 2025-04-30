@@ -12,8 +12,7 @@ import { useEffect, useState } from "react";
 
 // Define image urls
 const carouselImages = [
-  './lovable-uploads/8a07d04f-e653-4aa4-86bd-7dc2e35976b0.png',
-  'public/lovable-uploads/929a0103-563c-49a2-be5d-1f754910e9e8.png',
+  '',
 ];
 
 // Define captions for carousel items
