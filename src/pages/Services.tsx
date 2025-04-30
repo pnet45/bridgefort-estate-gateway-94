@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Calculator, CheckCircle, Home, Building, Wallet, ArrowRight, BarChart } from 'lucide-react';
+import Buy2SellFeature from '../components/services/Buy2SellFeature'; // Import the new component
 
 const Services = () => {
   const investmentPackages = [
@@ -69,9 +70,10 @@ const Services = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Our Investment Packages</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">Choose from our carefully curated investment packages, designed to meet different financial goals and risk profiles.</p>
-            <h2 className="text-3xl font-bold mb-4">Your Path to Guaranteed Real Estate Returns Starts Here: Introducing Buy To Sell.</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">Buy To Sell simplifies real estate investment. Imagine earning substantial passive income without the usual risks. With Buy To Sell, you can purchase property in our carefully chosen estates, and we guarantee to facilitate a resale of your property within 12 months, aiming for profits as high as 30%. Enjoy the peace of mind that comes with knowing your income potential is locked in from day one. Secure your financial future with this unique, low-risk investment opportunity.</p>
           </div>
+
+          {/* Buy2Sell Feature */}
+          <Buy2SellFeature />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {investmentPackages.map((pkg, index) => (
@@ -324,6 +326,7 @@ const Services = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/contact" className="btn-cta bg-white text-estate-blue hover:bg-gray-100 text-lg px-8 py-3">Schedule Consultation</Link>
             <Link to="/properties" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-estate-blue font-medium text-lg px-8 py-3 rounded transition duration-300">Browse Properties</Link>
+            <Link to="/buy2sell" className="bg-estate-red border-2 border-estate-red text-white hover:bg-red-700 hover:border-red-700 font-medium text-lg px-8 py-3 rounded transition duration-300">Explore Buy2Sell</Link>
           </div>
         </div>
       </section>

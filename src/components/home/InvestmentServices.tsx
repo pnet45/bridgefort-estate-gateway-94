@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { HomeIcon, Building, Wallet } from 'lucide-react';
+import { HomeIcon, Building, Wallet, ArrowRight } from 'lucide-react';
 
 const InvestmentServices = () => {
   return (
@@ -35,9 +35,11 @@ const InvestmentServices = () => {
             <div className="bg-estate-blue bg-opacity-10 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <Wallet size={28} className="text-estate-blue" />
             </div>
-            <h3 className="text-xl font-semibold mb-3">Rental Income Plans</h3>
-            <p className="text-gray-600 mb-4">Turnkey rental properties with property management solutions for steady passive income streams.</p>
-            <Link to="/services" className="text-estate-blue font-medium hover:text-estate-darkBlue">Learn More</Link>
+            <h3 className="text-xl font-semibold mb-3">Buy2Sell Program</h3>
+            <p className="text-gray-600 mb-4">Our guaranteed investment program where we resell your property within 12 months with up to 30% profit.</p>
+            <Link to="/buy2sell" className="text-estate-blue font-medium hover:text-estate-darkBlue flex items-center justify-center">
+              Explore More <ArrowRight size={16} className="ml-1" />
+            </Link>
           </div>
         </div>
         

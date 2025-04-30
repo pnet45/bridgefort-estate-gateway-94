@@ -24,11 +24,12 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
             <Link to="/" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Home</Link>
             <Link to="/about" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">About Us</Link>
             <Link to="/properties" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Properties</Link>
             <Link to="/services" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Investment Services</Link>
+            <Link to="/buy2sell" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Buy2Sell</Link>
             <Link to="/contact" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Contact</Link>
           </nav>
 
@@ -57,6 +58,7 @@ const Navbar = () => {
               <Link to="/about" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>About Us</Link>
               <Link to="/properties" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Properties</Link>
               <Link to="/services" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Investment Services</Link>
+              <Link to="/buy2sell" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Buy2Sell</Link>
               <Link to="/contact" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Contact</Link>
               <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded text-center transition duration-300" onClick={toggleMenu}>
                 Send us a Message
