@@ -9,7 +9,7 @@ const partnerLogos = [
   },
   {
     name: 'Eleganza Groups',
-    imageUrl: '/lovable-uploads/eleganza Group.png'
+    imageUrl: 'https://pwangroupbuytosell.com/assets/LOGO%20BLUE.png'
   },
   {
     name: 'Folkland PDC',
