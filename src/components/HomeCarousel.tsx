@@ -12,12 +12,8 @@ import { useEffect, useState } from "react";
 
 // Define image urls
 const carouselImages = [
-  'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1275&q=80',
-  'https://images.unsplash.com/photo-1501183638710-841dd1904471?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80',
-  'public/lovable-uploads/8a07d04f-e653-4aa4-86bd-7dc2e35976b0.png',
+  './lovable-uploads/8a07d04f-e653-4aa4-86bd-7dc2e35976b0.png',
   'public/lovable-uploads/929a0103-563c-49a2-be5d-1f754910e9e8.png',
-  'https://images.unsplash.com/photo-1448630360428-65456885c650?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80',
-  'https://images.unsplash.com/photo-1464082354059-27db6ce50048?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80',
 ];
 
 // Define captions for carousel items
