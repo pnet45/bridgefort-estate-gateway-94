@@ -148,8 +148,8 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                     <Button 
                       onClick={handleDownload}
                       className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
-                    >
-                      <Download className="mr-2" />
+                    <
+                      Download className="mr-2" />
                       Download Subscription Form
                     </Button>
                   </div>
