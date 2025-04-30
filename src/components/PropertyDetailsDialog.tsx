@@ -150,7 +150,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                       className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
                     <
                       Download className="mr-2" />
-                      Download Subscription Form
+                      <Link to="/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf" className="btn-cta text-lg px-8 py-3"> Download Subscription Form
                     </Button>
                   </div>
                 </div>
