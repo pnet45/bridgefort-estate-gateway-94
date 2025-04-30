@@ -289,11 +289,11 @@ const About = () => {
                 <ul className="space-y-3">
                   <li className="flex items-start">
                     <span className="text-estate-blue mr-2">•</span>
-                    <span className="text-gray-600">2023 - Founded in Lagos, Nigeria</span>
+                    <span className="text-gray-600">2024 - Founded in Lagos, Nigeria</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-estate-blue mr-2">•</span>
-                    <span className="text-gray-600">2023 - Completed our first major development: Bridgefort Gardens</span>
+                    <span className="text-gray-600">2024 - Completed our first major development: Bridgefort Gardens</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-estate-blue mr-2">•</span>
