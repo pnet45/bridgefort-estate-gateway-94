@@ -13,7 +13,7 @@ const partnerLogos = [
   },
   {
     name: 'Folkland PDC',
-    imageUrl: '/lovable-uploads/folk land Properties Ltd.png'
+    imageUrl: 'https://scontent.fabb1-3.fna.fbcdn.net/v/t39.30808-6/361313423_604398855113561_7915438463798823659_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeGt5RwQptbVkNusjaC8LSfNee4yz5NGUN557jLPk0ZQ3t6ol1cEt5Ezl3q1lfKhTr0&_nc_ohc=SZSZGsmiXEwQ7kNvwGslnLp&_nc_oc=Adn-8YUW9YOc1ldQHnnDMiEc1_C4wrZMiXk3Mq9BQbXmWgb97jPlvs9GIjvfgpGddeY&_nc_zt=23&_nc_ht=scontent.fabb1-3.fna&_nc_gid=bSFu44BKljuILdjP_rRB-g&oh=00_AfFNkb7RH-9-rT7oNMQlqgZ-AJgCnu2fcZHTJdK84ZwqBQ&oe=6818839C'
   },
   {
     name: 'PWAN Group',
