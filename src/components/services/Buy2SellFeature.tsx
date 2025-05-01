@@ -52,9 +52,9 @@ const Buy2SellFeature = ({ className = '', showButtons = true }: Buy2SellFeature
             
             <div className="lg:w-1/3 flex justify-center">
               <img 
-                src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
-                alt="Buy2Sell Investment" 
-                className="rounded-lg shadow-lg max-w-full h-auto"
+                src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80" 
+                alt="Luxury Real Estate Property" 
+                className="rounded-lg shadow-lg max-w-full h-auto hover:scale-105 transition-all duration-300"
               />
             </div>
           </div>
