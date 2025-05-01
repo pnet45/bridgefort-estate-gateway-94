@@ -1,31 +1,22 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Download } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Buy2SellFeatureProps {
   className?: string;
   showButtons?: boolean;
-  showImages?: boolean;
 }
 
-const Buy2SellFeature = ({ 
-  className = '', 
-  showButtons = true,
-  showImages = true 
-}: Buy2SellFeatureProps) => {
-  const isMobile = useIsMobile();
-  
+const Buy2SellFeature = ({ className = '', showButtons = true }: Buy2SellFeatureProps) => {
   return (
     <Card className={`mb-12 overflow-hidden border-0 shadow-xl ${className}`}>
       <div className="bg-gradient-to-r from-estate-blue to-estate-darkBlue text-white">
         <CardContent className="p-8">
           <div className="flex flex-col lg:flex-row items-center">
-            <div className={`${showImages ? 'lg:w-2/3' : 'w-full'} mb-6 lg:mb-0`}>
+            <div className="lg:w-2/3 mb-6 lg:mb-0">
               <div className="flex items-center mb-4">
                 <Badge className="bg-estate-red hover:bg-estate-red text-white text-sm">Featured</Badge>
               </div>
@@ -57,35 +48,15 @@ const Buy2SellFeature = ({
                   </Link>
                 </div>
               )}
-
-              {!showButtons && (
-                <div className="flex flex-wrap gap-4">
-                  <Button className="bg-white text-estate-blue hover:bg-gray-100">
-                    <Download className="mr-2" />
-                    Download Brochure
-                  </Button>
-                </div>
-              )}
             </div>
             
-            {showImages && (
-              <div className="lg:w-1/3 flex justify-center">
-                <div className="relative">
-                  <img 
-                    src="/lovable-uploads/314674b2-9424-4c15-b9bd-a8ce97a6084d.png" 
-                    alt="Buy2Sell Investment" 
-                    className="rounded-lg shadow-lg max-w-full h-auto"
-                  />
-                  {!isMobile && (
-                    <img 
-                      src="/lovable-uploads/da0f7fae-fe5f-4f62-b34d-ff105d64271c.png"
-                      alt="6 Month Investment"
-                      className="absolute -bottom-4 -right-4 w-24 h-24 rounded-full border-4 border-white shadow-lg"
-                    />
-                  )}
-                </div>
-              </div>
-            )}
+            <div className="lg:w-1/3 flex justify-center">
+              <img 
+                src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                alt="Buy2Sell Investment" 
+                className="rounded-lg shadow-lg max-w-full h-auto"
+              />
+            </div>
           </div>
         </CardContent>
       </div>
