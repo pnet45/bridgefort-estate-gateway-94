@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Download, MapPin } from 'lucide-react';
 import { Button } from './ui/button';
@@ -7,8 +8,9 @@ import {
   Dialog,
   DialogContent,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "./ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Link } from 'react-router-dom';
 import {
   Carousel,
   CarouselContent,
@@ -34,7 +36,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
   
   const handleDownload = () => {
     // Create a sample PDF with property details
-    const pdfUrl = ``;
+    const pdfUrl = `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = `${property.title}-subscription-form.pdf`;
@@ -148,9 +150,9 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                     <Button 
                       onClick={handleDownload}
                       className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
-                    <
-                      Download className="mr-2" />
-                      <Link to="/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf" className="btn-cta text-lg px-8 py-3"> Download Subscription Form
+                    >
+                      <Download className="mr-2" />
+                      Download Subscription Form
                     </Button>
                   </div>
                 </div>
