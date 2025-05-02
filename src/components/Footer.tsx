@@ -56,7 +56,7 @@ const Footer = () => {
               </li>
               <li className="flex items-start">
                 <MapPin size={20} className="mr-2 mt-1 flex-shrink-0 text-estate-blue" />
-                <span className="text-gray-300">Port Harcourt Office | 42 Sani Abacha Road, Port Harcourt, Rivers State</span>
+                <span className="text-gray-300">Port Harcourt Office | 173 Sani Abacha Road, 500101, Port Harcourt, Rivers State</span>
               </li>
               <li className="flex items-center">
                 <Phone size={20} className="mr-2 flex-shrink-0 text-estate-blue" />

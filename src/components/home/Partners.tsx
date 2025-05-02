@@ -8,7 +8,7 @@ const partnerLogos = [
     imageUrl: '/lovable-uploads/Adept-lessor.png'
   },
   {
-    name: 'Eleganza Groups',
+    name: 'Buy2Sell',
     imageUrl: 'https://pwangroupbuytosell.com/assets/LOGO%20BLUE.png'
   },
   {

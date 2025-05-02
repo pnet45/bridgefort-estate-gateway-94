@@ -7,7 +7,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 // Define image urls
 const carouselImages = [
-  'public/lovable-uploads/42de3711-6788-43ea-9ce8-d618293b14e5.png',
+  'https://cdn.businessday.ng/2021/07/luxury-residential-real-estate.png',
   'public/lovable-uploads/84195595-cefb-44c6-90c9-1d17b754d992.png',
   'public/lovable-uploads/dfe26401-712e-4dfd-b08f-69abac4fec61.png'
 ];
