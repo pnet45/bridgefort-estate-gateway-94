@@ -4,22 +4,22 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PropertySearch from '../components/PropertySearch';
 import MissionStatement from '../components/MissionStatement';
-import HomeCarousel from '../components/HomeCarousel';
 import FeaturedProperties from '../components/home/FeaturedProperties';
 import InvestmentServices from '../components/home/InvestmentServices';
 import WhyChooseUs from '../components/home/WhyChooseUs';
 import Testimonials from '../components/home/Testimonials';
 import Partners from '../components/home/Partners';
 import CTASection from '../components/home/CTASection';
+import HomeHeroImage from '../components/HomeHeroImage';
 
 const Home = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       
-      {/* Hero Section - With HomeCarousel */}
+      {/* Hero Section - With Static Image */}
       <section className="relative">
-        <HomeCarousel />
+        <HomeHeroImage />
         
         {/* Property Search */}
         <div className="container-custom">
