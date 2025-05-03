@@ -1,18 +1,17 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
 interface Buy2SellFeatureProps {
   className?: string;
   showButtons?: boolean;
 }
-
-const Buy2SellFeature = ({ className = '', showButtons = true }: Buy2SellFeatureProps) => {
-  return (
-    <Card className={`mb-12 overflow-hidden border-0 shadow-xl ${className}`}>
+const Buy2SellFeature = ({
+  className = '',
+  showButtons = true
+}: Buy2SellFeatureProps) => {
+  return <Card className={`mb-12 overflow-hidden border-0 shadow-xl ${className}`}>
       <div className="bg-gradient-to-r from-estate-blue to-estate-darkBlue text-white">
         <CardContent className="p-8">
           <div className="flex flex-col lg:flex-row items-center">
@@ -32,36 +31,22 @@ const Buy2SellFeature = ({ className = '', showButtons = true }: Buy2SellFeature
                 income potential is locked in from day one.
               </p>
               
-              {showButtons && (
-                <div className="flex flex-wrap gap-4">
-                  <Link 
-                    to="/buy2sell" 
-                    className="bg-white text-estate-blue hover:bg-gray-100 px-6 py-2 rounded inline-flex items-center font-medium transition-colors"
-                  >
+              {showButtons && <div className="flex flex-wrap gap-4">
+                  <Link to="/buy2sell" className="bg-white text-estate-blue hover:bg-gray-100 px-6 py-2 rounded inline-flex items-center font-medium transition-colors">
                     Explore More <ArrowRight size={16} className="ml-2" />
                   </Link>
-                  <Link 
-                    to="/contact" 
-                    className="bg-estate-red text-white hover:bg-red-700 px-6 py-2 rounded inline-flex items-center font-medium transition-colors"
-                  >
+                  <Link to="/contact" className="bg-estate-red text-white hover:bg-red-700 px-6 py-2 rounded inline-flex items-center font-medium transition-colors">
                     Contact Us
                   </Link>
-                </div>
-              )}
+                </div>}
             </div>
             
             <div className="lg:w-1/3 flex justify-center">
-              <img 
-                src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80" 
-                alt="Luxury Real Estate Property" 
-                className="rounded-lg shadow-lg max-w-full h-auto hover:scale-105 transition-all duration-300"
-              />
+              <img alt="Luxury Real Estate Property" src="/lovable-uploads/32104260-589d-4ad1-b846-3cf494e6c069.jpg" className="rounded-lg shadow-lg max-w-full h-auto hover:scale-105 transition-all duration-300 object-fill" />
             </div>
           </div>
         </CardContent>
       </div>
-    </Card>
-  );
+    </Card>;
 };
-
 export default Buy2SellFeature;
