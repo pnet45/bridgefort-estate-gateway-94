@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -9,12 +10,14 @@ import WhyChooseUs from '../components/home/WhyChooseUs';
 import Testimonials from '../components/home/Testimonials';
 import Partners from '../components/home/Partners';
 import CTASection from '../components/home/CTASection';
+import HomeHeroImage from '../components/HomeHeroImage';
+
 const Home = () => {
   return <div className="flex flex-col min-h-screen">
       <Navbar />
       
-      {/* Property Search */}
-      
+      {/* Hero Image Carousel */}
+      <HomeHeroImage />
       
       {/* Mission Statement */}
       <MissionStatement />
