@@ -32,7 +32,7 @@ const InvestmentOptions: React.FC = () => {
                 </li>
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-estate-blue mr-2 mt-1 flex-shrink-0" />
-                  <span>Up to 30% ROI in 12 months</span>
+                  <span>Get up to 30% in 12 months</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-estate-blue mr-2 mt-1 flex-shrink-0" />

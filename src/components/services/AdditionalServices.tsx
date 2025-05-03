@@ -52,7 +52,7 @@ const AdditionalServices = () => {
             <div className="flex flex-col md:flex-row">
               <div className="md:w-2/5">
                 <img 
-                  src="https://images.unsplash.com/photo-1496307653780-42ee777d4833?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
+                  src="https://5.imimg.com/data5/SELLER/Default/2022/11/EZ/TO/DO/105576955/land-survey-consultancy-service-500x500.jpg?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
                   alt="Land Surveys" 
                   className="w-full h-full object-cover"
                 />
