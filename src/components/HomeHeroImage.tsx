@@ -7,7 +7,7 @@ const HomeHeroImage = () => {
       <div 
         className="h-full bg-cover bg-center"
         style={{
-          backgroundImage: `url(public/lovable-uploads/e54becce-307f-4015-a09d-f90aad541936.png)`,
+          backgroundImage: '/lovable-uploads/e54becce-307f-4015-a09d-f90aad541936.png',
           backgroundPosition: 'center center'
         }}
       >

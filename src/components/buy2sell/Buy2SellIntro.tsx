@@ -21,7 +21,7 @@ const Buy2SellIntro: React.FC<Buy2SellIntroProps> = ({ isLoaded }) => {
               className="bg-estate-red hover:bg-red-700 mt-4"
               onClick={() => document.getElementById('investment-options')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              Explore Investment Options
+              Explore for More Options
             </Button>
           </div>
           
