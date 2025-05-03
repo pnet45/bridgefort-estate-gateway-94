@@ -17,7 +17,7 @@ const partnerLogos = [
   },
   {
     name: 'PBO',
-    imageUrl: 'https://pboworld.com/'
+    imageUrl: '/lovable-uploads/pbo.png'
   },
   {
     name: 'PWAN Group',
