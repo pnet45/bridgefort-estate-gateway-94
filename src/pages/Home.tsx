@@ -10,19 +10,23 @@ import WhyChooseUs from '../components/home/WhyChooseUs';
 import Testimonials from '../components/home/Testimonials';
 import Partners from '../components/home/Partners';
 import CTASection from '../components/home/CTASection';
-import HomeHeroImage from '../components/HomeHeroImage';
 
 const Home = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       
-      {/* Hero Section - With Static Image */}
-      <section className="relative">
-        <HomeHeroImage />
-        
-        {/* Property Search */}
+      {/* Property Search */}
+      <section className="relative bg-gray-100 py-16">
         <div className="container-custom">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+              Your Gateway to Premium Real Estate Investments
+            </h1>
+            <p className="text-base md:text-xl lg:text-2xl mb-8 max-w-3xl mx-auto">
+              Discover exceptional properties and secure high-yield investment opportunities with PWAN Bridgefort.
+            </p>
+          </div>
           <PropertySearch />
         </div>
       </section>
