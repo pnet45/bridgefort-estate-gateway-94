@@ -88,7 +88,7 @@ const InvestmentServices = () => {
             </div>
             <div className="w-full md:w-1/2">
               <img 
-                src="https://images.unsplash.com/photo-1431576901776-e539bd916ba2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
+                src="https://5.imimg.com/data5/SELLER/Default/2022/11/EZ/TO/DO/105576955/land-survey-consultancy-service-500x500.jpg?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
                 alt="Real Estate Seminar" 
                 className="w-full h-64 object-cover rounded-lg shadow-md"
               />
