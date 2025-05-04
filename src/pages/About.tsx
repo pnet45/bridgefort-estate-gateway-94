@@ -327,7 +327,7 @@ const About = () => {
           </div>
           
           <div className="rounded-lg overflow-hidden shadow-xl">
-            <img src="public/lovable-uploads/f79aaed2-c246-4c4d-8b88-8c601683c0d1.png" alt="PWAN Bridgefort Team" className="w-full h-auto" />
+            <img src="public/lovable-uploads/Homeslider.png" alt="PWAN Bridgefort Team" className="w-full h-auto" />
           </div>
         </div>
       </section>
