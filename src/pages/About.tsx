@@ -65,7 +65,7 @@ const About = () => {
     name: 'Dalvin Silva, PhD',
     role: 'MD/CEO',
     bio: 'As the Managing Director and Chief Executive Officer, Silva brings visionary leadership and over 15 years of real estate expertise to the company. He oversees strategic planning, growth initiatives, and ensures the delivery of top-tier services to clients.',
-    imageUrl: './lovable-uploads/faf1fc01-6f49-4c4a-a9dc-9fd2a8bdbcff.png',
+    imageUrl: 'public/lovable-uploads/c1401222-0a1b-4598-9b63-56aa7da0f3cf.png',
     social: {
       linkedin: 'https://linkedin.com/Dalvinsilva',
       email: 'dalvin.silva@pwanbridgefort.ng',
@@ -75,7 +75,7 @@ const About = () => {
     name: 'Precious Silva',
     role: 'Chief Operation Officer',
     bio: 'Network marketing guru with expertise in real estate portfolio management and optimization. Mrs Precious ensures smooth daily operations across all departments. With a strong background in operations and project management, she streamlines processes and supports organizational efficiency and innovation.',
-    imageUrl: './lovable-uploads/13bdaa8e-3bbb-4a80-85ad-ee6c75f45ad8.png',
+    imageUrl: 'public/lovable-uploads/2ee7ad56-4788-4db8-a21d-14c5a54d4eb2.png',
     social: {
       linkedin: 'https://linkedin.com',
       email: 'precious.silva@pwanbridgefort.ng',
@@ -85,7 +85,7 @@ const About = () => {
     name: 'Gideon Vincent',
     role: 'Head of Staff',
     bio: 'Mr Vincent leads the finance and HR departments, managing budgets, financial reporting, and team coordination. His attention to detail and integrity ensures strong fiscal management and a productive workplace.',
-    imageUrl: './lovable-uploads/4a37c8e6-1846-4913-a6df-2072d3849096.png',
+    imageUrl: 'public/lovable-uploads/0cc50f44-7003-419d-929e-070762becaf1.png',
     social: {
       linkedin: 'https://linkedin.com',
       email: 'gideon.vincent@pwanbridgefort.ng',
