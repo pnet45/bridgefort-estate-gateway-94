@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 // Define carousel items with images and captions
 const carouselItems = [
   {
-    imageUrl: 'public/lovable-uploads/efac3aed-0d16-4fb4-87b9-20503053b989.png',
+    imageUrl: '/lovable-uploads/efac3aed-0d16-4fb4-87b9-20503053b989.png',
     title: "PWAN Bridgefort. ...Rebuilding the future!",
     subtitle: "At PWAN Bridgefort, we're not just selling properties—we're building legacies."
   },
