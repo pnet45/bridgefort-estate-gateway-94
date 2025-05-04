@@ -16,8 +16,39 @@ const Home = () => {
   return <div className="flex flex-col min-h-screen">
       <Navbar />
       
-      {/* Hero Image Carousel */}
-      <HomeHeroImage />
+      const Home = () => {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      
+      {/* Hero Section */}
+      <section className="relative">
+        <div className="h-[70vh] bg-cover bg-center" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1275&q=80)' }}>
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center">
+            <div className="container-custom text-white">
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 max-w-3xl leading-tight animate-fade-in">
+                Your Gateway to Premium Real Estate Investments
+              </h1>
+              <p className="text-xl md:text-2xl mb-8 max-w-2xl animate-fade-in" style={{ animationDelay: '200ms' }}>
+                Discover exceptional properties and secure high-yield investment opportunities with PWAN Bridgefort.
+              </p>
+              <div className="flex flex-wrap gap-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
+                <Link to="/properties" className="btn-cta text-lg px-8 py-3">
+                  Explore Properties
+                </Link>
+                <Link to="/services" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-estate-blue font-medium text-lg px-8 py-3 rounded transition duration-300">
+                  Investment Services
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Property Search */}
+        <div className="container-custom">
+          <PropertySearch />
+        </div>
+      </section>      
       
       {/* Mission Statement */}
       <MissionStatement />
