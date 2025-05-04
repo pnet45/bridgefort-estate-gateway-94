@@ -30,6 +30,7 @@ const Navbar = () => {
             <Link to="/properties" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Properties</Link>
             <Link to="/services" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Investment Services</Link>
             <Link to="/buy2sell" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Buy2Sell</Link>
+            <Link to="/training" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Training</Link>
             <Link to="/contact" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Contact</Link>
           </nav>
 
@@ -59,6 +60,7 @@ const Navbar = () => {
               <Link to="/properties" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Properties</Link>
               <Link to="/services" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Investment Services</Link>
               <Link to="/buy2sell" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Buy2Sell</Link>
+              <Link to="/training" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Training</Link>
               <Link to="/contact" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Contact</Link>
               <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded text-center transition duration-300" onClick={toggleMenu}>
                 Send us a Message

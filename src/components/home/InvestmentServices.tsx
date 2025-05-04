@@ -82,13 +82,13 @@ const InvestmentServices = () => {
                 Our expert-led seminars and training sessions cover everything from market analysis to wealth creation through
                 property investment.
               </p>
-              <Link to="/services" className="btn-primary inline-block">
-                Upcoming Events
+              <Link to="/training" className="btn-primary inline-block">
+                Explore Training Programs
               </Link>
             </div>
             <div className="w-full md:w-1/2">
               <img 
-                src="/public/lovable-uploads/Homeslider.png?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
+                src="/lovable-uploads/Homeslider.png?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
                 alt="Real Estate Seminar" 
                 className="w-full h-64 object-cover rounded-lg shadow-md"
               />

@@ -8,6 +8,7 @@ import Properties from "./pages/Properties";
 import Services from "./pages/Services";
 import Buy2Sell from "./pages/Buy2Sell";
 import Contact from "./pages/Contact";
+import Training from "./pages/Training";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -28,6 +29,7 @@ const App = () => (
         <Route path="/properties" element={<Properties />} />
         <Route path="/services" element={<Services />} />
         <Route path="/buy2sell" element={<Buy2Sell />} />
+        <Route path="/training" element={<Training />} />
         <Route path="/contact" element={<Contact />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
