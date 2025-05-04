@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PropertySearch from '../components/PropertySearch';
@@ -10,20 +11,16 @@ import WhyChooseUs from '../components/home/WhyChooseUs';
 import Testimonials from '../components/home/Testimonials';
 import Partners from '../components/home/Partners';
 import CTASection from '../components/home/CTASection';
-import HomeHeroImage from '../components/HomeHeroImage';
+import { PropertyProvider } from '../contexts/PropertyContext';
 
 const Home = () => {
-  return <div className="flex flex-col min-h-screen">
-      <Navbar />
-      
-      const Home = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       
       {/* Hero Section */}
       <section className="relative">
-        <div className="h-[70vh] bg-cover bg-center" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1275&q=80)' }}>
+        <div className="h-[70vh] bg-cover bg-center" style={{ backgroundImage: 'url(/lovable-uploads/Homeslider.png)' }}>
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center">
             <div className="container-custom text-white">
               <h1 className="text-3xl md:text-5xl font-bold mb-4 max-w-3xl leading-tight animate-fade-in">
@@ -45,9 +42,11 @@ const Home = () => {
         </div>
         
         {/* Property Search */}
-        <div className="container-custom">
-          <PropertySearch />
-        </div>
+        <PropertyProvider>
+          <div className="container-custom">
+            <PropertySearch />
+          </div>
+        </PropertyProvider>
       </section>      
       
       {/* Mission Statement */}
@@ -72,6 +71,8 @@ const Home = () => {
       <CTASection />
       
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default Home;

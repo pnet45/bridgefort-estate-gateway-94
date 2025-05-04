@@ -2,12 +2,14 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { usePropertyContext } from '../contexts/PropertyContext';
 
 const PropertySearch = () => {
   const [location, setLocation] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [priceRange, setPriceRange] = useState('');
   const navigate = useNavigate();
+  const { allProperties } = usePropertyContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +22,9 @@ const PropertySearch = () => {
     
     // Navigate to properties page with search parameters
     navigate(`/properties?${params.toString()}`);
+    
+    console.log("Searching properties with filters:", { location, propertyType, priceRange });
+    console.log("Available properties:", allProperties.length);
   };
 
   return (
@@ -57,11 +62,12 @@ const PropertySearch = () => {
               className="input-field w-full"
             >
               <option value="">Any Type</option>
+              <option value="residential">Residential</option>
+              <option value="commercial">Commercial</option>
+              <option value="land">Land</option>
               <option value="apartment">Apartment</option>
               <option value="house">House</option>
               <option value="villa">Villa</option>
-              <option value="commercial">Commercial</option>
-              <option value="land">Land</option>
             </select>
           </div>
 
