@@ -1,0 +1,58 @@
+
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const OurEstates = () => {
+  return (
+    <section className="section-padding">
+      <div className="container-custom">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold mb-4">Our Estates: A World of Opportunity</h2>
+          <p className="text-gray-600 max-w-3xl mx-auto">
+            Whether you're looking for a place to call home or an investment opportunity, our estates offer something for everyone:
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center">
+            <img src="public/lovable-uploads/dfe26401-712e-4dfd-b08f-69abac4fec61.png" alt="Residential Estate" className="w-full h-52 object-cover object-center rounded-md mb-4" />
+            <h3 className="text-xl font-bold mb-2">Residential Estates</h3>
+            <p className="text-gray-700">
+              Located in serene, family-friendly environments designed for modern living.
+            </p>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center">
+            <img src="public/lovable-uploads/42de3711-6788-43ea-9ce8-d618293b14e5.png" alt="Commercial Estate" className="w-full h-52 object-cover object-center rounded-md mb-4" />
+            <h3 className="text-xl font-bold mb-2">Commercial Estates</h3>
+            <p className="text-gray-700">
+              Prime plots perfect for businesses, warehouses, or rental properties.
+            </p>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center">
+            <img src="public/lovable-uploads/ec42e076-d3b6-44ec-a586-11d4f85544f2.png" alt="Land Banking" className="w-full h-52 object-cover object-center rounded-md mb-4" />
+            <h3 className="text-xl font-bold mb-2">Land Banking Options</h3>
+            <p className="text-gray-700">
+              For savvy investors looking to capitalize on land appreciation over time.
+            </p>
+          </div>
+        </div>
+        
+        <div className="text-center mt-10">
+          <h3 className="text-2xl font-bold mb-4">Join the PWAN Bridgefort Family Today</h3>
+          <p className="text-gray-700 mb-6 max-w-3xl mx-auto">
+            At PWAN Bridgefort, we're more than a real estate company; we're a bridge to your dreams. Let's help you turn your aspirations into reality, one property at a time.
+          </p>
+          <p className="text-lg font-medium text-estate-blue mb-6">Invest now, because tomorrow begins today.</p>
+          
+          <Link to="/contact" className="btn-cta py-3 px-8 text-lg">
+            Contact Us Today
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default OurEstates;
