@@ -1,11 +1,8 @@
-
 import React from 'react';
 import { Construction, LandPlot, BarChart, GraduationCap } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
-
 const AdditionalServices = () => {
-  return (
-    <section className="section-padding bg-white">
+  return <section className="section-padding bg-white">
       <div className="container-custom">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Comprehensive Investment Services</h2>
@@ -19,11 +16,7 @@ const AdditionalServices = () => {
           <Card className="overflow-hidden shadow-lg border-0">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-2/5">
-                <img 
-                  src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
-                  alt="Construction and Development" 
-                  className="w-full h-full object-cover"
-                />
+                <img alt="Construction and Development" className="w-full h-full object-cover" src="/lovable-uploads/b006d931-462b-4646-97c9-0b2f3bc1d210.jpg" />
               </div>
               <div className="md:w-3/5 p-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -51,11 +44,7 @@ const AdditionalServices = () => {
           <Card className="overflow-hidden shadow-lg border-0">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-2/5">
-                <img 
-                  src="https://5.imimg.com/data5/SELLER/Default/2022/11/EZ/TO/DO/105576955/land-survey-consultancy-service-500x500.jpg?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
-                  alt="Land Surveys" 
-                  className="w-full h-full object-cover"
-                />
+                <img src="https://5.imimg.com/data5/SELLER/Default/2022/11/EZ/TO/DO/105576955/land-survey-consultancy-service-500x500.jpg?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" alt="Land Surveys" className="w-full h-full object-cover" />
               </div>
               <div className="md:w-3/5 p-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -83,11 +72,7 @@ const AdditionalServices = () => {
           <Card className="overflow-hidden shadow-lg border-0">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-2/5">
-                <img 
-                  src="https://images.unsplash.com/photo-1449157291145-7efd050a4d0e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
-                  alt="Real Estate Consultancy" 
-                  className="w-full h-full object-cover"
-                />
+                <img alt="Real Estate Consultancy" className="w-full h-full object-cover" src="/lovable-uploads/5a69cf4b-e9ca-477d-bf00-2ac6fa768177.jpg" />
               </div>
               <div className="md:w-3/5 p-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -115,11 +100,7 @@ const AdditionalServices = () => {
           <Card className="overflow-hidden shadow-lg border-0">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-2/5">
-                <img 
-                  src="https://images.unsplash.com/photo-1459767129954-1b1c1f9b9ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
-                  alt="Real Estate Seminars" 
-                  className="w-full h-full object-cover"
-                />
+                <img alt="Real Estate Seminars" className="w-full h-full object-cover" src="/lovable-uploads/f4c5cb9d-d79d-419a-9577-444691d59b72.jpg" />
               </div>
               <div className="md:w-3/5 p-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -144,8 +125,6 @@ const AdditionalServices = () => {
           </Card>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default AdditionalServices;
