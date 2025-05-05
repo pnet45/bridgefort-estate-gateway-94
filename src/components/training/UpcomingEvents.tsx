@@ -17,19 +17,19 @@ const upcomingEvents = [
   },
   {
     id: 2,
-    title: "Sales Conversion Workshop",
-    date: "March 8, 2025",
-    time: "9:00 AM - 2:00 PM",
+    title: "Success Summit",
+    date: "May 12, 2025",
+    time: "10:00 AM - 5:00 PM",
     location: "Port Harcourt Office, Rivers State",
     image: "/lovable-uploads/de82d988-dda1-4526-8001-d88a34fd7090.png",
-    capacity: "Limited to 25 participants",
-    category: "Sales",
-    featured: false
+    capacity: "Limited to 400 participants",
+    category: "Summit",
+    featured: true
   },
   {
     id: 3,
     title: "Customer Retention Bootcamp",
-    date: "April 20, 2025",
+    date: "June 20, 2025",
     time: "10:00 AM - 3:00 PM",
     location: "PWAN Bridgefort Head Office, Lekki-Ajah, Lagos",
     image: "/lovable-uploads/22de0a72-5f26-4e48-bf04-b3cb5999d519.png",
