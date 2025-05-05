@@ -11,7 +11,7 @@ const SeminarAndTraining = () => {
     <section className="py-16 bg-gray-50">
       <div className="container-custom">
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-estate-blue mb-4">Event</h2>
+          <h2 className="text-3xl font-bold text-estate-blue mb-4">Upcoming Events</h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
             Enhance your real estate knowledge and investment skills with our professional training programs
           </p>
