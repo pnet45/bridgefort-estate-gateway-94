@@ -19,7 +19,7 @@ const Navbar = () => {
             <img 
               src="/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png" 
               alt="PWAN Bridgefort Logo" 
-              className="h-16 w-auto" // Increased from h-12
+              className="h-16 w-auto" 
             />
           </Link>
 
@@ -28,7 +28,7 @@ const Navbar = () => {
             <Link to="/" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Home</Link>
             <Link to="/about" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">About Us</Link>
             <Link to="/properties" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Properties</Link>
-            <Link to="/services" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Investment Services</Link>
+            <Link to="/services" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Services</Link>
             <Link to="/buy2sell" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Buy2Sell</Link>
             <Link to="/training" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Training</Link>
             <Link to="/contact" className="text-gray-700 hover:text-estate-blue font-medium transition duration-200">Contact</Link>
@@ -40,7 +40,7 @@ const Navbar = () => {
               <Phone size={18} className="mr-2" />
               <span>+234 803 062 4059</span>
             </a>
-            <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-6 rounded transition duration-300">
+            <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition duration-300 whitespace-nowrap text-sm">
               Send us a Message
             </Link>
           </div>
@@ -58,7 +58,7 @@ const Navbar = () => {
               <Link to="/" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Home</Link>
               <Link to="/about" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>About Us</Link>
               <Link to="/properties" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Properties</Link>
-              <Link to="/services" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Investment Services</Link>
+              <Link to="/services" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Services</Link>
               <Link to="/buy2sell" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Buy2Sell</Link>
               <Link to="/training" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Training</Link>
               <Link to="/contact" className="text-gray-700 hover:text-estate-blue font-medium py-2" onClick={toggleMenu}>Contact</Link>

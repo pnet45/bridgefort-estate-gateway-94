@@ -12,29 +12,36 @@ const upcomingEvents = [
     location: "PWAN Bridgefort Head Office, Lekki-Ajah, Lagos",
     image: "/lovable-uploads/180e436c-ef89-4ab0-a2d1-e6271847b3e9.png",
     capacity: "Limited to 30 participants",
-    category: "Masterclass"
+    category: "Masterclass",
+    featured: true
   },
   {
     id: 2,
     title: "Sales Conversion Workshop",
-    date: "July 8, 2025",
+    date: "March 8, 2025",
     time: "9:00 AM - 2:00 PM",
     location: "Port Harcourt Office, Rivers State",
     image: "/lovable-uploads/de82d988-dda1-4526-8001-d88a34fd7090.png",
     capacity: "Limited to 25 participants",
-    category: "Sales"
+    category: "Sales",
+    featured: false
   },
   {
     id: 3,
     title: "Customer Retention Bootcamp",
-    date: "August 20, 2025",
+    date: "April 20, 2025",
     time: "10:00 AM - 3:00 PM",
     location: "PWAN Bridgefort Head Office, Lekki-Ajah, Lagos",
     image: "/lovable-uploads/22de0a72-5f26-4e48-bf04-b3cb5999d519.png",
     capacity: "Limited to 20 participants",
-    category: "Retention"
+    category: "Retention",
+    featured: false
   }
 ];
+
+export const getUpcomingEvents = () => upcomingEvents;
+
+export const getFeaturedEvent = () => upcomingEvents.find(event => event.featured) || upcomingEvents[0];
 
 const UpcomingEvents = () => {
   return (
@@ -59,6 +66,11 @@ const UpcomingEvents = () => {
                 <div className="absolute top-3 left-3 bg-estate-blue text-white text-xs uppercase font-bold py-1 px-2 rounded">
                   {event.category}
                 </div>
+                {event.featured && (
+                  <div className="absolute top-3 right-3 bg-estate-red text-white text-xs uppercase font-bold py-1 px-2 rounded">
+                    Featured
+                  </div>
+                )}
               </div>
               
               <CardContent className="p-6">

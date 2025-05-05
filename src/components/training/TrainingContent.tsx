@@ -31,7 +31,7 @@ const TrainingContent = () => {
                 title="Real Estate Market Analysis Masterclass"
                 description="Learn how to analyze market trends and identify high-potential investment opportunities."
                 image="/lovable-uploads/de82d988-dda1-4526-8001-d88a34fd7090.png"
-                date="May 15, 2025"
+                date="May 15, 2024"
                 duration="1 hour 20 min"
               />
               
@@ -40,7 +40,7 @@ const TrainingContent = () => {
                 title="Property Portfolio Diversification"
                 description="Strategic approaches to building a diversified real estate investment portfolio."
                 image="/lovable-uploads/180e436c-ef89-4ab0-a2d1-e6271847b3e9.png"
-                date="June 3, 2025"
+                date="February 3, 2025"
                 duration="1 hour 45 min"
               />
               
@@ -49,7 +49,7 @@ const TrainingContent = () => {
                 title="Advanced ROI Calculation Methods"
                 description="Master the mathematics behind real estate investment returns and risk assessment."
                 image="/lovable-uploads/22de0a72-5f26-4e48-bf04-b3cb5999d519.png"
-                date="April 28, 2025"
+                date="April 28, 2024"
                 duration="3 hours total"
               />
               
@@ -58,7 +58,7 @@ const TrainingContent = () => {
                 title="Real Estate Investment Financing"
                 description="Explore various financing options and strategies for property acquisition."
                 image="/lovable-uploads/b006d931-462b-4646-97c9-0b2f3bc1d210.jpg"
-                date="July 10, 2025"
+                date="January 10, 2025"
                 duration="2 hours"
               />
               
@@ -67,7 +67,7 @@ const TrainingContent = () => {
                 title="Legal Aspects of Real Estate"
                 description="Understanding property laws, contracts, and legal compliance in Nigerian real estate."
                 image="/lovable-uploads/f4c5cb9d-d79d-419a-9577-444691d59b72.jpg"
-                date="May 22, 2025"
+                date="March 22, 2024"
                 duration="1 hour 30 min"
               />
               
@@ -90,7 +90,7 @@ const TrainingContent = () => {
                 title="Effective Property Presentation"
                 description="Learn how to showcase properties to highlight their best features and attract buyers."
                 image="/lovable-uploads/de82d988-dda1-4526-8001-d88a34fd7090.png"
-                date="May 18, 2025"
+                date="January 18, 2025"
                 duration="55 min"
               />
               
@@ -99,7 +99,7 @@ const TrainingContent = () => {
                 title="Digital Marketing for Real Estate"
                 description="Leveraging social media and online platforms to attract qualified leads."
                 image="/lovable-uploads/22de0a72-5f26-4e48-bf04-b3cb5999d519.png"
-                date="June 12, 2025"
+                date="June 12, 2024"
                 duration="1 hour 30 min"
               />
               
@@ -108,7 +108,7 @@ const TrainingContent = () => {
                 title="Prospecting Techniques"
                 description="Strategies for identifying and approaching potential clients in the Nigerian market."
                 image="/lovable-uploads/180e436c-ef89-4ab0-a2d1-e6271847b3e9.png"
-                date="May 30, 2025"
+                date="March 30, 2025"
                 duration="1 hour"
               />
               
@@ -117,7 +117,7 @@ const TrainingContent = () => {
                 title="Sales Psychology for Real Estate"
                 description="Understanding client motivations and decision-making processes in property transactions."
                 image="/lovable-uploads/f4c5cb9d-d79d-419a-9577-444691d59b72.jpg"
-                date="July 5, 2025"
+                date="November 5, 2024"
                 duration="4 hours total"
               />
               
@@ -126,7 +126,7 @@ const TrainingContent = () => {
                 title="Building Your Personal Brand"
                 description="Positioning yourself as a trusted real estate advisor in a competitive market."
                 image="/lovable-uploads/b006d931-462b-4646-97c9-0b2f3bc1d210.jpg"
-                date="June 20, 2025"
+                date="April 20, 2024"
                 duration="1 hour 15 min"
               />
               
@@ -149,7 +149,7 @@ const TrainingContent = () => {
                 title="Negotiation Masterclass"
                 description="Advanced tactics for negotiating favorable terms while maintaining positive relationships."
                 image="/lovable-uploads/180e436c-ef89-4ab0-a2d1-e6271847b3e9.png"
-                date="May 25, 2025"
+                date="March 25, 2024"
                 duration="1 hour 40 min"
               />
               
@@ -158,7 +158,7 @@ const TrainingContent = () => {
                 title="Overcoming Sales Objections"
                 description="Strategies for addressing common client concerns and hesitations in real estate."
                 image="/lovable-uploads/de82d988-dda1-4526-8001-d88a34fd7090.png"
-                date="June 18, 2025"
+                date="February 18, 2025"
                 duration="2 hours"
               />
               
@@ -167,7 +167,7 @@ const TrainingContent = () => {
                 title="Closing Techniques for High-Value Properties"
                 description="Specialized approaches for finalizing premium real estate transactions."
                 image="/lovable-uploads/22de0a72-5f26-4e48-bf04-b3cb5999d519.png"
-                date="July 8, 2025"
+                date="January 8, 2025"
                 duration="1 hour 20 min"
               />
               
@@ -176,7 +176,7 @@ const TrainingContent = () => {
                 title="Transaction Management"
                 description="Effectively guiding clients through the complete property acquisition process."
                 image="/lovable-uploads/f4c5cb9d-d79d-419a-9577-444691d59b72.jpg"
-                date="June 22, 2025"
+                date="August 22, 2024"
                 duration="3 hours total"
               />
               
@@ -185,7 +185,7 @@ const TrainingContent = () => {
                 title="Creating Urgency Without Pressure"
                 description="Ethical approaches to motivating client decision-making in property investments."
                 image="/lovable-uploads/b006d931-462b-4646-97c9-0b2f3bc1d210.jpg"
-                date="June 5, 2025"
+                date="October 5, 2024"
                 duration="50 min"
               />
               
@@ -208,7 +208,7 @@ const TrainingContent = () => {
                 title="Client Relationship Management"
                 description="Building systems to maintain strong connections with past clients."
                 image="/lovable-uploads/22de0a72-5f26-4e48-bf04-b3cb5999d519.png"
-                date="July 15, 2025"
+                date="May 15, 2025"
                 duration="1 hour 10 min"
               />
               
@@ -217,7 +217,7 @@ const TrainingContent = () => {
                 title="Referral Generation Strategies"
                 description="Proven methods for converting satisfied clients into referral sources."
                 image="/lovable-uploads/180e436c-ef89-4ab0-a2d1-e6271847b3e9.png"
-                date="August 3, 2025"
+                date="December 3, 2024"
                 duration="1 hour 30 min"
               />
               
@@ -226,7 +226,7 @@ const TrainingContent = () => {
                 title="Client Appreciation Events"
                 description="Planning and executing events that strengthen client relationships."
                 image="/lovable-uploads/de82d988-dda1-4526-8001-d88a34fd7090.png"
-                date="July 22, 2025"
+                date="January 22, 2024"
                 duration="1 hour"
               />
               
@@ -235,7 +235,7 @@ const TrainingContent = () => {
                 title="Long-term Investment Advisory"
                 description="Positioning yourself as a trusted advisor for clients' ongoing real estate needs."
                 image="/lovable-uploads/f4c5cb9d-d79d-419a-9577-444691d59b72.jpg"
-                date="August 10, 2025"
+                date="April 10, 2025"
                 duration="2 hours total"
               />
               
@@ -244,7 +244,7 @@ const TrainingContent = () => {
                 title="Adding Value Beyond the Transaction"
                 description="Services and resources that keep you relevant to past clients."
                 image="/lovable-uploads/b006d931-462b-4646-97c9-0b2f3bc1d210.jpg"
-                date="June 28, 2025"
+                date="September 28, 2024"
                 duration="45 min"
               />
               

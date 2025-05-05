@@ -85,18 +85,19 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
       </DialogTrigger>
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[80vh]`}>
-          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2 h-full'} relative`}>
+          {/* Image section with padding adjustment */}
+          <div className={`${isMobile ? 'w-full h-[38vh]' : 'w-1/2 h-full'} relative`}>
             <Carousel className="w-full h-full">
-              <CarouselContent className="h-full">
+              <CarouselContent className="h-full pt-2">
                 {propertyImages.map((img, index) => (
                   <CarouselItem key={index} className="h-full">
-                    <AspectRatio ratio={isMobile ? 16/9 : 4/3} className="h-full">
+                    <div className="h-full flex items-center">
                       <img 
                         src={img}
                         alt={`${property.title} view ${index + 1}`}
-                        className="object-contain w-full h-full"
+                        className="object-contain max-w-full max-h-full mx-auto"
                       />
-                    </AspectRatio>
+                    </div>
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -107,9 +108,22 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                 </>
               )}
             </Carousel>
+            
+            {/* Download button for desktop view - shown below the image */}
+            {!isMobile && (
+              <div className="absolute bottom-4 left-0 right-0 px-6">
+                <Button 
+                  onClick={handleDownload}
+                  className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
+                >
+                  <Download className="mr-2" />
+                  Download Subscription Form
+                </Button>
+              </div>
+            )}
           </div>
 
-          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2'} p-6`}>
+          <div className={`${isMobile ? 'w-full h-[42vh]' : 'w-1/2'} p-6`}>
             <ScrollArea className="h-full pr-4">
               <div className="space-y-6">
                 <div className="space-y-4">
@@ -146,15 +160,18 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                     </div>
                   </div>
 
-                  <div className="pt-4">
-                    <Button 
-                      onClick={handleDownload}
-                      className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
-                    >
-                      <Download className="mr-2" />
-                      Download Subscription Form
-                    </Button>
-                  </div>
+                  {/* Download button for mobile view - shown below the text content */}
+                  {isMobile && (
+                    <div className="pt-4">
+                      <Button 
+                        onClick={handleDownload}
+                        className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
+                      >
+                        <Download className="mr-2" />
+                        Download Subscription Form
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </ScrollArea>

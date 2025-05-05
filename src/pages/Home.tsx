@@ -12,6 +12,7 @@ import Testimonials from '../components/home/Testimonials';
 import Partners from '../components/home/Partners';
 import CTASection from '../components/home/CTASection';
 import { PropertyProvider } from '../contexts/PropertyContext';
+import SeminarAndTraining from '../components/home/SeminarAndTraining';
 
 const Home = () => {
   return (
@@ -57,6 +58,9 @@ const Home = () => {
       
       {/* Investment Services */}
       <InvestmentServices />
+      
+      {/* Seminar And Training */}
+      <SeminarAndTraining />
       
       {/* Why Choose Us */}
       <WhyChooseUs />
