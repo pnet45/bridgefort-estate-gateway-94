@@ -8,6 +8,7 @@ import TrainingContent from '../components/training/TrainingContent';
 import UpcomingEvents from '../components/training/UpcomingEvents';
 import TrainingCTA from '../components/training/TrainingCTA';
 import FeaturedTraining from '../components/training/FeaturedTraining';
+import { Toaster } from "@/components/ui/toaster";
 
 const Training = () => {
   return (
@@ -33,6 +34,7 @@ const Training = () => {
       <TrainingCTA />
       
       <Footer />
+      <Toaster />
     </div>
   );
 };
