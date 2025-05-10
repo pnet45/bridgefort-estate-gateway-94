@@ -11,7 +11,7 @@ const featuredProperties = [
     title: 'Hampton Vile Estate',
     location: 'Itoikin, Epe, Lagos',
     price: '₦3,500,000',
-    imageUrl: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/lovable-uploads/4f01a4aa-9e4d-4670-8ae0-1d983713856f.png',
     sqm: 500,
     propertyType: 'Land',
     phase: 1

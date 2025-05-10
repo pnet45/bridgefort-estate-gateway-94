@@ -1,8 +1,41 @@
 
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, MessageSquare } from 'lucide-react';
+import { FormEvent, useState } from 'react';
+import { useToast } from "@/components/ui/use-toast";
 
 const Footer = () => {
+  const [email, setEmail] = useState('');
+  const { toast } = useToast();
+
+  const handleNewsletterSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter your email address.",
+      });
+      return;
+    }
+
+    // Create mailto link
+    const mailtoLink = `mailto:admin@pwanbridgefort.ng?subject=Newsletter Subscription&body=Please add this email address to the newsletter: ${email}`;
+    
+    // Open email client
+    window.open(mailtoLink, '_blank');
+    
+    // Show success message
+    toast({
+      title: "Success!",
+      description: "Thank you for subscribing to our newsletter!",
+    });
+    
+    // Reset form
+    setEmail('');
+  };
+
   return (
     <footer className="bg-gray-900 text-white pt-16 pb-8">
       <div className="container-custom">
@@ -82,9 +115,11 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4 font-montserrat">Newsletter</h3>
             <p className="text-gray-300 mb-4">Subscribe to our newsletter for updates on new properties and investment opportunities.</p>
-            <form className="flex flex-col space-y-2">
+            <form className="flex flex-col space-y-2" onSubmit={handleNewsletterSubmit}>
               <input 
                 type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Your email address" 
                 className="px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-estate-blue text-white"
               />
