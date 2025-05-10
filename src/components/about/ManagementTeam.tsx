@@ -6,7 +6,7 @@ const managementTeam = [{
   name: 'Dalvin Silva, PhD',
   role: 'MD/CEO',
   bio: 'As the Managing Director and Chief Executive Officer, Silva brings visionary leadership and over 15 years of real estate expertise to the company. He oversees strategic planning, growth initiatives, and ensures the delivery of top-tier services to clients.',
-  imageUrl: 'public/lovable-uploads/c1401222-0a1b-4598-9b63-56aa7da0f3cf.png',
+  imageUrl: '/lovable-uploads/c1401222-0a1b-4598-9b63-56aa7da0f3cf.png',
   social: {
     linkedin: 'https://linkedin.com/Dalvinsilva',
     email: 'dalvin.silva@pwanbridgefort.ng',
@@ -16,7 +16,7 @@ const managementTeam = [{
   name: 'Precious Silva',
   role: 'Chief Operation Officer',
   bio: 'Network marketing guru with expertise in real estate portfolio management and optimization. Mrs Precious ensures smooth daily operations across all departments. With a strong background in operations and project management, she streamlines processes and supports organizational efficiency and innovation.',
-  imageUrl: 'public/lovable-uploads/2ee7ad56-4788-4db8-a21d-14c5a54d4eb2.png',
+  imageUrl: '/lovable-uploads/2ee7ad56-4788-4db8-a21d-14c5a54d4eb2.png',
   social: {
     linkedin: 'https://linkedin.com',
     email: 'precious.silva@pwanbridgefort.ng',
@@ -26,7 +26,7 @@ const managementTeam = [{
   name: 'Gideon Vincent',
   role: 'Head of Staff',
   bio: 'Mr Vincent leads the finance and HR departments, managing budgets, financial reporting, and team coordination. His attention to detail and integrity ensures strong fiscal management and a productive workplace.',
-  imageUrl: 'public/lovable-uploads/0cc50f44-7003-419d-929e-070762becaf1.png',
+  imageUrl: '/lovable-uploads/0cc50f44-7003-419d-929e-070762becaf1.png',
   social: {
     linkedin: 'https://linkedin.com',
     email: 'gideon.vincent@pwanbridgefort.ng',
@@ -48,11 +48,13 @@ const ManagementTeam = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {managementTeam.map((member, index) => (
             <div key={index} className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-              <img 
-                src={member.imageUrl} 
-                alt={member.name} 
-                className="w-full h-80 object-cover object-top"
-              />
+              <div className="relative h-80 md:h-64 lg:h-80">
+                <img 
+                  src={member.imageUrl} 
+                  alt={member.name} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-1">{member.name}</h3>
                 <p className="text-estate-blue font-medium mb-4">{member.role}</p>

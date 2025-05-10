@@ -65,13 +65,15 @@ const Footer = () => {
                   <a href="tel:+2348070710688" className="text-gray-300 hover:text-white">+234 807 071 0688</a>
                 </div>
               </li>
-              <li className="flex items-center">
-                <Mail size={20} className="mr-2 flex-shrink-0 text-estate-blue" />
-                <a href="mailto:info@pwanbridgefort.ng" className="text-gray-300 hover:text-white">info@pwanbridgefort.ng</a>
-              </li>
-              <li className="flex items-center">
-                <Mail size={20} className="mr-2 flex-shrink-0 text-estate-blue" />
-                <a href="mailto:sales@pwanbridgefort.ng" className="text-gray-300 hover:text-white">sales@pwanbridgefort.ng</a>
+              <li className="flex items-start">
+                <Mail size={20} className="mr-2 mt-1 flex-shrink-0 text-estate-blue" />
+                <div className="flex flex-col">
+                  <a href="mailto:info@pwanbridgefort.ng" className="text-gray-300 hover:text-white">info@pwanbridgefort.ng</a>
+                  <a href="mailto:sales@pwanbridgefort.ng" className="text-gray-300 hover:text-white">sales@pwanbridgefort.ng</a>
+                  <a href="mailto:admin@pwanbridgefort.ng" className="text-gray-300 hover:text-white">admin@pwanbridgefort.ng</a>
+                  <a href="mailto:account@pwanbridgefort.ng" className="text-gray-300 hover:text-white">account@pwanbridgefort.ng</a>
+                  <a href="mailto:training@pwanbridgefort.ng" className="text-gray-300 hover:text-white">training@pwanbridgefort.ng</a>
+                </div>
               </li>
             </ul>
           </div>

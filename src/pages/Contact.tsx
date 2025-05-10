@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -96,6 +97,15 @@ const Contact = () => {
                       </p>
                       <p className="text-gray-600">
                         <a href="mailto:sales@pwanbridgefort.ng" className="hover:text-estate-blue transition duration-200">sales@pwanbridgefort.ng</a>
+                      </p>
+                      <p className="text-gray-600">
+                        <a href="mailto:admin@pwanbridgefort.ng" className="hover:text-estate-blue transition duration-200">admin@pwanbridgefort.ng</a>
+                      </p>
+                      <p className="text-gray-600">
+                        <a href="mailto:account@pwanbridgefort.ng" className="hover:text-estate-blue transition duration-200">account@pwanbridgefort.ng</a>
+                      </p>
+                      <p className="text-gray-600">
+                        <a href="mailto:training@pwanbridgefort.ng" className="hover:text-estate-blue transition duration-200">training@pwanbridgefort.ng</a>
                       </p>
                     </div>
                   </div>

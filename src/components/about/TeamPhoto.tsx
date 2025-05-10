@@ -14,7 +14,7 @@ const TeamPhoto = () => {
         
         <div className="rounded-lg overflow-hidden shadow-xl">
           <img 
-            src="public/lovable-uploads/Homeslider.png" 
+            src="/lovable-uploads/Homeslider.png" 
             alt="PWAN Bridgefort Team" 
             className="w-full h-auto" 
           />

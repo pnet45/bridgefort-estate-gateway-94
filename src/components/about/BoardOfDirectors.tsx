@@ -5,27 +5,27 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const boardOfDirectors = [{
   name: 'Dr. Austin Onwumere',
   role: 'Founding Chairman, PWAN Group',
-  imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+  imageUrl: '/lovable-uploads/AUGUSTIN-OWUNMERE.png'
 }, {
   name: 'Dr. Jayne Onwumere',
   role: 'Global President, PWAN Group',
-  imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+  imageUrl: '/lovable-uploads/Jane-Owunmere.jpg'
 }, {
   name: 'Dr. Michael Okonkwo',
   role: 'Executive Chairman, PWAN Group',
-  imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+  imageUrl: '/lovable-uploads/5a69cf4b-e9ca-477d-bf00-2ac6fa768177.jpg'
 }, {
   name: 'Dr. Michael Akhuetie',
   role: 'Chairman, PWAN Bridgefort',
-  imageUrl: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'
+  imageUrl: '/lovable-uploads/f4c5cb9d-d79d-419a-9577-444691d59b72.jpg'
 }, {
   name: 'Dr. Dalvin Silva, PhD',
   role: 'Managing Director, PWAN Bridgefort',
-  imageUrl: './lovable-uploads/faf1fc01-6f49-4c4a-a9dc-9fd2a8bdbcff.png'
+  imageUrl: '/lovable-uploads/Dalvin-Silva-MD.png'
 }, {
   name: 'Precious Silva',
   role: 'Executive Director, PWAN Bridgefort',
-  imageUrl: './lovable-uploads/13bdaa8e-3bbb-4a80-85ad-ee6c75f45ad8.png'
+  imageUrl: '/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png'
 }];
 
 const BoardOfDirectors = () => {

@@ -38,6 +38,7 @@ const formSchema = z.object({
   inviteePhone: z.string().optional(),
   eventTitle: z.string().optional(),
   eventDate: z.string().optional(),
+  isPBO: z.string().min(1, { message: "Please select whether you are a PBO" }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -74,6 +75,7 @@ const TrainingRegistrationForm: React.FC<TrainingRegistrationFormProps> = ({
       inviteePhone: "",
       eventTitle,
       eventDate,
+      isPBO: "",
     },
   });
 
@@ -92,6 +94,7 @@ const TrainingRegistrationForm: React.FC<TrainingRegistrationFormProps> = ({
       `Local Government: ${data.localGovernment}\n` +
       `Address: ${data.address}\n` +
       `Needs Reminder Call: ${data.needReminder ? 'Yes' : 'No'}\n` +
+      `Is PBO: ${data.isPBO}\n` +
       `Event: ${data.eventTitle || "Not specified"}\n` +
       `Event Date: ${data.eventDate || "Not specified"}\n`
     );
@@ -251,6 +254,27 @@ const TrainingRegistrationForm: React.FC<TrainingRegistrationFormProps> = ({
                   <FormLabel>Address*</FormLabel>
                   <FormControl>
                     <Input placeholder="Your full address" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="isPBO"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Are you a PBO?*</FormLabel>
+                  <FormControl>
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base md:text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      {...field}
+                    >
+                      <option value="">Select Option</option>
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

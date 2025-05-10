@@ -35,14 +35,46 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
   const isMobile = useIsMobile();
   
   const handleDownload = () => {
-    // Create a sample PDF with property details
-    const pdfUrl = `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+    // Get the appropriate PDF for each property
+    const pdfUrl = getPropertyPDF(property.title);
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = `${property.title}-subscription-form.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Function to get the appropriate PDF for each property
+  const getPropertyPDF = (propertyTitle: string) => {
+    switch(propertyTitle) {
+      case "Fortress Hills Estate":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+      case "Afaoma Castle Estate":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "Akuchi Luxury Estate":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "Fountain Springs Estate":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "Greenfield County":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "Hampton Ville Estate":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "Olanma Gardens":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "Precious Gardens Estate":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "The Big League County":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "The Big League Smart City":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "The Big League Paradise":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "The Big League Heaven":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      default:
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+    }
   };
 
   const getPropertyImages = (propertyTitle: string) => {
@@ -88,7 +120,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
           {/* Image section with padding adjustment */}
           <div className={`${isMobile ? 'w-full h-[38vh]' : 'w-1/2 h-full'} relative`}>
             <Carousel className="w-full h-full">
-              <CarouselContent className="h-full pt-2">
+              <CarouselContent className="h-full pt-0">
                 {propertyImages.map((img, index) => (
                   <CarouselItem key={index} className="h-full">
                     <div className="h-full flex items-center">
