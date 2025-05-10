@@ -1,11 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getFeaturedEvent } from '../training/UpcomingEvents';
 import { Calendar, MapPin, Clock } from 'lucide-react';
+import TrainingRegistrationForm from '../training/TrainingRegistrationForm';
 
 const SeminarAndTraining = () => {
   const featuredEvent = getFeaturedEvent();
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+
+  const openRegistration = () => setIsRegistrationOpen(true);
+  const closeRegistration = () => setIsRegistrationOpen(false);
 
   return (
     <section className="py-16 bg-gray-50">
@@ -56,7 +61,10 @@ const SeminarAndTraining = () => {
               </p>
               
               <div className="flex flex-wrap gap-4">
-                <button className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-6 rounded transition duration-300">
+                <button 
+                  onClick={openRegistration}
+                  className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-6 rounded transition duration-300"
+                >
                   Register Now
                 </button>
                 <Link to="/training" className="border border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white font-medium py-2 px-6 rounded transition duration-300">
@@ -67,6 +75,14 @@ const SeminarAndTraining = () => {
           </div>
         </div>
       </div>
+
+      {/* Training Registration Form */}
+      <TrainingRegistrationForm 
+        open={isRegistrationOpen} 
+        onClose={closeRegistration} 
+        eventTitle={featuredEvent.title}
+        eventDate={featuredEvent.date}
+      />
     </section>
   );
 };

@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
+import TrainingRegistrationForm from './TrainingRegistrationForm';
 
 const upcomingEvents = [
   {
@@ -44,6 +45,16 @@ export const getUpcomingEvents = () => upcomingEvents;
 export const getFeaturedEvent = () => upcomingEvents.find(event => event.featured) || upcomingEvents[0];
 
 const UpcomingEvents = () => {
+  const [registrationEvent, setRegistrationEvent] = useState<null | {id: number; title: string; date: string}>(null);
+  
+  const openRegistration = (event: {id: number; title: string; date: string}) => {
+    setRegistrationEvent(event);
+  };
+  
+  const closeRegistration = () => {
+    setRegistrationEvent(null);
+  };
+  
   return (
     <section className="py-16 bg-gray-50">
       <div className="container-custom">
@@ -98,7 +109,10 @@ const UpcomingEvents = () => {
                   </div>
                 </div>
                 
-                <button className="w-full bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition duration-300">
+                <button 
+                  className="w-full bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition duration-300"
+                  onClick={() => openRegistration({id: event.id, title: event.title, date: event.date})}
+                >
                   Register Now
                 </button>
               </CardContent>
@@ -112,6 +126,16 @@ const UpcomingEvents = () => {
           </button>
         </div>
       </div>
+      
+      {/* Training Registration Form */}
+      {registrationEvent && (
+        <TrainingRegistrationForm 
+          open={!!registrationEvent}
+          onClose={closeRegistration}
+          eventTitle={registrationEvent.title}
+          eventDate={registrationEvent.date}
+        />
+      )}
     </section>
   );
 };
