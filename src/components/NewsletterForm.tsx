@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import * as Brevo from '@getbrevo/brevo';
 
 const subscriptionSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" })
@@ -24,57 +25,46 @@ const NewsletterForm = () => {
       const validatedInput = subscriptionSchema.parse({ email });
       setIsSubmitting(true);
       
-      // Prepare data for Brevo API
-      const payload = {
-        email: validatedInput.email,
-        listIds: [BREVO_LIST_ID],
-        updateEnabled: true
-      };
+      // Configure Brevo SDK
+      const apiInstance = new Brevo.ContactsApi();
+      apiInstance.setApiKey(Brevo.ContactsApiApiKeys.apiKey, BREVO_API_KEY);
       
-      // Call the Brevo API
-      const response = await fetch('https://api.brevo.com/v3/contacts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'api-key': BREVO_API_KEY,
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+      // Prepare contact data
+      const createContact = new Brevo.CreateContact();
+      createContact.email = validatedInput.email;
+      createContact.listIds = [BREVO_LIST_ID];
+      createContact.updateEnabled = true;
       
-      if (!response.ok) {
-        // If the contact already exists, this will happen
-        const errorData = await response.json();
-        console.log('Brevo API Error:', errorData);
+      try {
+        // Try to create a new contact
+        await apiInstance.createContact(createContact);
         
-        if (response.status === 400 && errorData.message?.includes('already exists')) {
-          // If user already exists, try to update their details
-          await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(validatedInput.email)}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'api-key': BREVO_API_KEY,
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              listIds: [BREVO_LIST_ID],
-              emailBlacklisted: false
-            })
-          });
-          
-          toast({
-            title: "Successfully subscribed!",
-            description: "You've been successfully added to our newsletter.",
-          });
-        } else {
-          // Handle other API errors
-          throw new Error(errorData.message || 'Error connecting to newsletter service');
-        }
-      } else {
         toast({
           title: "Successfully subscribed!",
           description: "Thank you for subscribing to our newsletter.",
         });
+      } catch (apiError: any) {
+        // If contact already exists, update their list subscription
+        if (apiError.status === 400 && apiError.response?.text?.includes('already exists')) {
+          try {
+            const updateContact = new Brevo.UpdateContact();
+            updateContact.listIds = [BREVO_LIST_ID];
+            updateContact.emailBlacklisted = false;
+            
+            await apiInstance.updateContact(validatedInput.email, updateContact);
+            
+            toast({
+              title: "Successfully subscribed!",
+              description: "You've been successfully added to our newsletter.",
+            });
+          } catch (updateError) {
+            console.error('Error updating contact:', updateError);
+            throw new Error('Error updating existing contact');
+          }
+        } else {
+          console.error('Brevo API Error:', apiError);
+          throw new Error(apiError.response?.text || 'Error connecting to newsletter service');
+        }
       }
       
       // Send a copy to admin@pwanbridgefort.ng as a fallback
