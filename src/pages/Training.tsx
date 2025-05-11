@@ -10,6 +10,7 @@ import TrainingCTA from '../components/training/TrainingCTA';
 import FeaturedTraining from '../components/training/FeaturedTraining';
 import { Toaster } from "@/components/ui/toaster";
 import FeaturedEventsCarousel from '../components/training/FeaturedEventsCarousel';
+import SuccessSummit from '../components/training/SuccessSummit';
 
 const Training = () => {
   return (
@@ -18,6 +19,9 @@ const Training = () => {
       
       {/* Hero Section */}
       <TrainingHero />
+
+      {/* Success Summit Section */}
+      <SuccessSummit />
 
       {/* Featured Training Events Carousel */}
       <FeaturedEventsCarousel />

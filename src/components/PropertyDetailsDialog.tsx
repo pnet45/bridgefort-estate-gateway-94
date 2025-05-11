@@ -125,11 +125,13 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                   <CarouselContent className="h-full">
                     {propertyImages.map((img, index) => (
                       <CarouselItem key={index} className="h-full flex items-center justify-center">
-                        <img 
-                          src={img}
-                          alt={`${property.title} view ${index + 1}`}
-                          className="object-contain max-h-[85%] mx-auto"
-                        />
+                        <div className="h-full w-full flex items-center justify-center">
+                          <img 
+                            src={img}
+                            alt={`${property.title} view ${index + 1}`}
+                            className="object-contain max-h-full max-w-full"
+                          />
+                        </div>
                       </CarouselItem>
                     ))}
                   </CarouselContent>
