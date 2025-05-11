@@ -117,41 +117,41 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
       </DialogTrigger>
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[80vh]`}>
-          {/* Image section with padding adjustment */}
-          <div className={`${isMobile ? 'w-full h-[38vh]' : 'w-1/2 h-full'} relative flex flex-col`}>
-            <div className="flex-grow overflow-hidden flex items-center justify-center">
-              <Carousel className="w-full h-full max-h-[80%] mt-6">
-                <CarouselContent className="h-full pt-0">
-                  {propertyImages.map((img, index) => (
-                    <CarouselItem key={index} className="h-full">
-                      <div className="h-full flex items-center justify-center">
+          {/* Image section */}
+          <div className={`${isMobile ? 'w-full h-[38vh]' : 'w-1/2 h-full'} relative`}>
+            <div className="h-full p-6 pb-0 flex flex-col">
+              <div className="flex-grow overflow-hidden">
+                <Carousel className="w-full h-full">
+                  <CarouselContent className="h-full">
+                    {propertyImages.map((img, index) => (
+                      <CarouselItem key={index} className="h-full flex items-center justify-center">
                         <img 
                           src={img}
                           alt={`${property.title} view ${index + 1}`}
-                          className="object-contain max-w-[80%] max-h-[80%] mx-auto"
+                          className="object-contain max-h-[85%] mx-auto"
                         />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                {propertyImages.length > 1 && (
-                  <>
-                    <CarouselPrevious className="absolute left-4 z-10" />
-                    <CarouselNext className="absolute right-4 z-10" />
-                  </>
-                )}
-              </Carousel>
-            </div>
-            
-            {/* Download button */}
-            <div className={`${isMobile ? 'mt-4' : 'mt-2'} px-6 pb-4`}>
-              <Button 
-                onClick={handleDownload}
-                className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
-              >
-                <Download className="mr-2" />
-                Download Subscription Form
-              </Button>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  {propertyImages.length > 1 && (
+                    <>
+                      <CarouselPrevious className="absolute left-8 z-10" />
+                      <CarouselNext className="absolute right-8 z-10" />
+                    </>
+                  )}
+                </Carousel>
+              </div>
+              
+              {/* Download button */}
+              <div className="mt-auto pt-4 pb-4">
+                <Button 
+                  onClick={handleDownload}
+                  className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
+                >
+                  <Download className="mr-2" />
+                  Download Subscription Form
+                </Button>
+              </div>
             </div>
           </div>
 

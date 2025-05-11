@@ -22,7 +22,7 @@ const Properties = () => {
           </div>
         </section>
 
-        {/* Added Subscription Guide */}
+        {/* Subscription Guide */}
         <SubscriptionGuide />
         
         <Footer />

@@ -21,7 +21,7 @@ const featuredProperties = [
     title: 'Fortress Hills Estate',
     location: 'Imota, Ikorodu, Lagos',
     price: '₦4,000,000',
-    imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/lovable-uploads/b6b178d0-ae26-4527-9569-dce064d705b9.png',
     sqm: 500,
     propertyType: 'Land',
     phase: 1
@@ -31,7 +31,7 @@ const featuredProperties = [
     title: 'Greenfield County',
     location: 'Agbara, Ogun State',
     price: '₦1,500,000',
-    imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png',
     sqm: 500,
     propertyType: 'Land',
     phase: 1
