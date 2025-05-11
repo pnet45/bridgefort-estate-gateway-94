@@ -9,6 +9,9 @@ const subscriptionSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" })
 });
 
+const BREVO_API_KEY = "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";
+const BREVO_LIST_ID = 2;
+
 const NewsletterForm = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,20 +24,67 @@ const NewsletterForm = () => {
       const validatedInput = subscriptionSchema.parse({ email });
       setIsSubmitting(true);
       
-      // In a real application, you would send this to your backend
-      // For now, we'll simulate the API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Prepare data for Brevo API
+      const payload = {
+        email: validatedInput.email,
+        listIds: [BREVO_LIST_ID],
+        updateEnabled: true
+      };
       
-      // Send email to admin
-      console.log(`Subscription from: ${validatedInput.email} sent to admin@pwanbridgefort.ng`);
-      
-      toast({
-        title: "Successfully subscribed!",
-        description: "Thank you for subscribing to our newsletter.",
+      // Call the Brevo API
+      const response = await fetch('https://api.brevo.com/v3/contacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
       });
+      
+      if (!response.ok) {
+        // If the contact already exists, this will happen
+        const errorData = await response.json();
+        console.log('Brevo API Error:', errorData);
+        
+        if (response.status === 400 && errorData.message?.includes('already exists')) {
+          // If user already exists, try to update their details
+          await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(validatedInput.email)}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'api-key': BREVO_API_KEY,
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              listIds: [BREVO_LIST_ID],
+              emailBlacklisted: false
+            })
+          });
+          
+          toast({
+            title: "Successfully subscribed!",
+            description: "You've been successfully added to our newsletter.",
+          });
+        } else {
+          // Handle other API errors
+          throw new Error(errorData.message || 'Error connecting to newsletter service');
+        }
+      } else {
+        toast({
+          title: "Successfully subscribed!",
+          description: "Thank you for subscribing to our newsletter.",
+        });
+      }
+      
+      // Send a copy to admin@pwanbridgefort.ng as a fallback
+      const mailtoLink = `mailto:admin@pwanbridgefort.ng?subject=Newsletter Subscription&body=Please add this email address to the newsletter: ${validatedInput.email}`;
+      window.open(mailtoLink, '_blank');
       
       setEmail('');
     } catch (error) {
+      console.error('Newsletter subscription error:', error);
+      
       if (error instanceof z.ZodError) {
         toast({
           title: "Validation Error",
@@ -44,7 +94,7 @@ const NewsletterForm = () => {
       } else {
         toast({
           title: "Subscription Failed",
-          description: "Please try again later.",
+          description: "There was an error subscribing to the newsletter. Please try again later.",
           variant: "destructive",
         });
       }
