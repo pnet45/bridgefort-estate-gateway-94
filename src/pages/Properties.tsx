@@ -5,6 +5,8 @@ import PropertyFilters from '../components/properties/PropertyFilters';
 import PropertyHero from '../components/properties/PropertyHero';
 import PropertyList from '../components/properties/PropertyList';
 import { PropertyProvider } from '../contexts/PropertyContext';
+import SubscriptionGuide from '../components/properties/SubscriptionGuide';
+import { Toaster } from '@/components/ui/toaster';
 
 const Properties = () => {
   return (
@@ -20,7 +22,11 @@ const Properties = () => {
           </div>
         </section>
 
+        {/* Added Subscription Guide */}
+        <SubscriptionGuide />
+        
         <Footer />
+        <Toaster />
       </div>
     </PropertyProvider>
   );

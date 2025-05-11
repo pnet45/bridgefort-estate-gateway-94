@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Clock, Users } from 'lucide-react';
 import { getUpcomingEvents } from './UpcomingEvents';
 import TrainingRegistrationForm from './TrainingRegistrationForm';
@@ -7,14 +7,13 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 
 const FeaturedEventsCarousel = () => {
   const featuredEvents = getUpcomingEvents().filter(event => event.featured);
   const [registrationEvent, setRegistrationEvent] = useState<null | {id: number; title: string; date: string}>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
   
   const openRegistration = (event: {id: number; title: string; date: string}) => {
     setRegistrationEvent(event);
@@ -23,6 +22,17 @@ const FeaturedEventsCarousel = () => {
   const closeRegistration = () => {
     setRegistrationEvent(null);
   };
+
+  // Auto-slide functionality
+  useEffect(() => {
+    if (featuredEvents.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % featuredEvents.length);
+    }, 5000); // Slides every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [featuredEvents.length]);
 
   if (featuredEvents.length === 0) return null;
 
@@ -36,17 +46,22 @@ const FeaturedEventsCarousel = () => {
           </p>
         </div>
 
-        <div className="relative px-12">
+        <div className="relative">
           <Carousel 
             opts={{
               align: "start",
-              loop: true
+              loop: true,
             }}
             className="w-full"
+            setApi={(api) => {
+              if (api) {
+                api.scrollTo(currentSlide);
+              }
+            }}
           >
             <CarouselContent>
               {featuredEvents.map((event) => (
-                <CarouselItem key={event.id} className="md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={event.id} className="basis-full">
                   <Card className="overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border-0 h-full">
                     <div className="relative">
                       <img 
@@ -98,8 +113,6 @@ const FeaturedEventsCarousel = () => {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-0 bg-white shadow-md" />
-            <CarouselNext className="right-0 bg-white shadow-md" />
           </Carousel>
         </div>
       </div>

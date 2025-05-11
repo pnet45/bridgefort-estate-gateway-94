@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Calculator } from 'lucide-react';
 
 const ROICalculator = () => {
   const [investmentAmount, setInvestmentAmount] = useState<string>('');
-  const [investmentType, setInvestmentType] = useState<string>('');
+  const [investmentType, setInvestmentType] = useState<string>('land');
   const [investmentPeriod, setInvestmentPeriod] = useState<string>('1');
   const [calculatedResults, setCalculatedResults] = useState<{
     initialInvestment: number;
@@ -18,18 +18,37 @@ const ROICalculator = () => {
     const amount = parseFloat(investmentAmount.replace(/,/g, ''));
     if (isNaN(amount)) return;
 
-    // Calculate based on 30% ROI
-    const roi = amount * 0.3;
+    // Calculate ROI based on investment type and period
+    let roiPercentage = 0;
+    
+    if (investmentType === 'land') {
+      roiPercentage = investmentPeriod === '1' ? 30 : 60;
+    } else if (investmentType === 'residential') {
+      roiPercentage = investmentPeriod === '1' ? 8 : 16;
+    } else if (investmentType === 'commercial') {
+      roiPercentage = investmentPeriod === '1' ? 15 : 30;
+    }
+    
+    const roi = (amount * roiPercentage) / 100;
     const estimatedValue = amount + roi;
+    const years = parseInt(investmentPeriod);
     
     setCalculatedResults({
       initialInvestment: amount,
       estimatedValue: estimatedValue,
       totalReturn: roi,
-      roiPercentage: 30,
-      annualRoi: 30 / parseInt(investmentPeriod)
+      roiPercentage: roiPercentage,
+      annualRoi: roiPercentage / years
     });
   };
+
+  // Update the calculation if investment type or period changes
+  useEffect(() => {
+    if (calculatedResults) {
+      handleCalculate();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [investmentType, investmentPeriod]);
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('en-NG', { 
@@ -49,11 +68,11 @@ const ROICalculator = () => {
               <div className="bg-estate-blue bg-opacity-20 p-2 rounded-full">
                 <Calculator size={24} className="text-estate-blue" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold">Investment ROI Calculator</h2>
+              <h2 className="text-2xl md:text-3xl font-bold">Land Banking Calculator</h2>
             </div>
             
             <p className="text-gray-600 mb-6">
-              Use our ROI calculator to estimate the potential returns on your real estate investment. 
+              Use our calculator to estimate the potential returns on your real estate investment. 
               This tool provides a simplified projection based on historical performance data.
             </p>
             
@@ -79,10 +98,9 @@ const ROICalculator = () => {
                     value={investmentType}
                     onChange={(e) => setInvestmentType(e.target.value)}
                   >
-                    <option value="">Select Investment Type</option>
+                    <option value="land">Land</option>
                     <option value="residential">Residential Property</option>
                     <option value="commercial">Commercial Property</option>
-                    <option value="land">Land</option>
                   </select>
                 </div>
                 
@@ -95,9 +113,7 @@ const ROICalculator = () => {
                     onChange={(e) => setInvestmentPeriod(e.target.value)}
                   >
                     <option value="1">1 Year</option>
-                    <option value="3">3 Years</option>
-                    <option value="5">5 Years</option>
-                    <option value="10">10 Years</option>
+                    <option value="2">2 Years</option>
                   </select>
                 </div>
                 
@@ -106,7 +122,7 @@ const ROICalculator = () => {
                   className="w-full btn-cta mt-2"
                   onClick={handleCalculate}
                 >
-                  Calculate ROI
+                  Calculate Profit
                 </button>
               </div>
             </div>
@@ -120,7 +136,7 @@ const ROICalculator = () => {
           <div className="w-full lg:w-1/2">
             <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg h-full">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl md:text-2xl font-semibold">ROI Projection</h3>
+                <h3 className="text-xl md:text-2xl font-semibold">Profit Projection</h3>
                 <BarChart size={24} className="text-estate-blue" />
               </div>
               
@@ -148,25 +164,25 @@ const ROICalculator = () => {
                   
                   <div className="pt-4 border-t border-gray-200">
                     <div className="flex justify-between mb-4">
-                      <span className="text-gray-600">Total Return</span>
+                      <span className="text-gray-600">Total Profit</span>
                       <span className="text-xl font-bold text-estate-blue">{formatCurrency(calculatedResults.totalReturn)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">ROI Percentage</span>
+                      <span className="text-gray-600">Profit Percentage</span>
                       <span className="text-xl font-bold text-estate-blue">{calculatedResults.roiPercentage}%</span>
                     </div>
                   </div>
                   
                   <div className="pt-4 border-t border-gray-200">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Annual ROI</span>
+                      <span className="text-gray-600">Annual Profit Rate</span>
                       <span className="text-xl font-bold text-estate-blue">{calculatedResults.annualRoi}%</span>
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-                  <p className="text-center mb-4">Enter your investment details and click "Calculate ROI" to see projection</p>
+                  <p className="text-center mb-4">Enter your investment details and click "Calculate Profit" to see projection</p>
                   <Calculator size={48} className="opacity-50" />
                 </div>
               )}

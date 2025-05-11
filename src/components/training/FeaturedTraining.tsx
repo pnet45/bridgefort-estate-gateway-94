@@ -60,8 +60,7 @@ const FeaturedTraining = () => {
             </div>
             
             <p className="text-gray-600">
-              Join industry experts for an intensive masterclass that will transform your approach to real estate 
-              investments and sales strategies. Learn practical skills to immediately implement in your business.
+              {featuredEvent.description || 'Join industry experts for an intensive masterclass that will transform your approach to real estate investments and sales strategies. Learn practical skills to immediately implement in your business.'}
             </p>
             
             <div className="flex flex-wrap gap-4">

@@ -8,10 +8,10 @@ import PropertyCard from '../PropertyCard';
 const featuredProperties = [
   {
     id: '1',
-    title: 'Hampton Vile Estate',
+    title: 'Hampton Ville Estate',
     location: 'Itoikin, Epe, Lagos',
     price: '₦3,500,000',
-    imageUrl: '/lovable-uploads/4f01a4aa-9e4d-4670-8ae0-1d983713856f.png',
+    imageUrl: '/lovable-uploads/5f92d89a-e9fc-4c84-a49d-72cb376b8510.png',
     sqm: 500,
     propertyType: 'Land',
     phase: 1

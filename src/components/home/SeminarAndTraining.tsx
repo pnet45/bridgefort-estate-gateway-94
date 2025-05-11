@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getUpcomingEvents } from '../training/UpcomingEvents';
 import { Calendar, MapPin, Clock } from 'lucide-react';
@@ -8,8 +8,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -17,12 +15,24 @@ const SeminarAndTraining = () => {
   const featuredEvents = getUpcomingEvents().filter(event => event.featured);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
   const [registrationEvent, setRegistrationEvent] = useState<null | {id: number; title: string; date: string}>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const openRegistration = (event: {id: number; title: string; date: string}) => {
     setRegistrationEvent(event);
     setIsRegistrationOpen(true);
   };
   const closeRegistration = () => setIsRegistrationOpen(false);
+
+  // Auto-slide functionality
+  useEffect(() => {
+    if (featuredEvents.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % featuredEvents.length);
+    }, 5000); // Slides every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [featuredEvents.length]);
 
   return (
     <section className="py-16 bg-gray-50">
@@ -35,17 +45,22 @@ const SeminarAndTraining = () => {
         </div>
 
         {featuredEvents.length > 1 ? (
-          <div className="relative px-12 mb-16">
+          <div className="relative mb-16">
             <Carousel 
               opts={{
                 align: "start",
-                loop: true
+                loop: true,
               }}
               className="w-full"
+              setApi={(api) => {
+                if (api) {
+                  api.scrollTo(currentSlide);
+                }
+              }}
             >
               <CarouselContent>
                 {featuredEvents.map((event) => (
-                  <CarouselItem key={event.id} className="md:basis-1/2 lg:basis-1/2">
+                  <CarouselItem key={event.id} className="basis-full">
                     <Card className="overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border-0">
                       <div className="grid grid-cols-1 md:grid-cols-2">
                         <div className="relative">
@@ -80,8 +95,7 @@ const SeminarAndTraining = () => {
                           </div>
                           
                           <p className="text-gray-600 mb-8">
-                            Join our intensive training session designed to equip real estate professionals with cutting-edge 
-                            strategies and practical knowledge for success in today's competitive market.
+                            {event.description || 'Join our intensive training session designed to equip real estate professionals with cutting-edge strategies and practical knowledge for success in today\'s competitive market.'}
                           </p>
                           
                           <div className="flex flex-wrap gap-4">
@@ -101,8 +115,6 @@ const SeminarAndTraining = () => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="left-0 bg-white shadow-md" />
-              <CarouselNext className="right-0 bg-white shadow-md" />
             </Carousel>
           </div>
         ) : featuredEvents.length === 1 ? (
@@ -140,8 +152,7 @@ const SeminarAndTraining = () => {
                 </div>
                 
                 <p className="text-gray-600 mb-8">
-                  Join our intensive training session designed to equip real estate professionals with cutting-edge 
-                  strategies and practical knowledge for success in today's competitive market.
+                  {featuredEvents[0].description || 'Join our intensive training session designed to equip real estate professionals with cutting-edge strategies and practical knowledge for success in today\'s competitive market.'}
                 </p>
                 
                 <div className="flex flex-wrap gap-4">
