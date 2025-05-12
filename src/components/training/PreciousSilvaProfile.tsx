@@ -6,7 +6,7 @@ const PreciousSilvaProfile = () => {
   return (
     <div className="flex flex-col items-center text-center space-y-4">
       <Avatar className="h-40 w-40">
-        <AvatarImage src="/lovable-uploads/Dalvin-Silva-MD.png" alt="Dr. Dalvin Silva" />
+        <AvatarImage src="/lovable-uploads/Precious.png" alt="Dr. Dalvin Silva" />
         <AvatarFallback>PS</AvatarFallback>
       </Avatar>
       <div>
