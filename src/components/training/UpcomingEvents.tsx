@@ -73,7 +73,7 @@ const UpcomingEvents = () => {
                 <img 
                   src={event.image} 
                   alt={event.title} 
-                  className="w-full h-48 object-cover" 
+                  className="w-full h-60 object-cover object-center" 
                 />
                 <div className="absolute top-3 left-3 bg-estate-blue text-white text-xs uppercase font-bold py-1 px-2 rounded">
                   {event.category}

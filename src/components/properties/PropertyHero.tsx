@@ -2,7 +2,7 @@
 const PropertyHero = () => {
   return (
     <section className="relative">
-      <div className="h-[50vh] bg-cover bg-center" style={{ backgroundImage: 'url(/lovable-uploads/45a1964f-920e-46ef-b23a-31c95fe79867.png)' }}>
+      <div className="h-[50vh] bg-cover bg-center" style={{ backgroundImage: 'url(/lovable-uploads/Homeslider.png)' }}>
         <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center">
           <div className="container-custom text-white">
             <h1 className="text-3xl md:text-5xl font-bold mb-4">Our Properties</h1>

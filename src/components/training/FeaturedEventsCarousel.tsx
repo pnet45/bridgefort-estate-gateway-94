@@ -23,13 +23,13 @@ const FeaturedEventsCarousel = () => {
     setRegistrationEvent(null);
   };
 
-  // Auto-slide functionality
+  // Auto-slide functionality - changed to 10 seconds
   useEffect(() => {
     if (featuredEvents.length <= 1) return;
     
     const interval = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % featuredEvents.length);
-    }, 5000); // Slides every 5 seconds
+    }, 10000); // Slides every 10 seconds
     
     return () => clearInterval(interval);
   }, [featuredEvents.length]);
@@ -67,7 +67,7 @@ const FeaturedEventsCarousel = () => {
                       <img 
                         src={event.image} 
                         alt={event.title} 
-                        className="w-full h-48 object-cover" 
+                        className="w-full h-72 object-cover object-center" 
                       />
                       <div className="absolute top-3 left-3 bg-estate-blue text-white text-xs uppercase font-bold py-1 px-2 rounded">
                         {event.category}

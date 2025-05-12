@@ -23,13 +23,13 @@ const SeminarAndTraining = () => {
   };
   const closeRegistration = () => setIsRegistrationOpen(false);
 
-  // Auto-slide functionality
+  // Auto-slide functionality - changed to 10 seconds
   useEffect(() => {
     if (featuredEvents.length <= 1) return;
     
     const interval = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % featuredEvents.length);
-    }, 5000); // Slides every 5 seconds
+    }, 10000); // Slides every 10 seconds
     
     return () => clearInterval(interval);
   }, [featuredEvents.length]);
@@ -67,7 +67,7 @@ const SeminarAndTraining = () => {
                           <img 
                             src={event.image} 
                             alt={event.title} 
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover object-center"
                           />
                           <div className="absolute top-4 left-4 bg-estate-red text-white text-sm uppercase font-bold py-1 px-3 rounded">
                             Coming Soon
@@ -124,7 +124,7 @@ const SeminarAndTraining = () => {
                 <img 
                   src={featuredEvents[0].image} 
                   alt={featuredEvents[0].title} 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-center"
                 />
                 <div className="absolute top-4 left-4 bg-estate-red text-white text-sm uppercase font-bold py-1 px-3 rounded">
                   Coming Soon

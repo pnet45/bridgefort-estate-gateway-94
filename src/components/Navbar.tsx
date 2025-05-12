@@ -88,14 +88,14 @@ const Navbar = () => {
             </Link>
           </nav>
 
-          {/* CTA Button */}
+          {/* CTA Button - Modified phone display and button size */}
           <div className="hidden md:flex items-center space-x-4">
-            <a href="tel:+2348030624059" className="flex items-center text-estate-blue font-medium">
+            <a href="tel:+2348030624059" className="flex items-center text-estate-blue font-medium whitespace-nowrap">
               <Phone size={18} className="mr-2" />
-              <span>+234 803 062 4059</span>
+              <span>+2348030624059</span>
             </a>
-            <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition duration-300 whitespace-nowrap text-sm">
-              Send us a Message
+            <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-1.5 px-3 rounded transition duration-300 text-sm whitespace-nowrap">
+              Send Message
             </Link>
           </div>
 
@@ -177,7 +177,7 @@ const Navbar = () => {
                 className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded text-center transition duration-300" 
                 onClick={toggleMenu}
               >
-                Send us a Message
+                Send Message
               </Link>
             </div>
           </nav>

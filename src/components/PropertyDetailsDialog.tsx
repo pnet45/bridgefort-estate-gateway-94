@@ -118,18 +118,18 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[80vh]`}>
           {/* Image section */}
-          <div className={`${isMobile ? 'w-full h-[38vh]' : 'w-1/2 h-full'} relative`}>
-            <div className="h-full p-6 pb-0 flex flex-col">
-              <div className="flex-grow overflow-hidden">
+          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2 h-full'}`}>
+            <div className="h-full p-6 flex flex-col">
+              <div className="flex-1 relative">
                 <Carousel className="w-full h-full">
                   <CarouselContent className="h-full">
                     {propertyImages.map((img, index) => (
-                      <CarouselItem key={index} className="h-full flex items-center justify-center">
+                      <CarouselItem key={index} className="h-full">
                         <div className="h-full w-full flex items-center justify-center">
                           <img 
                             src={img}
                             alt={`${property.title} view ${index + 1}`}
-                            className="object-contain max-h-full max-w-full"
+                            className="max-h-full max-w-full object-contain"
                           />
                         </div>
                       </CarouselItem>
@@ -137,15 +137,15 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                   </CarouselContent>
                   {propertyImages.length > 1 && (
                     <>
-                      <CarouselPrevious className="absolute left-8 z-10" />
-                      <CarouselNext className="absolute right-8 z-10" />
+                      <CarouselPrevious className="absolute left-2 z-10" />
+                      <CarouselNext className="absolute right-2 z-10" />
                     </>
                   )}
                 </Carousel>
               </div>
               
               {/* Download button */}
-              <div className="mt-auto pt-4 pb-4">
+              <div className="mt-4">
                 <Button 
                   onClick={handleDownload}
                   className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
@@ -157,7 +157,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
             </div>
           </div>
 
-          <div className={`${isMobile ? 'w-full h-[42vh]' : 'w-1/2'} p-6`}>
+          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2'} p-6`}>
             <ScrollArea className="h-full pr-4">
               <div className="space-y-6">
                 <div className="space-y-4">

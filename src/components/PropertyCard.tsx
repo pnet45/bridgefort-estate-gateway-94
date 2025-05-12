@@ -29,7 +29,8 @@ const PropertyCard = ({
         <img 
           src={imageUrl} 
           alt={title} 
-          className="w-full h-56 object-cover transition duration-500 group-hover:scale-105"
+          className="w-full h-64 object-cover transition duration-500 group-hover:scale-105"
+          style={{ objectPosition: "center" }}
         />
         <div className="absolute top-4 left-4">
           <span className="bg-estate-blue text-white px-3 py-1 rounded-full text-xs font-medium uppercase">
