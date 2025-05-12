@@ -7,6 +7,16 @@ import PropertyCard from '../PropertyCard';
 // Sample data for featured properties
 const featuredProperties = [
   {
+    id: 'bridgefort-county',
+    title: 'Bridgefort County - Lagoon Front Estate',
+    location: 'Ibeju-Lekki, Lagos',
+    price: '₦19,500,000',
+    imageUrl: '/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png',
+    sqm: 500,
+    propertyType: 'Land',
+    phase: 1
+  },
+  {
     id: '1',
     title: 'Hampton Ville Estate',
     location: 'Itoikin, Epe, Lagos',
@@ -22,16 +32,6 @@ const featuredProperties = [
     location: 'Imota, Ikorodu, Lagos',
     price: '₦4,000,000',
     imageUrl: '/lovable-uploads/b6b178d0-ae26-4527-9569-dce064d705b9.png',
-    sqm: 500,
-    propertyType: 'Land',
-    phase: 1
-  },
-  {
-    id: '3',
-    title: 'Greenfield County',
-    location: 'Agbara, Ogun State',
-    price: '₦1,500,000',
-    imageUrl: '/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png',
     sqm: 500,
     propertyType: 'Land',
     phase: 1

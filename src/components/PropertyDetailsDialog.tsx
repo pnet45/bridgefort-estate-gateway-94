@@ -72,6 +72,8 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
       case "The Big League Heaven":
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+      case "Bridgefort County - Lagoon Front Estate":
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
       default:
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
     }
@@ -103,6 +105,8 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
         return ["/lovable-uploads/5005f040-92cf-4bbe-b16f-6142896e97dd.png"];
       case "The Big League Heaven":
         return ["/lovable-uploads/e31d4e61-7436-4a63-a118-84656f87dd4c.png"];
+      case "Bridgefort County - Lagoon Front Estate":
+        return ["/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png"]; // Using similar image for now
       default:
         return [property.imageUrl];
     }
@@ -118,7 +122,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[80vh]`}>
           {/* Image section */}
-          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2 h-full'}`}>
+          <div className={`${isMobile ? 'w-full h-[35vh]' : 'w-1/2 h-full'}`}>
             <div className="h-full p-6 flex flex-col">
               <div className="flex-1 relative">
                 <Carousel className="w-full h-full">
@@ -143,21 +147,10 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                   )}
                 </Carousel>
               </div>
-              
-              {/* Download button */}
-              <div className="mt-4">
-                <Button 
-                  onClick={handleDownload}
-                  className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
-                >
-                  <Download className="mr-2" />
-                  Download Subscription Form
-                </Button>
-              </div>
             </div>
           </div>
 
-          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2'} p-6`}>
+          <div className={`${isMobile ? 'w-full h-[45vh]' : 'w-1/2'} p-6`}>
             <ScrollArea className="h-full pr-4">
               <div className="space-y-6">
                 <div className="space-y-4">
@@ -193,9 +186,35 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                       <p className="font-medium">Account Number: 1310762860</p>
                     </div>
                   </div>
+                  
+                  {/* Download button for mobile - placed here instead of with the image */}
+                  {isMobile && (
+                    <div className="pt-4 pb-8">
+                      <Button 
+                        onClick={handleDownload}
+                        className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
+                      >
+                        <Download className="mr-2" />
+                        Download Subscription Form
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </ScrollArea>
+            
+            {/* Download button for desktop */}
+            {!isMobile && (
+              <div className="mt-4">
+                <Button 
+                  onClick={handleDownload}
+                  className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
+                >
+                  <Download className="mr-2" />
+                  Download Subscription Form
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

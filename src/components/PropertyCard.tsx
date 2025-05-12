@@ -25,12 +25,11 @@ const PropertyCard = ({
 }: PropertyCardProps) => {
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 group">
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden h-64">
         <img 
           src={imageUrl} 
           alt={title} 
-          className="w-full h-64 object-cover transition duration-500 group-hover:scale-105"
-          style={{ objectPosition: "center" }}
+          className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
         />
         <div className="absolute top-4 left-4">
           <span className="bg-estate-blue text-white px-3 py-1 rounded-full text-xs font-medium uppercase">
