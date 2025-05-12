@@ -6,11 +6,11 @@ const PreciousSilvaProfile = () => {
   return (
     <div className="flex flex-col items-center text-center space-y-4">
       <Avatar className="h-40 w-40">
-        <AvatarImage src="/lovable-uploads/da4c02f3-3030-413e-9b44-2345acdb1fb4.png" alt="Dr. Precious Silva" />
+        <AvatarImage src="/lovable-uploads/Dalvin-Silva-MD.png" alt="Dr. Dalvin Silva" />
         <AvatarFallback>PS</AvatarFallback>
       </Avatar>
       <div>
-        <h3 className="text-xl font-bold">Dr. Precious Silva</h3>
+        <h3 className="text-xl font-bold">Dr. Dalvin Silva</h3>
         <p className="text-gray-600">MD/CEO, PWAN Bridgefort</p>
       </div>
       <p className="text-gray-700 max-w-sm">
