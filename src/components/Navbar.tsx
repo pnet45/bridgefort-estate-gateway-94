@@ -86,17 +86,22 @@ const Navbar = () => {
             >
               Contact
             </Link>
+            <Link 
+              to="/blog" 
+              className={`text-gray-700 hover:text-estate-blue font-medium transition duration-200 py-2 px-3 rounded ${
+                isActive('/blog') ? 'bg-gray-100 text-estate-blue' : ''
+              }`}
+            >
+              Blog
+            </Link>
           </nav>
 
-          {/* CTA Button - Modified phone display and button size */}
+          {/* CTA Button - Modified phone display */}
           <div className="hidden md:flex items-center space-x-4">
             <a href="tel:+2348030624059" className="flex items-center text-estate-blue font-medium whitespace-nowrap">
               <Phone size={18} className="mr-2" />
               <span>+2348030624059</span>
             </a>
-            <Link to="/contact" className="bg-estate-red hover:bg-red-700 text-white font-medium py-1.5 px-3 rounded transition duration-300 text-sm whitespace-nowrap">
-              Send Message
-            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -173,11 +178,13 @@ const Navbar = () => {
                 Contact
               </Link>
               <Link 
-                to="/contact" 
-                className="bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded text-center transition duration-300" 
+                to="/blog" 
+                className={`text-gray-700 hover:text-estate-blue font-medium py-2 px-3 rounded ${
+                  isActive('/blog') ? 'bg-gray-100 text-estate-blue' : ''
+                }`}
                 onClick={toggleMenu}
               >
-                Send Message
+                Blog
               </Link>
             </div>
           </nav>

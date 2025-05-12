@@ -12,6 +12,7 @@ import Training from "./pages/Training";
 import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
+import FloatingMessageButton from "./components/FloatingMessageButton";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as React from "react";
 
@@ -23,7 +24,8 @@ const App = () => (
     <Toaster />
     <Sonner />
     <BrowserRouter>
-      <ScrollToTop /> {/* Add ScrollToTop component */}
+      <ScrollToTop />
+      <FloatingMessageButton />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
