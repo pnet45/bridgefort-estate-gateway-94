@@ -16,7 +16,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="bg-white-800 bg-opacity-90 shadow-sm sticky top-0 z-40 backdrop-blur-md transition-all duration-300 ease-in-out">
+    <header className="bg-white-800 bg-opacity-90 shadow-sm sticky top-0 z-40">
       <div className="container-custom py-4">
         <div className="flex justify-between items-center">
           {/* Logo - Increased size */}
@@ -32,7 +32,7 @@ const Navbar = () => {
           <nav className="hidden md:flex items-center">
             <Link 
               to="/" 
-              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+              className={`text-estate-blue hover:text-white hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
                 isActive('/') ? 'bg-estate-blue text-white' : ''
               }`}
             >
