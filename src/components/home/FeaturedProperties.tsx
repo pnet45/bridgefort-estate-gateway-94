@@ -7,11 +7,11 @@ import PropertyCard from '../PropertyCard';
 // Sample data for featured properties
 const featuredProperties = [
   {
-    id: 'bridgefort-county',
-    title: 'Bridgefort County - Lagoon Front Estate',
+    id: '3',
+    title: 'Precious Garden Estate',
     location: 'Ibeju-Lekki, Lagos',
-    price: '₦19,500,000',
-    imageUrl: '/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png',
+    price: '₦2,500,000',
+    imageUrl: '/lovable-uploads/Precious Gardens Estate.jpg',
     sqm: 500,
     propertyType: 'Land',
     phase: 1

@@ -5,7 +5,7 @@ import TestimonialCard from '../TestimonialCard';
 // Updated testimonials with Nigerian images
 const testimonials = [
   {
-    name: 'Adebayo Johnson',
+    name: 'Solomon Innocent',
     role: 'Property Investor',
     testimonial: 'Working with PWAN Bridgefort has been an excellent experience. They helped me find the perfect investment property with great ROI potential.',
     rating: 5,
@@ -19,7 +19,7 @@ const testimonials = [
     imageUrl: '/lovable-uploads/5efde743-d4f1-44b6-93bb-a430a25f3692.png'
   },
   {
-    name: 'Mohammed Ibrahim',
+    name: 'Jacob Oluwaseun',
     role: 'PWAN Business Owner',
     testimonial: 'I purchased a commercial property through PWAN Bridgefort and the return on investment has been incredible. Their market knowledge is outstanding.',
     rating: 4,

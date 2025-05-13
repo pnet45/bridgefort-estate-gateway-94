@@ -61,7 +61,7 @@ const SeminarAndTraining = () => {
               <CarouselContent>
                 {featuredEvents.map((event) => (
                   <CarouselItem key={event.id} className="basis-full">
-                    <Card className="overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border-0">
+                    <Card className="overflow-hidden shadow-lg hover:shadow-xl transition duration-500 border-0">
                       <div className="grid grid-cols-1 md:grid-cols-2">
                         <div className="relative">
                           <img 
