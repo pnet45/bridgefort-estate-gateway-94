@@ -6,7 +6,7 @@ const managementTeam = [{
   name: 'Dalvin Silva, PhD',
   role: 'MD/CEO',
   bio: 'As the Managing Director and Chief Executive Officer, Silva brings visionary leadership and over 15 years of real estate expertise to the company. He oversees strategic planning, growth initiatives, and ensures the delivery of top-tier services to clients.',
-  imageUrl: '/lovable-uploads/8424b7bb-96f2-4bfe-8791-e0b7110bbbe5.png',
+  imageUrl: '/lovable-uploads/Dalvin Silva PhD.jpg',
   social: {
     linkedin: 'https://linkedin.com/Dalvinsilva',
     email: 'dalvin.silva@pwanbridgefort.ng',

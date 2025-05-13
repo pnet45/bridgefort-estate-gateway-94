@@ -21,7 +21,7 @@ const boardOfDirectors = [{
 }, {
   name: 'Dr. Dalvin Silva, PhD',
   role: 'Managing Director, PWAN Bridgefort',
-  imageUrl: '/lovable-uploads/8424b7bb-96f2-4bfe-8791-e0b7110bbbe5.png'
+  imageUrl: '/lovable-uploads/Dalvin Silva PhD.jpg'
 }, {
   name: 'Precious Silva',
   role: 'Executive Director, PWAN Bridgefort',
