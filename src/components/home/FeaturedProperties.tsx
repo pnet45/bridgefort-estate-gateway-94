@@ -10,7 +10,7 @@ const featuredProperties = [
     id: '3',
     title: 'Precious Garden Estate',
     location: 'Ibeju-Lekki, Lagos',
-    price: '₦2,500,000',
+    price: '₦1,500,000',
     imageUrl: '/lovable-uploads/Precious Gardens Estate.jpg',
     sqm: 500,
     propertyType: 'Land',
