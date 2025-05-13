@@ -9,7 +9,7 @@ const partnerLogos = [
   },
   {
     name: 'Buy2Sell',
-    imageUrl: 'public/lovable-uploads/BuytoSell.jpg'
+    imageUrl: '/lovable-uploads/BuytoSell.jpg'
   },
   {
     name: 'Folkland PDC',
