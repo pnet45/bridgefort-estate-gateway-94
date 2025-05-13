@@ -13,7 +13,7 @@ import Partners from '../components/home/Partners';
 import CTASection from '../components/home/CTASection';
 import { PropertyProvider } from '../contexts/PropertyContext';
 import SeminarAndTraining from '../components/home/SeminarAndTraining';
-import HomeCarousel from '../components/HomeCarousel';
+import HomeHeroImage from '@/components/HomeHeroImage';
 
 const Home = () => {
   return (
@@ -21,7 +21,7 @@ const Home = () => {
       <Navbar />
       
       {/* Hero Section with Carousel */}
-      <HomeCarousel />
+      <HomeHeroImage />
       
       {/* Property Search */}
       <PropertyProvider>
