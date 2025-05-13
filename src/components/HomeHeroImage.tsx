@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+//import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { useEffect, useState } from "react";
 
 // Define carousel items with images and captions
