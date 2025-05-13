@@ -16,7 +16,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="bg-gray-800 bg-opacity-90 shadow-sm sticky top-0 z-50">
+    <header className="bg-white-800 bg-opacity-90 shadow-sm sticky top-0 z-40 backdrop-blur-md transition-all duration-300 ease-in-out">
       <div className="container-custom py-4">
         <div className="flex justify-between items-center">
           {/* Logo - Increased size */}
