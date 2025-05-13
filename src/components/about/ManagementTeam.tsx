@@ -26,7 +26,7 @@ const managementTeam = [{
   name: 'Gideon Vincent',
   role: 'Head of Staff',
   bio: 'Mr Vincent leads the finance and HR departments, managing budgets, financial reporting, and team coordination. His attention to detail and integrity ensures strong fiscal management and a productive workplace.',
-  imageUrl: '/lovable-uploads/Vincent.png',
+  imageUrl: '/lovable-uploads/GV.png',
   social: {
     linkedin: 'https://linkedin.com',
     email: 'gideon.vincent@pwanbridgefort.ng',
