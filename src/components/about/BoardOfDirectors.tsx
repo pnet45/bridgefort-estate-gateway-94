@@ -9,7 +9,7 @@ const boardOfDirectors = [{
 }, {
   name: 'Dr. Jayne Onwumere',
   role: 'Global President, PWAN Group',
-  imageUrl: '/lovable-uploads/Jane-Owunmere.jpg'
+  imageUrl: '/lovable-uploads/JaneOwunmere.png'
 }, {
   name: 'Dr. Michael Okonkwo',
   role: 'Executive Chairman, PWAN Group',
