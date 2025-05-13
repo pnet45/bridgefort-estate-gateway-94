@@ -32,7 +32,7 @@ const Navbar = () => {
           <nav className="hidden md:flex items-center">
             <Link 
               to="/" 
-              className={`text-estate-blue hover:text-white hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+              className={`text-estate-blue hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
                 isActive('/') ? 'bg-estate-blue text-white' : ''
               }`}
             >
@@ -40,7 +40,7 @@ const Navbar = () => {
             </Link>
             <Link 
               to="/properties" 
-              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+              className={`text-estate-blue hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
                 isActive('/properties') ? 'bg-estate-blue text-white' : ''
               }`}
             >
@@ -48,7 +48,7 @@ const Navbar = () => {
             </Link>
             <Link 
               to="/services" 
-              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+              className={`text-estate-blue hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
                 isActive('/services') ? 'bg-estate-blue text-white' : ''
               }`}
             >
@@ -56,7 +56,7 @@ const Navbar = () => {
             </Link>
             <Link 
               to="/buy2sell" 
-              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+              className={`text-estate-blue hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
                 isActive('/buy2sell') ? 'bg-estate-blue text-white' : ''
               }`}
             >
@@ -64,7 +64,7 @@ const Navbar = () => {
             </Link>
             <Link 
               to="/training" 
-              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+              className={`text-estate-blue hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
                 isActive('/training') ? 'bg-estate-blue text-white' : ''
               }`}
             >
@@ -72,7 +72,7 @@ const Navbar = () => {
             </Link>
             <Link 
               to="/about" 
-              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+              className={`text-estate-blue hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
                 isActive('/about') ? 'bg-estate-blue text-white' : ''
               }`}
             >
@@ -80,7 +80,7 @@ const Navbar = () => {
             </Link>
             <Link 
               to="/contact" 
-              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+              className={`text-estate-blue hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
                 isActive('/contact') ? 'bg-estate-blue text-white' : ''
               }`}
             >
@@ -88,7 +88,7 @@ const Navbar = () => {
             </Link>
             <Link 
               to="/blog" 
-              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+              className={`text-estate-blue hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
                 isActive('/blog') ? 'bg-estate-blue text-white' : ''
               }`}
             >
