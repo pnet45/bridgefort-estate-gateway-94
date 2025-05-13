@@ -1,27 +1,27 @@
 
 import * as React from "react";
-//import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { useEffect, useState } from "react";
 
 // Define carousel items with images and captions
 const carouselItems = [
   {
-    imageUrl: './lovable-uploads/efac3aed-0d16-4fb4-87b9-20503053b989.png',
+    imageUrl: '/lovable-uploads/efac3aed-0d16-4fb4-87b9-20503053b989.png',
     title: "PWAN Bridgefort. ...Rebuilding the Future!",
     subtitle: "At PWAN Bridgefort, we're not just selling properties—we're building legacies."
   },
   {
-    imageUrl: 'public/lovable-uploads/badb1224-b4a4-45c3-a6d8-65d8c475945d.png',
+    imageUrl: '/lovable-uploads/badb1224-b4a4-45c3-a6d8-65d8c475945d.png',
     title: "Your Gateway to Premium Real Estate Investments",
     subtitle: "Discover exceptional properties and secure high-yield investment opportunities with PWAN Bridgefort."
   },
   {
-    imageUrl: 'public/lovable-uploads/878adc14-a726-4610-bcb7-4fe7a8830b85.png',
+    imageUrl: '/lovable-uploads/878adc14-a726-4610-bcb7-4fe7a8830b85.png',
     title: "PWAN Bridgefort. ...Rebuilding the future!",
     subtitle: "At PWAN Bridgefort, we're not just selling properties—we're building legacies."
   },
   {
-    imageUrl: 'public/lovable-uploads/88175f75-2598-4e44-8656-9fe02fd3656c.png',
+    imageUrl: '/lovable-uploads/88175f75-2598-4e44-8656-9fe02fd3656c.png',
     title: "Your Gateway to Premium Real Estate Investments",
     subtitle: "Discover exceptional properties and secure high-yield investment opportunities with PWAN Bridgefort."
   }
