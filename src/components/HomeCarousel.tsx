@@ -7,10 +7,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 // Define image urls
 const carouselImages = [
-  'public/lovable-uploads/Homeslider.png',
-  'public/lovable-uploads/Homeslider2.png',
-  'public/lovable-uploads/Homeslider3.png',
-  'public/lovable-uploads/Homeslider4.png'
+  '/lovable-uploads/Homeslider.png',
+  '/lovable-uploads/Homeslider2.png',
+  '/lovable-uploads/Homeslider3.png',
+  '/lovable-uploads/Homeslider4.png'
 ];
 
 // Define captions for carousel items
