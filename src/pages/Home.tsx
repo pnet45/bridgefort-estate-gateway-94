@@ -20,7 +20,7 @@ const Home = () => {
     <div className="flex flex-col min-h-screen">
       <Navbar />
       
-      {/* Hero Section with Carousel */}
+      {/* Hero Section with Static Image */}
       <HomeHeroImage />
       
       {/* Property Search */}
