@@ -17,7 +17,7 @@ const boardOfDirectors = [{
 }, {
   name: 'Dr. Michael Akhuetie',
   role: 'Chairman, PWAN Bridgefort',
-  imageUrl: '/lovable-uploads/DR MICHAEL AKHUETIE.jpg'
+  imageUrl: '/lovable-uploads/DR-MICHAEL-AKHUETIE.png'
 }, {
   name: 'Dr. Dalvin Silva, PhD',
   role: 'Managing Director, PWAN Bridgefort',
