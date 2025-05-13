@@ -60,7 +60,7 @@ const Navbar = () => {
                 isActive('/buy2sell') ? 'bg-gray-100 text-estate-blue' : ''
               }`}
             >
-              Buy2Sell
+              Buy to Sell
             </Link>
             <Link 
               to="/training" 
@@ -148,7 +148,7 @@ const Navbar = () => {
                 }`}
                 onClick={toggleMenu}
               >
-                Buy2Sell
+                Buy to Sell
               </Link>
               <Link 
                 to="/training" 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Download, MapPin } from 'lucide-react';
 import { Button } from './ui/button';
@@ -96,7 +95,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
       case "Olanma Gardens":
         return ["/lovable-uploads/7da9692b-7a71-4551-9b99-db869f5f0ff7.png"];
       case "Precious Gardens Estate":
-        return ["/lovable-uploads/d9abd176-c665-44e6-a85f-30c671c4a2db.png"];
+        return ["/lovable-uploads/5c033a2a-1e10-49b7-b7de-5b56e384b9d5.png"];
       case "The Big League County":
         return ["/lovable-uploads/6b46b80b-cf01-4da0-895e-6cdc9516a914.png"];
       case "The Big League Smart City":

@@ -36,7 +36,7 @@ const OurEstates = () => {
           
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center">
             <div className="h-64 mb-4 overflow-hidden rounded-md">
-              <img src="/lovable-uploads/ec42e076-d3b6-44ec-a586-11d4f85544f2.png" alt="Land Banking" className="w-full h-full object-cover" />
+              <img src="/lovable-uploads/cf9e3324-db00-45fd-9e5f-bc61c455d251.png" alt="Land Banking" className="w-full h-full object-cover" />
             </div>
             <h3 className="text-xl font-bold mb-2 text-estate-blue">Land Banking Options</h3>
             <p className="text-gray-700">

@@ -9,9 +9,9 @@ const featuredProperties = [
   {
     id: '3',
     title: 'Precious Garden Estate',
-    location: 'Ibeju-Lekki, Lagos',
+    location: 'Ode-Omi Via Ibeju-Lekki, Lagos',
     price: '₦1,500,000',
-    imageUrl: '/lovable-uploads/Precious Gardens Estate.jpg',
+    imageUrl: '/lovable-uploads/5c033a2a-1e10-49b7-b7de-5b56e384b9d5.png',
     sqm: 500,
     propertyType: 'Land',
     phase: 1

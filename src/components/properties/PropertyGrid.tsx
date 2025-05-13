@@ -38,7 +38,19 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
     });
   }
 
-  if (enhancedProperties.length === 0) {
+  // Update Precious Garden Estate image if it exists
+  const updatedProperties = enhancedProperties.map(property => {
+    if (property.title === "Precious Garden Estate") {
+      return {
+        ...property,
+        imageUrl: "/lovable-uploads/5c033a2a-1e10-49b7-b7de-5b56e384b9d5.png",
+        location: "Ode-Omi Via Ibeju-Lekki, Lagos"
+      };
+    }
+    return property;
+  });
+
+  if (updatedProperties.length === 0) {
     return (
       <div className="col-span-full text-center py-12">
         <p className="text-xl text-gray-500">No properties match your search criteria.</p>
@@ -49,7 +61,7 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {enhancedProperties.map(property => {
+      {updatedProperties.map(property => {
         const { scheme, phase, ...rest } = property;
         return (
           <PropertyCard 

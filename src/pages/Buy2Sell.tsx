@@ -22,13 +22,16 @@ const Buy2Sell = () => {
     setIsLoaded(true);
   }, []);
 
+  // Updated title to match "Buy to Sell"
+  document.title = "Buy to Sell | PWAN Bridgefort";
+
   const backgroundImage = 'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80';
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      {/* Hero Section */}
+      {/* Hero Section with updated title */}
       <Buy2SellHero backgroundImage={backgroundImage} />
 
       {/* Intro Section with Animation */}
