@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const boardOfDirectors = [{
   name: 'Dr. Austin Onwumere',
   role: 'Founding Chairman, PWAN Group',
-  imageUrl: '/lovable-uploads/AUGUSTIN-OWUNMERE.png'
+  imageUrl: '/lovable-uploads/AUGUSTIN-OWUNMERE-DR.png'
 }, {
   name: 'Dr. Jayne Onwumere',
   role: 'Global President, PWAN Group',
@@ -17,7 +17,7 @@ const boardOfDirectors = [{
 }, {
   name: 'Dr. Michael Akhuetie',
   role: 'Chairman, PWAN Bridgefort',
-  imageUrl: '/lovable-uploads/c17908c7-c813-490d-b6c2-a1423384caa6.png'
+  imageUrl: '/lovable-uploads/DR MICHAEL AKHUETIE.jpg'
 }, {
   name: 'Dr. Dalvin Silva, PhD',
   role: 'Managing Director, PWAN Bridgefort',
@@ -25,7 +25,7 @@ const boardOfDirectors = [{
 }, {
   name: 'Precious Silva',
   role: 'Executive Director, PWAN Bridgefort',
-  imageUrl: '/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png'
+  imageUrl: '/lovable-uploads/Precious.png'
 }];
 
 const BoardOfDirectors = () => {

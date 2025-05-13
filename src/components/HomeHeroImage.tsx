@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 const carouselItems = [
   {
     imageUrl: './lovable-uploads/efac3aed-0d16-4fb4-87b9-20503053b989.png',
-    title: "PWAN Bridgefort. ...Rebuilding the future!",
+    title: "PWAN Bridgefort. ...Rebuilding the Future!",
     subtitle: "At PWAN Bridgefort, we're not just selling properties—we're building legacies."
   },
   {

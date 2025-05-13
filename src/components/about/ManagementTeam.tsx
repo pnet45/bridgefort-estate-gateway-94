@@ -16,7 +16,7 @@ const managementTeam = [{
   name: 'Precious Silva',
   role: 'Chief Operation Officer',
   bio: 'Network marketing guru with expertise in real estate portfolio management and optimization. Mrs Precious ensures smooth daily operations across all departments. With a strong background in operations and project management, she streamlines processes and supports organizational efficiency and innovation.',
-  imageUrl: '/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png',
+  imageUrl: '/lovable-uploads/Precious.png',
   social: {
     linkedin: 'https://linkedin.com',
     email: 'precious.silva@pwanbridgefort.ng',
@@ -26,7 +26,7 @@ const managementTeam = [{
   name: 'Gideon Vincent',
   role: 'Head of Staff',
   bio: 'Mr Vincent leads the finance and HR departments, managing budgets, financial reporting, and team coordination. His attention to detail and integrity ensures strong fiscal management and a productive workplace.',
-  imageUrl: '/lovable-uploads/7da9692b-7a71-4551-9b99-db869f5f0ff7.png',
+  imageUrl: '/lovable-uploads/Vincent.png',
   social: {
     linkedin: 'https://linkedin.com',
     email: 'gideon.vincent@pwanbridgefort.ng',
