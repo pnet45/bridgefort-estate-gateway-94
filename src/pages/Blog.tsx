@@ -9,6 +9,7 @@ import BlogCategories from '../components/blog/BlogCategories';
 import BlogNewsletter from '../components/blog/BlogNewsletter';
 import MondayMotivation from '../components/blog/MondayMotivation';
 import RealEstateContent from '../components/blog/RealEstateContent';
+import YouTubeSection from '../components/blog/YouTubeSection';
 
 const Blog = () => {
   return (
@@ -32,6 +33,8 @@ const Blog = () => {
       </section>
       
       <RealEstateContent />
+      
+      <YouTubeSection />
       
       <BlogNewsletter />
       

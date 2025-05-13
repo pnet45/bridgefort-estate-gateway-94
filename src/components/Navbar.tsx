@@ -16,7 +16,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-gray-800 bg-opacity-90 shadow-sm sticky top-0 z-50">
       <div className="container-custom py-4">
         <div className="flex justify-between items-center">
           {/* Logo - Increased size */}
@@ -28,68 +28,68 @@ const Navbar = () => {
             />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          {/* Desktop Navigation - Reduced spacing and inline alignment */}
+          <nav className="hidden md:flex items-center">
             <Link 
               to="/" 
-              className={`text-gray-700 hover:text-estate-blue font-medium transition duration-200 py-2 px-3 rounded ${
-                isActive('/') ? 'bg-gray-100 text-estate-blue' : ''
+              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+                isActive('/') ? 'bg-estate-blue text-white' : ''
               }`}
             >
               Home
             </Link>
             <Link 
               to="/properties" 
-              className={`text-gray-700 hover:text-estate-blue font-medium transition duration-200 py-2 px-3 rounded ${
-                isActive('/properties') ? 'bg-gray-100 text-estate-blue' : ''
+              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+                isActive('/properties') ? 'bg-estate-blue text-white' : ''
               }`}
             >
               Properties
             </Link>
             <Link 
               to="/services" 
-              className={`text-gray-700 hover:text-estate-blue font-medium transition duration-200 py-2 px-3 rounded ${
-                isActive('/services') ? 'bg-gray-100 text-estate-blue' : ''
+              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+                isActive('/services') ? 'bg-estate-blue text-white' : ''
               }`}
             >
               Services
             </Link>
             <Link 
               to="/buy2sell" 
-              className={`text-gray-700 hover:text-estate-blue font-medium transition duration-200 py-2 px-3 rounded ${
-                isActive('/buy2sell') ? 'bg-gray-100 text-estate-blue' : ''
+              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+                isActive('/buy2sell') ? 'bg-estate-blue text-white' : ''
               }`}
             >
               Buy to Sell
             </Link>
             <Link 
               to="/training" 
-              className={`text-gray-700 hover:text-estate-blue font-medium transition duration-200 py-2 px-3 rounded ${
-                isActive('/training') ? 'bg-gray-100 text-estate-blue' : ''
+              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+                isActive('/training') ? 'bg-estate-blue text-white' : ''
               }`}
             >
               Training
             </Link>
             <Link 
               to="/about" 
-              className={`text-gray-700 hover:text-estate-blue font-medium transition duration-200 py-2 px-3 rounded ${
-                isActive('/about') ? 'bg-gray-100 text-estate-blue' : ''
+              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+                isActive('/about') ? 'bg-estate-blue text-white' : ''
               }`}
             >
               About Us
             </Link>
             <Link 
               to="/contact" 
-              className={`text-gray-700 hover:text-estate-blue font-medium transition duration-200 py-2 px-3 rounded ${
-                isActive('/contact') ? 'bg-gray-100 text-estate-blue' : ''
+              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+                isActive('/contact') ? 'bg-estate-blue text-white' : ''
               }`}
             >
               Contact
             </Link>
             <Link 
               to="/blog" 
-              className={`text-gray-700 hover:text-estate-blue font-medium transition duration-200 py-2 px-3 rounded ${
-                isActive('/blog') ? 'bg-gray-100 text-estate-blue' : ''
+              className={`text-white hover:text-estate-blue hover:scale-105 font-medium transition duration-200 py-2 px-2 rounded ${
+                isActive('/blog') ? 'bg-estate-blue text-white' : ''
               }`}
             >
               Blog
@@ -97,15 +97,15 @@ const Navbar = () => {
           </nav>
 
           {/* CTA Button - Modified phone display */}
-          <div className="hidden md:flex items-center space-x-4">
-            <a href="tel:+2348030624059" className="flex items-center text-estate-blue font-medium whitespace-nowrap">
+          <div className="hidden md:flex items-center ml-4">
+            <a href="tel:+2348030624059" className="flex items-center text-white font-medium whitespace-nowrap hover:text-estate-blue transition duration-200">
               <Phone size={18} className="mr-2" />
               <span>+2348030624059</span>
             </a>
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden text-gray-700" onClick={toggleMenu}>
+          <button className="md:hidden text-white" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
@@ -116,8 +116,8 @@ const Navbar = () => {
             <div className="flex flex-col space-y-4">
               <Link 
                 to="/" 
-                className={`text-gray-700 hover:text-estate-blue font-medium py-2 px-3 rounded ${
-                  isActive('/') ? 'bg-gray-100 text-estate-blue' : ''
+                className={`text-white hover:text-estate-blue font-medium py-2 px-3 rounded ${
+                  isActive('/') ? 'bg-estate-blue text-white' : ''
                 }`}
                 onClick={toggleMenu}
               >
@@ -125,8 +125,8 @@ const Navbar = () => {
               </Link>
               <Link 
                 to="/properties" 
-                className={`text-gray-700 hover:text-estate-blue font-medium py-2 px-3 rounded ${
-                  isActive('/properties') ? 'bg-gray-100 text-estate-blue' : ''
+                className={`text-white hover:text-estate-blue font-medium py-2 px-3 rounded ${
+                  isActive('/properties') ? 'bg-estate-blue text-white' : ''
                 }`}
                 onClick={toggleMenu}
               >
@@ -134,8 +134,8 @@ const Navbar = () => {
               </Link>
               <Link 
                 to="/services" 
-                className={`text-gray-700 hover:text-estate-blue font-medium py-2 px-3 rounded ${
-                  isActive('/services') ? 'bg-gray-100 text-estate-blue' : ''
+                className={`text-white hover:text-estate-blue font-medium py-2 px-3 rounded ${
+                  isActive('/services') ? 'bg-estate-blue text-white' : ''
                 }`}
                 onClick={toggleMenu}
               >
@@ -143,8 +143,8 @@ const Navbar = () => {
               </Link>
               <Link 
                 to="/buy2sell" 
-                className={`text-gray-700 hover:text-estate-blue font-medium py-2 px-3 rounded ${
-                  isActive('/buy2sell') ? 'bg-gray-100 text-estate-blue' : ''
+                className={`text-white hover:text-estate-blue font-medium py-2 px-3 rounded ${
+                  isActive('/buy2sell') ? 'bg-estate-blue text-white' : ''
                 }`}
                 onClick={toggleMenu}
               >
@@ -152,8 +152,8 @@ const Navbar = () => {
               </Link>
               <Link 
                 to="/training" 
-                className={`text-gray-700 hover:text-estate-blue font-medium py-2 px-3 rounded ${
-                  isActive('/training') ? 'bg-gray-100 text-estate-blue' : ''
+                className={`text-white hover:text-estate-blue font-medium py-2 px-3 rounded ${
+                  isActive('/training') ? 'bg-estate-blue text-white' : ''
                 }`}
                 onClick={toggleMenu}
               >
@@ -161,8 +161,8 @@ const Navbar = () => {
               </Link>
               <Link 
                 to="/about" 
-                className={`text-gray-700 hover:text-estate-blue font-medium py-2 px-3 rounded ${
-                  isActive('/about') ? 'bg-gray-100 text-estate-blue' : ''
+                className={`text-white hover:text-estate-blue font-medium py-2 px-3 rounded ${
+                  isActive('/about') ? 'bg-estate-blue text-white' : ''
                 }`}
                 onClick={toggleMenu}
               >
@@ -170,8 +170,8 @@ const Navbar = () => {
               </Link>
               <Link 
                 to="/contact" 
-                className={`text-gray-700 hover:text-estate-blue font-medium py-2 px-3 rounded ${
-                  isActive('/contact') ? 'bg-gray-100 text-estate-blue' : ''
+                className={`text-white hover:text-estate-blue font-medium py-2 px-3 rounded ${
+                  isActive('/contact') ? 'bg-estate-blue text-white' : ''
                 }`}
                 onClick={toggleMenu}
               >
@@ -179,8 +179,8 @@ const Navbar = () => {
               </Link>
               <Link 
                 to="/blog" 
-                className={`text-gray-700 hover:text-estate-blue font-medium py-2 px-3 rounded ${
-                  isActive('/blog') ? 'bg-gray-100 text-estate-blue' : ''
+                className={`text-white hover:text-estate-blue font-medium py-2 px-3 rounded ${
+                  isActive('/blog') ? 'bg-estate-blue text-white' : ''
                 }`}
                 onClick={toggleMenu}
               >

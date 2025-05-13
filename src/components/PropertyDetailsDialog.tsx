@@ -62,6 +62,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
       case "Olanma Gardens":
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
       case "Precious Gardens Estate":
+      case "Precious Garden Estate":
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
       case "The Big League County":
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
@@ -120,9 +121,9 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
         {children}
       </DialogTrigger>
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
-        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[80vh]`}>
-          {/* Image section */}
-          <div className={`${isMobile ? 'w-full h-[35vh]' : 'w-1/2 h-full'}`}>
+        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[85vh]`}>
+          {/* Image section - Increased height */}
+          <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2 h-full'}`}>
             <div className="h-full p-6 flex flex-col">
               <div className="flex-1 relative">
                 <Carousel className="w-full h-full">
@@ -150,8 +151,8 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
             </div>
           </div>
 
-          <div className={`${isMobile ? 'w-full h-[45vh]' : 'w-1/2'} p-6`}>
-            <ScrollArea className="h-full pr-4">
+          <div className={`${isMobile ? 'w-full h-[45vh]' : 'w-1/2 h-full'} p-6 flex flex-col`}>
+            <ScrollArea className="flex-grow pr-4 overflow-y-auto">
               <div className="space-y-6">
                 <div className="space-y-4">
                   <h2 className="text-2xl md:text-3xl font-bold text-estate-blue">{property.title} 🏡</h2>
@@ -186,35 +187,20 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
                       <p className="font-medium">Account Number: 1310762860</p>
                     </div>
                   </div>
-                  
-                  {/* Download button for mobile - placed here instead of with the image */}
-                  {isMobile && (
-                    <div className="pt-4 pb-8">
-                      <Button 
-                        onClick={handleDownload}
-                        className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
-                      >
-                        <Download className="mr-2" />
-                        Download Subscription Form
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
             </ScrollArea>
             
-            {/* Download button for desktop */}
-            {!isMobile && (
-              <div className="mt-4">
-                <Button 
-                  onClick={handleDownload}
-                  className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full"
-                >
-                  <Download className="mr-2" />
-                  Download Subscription Form
-                </Button>
-              </div>
-            )}
+            {/* Download button - Fixed at bottom */}
+            <div className="mt-4 pt-2 border-t border-gray-100">
+              <Button 
+                onClick={handleDownload}
+                className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full py-3"
+              >
+                <Download className="mr-2" />
+                Download Subscription Form
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

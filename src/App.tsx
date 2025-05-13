@@ -15,6 +15,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import FloatingMessageButton from "./components/FloatingMessageButton";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as React from "react";
+import BlogDetail from "./components/blog/BlogDetail";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
         <Route path="/buy2sell" element={<Buy2Sell />} />
         <Route path="/training" element={<Training />} />
         <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:id" element={<BlogDetail />} />
         <Route path="/contact" element={<Contact />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

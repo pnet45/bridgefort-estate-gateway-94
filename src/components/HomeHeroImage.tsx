@@ -2,8 +2,8 @@
 import React from "react";
 
 const HomeHeroImage = () => {
-  // Using the first image from previous carousel items
-  const heroImage = '/lovable-uploads/efac3aed-0d16-4fb4-87b9-20503053b989.png';
+  // Using a new image for the hero section
+  const heroImage = '/lovable-uploads/Homeslider2.png';
   const heroTitle = "PWAN Bridgefort. ...Rebuilding the Future!";
   const heroSubtitle = "At PWAN Bridgefort, we're not just selling properties—we're building legacies.";
 
