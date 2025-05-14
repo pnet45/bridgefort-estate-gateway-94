@@ -1,13 +1,20 @@
 
 import React, { useState } from 'react';
 import PropertyGrid from './PropertyGrid';
-import PropertyPagination from './PropertyPagination';
 import { usePropertyContext } from '../../contexts/PropertyContext';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const PropertyList: React.FC = () => {
   const { filteredProperties } = usePropertyContext();
   const [currentPage, setCurrentPage] = useState(1);
-  const propertiesPerPage = 9; // Limit to 9 properties per page
+  const propertiesPerPage = 6; // Updated to show 6 properties per page
   
   // Calculate pagination
   const indexOfLastProperty = currentPage * propertiesPerPage;
@@ -34,22 +41,33 @@ const PropertyList: React.FC = () => {
       <PropertyGrid properties={currentProperties} />
 
       {filteredProperties.length > propertiesPerPage && (
-        <div className="mt-10 flex justify-center">
-          <div className="flex items-center space-x-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`px-4 py-2 rounded ${
-                  currentPage === page 
-                    ? 'bg-estate-blue text-white' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
+        <div className="mt-10">
+          <Pagination>
+            <PaginationContent>
+              {currentPage > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} />
+                </PaginationItem>
+              )}
+              
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <PaginationItem key={page}>
+                  <PaginationLink 
+                    isActive={currentPage === page}
+                    onClick={() => handlePageChange(page)}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              
+              {currentPage < totalPages && (
+                <PaginationItem>
+                  <PaginationNext onClick={() => handlePageChange(currentPage + 1)} />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </>

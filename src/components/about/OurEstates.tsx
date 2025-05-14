@@ -26,7 +26,7 @@ const OurEstates = () => {
           
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center">
             <div className="h-64 mb-4 overflow-hidden rounded-md">
-              <img src="/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png" alt="Commercial Estate" className="w-full h-full object-cover" />
+              <img src="/lovable-uploads/2d407224-4f01-42be-9972-34d176414967.png" alt="Commercial Estate" className="w-full h-full object-cover" />
             </div>
             <h3 className="text-xl font-bold mb-2 text-estate-blue">Commercial Estates</h3>
             <p className="text-gray-700">
@@ -36,7 +36,7 @@ const OurEstates = () => {
           
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center">
             <div className="h-64 mb-4 overflow-hidden rounded-md">
-              <img src="/lovable-uploads/731e5107-538f-41a5-9af8-5b864bd49831.png" alt="Land Banking" className="w-full h-full object-cover" />
+              <img src="/lovable-uploads/c16c53fa-e9b8-4d11-829b-fbf589bfdb5a.png" alt="Land Banking" className="w-full h-full object-cover" />
             </div>
             <h3 className="text-xl font-bold mb-2 text-estate-blue">Land Banking Options</h3>
             <p className="text-gray-700">
