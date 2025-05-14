@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -27,18 +27,58 @@ const motivationalPosts = [
     image: '/lovable-uploads/f9bcac5d-3d64-47a5-9da3-0e2fcfd2bb57.png',
     date: 'April 22, 2025',
     author: 'Gideon Vincent'
+  },
+  {
+    id: 'm4',
+    title: 'Rise and Grind: Real Estate Waits for No One',
+    excerpt: 'It\'s Monday – let\'s show up and close strong. In real estate, consistent action and persistent follow-up are the keys to success in this competitive market.',
+    image: '/lovable-uploads/961fe593-98d7-4b3e-8345-9079d9b163d6.png',
+    date: 'May 13, 2025',
+    author: 'Dr. Dalvin Silva'
+  },
+  {
+    id: 'm5',
+    title: 'New Week, Fresh Listings, Fresh Leads',
+    excerpt: 'Lagos never sleeps, and neither do we. Let\'s turn site visits into signed deals. Stay sharp, stay selling in this dynamic real estate market.',
+    image: '/lovable-uploads/c46fb41f-b745-4000-839c-c31bc4f12653.png',
+    date: 'May 20, 2025',
+    author: 'Precious Silva'
   }
 ];
 
 const MondayMotivation = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const postsToShow = 3;
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex(prevIndex => {
+        // Calculate next index while ensuring we don't exceed array boundaries
+        const nextIndex = prevIndex + 1;
+        const maxStartIndex = motivationalPosts.length - postsToShow;
+        return nextIndex > maxStartIndex ? 0 : nextIndex;
+      });
+    }, 10000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  const visiblePosts = motivationalPosts.slice(currentIndex, currentIndex + postsToShow);
+
   return (
-    <section className="py-16 bg-gradient-to-r from-estate-blue/5 to-estate-blue/10">
+    <section className="py-16 bg-gradient-to-r from-estate-blue/5 to-estate-blue/10 overflow-hidden">
       <div className="container-custom">
         <h2 className="text-3xl font-bold mb-10 text-center">Monday Motivation</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {motivationalPosts.map(post => (
-            <div key={post.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300">
+          {visiblePosts.map((post, index) => (
+            <div 
+              key={post.id} 
+              className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-500 transform hover:scale-105"
+              style={{
+                animation: `${index === 0 ? 'slideInFromLeft' : index === 2 ? 'slideInFromRight' : 'scaleIn'} 0.5s ease-out`
+              }}
+            >
               <div className="relative h-56 overflow-hidden">
                 <img 
                   src={post.image} 
@@ -77,7 +117,53 @@ const MondayMotivation = () => {
             </div>
           ))}
         </div>
+        
+        <div className="flex justify-center mt-8">
+          {Array.from({ length: motivationalPosts.length - postsToShow + 1 }).map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`h-2 w-8 mx-1 rounded-full ${
+                currentIndex === idx ? 'bg-estate-blue' : 'bg-gray-300'
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
       </div>
+      
+      <style jsx>{`
+        @keyframes slideInFromLeft {
+          0% {
+            transform: translateX(-100%);
+            opacity: 0;
+          }
+          100% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes slideInFromRight {
+          0% {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          100% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes scaleIn {
+          0% {
+            transform: scale(0.8);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </section>
   );
 };

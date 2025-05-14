@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePropertyContext } from '../contexts/PropertyContext';
+import { toast } from "@/hooks/use-toast";
 
 const PropertySearch = () => {
   const [location, setLocation] = useState('');
@@ -14,6 +15,16 @@ const PropertySearch = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check if at least one search parameter is provided
+    if (!location && !propertyType && !priceRange) {
+      toast({
+        title: "Search Parameters Required",
+        description: "Please select at least one search criteria.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Build search query parameters
     const params = new URLSearchParams();
     if (location) params.append('location', location);
@@ -22,6 +33,12 @@ const PropertySearch = () => {
     
     // Navigate to properties page with search parameters
     navigate(`/properties?${params.toString()}`);
+    
+    // Show success toast
+    toast({
+      title: "Search Initiated",
+      description: "Redirecting to search results...",
+    });
     
     console.log("Searching properties with filters:", { location, propertyType, priceRange });
     console.log("Available properties:", allProperties.length);
