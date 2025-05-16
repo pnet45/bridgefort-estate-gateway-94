@@ -17,8 +17,8 @@ const YouTubeSection = () => {
             <iframe 
               width="100%" 
               height="100%" 
-              src="http://www.youtube.com/@PWANBRIDGEFORT.OFFICIAL" 
-              title="PWAN BRIDGEFORT TV" 
+              src="https://www.youtube.com/embed/MJE8Xf-4NrI" 
+              title="PWAN BRIDGEFORT TV - Precious Gardens Scheme 1 Ext" 
               frameBorder="0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
               referrerPolicy="strict-origin-when-cross-origin" 
