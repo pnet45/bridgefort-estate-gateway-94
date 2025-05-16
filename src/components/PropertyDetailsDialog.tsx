@@ -107,7 +107,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
       case "The Big League Heaven":
         return ["/lovable-uploads/e31d4e61-7436-4a63-a118-84656f87dd4c.png"];
       case "Bridgefort County - Lagoon Front Estate":
-        return ["/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png"]; // Using similar image for now
+        return ["/lovable-uploads/Bridgefort County - Lagoon Front .jpg"];
       default:
         return [property.imageUrl];
     }

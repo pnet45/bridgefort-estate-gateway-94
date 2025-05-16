@@ -47,13 +47,13 @@ const blogPosts = [
     image: '/lovable-uploads/62e9d362-2fac-4c6b-b437-8045c86dfc53.png',
     date: 'March 28, 2025',
     category: 'Success Stories',
-    author: 'Dr. Michael Akhuetie'
+    author: 'Dr. Dalvin Silva'
   },
   {
     id: '6',
     title: 'Introducing Bridgefort County - Our Premium Lagoon Front Estate',
     excerpt: 'Discover luxury living with our newest premium development: Bridgefort County Lagoon Front Estate, offering unparalleled views and amenities.',
-    image: '/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png',
+    image: '/lovable-uploads/Bridgefort County - Lagoon Front .jpg',
     date: 'March 20, 2025',
     category: 'Estate News',
     author: 'Precious Silva'

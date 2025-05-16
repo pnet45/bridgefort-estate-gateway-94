@@ -28,7 +28,7 @@ const realEstateContent = [
     excerpt: 'How our newest development is incorporating green technologies, community spaces, and sustainable practices to create a model for future Nigerian estates.',
     image: '/lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png',
     date: 'April 18, 2025',
-    author: 'Michael Akhuetie',
+    author: 'Dr. Dalvin Silva',
     category: 'Development News'
   },
   {

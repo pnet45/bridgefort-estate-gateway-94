@@ -31,7 +31,7 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
       title: "Bridgefort County - Lagoon Front Estate",
       location: "Ibeju-Lekki, Lagos",
       price: "₦19,500,000",
-      imageUrl: "/lovable-uploads/",
+      imageUrl: "/lovable-uploads/Bridgefort County - Lagoon Front .jpg",
       sqm: 500,
       propertyType: "Land",
       phase: 1
