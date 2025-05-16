@@ -17,8 +17,8 @@ const YouTubeSection = () => {
             <iframe 
               width="100%" 
               height="100%" 
-              src="https://www.youtube.com/embed/Ahsv5NQXTUk" 
-              title="BRIDGEFORT COUNTY BY PWAN BRIDGEFORT CONTACT ON 08119988180" 
+              src="http://www.youtube.com/@PWANBRIDGEFORT.OFFICIAL" 
+              title="PWAN BRIDGEFORT TV" 
               frameBorder="0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
               referrerPolicy="strict-origin-when-cross-origin" 
