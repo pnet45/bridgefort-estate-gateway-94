@@ -13,9 +13,9 @@ const Buy2SellIntro: React.FC<Buy2SellIntroProps> = ({ isLoaded }) => {
       <div className="container-custom">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className={`${isLoaded ? 'animate-fade-in' : 'opacity-0'} transition-all duration-500 space-y-4`}>
-            <h2 className="text-3xl font-bold mb-4 text-estate-blue">What is Buy2Sell?</h2>
+            <h2 className="text-3xl font-bold mb-4 text-estate-blue">What is Buy to Sell?</h2>
             <p className="text-lg">
-              Buy to Sell is a fast and reliable source of income while trading with PWAN Group. Real Estate serves more than residential purposes. With Buy to Sell, you can buy from our Estates and we help you sell the property in 6 or 12 months for as high as 30% profit. This is the best mode of passive income that allows you to earn without risks as your income is certain from the moment you buy.
+              Buy to Sell is a fast and reliable source of income while trading with PWAN Group. Real Estate serves more than residential purposes. With Buy to Sell, you can buy from our Estates and we help you sell the property in 12 or 24 months for as high as 40% profit. This is the best mode of passive income that allows you to earn without risks as your income is certain from the moment you buy.
             </p>
             <Button 
               className="bg-estate-red hover:bg-red-700 mt-4"
