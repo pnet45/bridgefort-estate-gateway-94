@@ -33,19 +33,22 @@ const PropertySearch = () => {
     
     // Set filters for direct application when on properties page
     if (propertyType) {
-      setFilters(prev => ({
-        ...prev,
-        type: propertyType
-      }));
+      setFilters({
+        category: 'all', // Preserve existing values
+        type: propertyType,
+        minPrice: '',
+        maxPrice: ''
+      });
     }
     
     if (priceRange) {
       const [minPrice, maxPrice] = priceRange.split('-');
-      setFilters(prev => ({
-        ...prev,
+      setFilters({
+        category: 'all', // Preserve existing values
+        type: propertyType || 'all',
         minPrice: minPrice || '',
         maxPrice: maxPrice?.replace('+', '') || ''
-      }));
+      });
     }
     
     // Set location as search query

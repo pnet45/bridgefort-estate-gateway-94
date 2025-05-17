@@ -133,7 +133,8 @@ const MondayMotivation = () => {
         </div>
       </div>
       
-      <style jsx>{`
+      <style>
+        {`
         @keyframes slideInFromLeft {
           0% {
             transform: translateX(-100%);
@@ -164,7 +165,8 @@ const MondayMotivation = () => {
             opacity: 1;
           }
         }
-      `}</style>
+        `}
+      </style>
     </section>
   );
 };
