@@ -10,7 +10,7 @@ const PropertySearch = () => {
   const [propertyType, setPropertyType] = useState('');
   const [priceRange, setPriceRange] = useState('');
   const navigate = useNavigate();
-  const { allProperties } = usePropertyContext();
+  const { allProperties, setSearchQuery, setFilters } = usePropertyContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +30,28 @@ const PropertySearch = () => {
     if (location) params.append('location', location);
     if (propertyType) params.append('type', propertyType);
     if (priceRange) params.append('price', priceRange);
+    
+    // Set filters for direct application when on properties page
+    if (propertyType) {
+      setFilters(prev => ({
+        ...prev,
+        type: propertyType
+      }));
+    }
+    
+    if (priceRange) {
+      const [minPrice, maxPrice] = priceRange.split('-');
+      setFilters(prev => ({
+        ...prev,
+        minPrice: minPrice || '',
+        maxPrice: maxPrice?.replace('+', '') || ''
+      }));
+    }
+    
+    // Set location as search query
+    if (location) {
+      setSearchQuery(location);
+    }
     
     // Navigate to properties page with search parameters
     navigate(`/properties?${params.toString()}`);

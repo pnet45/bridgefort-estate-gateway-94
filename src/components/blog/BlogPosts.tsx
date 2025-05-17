@@ -1,7 +1,9 @@
 
 import React from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Share } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "@/hooks/use-toast";
 
 const blogPosts = [
   {
@@ -53,12 +55,37 @@ const blogPosts = [
     id: '6',
     title: 'Introducing Bridgefort County - Our Premium Lagoon Front Estate',
     excerpt: 'Discover luxury living with our newest premium development: Bridgefort County Lagoon Front Estate, offering unparalleled views and amenities.',
-    image: '/lovable-uploads/Bridgefort County - Lagoon Front .jpg',
+    image: '/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png',
     date: 'March 20, 2025',
     category: 'Estate News',
     author: 'Precious Silva'
   }
 ];
+
+// Article sharing function
+const shareArticle = (articleId: string, title: string) => {
+  const articleUrl = `${window.location.origin}/blog/${articleId}`;
+  
+  if (navigator.share) {
+    navigator.share({
+      title: title,
+      url: articleUrl
+    })
+    .catch((error) => console.log('Error sharing:', error));
+  } else {
+    // Fallback for browsers that don't support the Web Share API
+    navigator.clipboard.writeText(articleUrl)
+      .then(() => {
+        toast({
+          title: "Link copied!",
+          description: "Article link copied to clipboard",
+        });
+      })
+      .catch((err) => {
+        console.error('Could not copy text: ', err);
+      });
+  }
+};
 
 const BlogPosts = () => {
   return (
@@ -97,15 +124,33 @@ const BlogPosts = () => {
                 {post.excerpt}
               </p>
               
-              <Link 
-                to={`/blog/${post.id}`} 
-                className="text-estate-blue font-medium hover:underline inline-flex items-center"
-              >
-                Read More 
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </Link>
+              <div className="flex justify-between items-center">
+                <Link 
+                  to={`/blog/${post.id}`} 
+                  className="text-estate-blue font-medium hover:underline inline-flex items-center"
+                >
+                  Read More 
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </Link>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        onClick={() => shareArticle(post.id, post.title)}
+                        className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                      >
+                        <Share size={16} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Share this article</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
             </div>
           </div>
         ))}

@@ -14,7 +14,7 @@ import {
 const PropertyList: React.FC = () => {
   const { filteredProperties } = usePropertyContext();
   const [currentPage, setCurrentPage] = useState(1);
-  const propertiesPerPage = 6; // Updated to show 6 properties per page
+  const propertiesPerPage = 6; // Show exactly 6 properties per page
   
   // Calculate pagination
   const indexOfLastProperty = currentPage * propertiesPerPage;

@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Calendar, Home, TrendingUp, Award } from 'lucide-react';
+import { Calendar, Home, TrendingUp, Award, Share } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const realEstateContent = [
   {
@@ -49,6 +50,28 @@ const categoryIcons = {
   'Investment Tips': <Award size={16} />
 };
 
+// Share function that shares only the article URL
+const shareArticle = (articleId: string, title: string) => {
+  const articleUrl = `${window.location.origin}/blog/real-estate/${articleId}`;
+  
+  if (navigator.share) {
+    navigator.share({
+      title: title,
+      url: articleUrl
+    })
+    .catch((error) => console.log('Error sharing:', error));
+  } else {
+    // Fallback for browsers that don't support the Web Share API
+    navigator.clipboard.writeText(articleUrl)
+      .then(() => {
+        alert('Article link copied to clipboard!');
+      })
+      .catch((err) => {
+        console.error('Could not copy text: ', err);
+      });
+  }
+};
+
 const RealEstateContent = () => {
   return (
     <section className="py-16 bg-white">
@@ -91,15 +114,33 @@ const RealEstateContent = () => {
                       <span>By {post.author}</span>
                     </div>
                     
-                    <Link 
-                      to={`/blog/real-estate/${post.id}`} 
-                      className="text-estate-blue font-medium hover:underline inline-flex items-center"
-                    >
-                      Read Full Article
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </Link>
+                    <div className="flex justify-between items-center">
+                      <Link 
+                        to={`/blog/real-estate/${post.id}`} 
+                        className="text-estate-blue font-medium hover:underline inline-flex items-center"
+                      >
+                        Read Full Article
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </Link>
+                      
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button 
+                              onClick={() => shareArticle(post.id, post.title)}
+                              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                            >
+                              <Share size={16} />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Share this article</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </div>
                 </div>
               </div>

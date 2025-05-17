@@ -96,9 +96,9 @@ const Navbar = () => {
             </Link>
           </nav>
 
-          {/* CTA Button */}
+          {/* CTA Button - Updated color to Red */}
           <div className="hidden md:flex items-center ml-4">
-            <a href="tel:+2348030624059" className="flex items-center text-red font-bold whitespace-nowrap hover:text-red transition duration-200">
+            <a href="tel:+2348030624059" className="flex items-center text-[#ea384c] font-bold whitespace-nowrap hover:text-red-600 transition duration-200">
               <Phone size={18} className="mr-2" />
               <span>+2348030624059</span>
             </a>
