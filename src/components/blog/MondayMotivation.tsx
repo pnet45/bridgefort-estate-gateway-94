@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -65,7 +64,6 @@ const MondayMotivation = () => {
         }));
         setMotivationalPosts(formattedPosts);
       } else {
-        // Otherwise, use the fallback data
         const fallbackPosts = [
           {
             id: 'm1',
