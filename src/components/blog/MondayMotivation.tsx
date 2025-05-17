@@ -50,7 +50,20 @@ const MondayMotivation = () => {
       
       // If we have data from the database, use it
       if (data && data.length > 0) {
-        setMotivationalPosts(data as MotivationalPost[]);
+        // Fix the type conversion issue by properly formatting the profiles data
+        const formattedPosts: MotivationalPost[] = data.map(post => ({
+          id: post.id,
+          title: post.title,
+          excerpt: post.excerpt,
+          image_path: post.image_path,
+          created_at: post.created_at,
+          profiles: {
+            // Extract the first item from the profiles array
+            first_name: post.profiles[0]?.first_name || '',
+            last_name: post.profiles[0]?.last_name || ''
+          }
+        }));
+        setMotivationalPosts(formattedPosts);
       } else {
         // Otherwise, use the fallback data
         const fallbackPosts = [
