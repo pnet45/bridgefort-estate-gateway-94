@@ -4,27 +4,35 @@ import {
   FacebookIcon, 
   TwitterIcon, 
   LinkedinIcon, 
-  Share2Icon 
+  Share2Icon,
+  ArrowLeft
 } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import Navbar from '../Navbar';
+import Footer from '../Footer';
+import { Toaster } from '@/components/ui/toaster';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BlogPost {
-  id: number;
+  id: number | string;
   title: string;
-  summary: string;
+  summary?: string;
   content: string;
   image: string;
   author: string;
   date: string;
   category: string;
   authorImage?: string;
+  excerpt?: string;
 }
 
 const BlogDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   
   useEffect(() => {
     // Simulating API call to get blog post details
@@ -444,136 +452,174 @@ const BlogDetail: React.FC = () => {
   
   if (loading) {
     return (
-      <div className="container mx-auto py-16 px-4">
-        <div className="animate-pulse">
-          <div className="h-10 bg-gray-200 rounded w-3/4 mb-6"></div>
-          <div className="h-6 bg-gray-200 rounded w-1/2 mb-10"></div>
-          <div className="h-80 bg-gray-200 rounded mb-8"></div>
-          <div className="space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+      <>
+        <Navbar />
+        <div className="container mx-auto py-16 px-4">
+          <div className="animate-pulse">
+            <div className="h-10 bg-gray-200 rounded w-3/4 mb-6"></div>
+            <div className="h-6 bg-gray-200 rounded w-1/2 mb-10"></div>
+            <div className="h-80 bg-gray-200 rounded mb-8"></div>
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+            </div>
           </div>
         </div>
-      </div>
+        <Footer />
+        <Toaster />
+      </>
     );
   }
   
   if (!post) {
     return (
-      <div className="container mx-auto py-16 px-4">
-        <h1 className="text-3xl font-bold text-red-600">Blog post not found</h1>
-        <p className="mt-4">The blog post you are looking for does not exist or has been removed.</p>
-      </div>
+      <>
+        <Navbar />
+        <div className="container mx-auto py-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/blog')}
+              className="mb-6 flex items-center gap-2"
+            >
+              <ArrowLeft size={16} />
+              Back to Blog
+            </Button>
+            <h1 className="text-3xl font-bold text-red-600">Blog post not found</h1>
+            <p className="mt-4">The blog post you are looking for does not exist or has been removed.</p>
+            <div className="mt-8">
+              <Link to="/blog" className="text-estate-blue hover:underline">
+                Return to the blog homepage
+              </Link>
+            </div>
+          </div>
+        </div>
+        <Footer />
+        <Toaster />
+      </>
     );
   }
   
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">{post.title}</h1>
-        
-        <div className="flex items-center mb-6">
-          <div className="flex items-center">
-            {post.authorImage ? (
-              <img 
-                src={post.authorImage} 
-                alt={post.author} 
-                className="w-10 h-10 rounded-full object-cover mr-3" 
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center">
-                <span className="text-gray-600 font-semibold">
-                  {post.author.split(' ').map(n => n[0]).join('')}
-                </span>
+    <>
+      <Navbar />
+      <div className="container mx-auto py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/blog')}
+            className="mb-6 flex items-center gap-2"
+          >
+            <ArrowLeft size={16} />
+            Back to Blog
+          </Button>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">{post.title}</h1>
+          
+          <div className="flex items-center mb-6">
+            <div className="flex items-center">
+              {post.authorImage ? (
+                <img 
+                  src={post.authorImage} 
+                  alt={post.author} 
+                  className="w-10 h-10 rounded-full object-cover mr-3" 
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gray-300 mr-3 flex items-center justify-center">
+                  <span className="text-gray-600 font-semibold">
+                    {post.author.split(' ').map(n => n[0]).join('')}
+                  </span>
+                </div>
+              )}
+              <div>
+                <p className="font-medium text-gray-900">{post.author}</p>
+                <p className="text-sm text-gray-500">{post.date}</p>
               </div>
-            )}
-            <div>
-              <p className="font-medium text-gray-900">{post.author}</p>
-              <p className="text-sm text-gray-500">{post.date}</p>
+            </div>
+            
+            <div className="ml-auto flex items-center space-x-2">
+              <button 
+                onClick={() => handleShare('facebook')}
+                className="p-2 rounded-full hover:bg-gray-100"
+                aria-label="Share on Facebook"
+              >
+                <FacebookIcon size={18} className="text-blue-600" />
+              </button>
+              <button 
+                onClick={() => handleShare('twitter')}
+                className="p-2 rounded-full hover:bg-gray-100"
+                aria-label="Share on Twitter"
+              >
+                <TwitterIcon size={18} className="text-blue-400" />
+              </button>
+              <button 
+                onClick={() => handleShare('linkedin')}
+                className="p-2 rounded-full hover:bg-gray-100"
+                aria-label="Share on LinkedIn"
+              >
+                <LinkedinIcon size={18} className="text-blue-700" />
+              </button>
+              <button 
+                onClick={() => handleShare('copy')}
+                className="p-2 rounded-full hover:bg-gray-100"
+                aria-label="Copy link"
+              >
+                <Share2Icon size={18} className="text-gray-600" />
+              </button>
             </div>
           </div>
           
-          <div className="ml-auto flex items-center space-x-2">
-            <button 
-              onClick={() => handleShare('facebook')}
-              className="p-2 rounded-full hover:bg-gray-100"
-              aria-label="Share on Facebook"
-            >
-              <FacebookIcon size={18} className="text-blue-600" />
-            </button>
-            <button 
-              onClick={() => handleShare('twitter')}
-              className="p-2 rounded-full hover:bg-gray-100"
-              aria-label="Share on Twitter"
-            >
-              <TwitterIcon size={18} className="text-blue-400" />
-            </button>
-            <button 
-              onClick={() => handleShare('linkedin')}
-              className="p-2 rounded-full hover:bg-gray-100"
-              aria-label="Share on LinkedIn"
-            >
-              <LinkedinIcon size={18} className="text-blue-700" />
-            </button>
-            <button 
-              onClick={() => handleShare('copy')}
-              className="p-2 rounded-full hover:bg-gray-100"
-              aria-label="Copy link"
-            >
-              <Share2Icon size={18} className="text-gray-600" />
-            </button>
+          <div className="mb-8">
+            <img 
+              src={post.image} 
+              alt={post.title} 
+              className="w-full h-auto object-cover rounded-lg shadow-md" 
+              style={{ maxHeight: '500px' }}
+            />
           </div>
-        </div>
-        
-        <div className="mb-8">
-          <img 
-            src={post.image} 
-            alt={post.title} 
-            className="w-full h-auto object-cover rounded-lg shadow-md" 
-            style={{ maxHeight: '500px' }}
-          />
-        </div>
-        
-        <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
-        
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-xl font-semibold mb-4">Share this article</h3>
-          <div className="flex space-x-3">
-            <button 
-              onClick={() => handleShare('facebook')}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              <FacebookIcon size={20} />
-              <span>Facebook</span>
-            </button>
-            <button 
-              onClick={() => handleShare('twitter')}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-md hover:bg-blue-500"
-            >
-              <TwitterIcon size={20} />
-              <span>Twitter</span>
-            </button>
-            <button 
-              onClick={() => handleShare('linkedin')}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800"
-            >
-              <LinkedinIcon size={20} />
-              <span>LinkedIn</span>
-            </button>
-            <button 
-              onClick={() => handleShare('copy')}
-              className="flex items-center space-x-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-            >
-              <Share2Icon size={20} />
-              <span>Copy Link</span>
-            </button>
+          
+          <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+          
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <h3 className="text-xl font-semibold mb-4">Share this article</h3>
+            <div className="flex space-x-3">
+              <button 
+                onClick={() => handleShare('facebook')}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                <FacebookIcon size={20} />
+                <span>Facebook</span>
+              </button>
+              <button 
+                onClick={() => handleShare('twitter')}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-400 text-white rounded-md hover:bg-blue-500"
+              >
+                <TwitterIcon size={20} />
+                <span>Twitter</span>
+              </button>
+              <button 
+                onClick={() => handleShare('linkedin')}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800"
+              >
+                <LinkedinIcon size={20} />
+                <span>LinkedIn</span>
+              </button>
+              <button 
+                onClick={() => handleShare('copy')}
+                className="flex items-center space-x-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+              >
+                <Share2Icon size={20} />
+                <span>Copy Link</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <Footer />
+      <Toaster />
+    </>
   );
 };
 

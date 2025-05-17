@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import ScrollToTop from './components/ScrollToTop';
 import FloatingMessageButton from './components/FloatingMessageButton';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Lazy-loaded pages
 const Home = lazy(() => import('./pages/Home'));
@@ -17,6 +18,10 @@ const Contact = lazy(() => import('./pages/Contact'));
 const Blog = lazy(() => import('./pages/Blog'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const BlogDetail = lazy(() => import('./components/blog/BlogDetail'));
+const Auth = lazy(() => import('./pages/Auth'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const CreatePost = lazy(() => import('./pages/CreatePost'));
+const EditPost = lazy(() => import('./pages/EditPost'));
 
 // Create a client
 const queryClient = new QueryClient();
@@ -24,27 +29,33 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/properties" element={<Properties />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/buy2sell" element={<Buy2Sell />} />
-            <Route path="/training" element={<Training />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:id" element={<BlogDetail />} />
-            <Route path="/blog/motivation/:id" element={<BlogDetail />} />
-            <Route path="/blog/real-estate/:id" element={<BlogDetail />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-        <FloatingMessageButton />
-        <Toaster />
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/properties" element={<Properties />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/buy2sell" element={<Buy2Sell />} />
+              <Route path="/training" element={<Training />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:id" element={<BlogDetail />} />
+              <Route path="/blog/motivation/:id" element={<BlogDetail />} />
+              <Route path="/blog/real-estate/:id" element={<BlogDetail />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/create-post" element={<CreatePost />} />
+              <Route path="/edit-post/:id" element={<EditPost />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+          <FloatingMessageButton />
+          <Toaster />
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
