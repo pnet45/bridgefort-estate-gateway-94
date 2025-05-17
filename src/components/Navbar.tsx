@@ -49,7 +49,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
               <img 
-                src="/lovable-uploads/pbo.png" 
+                src="/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png" 
                 alt="PWAN Bridgefort" 
                 className="h-12 md:h-16"
               />
