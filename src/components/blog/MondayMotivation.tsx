@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from 'date-fns';
+import type { Tables } from '@/integrations/supabase/client';
 
 interface MotivationalPost {
   id: string;
@@ -181,7 +182,7 @@ const MondayMotivation = () => {
           {visiblePosts.map((post, index) => {
             const imageSrc = post.image_path.startsWith('/') 
               ? post.image_path 
-              : `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/post_images/${post.image_path}`;
+              : `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/imagbucket/${post.image_path}`;
               
             return (
               <div 

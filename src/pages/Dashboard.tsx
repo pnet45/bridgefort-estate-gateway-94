@@ -1,239 +1,341 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { CalendarIcon, EditIcon, TrashIcon, PlusIcon, CheckCircleIcon, XCircleIcon } from 'lucide-react';
+import { format } from 'date-fns';
 
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import { Toaster } from '@/components/ui/toaster';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Eye, Edit, Trash2, Plus, PenLine } from 'lucide-react';
-
-interface Post {
-  id: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  published: boolean;
-  created_at: string;
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Dashboard = () => {
   const { user, userRole } = useAuth();
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<Post[]>([]);
+  
+  const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'published' | 'drafts'>('all');
-
-  // Redirect if not logged in
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
+  
   useEffect(() => {
     if (!user) {
-      navigate('/auth');
       toast({
-        title: 'Authentication required',
-        description: 'You need to be logged in to access the dashboard',
-        variant: 'destructive',
+        title: "Access denied",
+        description: "You need to be logged in to access the dashboard.",
+        variant: "destructive",
       });
-      return;
+      navigate('/auth');
+    } else {
+      fetchPosts();
     }
-
-    fetchPosts();
-  }, [user, navigate, activeTab]);
-
+  }, [user, navigate]);
+  
   const fetchPosts = async () => {
+    if (!user) return;
+    
     setLoading(true);
     try {
       let query = supabase
         .from('posts')
-        .select('*');
-
-      // If user is not admin or manager, only show their posts
-      if (userRole !== 'admin' && userRole !== 'manager') {
-        query = query.eq('author_id', user?.id);
+        .select(`
+          id,
+          title,
+          excerpt,
+          category,
+          image_path,
+          published,
+          created_at,
+          updated_at
+        `);
+        
+      if (!userRole || (userRole !== 'admin' && userRole !== 'manager')) {
+        // If not admin/manager, only show own posts
+        query = query.eq('author_id', user.id);
       }
-
-      // Filter by publication status if needed
-      if (activeTab === 'published') {
-        query = query.eq('published', true);
-      } else if (activeTab === 'drafts') {
-        query = query.eq('published', false);
-      }
-
-      // Order by creation date
-      query = query.order('created_at', { ascending: false });
-
-      const { data, error } = await query;
-
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
+      
       if (error) throw error;
+      
       setPosts(data || []);
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error fetching posts:', error);
       toast({
-        title: 'Error fetching posts',
-        description: error.message,
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load posts.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
-
-  const handleDeletePost = async (postId: string) => {
-    if (!confirm('Are you sure you want to delete this post?')) return;
-
+  
+  const handleTogglePublished = async (postId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ published: !currentStatus, updated_at: new Date().toISOString() })
+        .match({ id: postId });
+        
+      if (error) throw error;
+      
+      setPosts(posts.map(post => 
+        post.id === postId 
+          ? { ...post, published: !currentStatus, updated_at: new Date().toISOString() } 
+          : post
+      ));
+      
+      toast({
+        title: "Success!",
+        description: !currentStatus ? "Post published successfully" : "Post unpublished"
+      });
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update post status.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const confirmDelete = (postId: string) => {
+    setPostToDelete(postId);
+    setDeleteDialogOpen(true);
+  };
+  
+  const handleDeletePost = async () => {
+    if (!postToDelete) return;
+    
     try {
       const { error } = await supabase
         .from('posts')
         .delete()
-        .eq('id', postId);
-
+        .match({ id: postToDelete });
+        
       if (error) throw error;
-
+      
+      setPosts(posts.filter(post => post.id !== postToDelete));
+      
       toast({
-        title: 'Post deleted',
-        description: 'The post has been deleted successfully',
+        title: "Success!",
+        description: "Post deleted successfully"
       });
-
-      // Refresh posts list
-      fetchPosts();
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Error deleting post:', error);
       toast({
-        title: 'Error deleting post',
-        description: error.message,
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to delete post.",
+        variant: "destructive",
       });
+    } finally {
+      setPostToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
+  
+  const filteredPosts = activeTab === "all" 
+    ? posts 
+    : activeTab === "published" 
+      ? posts.filter(post => post.published) 
+      : posts.filter(post => !post.published);
+  
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="container mx-auto py-8 px-4">
+      
+      <div className="flex-1 pt-24 pb-12 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <Button className="bg-estate-blue hover:bg-estate-darkBlue">
-              <Link to="/create-post" className="flex items-center">
-                <Plus size={16} className="mr-2" />
-                New Post
-              </Link>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-estate-blue">Dashboard</h1>
+            <Button 
+              onClick={() => navigate('/create-post')}
+              className="bg-estate-blue hover:bg-estate-darkBlue"
+            >
+              <PlusIcon className="mr-2 h-4 w-4" />
+              Create New Post
             </Button>
           </div>
-
-          <Tabs
-            value={activeTab}
-            onValueChange={(value) => setActiveTab(value as any)}
-            className="mb-8"
-          >
-            <TabsList className="grid w-full grid-cols-3 mb-8">
-              <TabsTrigger value="all">All Posts</TabsTrigger>
-              <TabsTrigger value="published">Published</TabsTrigger>
-              <TabsTrigger value="drafts">Drafts</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value={activeTab}>
-              {loading ? (
-                <div className="text-center py-8">Loading posts...</div>
-              ) : posts.length === 0 ? (
-                <div className="text-center py-12 border rounded-lg">
-                  <PenLine size={48} className="mx-auto text-gray-400 mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">No posts found</h3>
-                  <p className="text-gray-500 mb-6">
-                    {activeTab === 'all'
-                      ? "You haven't created any posts yet"
-                      : activeTab === 'published'
-                      ? "You don't have any published posts"
-                      : "You don't have any draft posts"}
-                  </p>
-                  <Button asChild>
-                    <Link to="/create-post">Create your first post</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full bg-white border rounded-lg">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="py-3 px-4 text-left">Title</th>
-                        <th className="py-3 px-4 text-left">Category</th>
-                        <th className="py-3 px-4 text-left">Status</th>
-                        <th className="py-3 px-4 text-left">Created</th>
-                        <th className="py-3 px-4 text-center">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {posts.map((post) => (
-                        <tr key={post.id} className="border-t">
-                          <td className="py-3 px-4">
-                            <div className="font-medium">{post.title}</div>
-                            <div className="text-sm text-gray-500 truncate max-w-xs">
-                              {post.excerpt}
-                            </div>
-                          </td>
-                          <td className="py-3 px-4">{post.category}</td>
-                          <td className="py-3 px-4">
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${
-                                post.published
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-amber-100 text-amber-800'
-                              }`}
-                            >
-                              {post.published ? 'Published' : 'Draft'}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            {formatDate(post.created_at)}
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex justify-center space-x-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => navigate(`/blog/${post.id}`)}
-                              >
-                                <Eye size={16} />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => navigate(`/edit-post/${post.id}`)}
-                              >
-                                <Edit size={16} />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeletePost(post.id)}
-                              >
-                                <Trash2 size={16} />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+          
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+              <div className="flex justify-between items-center mb-6">
+                <TabsList>
+                  <TabsTrigger value="all">All Posts</TabsTrigger>
+                  <TabsTrigger value="published">Published</TabsTrigger>
+                  <TabsTrigger value="draft">Drafts</TabsTrigger>
+                </TabsList>
+              </div>
+              
+              <TabsContent value="all">
+                {renderPostList(filteredPosts, loading)}
+              </TabsContent>
+              <TabsContent value="published">
+                {renderPostList(filteredPosts, loading)}
+              </TabsContent>
+              <TabsContent value="draft">
+                {renderPostList(filteredPosts, loading)}
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </div>
+      
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the post.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePost} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
       <Footer />
-      <Toaster />
-    </>
+    </div>
   );
+  
+  function renderPostList(posts: any[], loading: boolean) {
+    if (loading) {
+      return (
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="animate-pulse flex items-center">
+              <div className="w-16 h-16 bg-gray-200 rounded mr-4"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              </div>
+              <div className="w-24 h-10 bg-gray-200 rounded"></div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    
+    if (posts.length === 0) {
+      return (
+        <div className="py-10 text-center">
+          <p className="text-gray-500">No posts found</p>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="space-y-4">
+        {posts.map((post) => (
+          <div key={post.id} className="flex flex-col md:flex-row items-start md:items-center p-4 border rounded-lg hover:bg-gray-50">
+            <div className="md:w-16 md:h-16 w-full h-32 mr-4 mb-3 md:mb-0 overflow-hidden rounded bg-gray-100">
+              {post.image_path ? (
+                <img 
+                  src={post.image_path.startsWith('/')
+                    ? post.image_path
+                    : `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/imagbucket/${post.image_path}`}
+                  alt={post.title}
+                  className="w-full h-full object-cover"
+                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-gray-400">No image</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start md:items-center flex-wrap gap-2">
+                <h3 className="text-lg font-semibold">{post.title}</h3>
+                <Badge className={post.published ? "bg-green-600" : "bg-yellow-500"}>
+                  {post.published ? "Published" : "Draft"}
+                </Badge>
+                <Badge className="bg-gray-500">{post.category}</Badge>
+              </div>
+              
+              <div className="flex items-center mt-2 text-sm text-gray-500">
+                <CalendarIcon className="mr-1 h-3 w-3" />
+                <span>Created: {format(new Date(post.created_at), 'MMM dd, yyyy')}</span>
+                {post.updated_at && post.updated_at !== post.created_at && (
+                  <>
+                    <span className="mx-2">•</span>
+                    <span>Updated: {format(new Date(post.updated_at), 'MMM dd, yyyy')}</span>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex mt-3 md:mt-0 space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleTogglePublished(post.id, post.published)}
+                className={post.published 
+                  ? "text-gray-600 border-gray-300" 
+                  : "text-green-600 border-green-300"
+                }
+              >
+                {post.published ? (
+                  <>
+                    <XCircleIcon className="mr-1 h-4 w-4" />
+                    Unpublish
+                  </>
+                ) : (
+                  <>
+                    <CheckCircleIcon className="mr-1 h-4 w-4" />
+                    Publish
+                  </>
+                )}
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/edit-post/${post.id}`)}
+                className="text-blue-600 border-blue-300"
+              >
+                <EditIcon className="mr-1 h-4 w-4" />
+                Edit
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => confirmDelete(post.id)}
+                className="text-red-600 border-red-300"
+              >
+                <TrashIcon className="mr-1 h-4 w-4" />
+                Delete
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 };
 
 export default Dashboard;

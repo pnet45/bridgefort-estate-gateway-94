@@ -1,321 +1,273 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
 
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import { Toaster } from '@/components/ui/toaster';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 
-const formSchema = z.object({
-  title: z.string().min(5, { message: 'Title must be at least 5 characters' }),
-  content: z.string().min(20, { message: 'Content must be at least 20 characters' }),
-  excerpt: z.string().min(10, { message: 'Excerpt must be at least 10 characters' }),
-  category: z.string().min(1, { message: 'Category is required' }),
-  published: z.boolean().default(false),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+const CATEGORIES = [
+  'Monday Motivation',
+  'Real Estate Tips',
+  'Investment Advice',
+  'News',
+  'Events',
+  'General'
+];
 
 const CreatePost = () => {
-  const { user, profile } = useAuth();
-  const navigate = useNavigate();
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [category, setCategory] = useState('General');
+  const [fileSelected, setFileSelected] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isPublished, setIsPublished] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imagePath, setImagePath] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // Redirect if not logged in
+  
+  const { user, userRole } = useAuth();
+  const navigate = useNavigate();
+  
   useEffect(() => {
+    // Redirect if not authenticated or not authorized
     if (!user) {
-      navigate('/auth');
       toast({
-        title: 'Authentication required',
-        description: 'You need to be logged in to create posts',
-        variant: 'destructive',
+        title: "Access denied",
+        description: "You need to be logged in to create posts.",
+        variant: "destructive",
       });
+      navigate('/auth');
     }
   }, [user, navigate]);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: '',
-      content: '',
-      excerpt: '',
-      category: '',
-      published: false,
-    },
-  });
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const uploadImage = async () => {
-    if (!imageFile || !user) return null;
-
-    const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    const { data, error } = await supabase.storage
-      .from('post_images')
-      .upload(filePath, imageFile);
-
-    if (error) {
-      toast({
-        title: 'Error uploading image',
-        description: error.message,
-        variant: 'destructive',
-      });
-      return null;
-    }
-
-    return filePath;
-  };
-
-  const onSubmit = async (values: FormValues) => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'You need to be logged in to create posts',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      // Upload image first if exists
-      let uploadedImagePath = null;
-      if (imageFile) {
-        uploadedImagePath = await uploadImage();
-        if (!uploadedImagePath) {
-          setIsSubmitting(false);
-          return;
-        }
-      }
-
-      // Create post in database
-      const { data, error } = await supabase
-        .from('posts')
-        .insert([
-          {
-            title: values.title,
-            content: values.content,
-            excerpt: values.excerpt,
-            category: values.category,
-            author_id: user.id,
-            image_path: uploadedImagePath,
-            published: values.published,
-          },
-        ])
-        .select();
-
-      if (error) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 3 * 1024 * 1024) {
         toast({
-          title: 'Error creating post',
-          description: error.message,
-          variant: 'destructive',
+          title: "File too large",
+          description: "Image should be less than 3MB",
+          variant: "destructive",
         });
         return;
       }
-
+      
+      setFileSelected(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (!user) {
       toast({
-        title: 'Post created',
-        description: 'Your post has been created successfully',
+        title: "Error",
+        description: "You must be logged in to create a post",
+        variant: "destructive",
       });
-      navigate('/dashboard');
-    } catch (error: any) {
+      return;
+    }
+    
+    if (!title || !content || !excerpt) {
       toast({
-        title: 'Error',
-        description: error.message || 'An error occurred while creating the post',
-        variant: 'destructive',
+        title: "Missing information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      let imagePath = null;
+      
+      if (fileSelected) {
+        const fileExt = fileSelected.name.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('imagbucket')
+          .upload(fileName, fileSelected);
+        
+        if (uploadError) {
+          throw uploadError;
+        }
+        
+        imagePath = fileName;
+      }
+      
+      const { error } = await supabase
+        .from('posts')
+        .insert([{
+          title,
+          content,
+          excerpt, 
+          category,
+          author_id: user.id,
+          image_path: imagePath,
+          published: isPublished
+        }]);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success!",
+        description: isPublished ? "Post published successfully" : "Draft saved successfully",
+      });
+      
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create post. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="container mx-auto py-8 px-4">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Create New Post</h1>
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Post Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter post title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+      
+      <div className="flex-1 pt-24 pb-12 px-4 bg-gray-50">
+        <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold text-estate-blue">Create New Post</h1>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/dashboard')}
+              className="border-estate-blue text-estate-blue hover:bg-estate-blue/10"
+            >
+              Cancel
+            </Button>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <Label htmlFor="title">Title *</Label>
+              <Input 
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="mt-1"
+                placeholder="Enter post title"
+                required
               />
-
-              <FormField
-                control={form.control}
-                name="excerpt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Excerpt</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Brief summary of your post"
-                        className="resize-none h-20"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      A short summary that will appear in previews
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            </div>
+            
+            <div>
+              <Label htmlFor="excerpt">Excerpt (Brief Summary) *</Label>
+              <Textarea
+                id="excerpt"
+                value={excerpt}
+                onChange={(e) => setExcerpt(e.target.value)}
+                className="mt-1 h-24"
+                placeholder="Enter a brief summary of the post"
+                required
               />
-
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Content</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Write your post content here"
-                        className="resize-none min-h-[300px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            </div>
+            
+            <div>
+              <Label htmlFor="content">Content *</Label>
+              <Textarea 
+                id="content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="mt-1 min-h-[300px]"
+                placeholder="Write your post content here"
+                required
               />
-
-              <div className="space-y-2">
-                <Label htmlFor="image">Featured Image</Label>
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-                {imagePreview && (
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500 mb-2">Image Preview</p>
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="max-h-40 rounded border border-gray-200"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Monday Motivation">Monday Motivation</SelectItem>
-                        <SelectItem value="Real Estate Insights">Real Estate Insights</SelectItem>
-                        <SelectItem value="Investment Tips">Investment Tips</SelectItem>
-                        <SelectItem value="Latest News & Updates">Latest News & Updates</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            </div>
+            
+            <div>
+              <Label htmlFor="category">Category *</Label>
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-estate-blue"
+                required
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <Label htmlFor="featuredImage">Featured Image</Label>
+              <Input 
+                id="featuredImage"
+                type="file"
+                onChange={handleFileChange}
+                className="mt-1"
+                accept="image/*"
               />
-
-              <FormField
-                control={form.control}
-                name="published"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">Publish Post</FormLabel>
-                      <FormDescription>
-                        Make this post visible to everyone
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
+              
+              {previewImage && (
+                <div className="mt-3">
+                  <p className="text-sm text-gray-500 mb-2">Image Preview</p>
+                  <img 
+                    src={previewImage} 
+                    alt="Preview" 
+                    className="max-h-48 rounded-md" 
+                  />
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center">
+              <Input 
+                id="published"
+                type="checkbox"
+                className="w-5 h-5"
+                checked={isPublished}
+                onChange={(e) => setIsPublished(e.target.checked)}
               />
-
-              <Button
-                type="submit"
-                className="w-full bg-estate-blue hover:bg-estate-darkBlue"
+              <Label htmlFor="published" className="ml-2">Publish immediately</Label>
+            </div>
+            
+            <div className="flex justify-end space-x-4">
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={() => navigate('/dashboard')}
+                className="border-estate-blue text-estate-blue hover:bg-estate-blue/10"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                className="bg-estate-blue hover:bg-estate-darkBlue"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating Post...' : 'Create Post'}
+                {isSubmitting ? 'Saving...' : isPublished ? 'Publish Post' : 'Save Draft'}
               </Button>
-            </form>
-          </Form>
+            </div>
+          </form>
         </div>
       </div>
+      
       <Footer />
-      <Toaster />
-    </>
+    </div>
   );
 };
 
