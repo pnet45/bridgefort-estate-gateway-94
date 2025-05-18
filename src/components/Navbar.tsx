@@ -144,7 +144,7 @@ const Navbar = () => {
           <div className="lg:hidden flex items-center">
             <div className="flex items-center text-blue-500 mr-4">
               <Phone size={16} className="mr-1" />
-              <span className="text-sm font-bold">+234 703 123 4567</span>
+              <span className="text-sm font-bold">+234 803 062 4059</span>
             </div>
             
             {shouldShowLogin && user && (
