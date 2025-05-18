@@ -1,8 +1,8 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase, type Tables } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   session: Session | null;
@@ -97,6 +97,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 title: "Login successful",
                 description: "Welcome back!",
               });
+              
+              // Redirect to dashboard on successful login
+              window.location.href = '/dashboard';
             }
             
             // Use setTimeout to avoid potential circular dependencies with Supabase client

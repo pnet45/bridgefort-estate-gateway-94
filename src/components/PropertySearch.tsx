@@ -10,7 +10,7 @@ const PropertySearch = () => {
   const [propertyType, setPropertyType] = useState('');
   const [priceRange, setPriceRange] = useState('');
   const navigate = useNavigate();
-  const { allProperties, setSearchQuery, setFilters } = usePropertyContext();
+  const { properties, setSearchQuery, setFilters } = usePropertyContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +66,7 @@ const PropertySearch = () => {
     });
     
     console.log("Searching properties with filters:", { location, propertyType, priceRange });
-    console.log("Available properties:", allProperties.length);
+    console.log("Available properties:", properties.length);
   };
 
   return (

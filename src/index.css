@@ -93,6 +93,7 @@
 
   body {
     @apply bg-background text-foreground font-poppins;
+    padding-top: 0; /* Remove default top padding */
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -120,11 +121,32 @@
   .input-field {
     @apply px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-estate-blue;
   }
+
+  /* Navbar styling */
+  .navbar-container {
+    @apply fixed top-0 w-full bg-white shadow-md z-50;
+  }
+
+  .navbar-link {
+    @apply font-bold transition-colors;
+  }
+
+  .navbar-link.active {
+    @apply font-bold bg-gray-100 px-3 py-1 rounded;
+  }
+
+  .navbar-phone {
+    @apply text-blue-600;
+  }
 }
 
 /* Ensure content starts below the navbar */
-main, section:first-child, .hero-section {
-  padding-top: 5rem;
+main, section:first-of-type {
+  padding-top: 5rem !important; /* Add important to override any other styles */
+}
+
+.hero-section {
+  padding-top: 5rem !important;
 }
 
 @keyframes slideInFromLeft {
@@ -170,4 +192,20 @@ main, section:first-child, .hero-section {
 
 .animate-scale-in {
   animation: scaleIn 0.5s ease-out;
+}
+
+/* Add fade-in animation for property filters */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
 }

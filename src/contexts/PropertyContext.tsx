@@ -13,10 +13,23 @@ interface Property {
   phase?: number;
 }
 
+interface Filters {
+  category: string;
+  type: string;
+  minPrice: string | number;
+  maxPrice: string | number;
+}
+
 interface PropertyContextType {
   properties: Property[];
   filteredProperties: Property[];
   loading: boolean;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  filters: Filters;
+  setFilters: (filters: Filters) => void;
+  showFilters: boolean;
+  toggleFilters: () => void;
   setFilter: (filter: {
     location?: string;
     minPrice?: number;
@@ -116,6 +129,17 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [properties, setProperties] = useState<Property[]>(sampleProperties);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>(sampleProperties);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<Filters>({
+    category: 'all',
+    type: 'all',
+    minPrice: '',
+    maxPrice: ''
+  });
+
+  // Function to toggle filters visibility
+  const toggleFilters = () => setShowFilters(!showFilters);
 
   // Function to fetch properties from Supabase (can be implemented later)
   const fetchProperties = async () => {
@@ -127,13 +151,62 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       // For now, we're using the sample data
       setProperties(sampleProperties);
-      setFilteredProperties(sampleProperties);
+      applyFilters(sampleProperties, searchQuery, filters);
     } catch (error) {
       console.error("Error fetching properties:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  // Apply filters to properties
+  const applyFilters = (props: Property[], query: string, filterOptions: Filters) => {
+    let filtered = [...props];
+
+    // Apply search query filter
+    if (query) {
+      filtered = filtered.filter(property =>
+        property.title.toLowerCase().includes(query.toLowerCase()) ||
+        property.location.toLowerCase().includes(query.toLowerCase()) ||
+        property.propertyType.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+
+    // Apply category filter
+    if (filterOptions.category && filterOptions.category !== 'all') {
+      // Filter by category (could be extended based on your data model)
+    }
+
+    // Apply type filter
+    if (filterOptions.type && filterOptions.type !== 'all') {
+      filtered = filtered.filter(property =>
+        property.propertyType.toLowerCase() === filterOptions.type.toLowerCase()
+      );
+    }
+
+    // Apply min price filter
+    if (filterOptions.minPrice) {
+      filtered = filtered.filter(property => {
+        const priceValue = parseInt(property.price.replace(/[^\d]/g, ''), 10);
+        return priceValue >= Number(filterOptions.minPrice);
+      });
+    }
+
+    // Apply max price filter
+    if (filterOptions.maxPrice) {
+      filtered = filtered.filter(property => {
+        const priceValue = parseInt(property.price.replace(/[^\d]/g, ''), 10);
+        return priceValue <= Number(filterOptions.maxPrice);
+      });
+    }
+
+    setFilteredProperties(filtered);
+  };
+
+  // Update filtered properties when search query or filters change
+  useEffect(() => {
+    applyFilters(properties, searchQuery, filters);
+  }, [properties, searchQuery, filters]);
 
   useEffect(() => {
     fetchProperties();
@@ -187,6 +260,12 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         properties,
         filteredProperties,
         loading,
+        searchQuery,
+        setSearchQuery,
+        filters,
+        setFilters,
+        showFilters,
+        toggleFilters,
         setFilter,
         refreshProperties
       }}
