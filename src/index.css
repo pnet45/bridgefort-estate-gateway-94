@@ -122,6 +122,11 @@
   }
 }
 
+/* Ensure content starts below the navbar */
+main, section:first-child, .hero-section {
+  padding-top: 5rem;
+}
+
 @keyframes slideInFromLeft {
   0% {
     transform: translateX(-100%);

@@ -1,5 +1,8 @@
 
+import { User } from '@supabase/supabase-js';
+import { Eye, EyeOff } from 'lucide-react';
 import PropertyCard from '../PropertyCard';
+import { Button } from '@/components/ui/button';
 
 interface Property {
   id: string;
@@ -15,29 +18,29 @@ interface Property {
 
 interface PropertyGridProps {
   properties: Property[];
+  hiddenProperties?: string[];
+  user: User | null;
+  onToggleVisibility?: (propertyId: string) => void;
 }
 
-const PropertyGrid = ({ properties }: PropertyGridProps) => {
-  // Convert Bridgefort County property to a regular property in the list
-  let allProperties = [...properties];
-  
+const PropertyGrid = ({ properties, hiddenProperties = [], user, onToggleVisibility }: PropertyGridProps) => {
   // Check if Bridgefort already exists in the properties list
-  const bridgefortExists = allProperties.some(prop => prop.id === "bridgefort-county");
+  const bridgefortExists = properties.some(prop => prop.id === "bridgefort-county");
   
   // Add Bridgefort County if it doesn't exist yet
+  let allProperties = [...properties];
   if (!bridgefortExists) {
     const bridgefortProperty = {
       id: "bridgefort-county",
       title: "Bridgefort County - Lagoon Front Estate",
       location: "Ibeju-Lekki, Lagos",
       price: "₦19,500,000",
-      imageUrl: "/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png", // Updated image
+      imageUrl: "/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png",
       sqm: 500,
       propertyType: "Land",
       phase: 1
     };
     
-    // Add to the list (it will be shuffled later)
     allProperties.push(bridgefortProperty);
   }
   
@@ -53,19 +56,7 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
     return property;
   });
 
-  // Shuffle the properties array to get a random order
-  const shuffleProperties = (array: Property[]) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-  
-  const shuffledProperties = shuffleProperties(allProperties);
-
-  if (shuffledProperties.length === 0) {
+  if (allProperties.length === 0) {
     return (
       <div className="col-span-full text-center py-12">
         <p className="text-xl text-gray-500">No properties match your search criteria.</p>
@@ -76,14 +67,38 @@ const PropertyGrid = ({ properties }: PropertyGridProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {shuffledProperties.map(property => {
+      {allProperties.map(property => {
         const { scheme, phase, ...rest } = property;
+        const isHidden = hiddenProperties.includes(property.id);
+        
         return (
-          <PropertyCard 
-            key={property.id} 
-            {...rest}
-            phase={phase}
-          />
+          <div key={property.id} className="relative">
+            <PropertyCard 
+              {...rest}
+              phase={phase}
+            />
+            
+            {user && onToggleVisibility && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm hover:bg-white"
+                onClick={() => onToggleVisibility(property.id)}
+              >
+                {isHidden ? (
+                  <>
+                    <Eye size={16} className="mr-1" />
+                    <span className="text-xs">Show</span>
+                  </>
+                ) : (
+                  <>
+                    <EyeOff size={16} className="mr-1" />
+                    <span className="text-xs">Hide</span>
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         );
       })}
     </div>

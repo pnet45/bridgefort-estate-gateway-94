@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -162,15 +161,17 @@ const Dashboard = () => {
       
       <div className="flex-1 pt-24 pb-12 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
+          <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-estate-blue">Dashboard</h1>
-            <Button 
-              onClick={() => navigate('/create-post')}
-              className="bg-estate-blue hover:bg-estate-darkBlue"
-            >
-              <PlusIcon className="mr-2 h-4 w-4" />
-              Create New Post
-            </Button>
+            <div className="mt-6">
+              <Button 
+                onClick={() => navigate('/create-post')}
+                className="bg-estate-blue hover:bg-estate-darkBlue mx-auto"
+              >
+                <PlusIcon className="mr-2 h-4 w-4" />
+                Create New Post
+              </Button>
+            </div>
           </div>
           
           <div className="bg-white p-6 rounded-lg shadow-md">

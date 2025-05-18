@@ -1,9 +1,8 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
-// Define the property type
-export interface Property {
+interface Property {
   id: string;
   title: string;
   location: string;
@@ -11,47 +10,32 @@ export interface Property {
   imageUrl: string;
   sqm: number;
   propertyType: string;
-  category?: string;
-  type?: string;
   phase?: number;
-  scheme?: number;
 }
 
-// Define the filter type
-interface PropertyFilters {
-  category: string;
-  type: string;
-  minPrice: string;
-  maxPrice: string;
-}
-
-// Define the context type
 interface PropertyContextType {
-  allProperties: Property[];
+  properties: Property[];
   filteredProperties: Property[];
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  filters: PropertyFilters;
-  setFilters: (filters: PropertyFilters) => void;
-  showFilters: boolean;
-  toggleFilters: () => void;
+  loading: boolean;
+  setFilter: (filter: {
+    location?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    propertyType?: string;
+  }) => void;
+  refreshProperties: () => Promise<void>;
 }
 
-// Create the context
-const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
-
-// Sample properties data
-const allProperties = [
+// Sample data for properties
+const sampleProperties = [
   {
     id: '1',
     title: 'Hampton Ville Estate',
     location: 'Itoikin, Epe, Lagos',
     price: '₦3,500,000',
-    imageUrl: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/lovable-uploads/5f92d89a-e9fc-4c84-a49d-72cb376b8510.png',
     sqm: 500,
     propertyType: 'Land',
-    category: 'buy',
-    type: 'residential',
     phase: 1
   },
   {
@@ -59,226 +43,152 @@ const allProperties = [
     title: 'Fortress Hills Estate',
     location: 'Imota, Ikorodu, Lagos',
     price: '₦4,000,000',
-    imageUrl: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/lovable-uploads/b6b178d0-ae26-4527-9569-dce064d705b9.png',
     sqm: 500,
     propertyType: 'Land',
-    category: 'buy',
-    type: 'residential',
     phase: 1
   },
   {
     id: '3',
-    title: 'Greenfield County',
-    location: 'Agbara, Ogun State',
+    title: 'Precious Garden Estate',
+    location: 'Ode-Omi Via Ibeju-Lekki, Lagos',
     price: '₦1,500,000',
-    imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/lovable-uploads/5c033a2a-1e10-49b7-b7de-5b56e384b9d5.png',
     sqm: 500,
     propertyType: 'Land',
-    category: 'buy',
-    type: 'residential',
     phase: 1
   },
   {
     id: '4',
-    title: 'Precious Gardens Estate',
-    location: 'Ode-Omi, Ibeju-Lekki',
-    price: '₦1,500,000',
-    imageUrl: 'https://images.unsplash.com/photo-1598928636135-d146006ff4be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    title: 'Estate Four',
+    location: 'Lagos Island, Lagos',
+    price: '₦5,000,000',
+    imageUrl: '/lovable-uploads/0ce2a221-82bc-451d-96af-0c1941da3e67.png',
     sqm: 500,
     propertyType: 'Land',
-    category: 'buy',
-    type: 'residential',
-    scheme: 1
+    phase: 1
   },
   {
     id: '5',
-    title: 'Fountain Springs Estate',
-    location: 'Ode-Omi, Ibeju-Lekki',
-    price: 'Pre-Launch ₦2,500,000 | Actual Price: ₦3,500,000',
-    imageUrl: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    title: 'Estate Five',
+    location: 'Victoria Island, Lagos',
+    price: '₦10,000,000',
+    imageUrl: '/lovable-uploads/d22fc324-491b-4130-abe6-8ca58eea41f5.png',
     sqm: 500,
     propertyType: 'Land',
-    category: 'buy',
-    type: 'residential',
     phase: 1
   },
   {
     id: '6',
-    title: 'Olanma Gardens',
-    location: 'Ogbaku, Owerri, Imo State',
-    price: 'Promo Price: ₦7,500,000 | Actual Price: ₦10,000,000',
-    imageUrl: 'https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    sqm: 464,
+    title: 'Estate Six',
+    location: 'Lekki, Lagos',
+    price: '₦8,500,000',
+    imageUrl: '/lovable-uploads/e31d4e61-7436-4a63-a118-84656f87dd4c.png',
+    sqm: 500,
     propertyType: 'Land',
-    category: 'buy',
-    type: 'residential',
     phase: 1
   },
   {
     id: '7',
-    title: 'The Big League County',
-    location: 'Warri, Delta State',
-    price: '₦10,000,000 | Initial Deposit: ₦2,000,000',
-    imageUrl: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    sqm: 464,
+    title: 'Estate Seven',
+    location: 'Ajah, Lagos',
+    price: '₦7,000,000',
+    imageUrl: '/lovable-uploads/4f01a4aa-9e4d-4670-8ae0-1d983713856f.png',
+    sqm: 500,
     propertyType: 'Land',
-    category: 'buy',
-    type: 'residential',
-    phase: 1
+    phase: 2
   },
   {
     id: '8',
-    title: 'The Big League Smart City',
-    location: 'Omagwa, Port Harcourt',
-    price: '₦4,500,000 | Initial Deposit: ₦1,000,000',
-    imageUrl: 'https://images.unsplash.com/photo-1604014237800-1c9102c219da?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    sqm: 464,
+    title: 'Estate Eight',
+    location: 'Ikeja, Lagos',
+    price: '₦6,200,000',
+    imageUrl: '/lovable-uploads/45a1964f-920e-46ef-b23a-31c95fe79867.png',
+    sqm: 500,
     propertyType: 'Land',
-    category: 'buy',
-    type: 'commercial',
-    phase: 1
+    phase: 2
   },
-  {
-    id: '9',
-    title: 'The Big League Paradise',
-    location: 'Oghara, Ethiope, Delta State',
-    price: '₦4,000,000 | Initial Deposit: ₦1,500,000',
-    imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    sqm: 464,
-    propertyType: 'Land',
-    category: 'buy',
-    type: 'land',
-    phase: 1
-  },
-  {
-    id: '10',
-    title: 'Akuchi Luxury Estate',
-    location: 'Ifite, Awka, Anambra State',
-    price: 'Promo Price: ₦7,500,000 | Actual Price: ₦10,000,000',
-    imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    sqm: 464,
-    propertyType: 'Land',
-    category: 'buy',
-    type: 'land',
-    phase: 1
-  },
-  {
-    id: '11',
-    title: 'Afaoma Castle Estate',
-    location: 'Utulu, Umuahia, Abia State',
-    price: 'Promo Price: ₦7,500,000 | Actual Price: ₦10,000,000',
-    imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    sqm: 464,
-    propertyType: 'Land',
-    category: 'buy',
-    type: 'land',
-    phase: 1
-  },
-  {
-    id: '12',
-    title: 'The Big League Haven',
-    location: 'Ogwashi-Uku, Asaba, Delta State',
-    price: '₦7,500,000 | Initial Deposit: ₦1,000,000',
-    imageUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    sqm: 464,
-    propertyType: 'Land',
-    category: 'buy',
-    type: 'land',
-    phase: 1
-  }
 ];
 
-// Provider component
-export const PropertyProvider: React.FC<{children: ReactNode}> = ({ children }) => {
-  const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState({
-    category: 'all',
-    type: 'all',
-    minPrice: '',
-    maxPrice: ''
-  });
-  const [showFilters, setShowFilters] = useState(false);
-  const [filteredProperties, setFilteredProperties] = useState(allProperties);
+const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
 
-  // Parse URL query parameters
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    
-    // Set filters based on URL parameters
-    if (params.has('location')) {
-      setSearchQuery(params.get('location') || '');
-    }
-    
-    if (params.has('type')) {
-      setFilters(prev => ({
-        ...prev,
-        type: params.get('type') || 'all'
-      }));
-    }
-    
-    if (params.has('price')) {
-      const priceRange = params.get('price') || '';
-      if (priceRange.includes('-')) {
-        const [min, max] = priceRange.split('-');
-        setFilters(prev => ({
-          ...prev,
-          minPrice: min || '',
-          maxPrice: max || ''
-        }));
-      } else if (priceRange.endsWith('+')) {
-        setFilters(prev => ({
-          ...prev,
-          minPrice: priceRange.replace('+', '') || ''
-        }));
-      }
-    }
-    
-    // Scroll to top when page loads or URL changes
-    window.scrollTo(0, 0);
-  }, [location]);
+export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [properties, setProperties] = useState<Property[]>(sampleProperties);
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>(sampleProperties);
+  const [loading, setLoading] = useState(false);
 
-  // Filter properties based on selected filters and search query
+  // Function to fetch properties from Supabase (can be implemented later)
+  const fetchProperties = async () => {
+    setLoading(true);
+    try {
+      // In the future, this could be replaced with a real API call
+      // const { data, error } = await supabase.from('properties').select('*');
+      // if (data) setProperties(data);
+      
+      // For now, we're using the sample data
+      setProperties(sampleProperties);
+      setFilteredProperties(sampleProperties);
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const filtered = allProperties.filter(property => {
-      // Filter by category
-      const categoryMatch = filters.category === 'all' || property.category === filters.category;
-      
-      // Filter by type
-      const typeMatch = filters.type === 'all' || property.type === filters.type;
-      
-      // Filter by price
-      const price = parseInt(property.price.replace(/[^0-9]/g, ''));
-      const minPriceMatch = !filters.minPrice || price >= parseInt(filters.minPrice);
-      const maxPriceMatch = !filters.maxPrice || price <= parseInt(filters.maxPrice);
-      
-      // Filter by search query
-      const searchMatch = !searchQuery || 
-        property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        property.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        property.propertyType.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      return categoryMatch && typeMatch && minPriceMatch && maxPriceMatch && searchMatch;
-    });
+    fetchProperties();
+  }, []);
+
+  const setFilter = (filter: {
+    location?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    propertyType?: string;
+  }) => {
+    let filtered = [...properties];
+
+    if (filter.location) {
+      filtered = filtered.filter(property =>
+        property.location.toLowerCase().includes(filter.location!.toLowerCase())
+      );
+    }
+
+    if (filter.propertyType) {
+      filtered = filtered.filter(property =>
+        property.propertyType.toLowerCase() === filter.propertyType!.toLowerCase()
+      );
+    }
+
+    if (filter.minPrice !== undefined) {
+      filtered = filtered.filter(property => {
+        // Extract numeric value from price string (e.g., ₦3,500,000 -> 3500000)
+        const priceValue = parseInt(property.price.replace(/[^\d]/g, ''), 10);
+        return priceValue >= filter.minPrice!;
+      });
+    }
+
+    if (filter.maxPrice !== undefined) {
+      filtered = filtered.filter(property => {
+        const priceValue = parseInt(property.price.replace(/[^\d]/g, ''), 10);
+        return priceValue <= filter.maxPrice!;
+      });
+    }
 
     setFilteredProperties(filtered);
-  }, [searchQuery, filters]);
-
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
+  };
+  
+  const refreshProperties = async () => {
+    await fetchProperties();
   };
 
   return (
     <PropertyContext.Provider
       value={{
-        allProperties,
+        properties,
         filteredProperties,
-        searchQuery,
-        setSearchQuery,
-        filters,
-        setFilters,
-        showFilters,
-        toggleFilters
+        loading,
+        setFilter,
+        refreshProperties
       }}
     >
       {children}
@@ -286,10 +196,9 @@ export const PropertyProvider: React.FC<{children: ReactNode}> = ({ children }) 
   );
 };
 
-// Custom hook to use the property context
 export const usePropertyContext = () => {
   const context = useContext(PropertyContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('usePropertyContext must be used within a PropertyProvider');
   }
   return context;

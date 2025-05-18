@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase, type Tables } from '@/integrations/supabase/client';
@@ -90,6 +91,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(currentSession?.user ?? null);
           
           if (currentSession?.user) {
+            // Show toast on successful sign in
+            if (event === 'SIGNED_IN') {
+              toast({
+                title: "Login successful",
+                description: "Welcome back!",
+              });
+            }
+            
             // Use setTimeout to avoid potential circular dependencies with Supabase client
             setTimeout(async () => {
               const role = await fetchUserRole(currentSession.user.id);
@@ -144,10 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error };
       }
       
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
+      // Toast notification is now handled in the auth state change listener
       
       return { error: null };
     } catch (err) {

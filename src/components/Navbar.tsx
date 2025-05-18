@@ -58,49 +58,49 @@ const Navbar = () => {
           
           <div className="hidden lg:flex items-center space-x-6">
             <NavLink to="/" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
             }>
-              Home
+              <span className="font-bold">Home</span>
             </NavLink>
             <NavLink to="/about" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
             }>
-              About
+              <span className="font-bold">About</span>
             </NavLink>
             <NavLink to="/blog" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
             }>
-              Blog
+              <span className="font-bold">Blog</span>
             </NavLink>
             <NavLink to="/contact" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
             }>
-              Contact
+              <span className="font-bold">Contact</span>
             </NavLink>
             <NavLink to="/properties" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
             }>
-              Properties
+              <span className="font-bold">Properties</span>
             </NavLink>
             <NavLink to="/services" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
             }>
-              Services
+              <span className="font-bold">Services</span>
             </NavLink>
             <NavLink to="/buy2sell" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
             }>
-              Buy2Sell
+              <span className="font-bold">Buy2Sell</span>
             </NavLink>
             <NavLink to="/training" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
             }>
-              Training
+              <span className="font-bold">Training</span>
             </NavLink>
             
-            <div className="flex items-center text-estate-blue">
-              <Phone size={18} className="mr-1" />
-              <span className="font-bold">+234 703 123 4567</span>
+            <div className="flex items-center">
+              <Phone size={18} className="mr-1 text-blue-500" />
+              <span className="font-bold text-blue-500">+234 703 123 4567</span>
             </div>
             
             {shouldShowLogin && (
@@ -143,7 +143,7 @@ const Navbar = () => {
           </div>
           
           <div className="lg:hidden flex items-center">
-            <div className="flex items-center text-estate-blue mr-4">
+            <div className="flex items-center text-blue-500 mr-4">
               <Phone size={16} className="mr-1" />
               <span className="text-sm font-bold">+234 703 123 4567</span>
             </div>
@@ -167,35 +167,35 @@ const Navbar = () => {
       {isOpen && (
         <div className="lg:hidden bg-white shadow-lg py-4 px-4 absolute w-full">
           <div className="flex flex-col space-y-3">
-            <NavLink to="/" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              Home
+            <NavLink to="/" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">Home</span>
             </NavLink>
-            <NavLink to="/about" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              About
+            <NavLink to="/about" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">About</span>
             </NavLink>
-            <NavLink to="/blog" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              Blog
+            <NavLink to="/blog" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">Blog</span>
             </NavLink>
-            <NavLink to="/contact" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              Contact
+            <NavLink to="/contact" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">Contact</span>
             </NavLink>
-            <NavLink to="/properties" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              Properties
+            <NavLink to="/properties" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">Properties</span>
             </NavLink>
-            <NavLink to="/services" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              Services
+            <NavLink to="/services" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">Services</span>
             </NavLink>
-            <NavLink to="/buy2sell" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              Buy2Sell
+            <NavLink to="/buy2sell" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">Buy2Sell</span>
             </NavLink>
-            <NavLink to="/training" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              Training
+            <NavLink to="/training" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">Training</span>
             </NavLink>
             {shouldShowLogin && (
               user ? (
                 <>
-                  <NavLink to="/dashboard" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-                    Dashboard
+                  <NavLink to="/dashboard" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+                    <span className="font-bold">Dashboard</span>
                   </NavLink>
                   <Button variant="ghost" className="justify-start px-2" onClick={() => { handleSignOut(); toggleMenu(); }}>
                     <LogOut size={16} className="mr-2" />
