@@ -9,7 +9,7 @@ import WhyChooseUs from '../components/home/WhyChooseUs';
 import Testimonials from '../components/home/Testimonials';
 import Partners from '../components/home/Partners';
 import CTASection from '../components/home/CTASection';
-import { PropertyProvider } from '../contexts/PropertyContext';
+import { PropertyProvider } from '../contexts/property';
 import SeminarAndTraining from '../components/home/SeminarAndTraining';
 import HomeHeroImage from '@/components/HomeHeroImage';
 import YouTubeSection from '../components/home/YouTubeSection';

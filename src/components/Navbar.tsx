@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { Menu, X, ChevronDown, User, LogOut, Phone } from 'lucide-react';
 import { 
   DropdownMenu,
