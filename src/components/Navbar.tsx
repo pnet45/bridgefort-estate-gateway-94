@@ -97,9 +97,9 @@ const Navbar = () => {
               <span className="font-bold">Training</span>
             </NavLink>
             
-            <div className="flex items-center">
-              <Phone size={18} className="mr-1 text-blue-500" />
-              <span className="font-bold text-blue-500">+234 703 123 4567</span>
+            <div className="flex items-center text-estate-blue">
+              <Phone size={18} className="mr-1" />
+              <span className="font-bold">+234 803 062 4059</span>
             </div>
             
             {shouldShowLogin && (
