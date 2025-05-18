@@ -5,7 +5,7 @@ import { Linkedin, Mail, Phone } from 'lucide-react';
 const managementTeam = [{
   name: 'Dalvin Silva, PhD',
   role: 'MD/CEO',
-  bio: 'As the Managing Director and Chief Executive Officer, Silva brings visionary leadership and over 15 years of real estate expertise to the company. He oversees strategic planning, growth initiatives, and ensures the delivery of top-tier services to clients.',
+  bio: 'As the Managing Director and Chief Executive Officer, Silva brings visionary leadership and over 10 years of real estate expertise to the company. He oversees strategic planning, growth initiatives, and ensures the delivery of top-tier services to clients.',
   imageUrl: '/lovable-uploads/Dalvin-Silva-PhD.jpg',
   social: {
     linkedin: 'https://linkedin.com/Dalvinsilva',
