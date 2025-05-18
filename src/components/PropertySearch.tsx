@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { usePropertyContext } from '../contexts/PropertyContext';
+import { usePropertyContext } from '../contexts/property';
 import { toast } from "@/hooks/use-toast";
 
 const PropertySearch = () => {

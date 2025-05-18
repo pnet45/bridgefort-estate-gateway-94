@@ -4,7 +4,7 @@ import Footer from '../components/Footer';
 import PropertyFilters from '../components/properties/PropertyFilters';
 import PropertyHero from '../components/properties/PropertyHero';
 import PropertyList from '../components/properties/PropertyList';
-import { PropertyProvider } from '../contexts/PropertyContext';
+import { PropertyProvider } from '../contexts/property';
 import SubscriptionGuide from '../components/properties/SubscriptionGuide';
 import { Toaster } from '@/components/ui/toaster';
 

@@ -1,6 +1,6 @@
 
 import { Search, Filter } from 'lucide-react';
-import { usePropertyContext } from '../../contexts/PropertyContext';
+import { usePropertyContext } from '../../contexts/property';
 
 const PropertyFilters = () => {
   const {
