@@ -86,7 +86,6 @@ const Navbar = () => {
             }>
               <span className="font-bold">Training</span>
             </NavLink>
-
             <NavLink to="/contact" className={({isActive}) => 
               `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
             }>
@@ -110,7 +109,7 @@ const Navbar = () => {
                     <Button variant="outline" className="flex items-center gap-2 border-0">
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="bg-estate-blue text-white">
-                          {getInitials()}
+                          {getUserName()}
                         </AvatarFallback>
                       </Avatar>
                       <span className="hidden md:inline">{getUserName()}</span>
@@ -173,12 +172,6 @@ const Navbar = () => {
             <NavLink to="/about" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
               <span className="font-bold">About</span>
             </NavLink>
-            <NavLink to="/blog" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Blog</span>
-            </NavLink>
-            <NavLink to="/contact" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Contact</span>
-            </NavLink>
             <NavLink to="/properties" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
               <span className="font-bold">Properties</span>
             </NavLink>
@@ -190,6 +183,12 @@ const Navbar = () => {
             </NavLink>
             <NavLink to="/training" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
               <span className="font-bold">Training</span>
+            </NavLink>
+            <NavLink to="/contact" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">Contact</span>
+            </NavLink>
+            <NavLink to="/blog" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">Blog</span>
             </NavLink>
             {shouldShowLogin && (
               user ? (
