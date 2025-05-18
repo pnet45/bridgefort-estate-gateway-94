@@ -86,21 +86,19 @@ const Navbar = () => {
             }>
               <span className="font-bold">Training</span>
             </NavLink>
-            <NavLink to="/contact" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">Contact</span>
-            </NavLink>
-            <NavLink to="/blog" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">Blog</span>
-            </NavLink>
-            
-            <div className="flex items-center text-estate-blue">
-              <Phone size={18} className="mr-1" />
-              <span className="font-bold">+234 803 062 4059</span>
-            </div>
+
+             {/* CTA Button */}
+          <div className="hidden md:flex items-center ml-4">
+            <a href="tel:+2348030624059" className="flex items-center text-red font-bold whitespace-nowrap hover:text-red transition duration-200">
+              <Phone size={18} className="mr-2 text-blue-500"/>
+              <span>+2348030624059</span>
+            </a>
+          </div>
+                        
+            {/*<div className="flex items-center">
+              <Phone size={18} className="mr-1 text-blue-500" />
+              <span className="font-bold text-blue-500">+234 703 123 4567</span>
+            </div>*/}
             
             {shouldShowLogin && (
               user ? (
