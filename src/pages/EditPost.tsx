@@ -1,25 +1,34 @@
-import { useEffect, useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { useAuth } from '@/contexts/auth';
-import Footer from '../components/Footer';
-import PostForm from '../components/blog/PostForm';
-import { supabase } from '@/integrations/supabase/client';
-import { CATEGORY_OPTIONS } from '../components/blog/PostFormConstants';
-import { toast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
 import { Toaster } from '@/components/ui/toaster';
+import { PostForm } from '@/components/blog/PostForm';
+import { supabase } from '@/integrations/supabase/client';
+import { CATEGORIES } from '../components/blog/PostFormConstants';
+import { useAuth } from '@/contexts/auth';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { toast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 const EditPost = () => {
+  const [post, setPost] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [post, setPost] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPost = async () => {
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+
       if (!id) {
-        console.error("Post ID is missing.");
+        navigate('/dashboard');
         return;
       }
 
@@ -30,84 +39,150 @@ const EditPost = () => {
           .eq('id', id)
           .single();
 
-        if (error) {
-          console.error("Error fetching post:", error);
+        if (error) throw error;
+
+        if (data.author_id !== user.id) {
           toast({
-            title: "Error",
-            description: "Failed to load post.",
-            variant: "destructive",
+            title: "Unauthorized",
+            description: "You do not have permission to edit this post",
+            variant: "destructive"
           });
+          navigate('/dashboard');
+          return;
         }
 
-        if (data) {
-          setPost(data);
-        }
+        setPost(data);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Error fetching post",
+          variant: "destructive"
+        });
+        navigate('/dashboard');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchPost();
-  }, [id]);
+  }, [id, user, navigate]);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: {
+    title: string;
+    content: string;
+    excerpt: string;
+    category: string;
+    isPublished: boolean;
+    fileSelected: File | null;
+  }) => {
+    if (!user || !post) return;
+
+    setIsSubmitting(true);
+
     try {
-      if (!id) {
-        console.error("Post ID is missing.");
-        return;
+      let imagePath = post.image_path;
+
+      // Upload new image if provided
+      if (values.fileSelected) {
+        const fileExt = values.fileSelected.name.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExt}`;
+        const filePath = `blog/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('public')
+          .upload(filePath, values.fileSelected);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data } = supabase.storage.from('public').getPublicUrl(filePath);
+        imagePath = data.publicUrl;
       }
 
-      const { data, error } = await supabase
+      // Update post
+      const { error } = await supabase
         .from('posts')
         .update({
-          ...values,
-          updated_at: new Date().toISOString(),
+          title: values.title,
+          content: values.content,
+          excerpt: values.excerpt,
+          category: values.category,
+          published: values.isPublished,
+          image_path: imagePath,
+          updated_at: new Date().toISOString()
         })
         .eq('id', id);
 
-      if (error) {
-        console.error("Error updating post:", error);
-        toast({
-          title: "Error",
-          description: "Failed to update post.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: "Post updated successfully.",
-        });
-        navigate('/dashboard');
-      }
-    } catch (error) {
-      console.error("Error during post update:", error);
+      if (error) throw error;
+
+      toast({
+        title: "Post Updated",
+        description: "Your post has been updated successfully"
+      });
+
+      navigate('/dashboard');
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
+        description: error.message || "An error occurred while updating the post",
+        variant: "destructive"
       });
+      console.error('Error updating post:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  const generateInitialValues = () => {
+    if (!post) return null;
+
+    return {
+      title: post.title || '',
+      content: post.content || '',
+      excerpt: post.excerpt || '',
+      category: post.category || CATEGORIES[0],
+      isPublished: post.published || false,
+      previewImage: post.image_path || null
+    };
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <main className="flex-grow flex items-center justify-center pt-28 pb-12">
+          <div className="text-center">
+            <Loader2 className="animate-spin h-8 w-8 text-estate-blue mx-auto" />
+            <p className="mt-4 text-gray-500">Loading post...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
-  if (!post) {
-    return <div className="flex items-center justify-center h-screen">Post not found</div>;
-  }
+  const initialValues = generateInitialValues();
+  if (!initialValues) return null;
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <h1 className="text-3xl font-semibold mb-4">Edit Post</h1>
-        <PostForm
-          initialValues={post}
-          onSubmit={handleSubmit}
-          categoryOptions={CATEGORY_OPTIONS}
-        />
+      
+      <main className="flex-grow pt-28 pb-12">
+        <div className="container-custom">
+          <PostForm
+            initialValues={initialValues}
+            onCancel={() => navigate('/dashboard')}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            submitLabel="Update Post"
+            cancelLabel="Cancel"
+            title="Edit Blog Post"
+          />
+        </div>
       </main>
+
       <Footer />
       <Toaster />
     </div>

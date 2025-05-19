@@ -1,80 +1,121 @@
-import { useState } from 'react';
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { useAuth } from '@/contexts/auth';
-import PostForm from '../components/blog/PostForm';
-import Footer from '../components/Footer';
-import { CATEGORY_OPTIONS, INITIAL_POST } from '../components/blog/PostFormConstants';
-import { supabase } from '@/integrations/supabase/client';
-import { generateSlug } from '../utils/postUtils';
+import { v4 as uuidv4 } from 'uuid';
 import { Toaster } from '@/components/ui/toaster';
+import { PostForm } from '@/components/blog/PostForm';
+import { supabase } from '@/integrations/supabase/client';
+import { CATEGORIES, INITIAL_POST } from '../components/blog/PostFormConstants';
+import { useAuth } from '@/contexts/auth';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { toast } from '@/hooks/use-toast';
 
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+};
+
 const CreatePost = () => {
-  const [post, setPost] = useState(INITIAL_POST);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (values: {
+    title: string;
+    content: string;
+    excerpt: string;
+    category: string;
+    isPublished: boolean;
+    fileSelected: File | null;
+  }) => {
     if (!user) {
       toast({
-        title: 'Not authenticated',
-        description: 'You must be logged in to create a post.',
-        variant: 'destructive',
+        title: "Authentication Required",
+        description: "You must be logged in to create a post",
+        variant: "destructive"
       });
+      navigate('/auth');
       return;
     }
 
-    setLoading(true);
-    try {
-      const slug = generateSlug(post.title);
-      const { data, error } = await supabase
-        .from('posts')
-        .insert([
-          {
-            ...post,
-            slug,
-            user_id: user.id,
-          },
-        ])
-        .select()
-        .single();
+    setIsSubmitting(true);
 
-      if (error) {
-        throw new Error(error.message);
+    try {
+      let imagePath = null;
+
+      // Upload image if provided
+      if (values.fileSelected) {
+        const fileExt = values.fileSelected.name.split('.').pop();
+        const fileName = `${uuidv4()}.${fileExt}`;
+        const filePath = `blog/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('public')
+          .upload(filePath, values.fileSelected);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        const { data } = supabase.storage.from('public').getPublicUrl(filePath);
+        imagePath = data.publicUrl;
       }
 
-      toast({
-        title: 'Success',
-        description: 'Post created successfully!',
+      // Create post
+      const { error } = await supabase.from('posts').insert({
+        title: values.title,
+        content: values.content,
+        excerpt: values.excerpt,
+        category: values.category,
+        published: values.isPublished,
+        author_id: user.id,
+        image_path: imagePath,
+        slug: generateSlug(values.title),
       });
 
-      navigate(`/blog/${data.slug}`);
+      if (error) throw error;
+
+      toast({
+        title: "Post Created",
+        description: "Your post has been created successfully"
+      });
+
+      navigate('/blog');
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
+        title: "Error",
+        description: error.message || "An error occurred while creating the post",
+        variant: "destructive"
       });
+      console.error('Error creating post:', error);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <h1 className="text-3xl font-semibold mb-4">Create New Post</h1>
-        <PostForm
-          post={post}
-          setPost={setPost}
-          onSubmit={handleSubmit}
-          loading={loading}
-          CATEGORY_OPTIONS={CATEGORY_OPTIONS}
-        />
+      
+      <main className="flex-grow pt-28 pb-12">
+        <div className="container-custom">
+          <PostForm
+            initialValues={INITIAL_POST}
+            onCancel={() => navigate('/dashboard')}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            submitLabel="Create Post"
+            cancelLabel="Cancel"
+            title="Create New Blog Post"
+          />
+        </div>
       </main>
+
       <Footer />
       <Toaster />
     </div>

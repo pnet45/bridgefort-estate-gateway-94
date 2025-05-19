@@ -9,6 +9,144 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      BlogPost: {
+        Row: {
+          created_at: string
+          Date: string | null
+          email: string | null
+          FirstName: string | null
+          Header: string | null
+          id: number
+          LastName: string | null
+          Post: string | null
+        }
+        Insert: {
+          created_at?: string
+          Date?: string | null
+          email?: string | null
+          FirstName?: string | null
+          Header?: string | null
+          id?: number
+          LastName?: string | null
+          Post?: string | null
+        }
+        Update: {
+          created_at?: string
+          Date?: string | null
+          email?: string | null
+          FirstName?: string | null
+          Header?: string | null
+          id?: number
+          LastName?: string | null
+          Post?: string | null
+        }
+        Relationships: []
+      }
+      estate: {
+        Row: {
+          actual_price: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          location: string | null
+          media: string[] | null
+          name: string
+          phase: number | null
+          prelaunch_price: number | null
+          promo_price: number | null
+          scheme: number | null
+          size: number | null
+          sub_form: string | null
+          title: string | null
+          type: string | null
+        }
+        Insert: {
+          actual_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          media?: string[] | null
+          name: string
+          phase?: number | null
+          prelaunch_price?: number | null
+          promo_price?: number | null
+          scheme?: number | null
+          size?: number | null
+          sub_form?: string | null
+          title?: string | null
+          type?: string | null
+        }
+        Update: {
+          actual_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          media?: string[] | null
+          name?: string
+          phase?: number | null
+          prelaunch_price?: number | null
+          promo_price?: number | null
+          scheme?: number | null
+          size?: number | null
+          sub_form?: string | null
+          title?: string | null
+          type?: string | null
+        }
+        Relationships: []
+      }
+      Estate: {
+        Row: {
+          ActualPrice: number | null
+          created_at: string
+          Description: string | null
+          EstateName: string | null
+          id: number
+          Location: string | null
+          Media: string[] | null
+          Phase: number | null
+          PreLaunchPrice: number | null
+          PromoPrice: number | null
+          Scheme: number | null
+          size: number | null
+          Tittle: string | null
+          Type: string | null
+        }
+        Insert: {
+          ActualPrice?: number | null
+          created_at?: string
+          Description?: string | null
+          EstateName?: string | null
+          id?: number
+          Location?: string | null
+          Media?: string[] | null
+          Phase?: number | null
+          PreLaunchPrice?: number | null
+          PromoPrice?: number | null
+          Scheme?: number | null
+          size?: number | null
+          Tittle?: string | null
+          Type?: string | null
+        }
+        Update: {
+          ActualPrice?: number | null
+          created_at?: string
+          Description?: string | null
+          EstateName?: string | null
+          id?: number
+          Location?: string | null
+          Media?: string[] | null
+          Phase?: number | null
+          PreLaunchPrice?: number | null
+          PromoPrice?: number | null
+          Scheme?: number | null
+          size?: number | null
+          Tittle?: string | null
+          Type?: string | null
+        }
+        Relationships: []
+      }
       hidden_properties: {
         Row: {
           created_at: string | null
@@ -33,6 +171,66 @@ export type Database = {
         }
         Relationships: []
       }
+      training_registrations: {
+        Row: {
+          address: string | null
+          country: string | null
+          email: string
+          event_date: string | null
+          event_title: string | null
+          gender: string | null
+          id: string
+          invite_another: boolean | null
+          invitee_name: string | null
+          invitee_phone: string | null
+          is_pbo: string | null
+          local_government: string | null
+          name: string
+          need_reminder: boolean | null
+          phone: string
+          registered_at: string | null
+          state: string | null
+        }
+        Insert: {
+          address?: string | null
+          country?: string | null
+          email: string
+          event_date?: string | null
+          event_title?: string | null
+          gender?: string | null
+          id?: string
+          invite_another?: boolean | null
+          invitee_name?: string | null
+          invitee_phone?: string | null
+          is_pbo?: string | null
+          local_government?: string | null
+          name: string
+          need_reminder?: boolean | null
+          phone: string
+          registered_at?: string | null
+          state?: string | null
+        }
+        Update: {
+          address?: string | null
+          country?: string | null
+          email?: string
+          event_date?: string | null
+          event_title?: string | null
+          gender?: string | null
+          id?: string
+          invite_another?: boolean | null
+          invitee_name?: string | null
+          invitee_phone?: string | null
+          is_pbo?: string | null
+          local_government?: string | null
+          name?: string
+          need_reminder?: boolean | null
+          phone?: string
+          registered_at?: string | null
+          state?: string | null
+        }
+        Relationships: []
+      }
       User: {
         Row: {
           created_at: string
@@ -48,6 +246,27 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: number
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string
         }
         Relationships: []
       }

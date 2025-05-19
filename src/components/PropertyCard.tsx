@@ -23,15 +23,11 @@ const PropertyCard = ({
   propertyType,
   phase = 1
 }: PropertyCardProps) => {
-  // Update image URL for Precious Gardens Estate
-  const displayImageUrl = title === "Precious Garden Estate" ? 
-    "/lovable-uploads/5c033a2a-1e10-49b7-b7de-5b56e384b9d5.png" : imageUrl;
-
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 group">
       <div className="relative overflow-hidden h-64">
         <img 
-          src={displayImageUrl} 
+          src={imageUrl} 
           alt={title} 
           className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
         />
@@ -63,7 +59,7 @@ const PropertyCard = ({
 
         <div className="mt-4">
           <PropertyDetailsDialog 
-            property={{ id, title, location, price, imageUrl: displayImageUrl, propertyType }}
+            property={{ id, title, location, price, imageUrl, propertyType }}
           >
             <button 
               className="block w-full text-center py-2 bg-white border border-estate-blue text-estate-blue rounded font-medium hover:bg-estate-blue hover:text-white transition duration-300"

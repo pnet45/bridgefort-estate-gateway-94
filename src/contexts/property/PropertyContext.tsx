@@ -1,16 +1,16 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Property, Filters, PropertyContextType } from './types';
-import { sampleProperties } from './sampleData';
 import { applyFilters, applyCustomFilters } from './propertyUtils';
 import { supabase } from '@/integrations/supabase/client';
+import { Estate } from '@/types/estate';
 
 const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
 
 export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [properties, setProperties] = useState<Property[]>(sampleProperties);
-  const [filteredProperties, setFilteredProperties] = useState<Property[]>(sampleProperties);
-  const [loading, setLoading] = useState(false);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>({
@@ -23,17 +23,34 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Function to toggle filters visibility
   const toggleFilters = () => setShowFilters(!showFilters);
 
-  // Function to fetch properties from Supabase (can be implemented later)
+  // Function to fetch properties from Supabase
   const fetchProperties = async () => {
     setLoading(true);
     try {
-      // In the future, this could be replaced with a real API call
-      // const { data, error } = await supabase.from('properties').select('*');
-      // if (data) setProperties(data);
+      const { data: estates, error } = await supabase
+        .from('Estate')
+        .select('*');
       
-      // For now, we're using the sample data
-      setProperties(sampleProperties);
-      setFilteredProperties(applyFilters(sampleProperties, searchQuery, filters));
+      if (error) {
+        throw error;
+      }
+      
+      if (estates) {
+        // Convert database estates to our Property format
+        const propertyData: Property[] = estates.map((estate: Estate) => ({
+          id: estate.id,
+          title: estate.name,
+          location: estate.location || '',
+          price: estate.promo_price ? `₦${estate.promo_price?.toLocaleString()}` : 'Price on Request',
+          imageUrl: estate.media && estate.media.length > 0 ? estate.media[0] : '/placeholder.svg',
+          sqm: estate.size || 0,
+          propertyType: estate.type || 'Land',
+          phase: estate.phase
+        }));
+        
+        setProperties(propertyData);
+        setFilteredProperties(applyFilters(propertyData, searchQuery, filters));
+      }
     } catch (error) {
       console.error("Error fetching properties:", error);
     } finally {
