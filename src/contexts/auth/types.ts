@@ -15,3 +15,12 @@ export interface AuthContextType {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
+
+export interface UserProfile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  avatar_url?: string;
+  updated_at?: string;
+}
