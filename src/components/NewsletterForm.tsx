@@ -2,120 +2,92 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import { z } from 'zod';
-
-const subscriptionSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" })
-});
-
-const BREVO_API_KEY = "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";
-const BREVO_LIST_ID = 2;
+import { toast } from '@/hooks/use-toast';
+import { supabase } from "@/integrations/supabase/client";
 
 const NewsletterForm = () => {
   const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
+  const [submitting, setSubmitting] = useState(false);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      const validatedInput = subscriptionSchema.parse({ email });
-      setIsSubmitting(true);
-      
-      // Use the Brevo API directly via fetch
-      const response = await fetch('https://api.sendinblue.com/v3/contacts', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'api-key': BREVO_API_KEY
-        },
-        body: JSON.stringify({
-          email: validatedInput.email,
-          listIds: [BREVO_LIST_ID],
-          updateEnabled: true
-        })
+    if (!email || !email.includes('@')) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
       });
+      return;
+    }
+    
+    setSubmitting(true);
+    
+    try {
+      // Check if the email already exists
+      const { data: existingSubscriber } = await supabase
+        .from('newsletter_subscribers')
+        .select('*')
+        .eq('email', email)
+        .single();
       
-      const data = await response.json();
-      
-      if (response.ok) {
+      if (existingSubscriber) {
         toast({
-          title: "Successfully subscribed!",
-          description: "Thank you for subscribing to our newsletter.",
+          title: "Already subscribed",
+          description: "This email is already subscribed to our newsletter."
         });
         setEmail('');
-      } else if (response.status === 400 && data.message && data.message.includes('already exists')) {
-        // If the contact already exists, update their list subscription
-        const updateResponse = await fetch(`https://api.sendinblue.com/v3/contacts/${encodeURIComponent(validatedInput.email)}`, {
-          method: 'PUT',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'api-key': BREVO_API_KEY
-          },
-          body: JSON.stringify({
-            listIds: [BREVO_LIST_ID],
-            emailBlacklisted: false
-          })
-        });
-        
-        if (updateResponse.ok) {
-          toast({
-            title: "Successfully subscribed!",
-            description: "You've been successfully added to our newsletter.",
-          });
-          setEmail('');
-        } else {
-          throw new Error('Error updating existing contact');
-        }
-      } else {
-        throw new Error(data.message || 'Error connecting to newsletter service');
+        return;
       }
       
-      // Send a copy to admin@pwanbridgefort.ng as a fallback
-      const mailtoLink = `mailto:admin@pwanbridgefort.ng?subject=Newsletter Subscription&body=Please add this email address to the newsletter: ${validatedInput.email}`;
-      window.open(mailtoLink, '_blank');
+      // Submit to database
+      const { error } = await supabase
+        .from('newsletter_subscribers')
+        .insert([
+          { 
+            email,
+            subscribed_at: new Date().toISOString()
+          }
+        ]);
       
+      if (error) throw error;
+      
+      // Show success message
+      toast({
+        title: "Success!",
+        description: "You've been added to our newsletter."
+      });
+      
+      // Clear form
+      setEmail('');
     } catch (error) {
-      console.error('Newsletter subscription error:', error);
-      
-      if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation Error",
-          description: error.errors[0].message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Subscription Failed",
-          description: "There was an error subscribing to the newsletter. Please try again later.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error",
+        description: "There was a problem subscribing to the newsletter. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Newsletter subscription error:", error);
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
-
+  
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-3">
       <Input
         type="email"
-        placeholder="Your email address"
+        placeholder="Enter your email"
+        className="bg-white p-3 rounded-lg focus:ring-2 focus:ring-estate-blue focus:border-estate-blue"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="flex-grow bg-white"
         required
       />
       <Button 
         type="submit" 
-        className="bg-estate-red hover:bg-red-700 text-white"
-        disabled={isSubmitting}
+        className="bg-estate-blue hover:bg-estate-darkBlue text-white px-6 py-2 md:py-0" 
+        disabled={submitting}
       >
-        {isSubmitting ? "Subscribing..." : "Subscribe"}
+        {submitting ? 'Subscribing...' : 'Subscribe'}
       </Button>
     </form>
   );

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { HomeIcon, Building, Wallet, ArrowRight, Construction, LandPlot, GraduationCap, BarChart } from 'lucide-react';
+import { HomeIcon, Building, Wallet, ArrowRight, Construction, LandPlot, GraduationCap, BarChart, HeartHandshake, Scale } from 'lucide-react';
 
 const InvestmentServices = () => {
   return (
@@ -44,10 +44,19 @@ const InvestmentServices = () => {
 
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 text-center">
             <div className="bg-estate-blue bg-opacity-10 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <Construction size={28} className="text-estate-blue" />
+              <HeartHandshake size={28} className="text-estate-blue" />
             </div>
-            <h3 className="text-xl font-semibold mb-3">Construction & Development</h3>
-            <p className="text-gray-600 mb-4">Expert building services from architectural design to full property development with quality craftsmanship.</p>
+            <h3 className="text-xl font-semibold mb-3">Real Estate Management</h3>
+            <p className="text-gray-600 mb-4">Expert property management with proactive supervision, trusted expertise, and our TEAMWORK philosophy for your investment success.</p>
+            <Link to="/services" className="text-estate-blue font-medium hover:text-estate-darkBlue">Learn More</Link>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 text-center">
+            <div className="bg-estate-blue bg-opacity-10 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <Scale size={28} className="text-estate-blue" />
+            </div>
+            <h3 className="text-xl font-semibold mb-3">Property Development</h3>
+            <p className="text-gray-600 mb-4">End-to-end development services including strategic land acquisition, legal support, master-planned estates, and construction services.</p>
             <Link to="/services" className="text-estate-blue font-medium hover:text-estate-darkBlue">Learn More</Link>
           </div>
           
@@ -62,41 +71,33 @@ const InvestmentServices = () => {
           
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 text-center">
             <div className="bg-estate-blue bg-opacity-10 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <Construction size={28} className="text-estate-blue" />
+            </div>
+            <h3 className="text-xl font-semibold mb-3">Construction & Development</h3>
+            <p className="text-gray-600 mb-4">Expert building services from architectural design to full property development with quality craftsmanship.</p>
+            <Link to="/services" className="text-estate-blue font-medium hover:text-estate-darkBlue">Learn More</Link>
+          </div>
+          
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 text-center">
+            <div className="bg-estate-blue bg-opacity-10 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <BarChart size={28} className="text-estate-blue" />
             </div>
             <h3 className="text-xl font-semibold mb-3">Consultancy</h3>
             <p className="text-gray-600 mb-4">Expert real estate advisory services tailored to help you make informed investment decisions and maximize returns.</p>
             <Link to="/services" className="text-estate-blue font-medium hover:text-estate-darkBlue">Learn More</Link>
           </div>
-        </div>
-        
-        <div className="mt-12 p-6 md:p-8 bg-gray-50 rounded-lg shadow-md">
-          <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center">
-            <div className="w-full md:w-1/2">
-              <div className="bg-estate-blue bg-opacity-10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-                <GraduationCap size={28} className="text-estate-blue" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-4">Seminars & Training</h3>
-              <p className="text-gray-600 mb-6">
-                Gain valuable insights into real estate investment strategies through our comprehensive educational programs.
-                Our expert-led seminars and training sessions cover everything from market analysis to wealth creation through
-                property investment.
-              </p>
-              <Link to="/training" className="btn-primary inline-block">
-                Explore Training Programs
-              </Link>
+          
+          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 text-center">
+            <div className="bg-estate-blue bg-opacity-10 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <GraduationCap size={28} className="text-estate-blue" />
             </div>
-            <div className="w-full md:w-1/2">
-              <img 
-                src="/lovable-uploads/Homeslider.png?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80" 
-                alt="Real Estate Seminar" 
-                className="w-full h-64 object-cover rounded-lg shadow-md"
-              />
-            </div>
+            <h3 className="text-xl font-semibold mb-3">Training & Education</h3>
+            <p className="text-gray-600 mb-4">Gain valuable insights into real estate investment strategies through our comprehensive educational programs and seminars.</p>
+            <Link to="/training" className="text-estate-blue font-medium hover:text-estate-darkBlue">Learn More</Link>
           </div>
         </div>
         
-        <div className="text-center mt-10">
+        <div className="mt-12 text-center">
           <Link to="/services" className="btn-cta">
             View All Services
           </Link>

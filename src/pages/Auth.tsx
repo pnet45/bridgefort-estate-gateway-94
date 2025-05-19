@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Toaster } from '@/components/ui/toaster';
+import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -16,13 +18,14 @@ const Auth = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const { signIn, signUp, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     // Redirect to home if already authenticated
     if (user) {
-      navigate('/');
+      navigate('/dashboard');
     }
   }, [user, navigate]);
 
@@ -32,8 +35,14 @@ const Auth = () => {
     
     try {
       const { error } = await signIn(email, password);
-      if (!error) {
-        navigate('/');
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to sign in",
+          variant: "destructive",
+        });
+      } else {
+        navigate('/dashboard');
       }
     } finally {
       setIsLoading(false);
@@ -46,12 +55,39 @@ const Auth = () => {
     
     try {
       const { error } = await signUp(email, password, firstName, lastName);
-      if (!error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create account",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Account created",
+          description: "Please check your email to verify your account",
+        });
         // Automatically switch to login tab if registration is successful
         setActiveTab('login');
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to sign in with Google",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -74,6 +110,32 @@ const Auth = () => {
               </TabsList>
               
               <TabsContent value="login">
+                <div className="my-4">
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    className="w-full flex justify-center items-center space-x-2 border border-gray-300"
+                    onClick={handleGoogleSignIn}
+                    disabled={isGoogleLoading}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-google">
+                      <path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12c0 5 4 9 9 10" />
+                      <path d="M12 8v8" />
+                      <path d="M8 12h8" />
+                    </svg>
+                    <span>{isGoogleLoading ? 'Connecting...' : 'Sign in with Google'}</span>
+                  </Button>
+                </div>
+
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                  </div>
+                </div>
+
                 <form className="space-y-6" onSubmit={handleLogin}>
                   <div>
                     <Label htmlFor="email">Email address</Label>
@@ -92,7 +154,12 @@ const Auth = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="password">Password</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Password</Label>
+                      <Link to="/reset-password" className="text-sm text-estate-blue hover:text-estate-darkBlue">
+                        Forgot password?
+                      </Link>
+                    </div>
                     <div className="mt-1">
                       <Input
                         id="password"

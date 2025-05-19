@@ -3,13 +3,19 @@ import React, { createContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../../integrations/supabase/client';
 import { UserProfile } from './types';
+import { toast } from "@/hooks/use-toast";
 
 interface AuthContextProps {
   user: User | null;
   session: Session | null;
   profile: UserProfile | null;
   userRole: string | null;
+  isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{
+    error: Error | null;
+    data: any;
+  }>;
+  signInWithGoogle: () => Promise<{
     error: Error | null;
     data: any;
   }>;
@@ -17,7 +23,12 @@ interface AuthContextProps {
     error: Error | null;
     data: any;
   }>;
+  resetPassword: (email: string) => Promise<{
+    error: Error | null;
+    data: any;
+  }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextProps>({
@@ -25,9 +36,13 @@ export const AuthContext = createContext<AuthContextProps>({
   session: null,
   profile: null,
   userRole: null,
+  isLoading: true,
   signIn: async () => ({ error: null, data: null }),
+  signInWithGoogle: async () => ({ error: null, data: null }),
   signUp: async () => ({ error: null, data: null }),
+  resetPassword: async () => ({ error: null, data: null }),
   signOut: async () => {},
+  refreshProfile: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -41,6 +56,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (event === 'SIGNED_IN') {
+          toast({
+            title: "Success!",
+            description: "You have successfully signed in",
+          });
+        } else if (event === 'SIGNED_OUT') {
+          toast({
+            title: "Signed out",
+            description: "You have been signed out",
+          });
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -112,6 +139,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const refreshProfile = async () => {
+    if (user) {
+      await fetchUserProfile(user.id);
+      await fetchUserRole(user.id);
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -123,6 +157,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await fetchUserProfile(data.user.id);
         await fetchUserRole(data.user.id);
       }
+
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
 
       return { data, error };
     } catch (error: any) {
@@ -149,6 +198,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      return { data, error };
+    } catch (error: any) {
+      return { data: null, error };
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -160,9 +221,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         profile,
         userRole,
+        isLoading: loading,
         signIn,
+        signInWithGoogle,
         signUp,
+        resetPassword,
         signOut,
+        refreshProfile,
       }}
     >
       {!loading && children}

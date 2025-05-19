@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
@@ -86,6 +87,11 @@ const Navbar = () => {
             }>
               <span className="font-bold">Training</span>
             </NavLink>
+            <NavLink to="/career" className={({isActive}) => 
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+            }>
+              <span className="font-bold">Careers</span>
+            </NavLink>
             <NavLink to="/contact" className={({isActive}) => 
               `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
             }>
@@ -96,57 +102,49 @@ const Navbar = () => {
             }>
               <span className="font-bold">Blog</span>
             </NavLink>
-            
 
-             {/* CTA Button */}
-          <div className="hidden md:flex items-center ml-4">
-            <a href="tel:+2348030624059" className="flex items-center text-red font-bold whitespace-nowrap hover:text-red transition duration-200">
-              <Phone size={18} className="mr-2 text-blue-500"/>
-              <span>+2348030624059</span>
-            </a>
-          </div>
-                        
-            {/*<div className="flex items-center">
-              <Phone size={18} className="mr-1 text-blue-500" />
-              <span className="font-bold text-blue-500">+234 703 123 4567</span>
-            </div>*/}
+            {/* CTA Button */}
+            <div className="hidden md:flex items-center ml-4">
+              <a href="tel:+2348030624059" className="flex items-center text-red font-bold whitespace-nowrap hover:text-red transition duration-200">
+                <Phone size={18} className="mr-2 text-blue-500"/>
+                <span>+2348030624059</span>
+              </a>
+            </div>
             
-            {shouldShowLogin && (
-              user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2 border-0">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback className="bg-estate-blue text-white">
-                          {getUserName()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="hidden md:inline">{getUserName()}</span>
-                      <ChevronDown size={16} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>
-                      {getUserName()}
-                      {userRole && <p className="text-xs text-gray-500 capitalize">{userRole}</p>}
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                      <User size={16} className="mr-2" />
-                      Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      <LogOut size={16} className="mr-2" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button onClick={() => navigate('/auth')} variant="default" className="bg-estate-blue hover:bg-estate-darkBlue">
-                  Sign In
-                </Button>
-              )
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2 border-0">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-estate-blue text-white">
+                        {getInitials()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden md:inline">{getUserName()}</span>
+                    <ChevronDown size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    {getUserName()}
+                    {userRole && <p className="text-xs text-gray-500 capitalize">{userRole}</p>}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <User size={16} className="mr-2" />
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut size={16} className="mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : shouldShowLogin && (
+              <Button onClick={() => navigate('/auth')} variant="default" className="bg-estate-blue hover:bg-estate-darkBlue">
+                Sign In
+              </Button>
             )}
           </div>
           
@@ -156,7 +154,7 @@ const Navbar = () => {
               <span className="text-sm font-bold">+234 803 062 4059</span>
             </div>
             
-            {shouldShowLogin && user && (
+            {user && (
               <Button variant="ghost" className="mr-2" onClick={() => navigate('/dashboard')}>
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-estate-blue text-white">
@@ -193,28 +191,29 @@ const Navbar = () => {
             <NavLink to="/training" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
               <span className="font-bold">Training</span>
             </NavLink>
+            <NavLink to="/career" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+              <span className="font-bold">Careers</span>
+            </NavLink>
             <NavLink to="/contact" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
               <span className="font-bold">Contact</span>
             </NavLink>
             <NavLink to="/blog" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
               <span className="font-bold">Blog</span>
             </NavLink>
-            {shouldShowLogin && (
-              user ? (
-                <>
-                  <NavLink to="/dashboard" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-                    <span className="font-bold">Dashboard</span>
-                  </NavLink>
-                  <Button variant="ghost" className="justify-start px-2" onClick={() => { handleSignOut(); toggleMenu(); }}>
-                    <LogOut size={16} className="mr-2" />
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={() => { navigate('/auth'); toggleMenu(); }} className="bg-estate-blue hover:bg-estate-darkBlue w-full">
-                  Sign In
+            {user ? (
+              <>
+                <NavLink to="/dashboard" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
+                  <span className="font-bold">Dashboard</span>
+                </NavLink>
+                <Button variant="ghost" className="justify-start px-2" onClick={() => { handleSignOut(); toggleMenu(); }}>
+                  <LogOut size={16} className="mr-2" />
+                  Sign Out
                 </Button>
-              )
+              </>
+            ) : shouldShowLogin && (
+              <Button onClick={() => { navigate('/auth'); toggleMenu(); }} className="bg-estate-blue hover:bg-estate-darkBlue w-full">
+                Sign In
+              </Button>
             )}
           </div>
         </div>
