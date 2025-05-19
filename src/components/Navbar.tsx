@@ -86,6 +86,17 @@ const Navbar = () => {
             }>
               <span className="font-bold">Training</span>
             </NavLink>
+            <NavLink to="/contact" className={({isActive}) => 
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+            }>
+              <span className="font-bold">Contact</span>
+            </NavLink>
+            <NavLink to="/blog" className={({isActive}) => 
+              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
+            }>
+              <span className="font-bold">Blog</span>
+            </NavLink>
+            
 
              {/* CTA Button */}
           <div className="hidden md:flex items-center ml-4">
