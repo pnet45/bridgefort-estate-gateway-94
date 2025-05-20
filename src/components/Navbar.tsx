@@ -1,22 +1,17 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
-import { Menu, X, ChevronDown, User, LogOut, Phone } from 'lucide-react';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Menu, X, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import NavLinks from './navbar/NavLinks';
+import NavbarUserMenu from './navbar/NavbarUserMenu';
+import MobileMenu from './navbar/MobileMenu';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, profile, userRole, signOut } = useAuth();
+  const { user, profile, userRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -24,19 +19,9 @@ const Navbar = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
   const getInitials = () => {
     if (!profile) return 'U';
     return `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`;
-  };
-
-  const getUserName = () => {
-    if (!profile) return 'User';
-    return `${profile.first_name} ${profile.last_name}`;
   };
   
   // Check if we should show login button (only on blog page)
@@ -57,51 +42,7 @@ const Navbar = () => {
           </div>
           
           <div className="hidden lg:flex items-center space-x-6">
-            <NavLink to="/" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">Home</span>
-            </NavLink>
-            <NavLink to="/about" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">About Us</span>
-            </NavLink>        
-            <NavLink to="/properties" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">Properties</span>
-            </NavLink>
-            <NavLink to="/services" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">Services</span>
-            </NavLink>
-            <NavLink to="/buy2sell" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">Buy2Sell</span>
-            </NavLink>
-            <NavLink to="/training" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">Training</span>
-            </NavLink>
-            <NavLink to="/career" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">Careers</span>
-            </NavLink>
-            <NavLink to="/contact" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">Contact</span>
-            </NavLink>
-            <NavLink to="/blog" className={({isActive}) => 
-              `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'}`
-            }>
-              <span className="font-bold">Blog</span>
-            </NavLink>
+            <NavLinks />
 
             {/* CTA Button */}
             <div className="hidden md:flex items-center ml-4">
@@ -112,35 +53,7 @@ const Navbar = () => {
             </div>
             
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2 border-0">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-estate-blue text-white">
-                        {getInitials()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden md:inline">{getUserName()}</span>
-                    <ChevronDown size={16} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    {getUserName()}
-                    {userRole && <p className="text-xs text-gray-500 capitalize">{userRole}</p>}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                    <User size={16} className="mr-2" />
-                    Dashboard
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut size={16} className="mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <NavbarUserMenu profile={profile} userRole={userRole} />
             ) : shouldShowLogin && (
               <Button onClick={() => navigate('/auth')} variant="default" className="bg-estate-blue hover:bg-estate-darkBlue">
                 Sign In
@@ -170,54 +83,11 @@ const Navbar = () => {
         </div>
       </div>
       
-      {isOpen && (
-        <div className="lg:hidden bg-white shadow-lg py-4 px-4 absolute w-full">
-          <div className="flex flex-col space-y-3">
-            <NavLink to="/" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Home</span>
-            </NavLink>
-            <NavLink to="/about" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">About</span>
-            </NavLink>
-            <NavLink to="/properties" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Properties</span>
-            </NavLink>
-            <NavLink to="/services" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Services</span>
-            </NavLink>
-            <NavLink to="/buy2sell" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Buy2Sell</span>
-            </NavLink>
-            <NavLink to="/training" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Training</span>
-            </NavLink>
-            <NavLink to="/career" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Careers</span>
-            </NavLink>
-            <NavLink to="/contact" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Contact</span>
-            </NavLink>
-            <NavLink to="/blog" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Blog</span>
-            </NavLink>
-            {user ? (
-              <>
-                <NavLink to="/dashboard" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-                  <span className="font-bold">Dashboard</span>
-                </NavLink>
-                <Button variant="ghost" className="justify-start px-2" onClick={() => { handleSignOut(); toggleMenu(); }}>
-                  <LogOut size={16} className="mr-2" />
-                  Sign Out
-                </Button>
-              </>
-            ) : shouldShowLogin && (
-              <Button onClick={() => { navigate('/auth'); toggleMenu(); }} className="bg-estate-blue hover:bg-estate-darkBlue w-full">
-                Sign In
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+      <MobileMenu 
+        isOpen={isOpen} 
+        toggleMenu={toggleMenu} 
+        shouldShowLogin={shouldShowLogin} 
+      />
     </nav>
   );
 };
