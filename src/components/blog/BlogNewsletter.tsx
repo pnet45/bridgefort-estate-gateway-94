@@ -1,8 +1,77 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const BlogNewsletter = () => {
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !email.includes('@')) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setSubmitting(true);
+    
+    try {
+      // Check if the email already exists
+      const { data: existingSubscriber } = await supabase
+        .from('newsletter_subscribers')
+        .select('*')
+        .eq('email', email)
+        .single();
+      
+      if (existingSubscriber) {
+        toast({
+          title: "Already subscribed",
+          description: "This email is already subscribed to our newsletter."
+        });
+        setEmail('');
+        return;
+      }
+      
+      // Submit to database
+      const { error } = await supabase
+        .from('newsletter_subscribers')
+        .insert([
+          { 
+            email,
+            subscribed_at: new Date().toISOString()
+          }
+        ]);
+      
+      if (error) throw error;
+      
+      // Show success message
+      toast({
+        title: "Success!",
+        description: "You've been added to our newsletter."
+      });
+      
+      // Clear form
+      setEmail('');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was a problem subscribing to the newsletter. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Newsletter subscription error:", error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  
   return (
     <section className="py-16 bg-estate-blue">
       <div className="container-custom">
@@ -16,15 +85,21 @@ const BlogNewsletter = () => {
             </p>
           </div>
           
-          <form className="flex flex-col md:flex-row gap-4">
-            <input 
+          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4">
+            <Input 
               type="email" 
               placeholder="Your email address" 
               className="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-estate-blue"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <Button type="submit" className="bg-estate-red hover:bg-red-700 text-white font-medium py-3 px-6">
-              Subscribe Now
+            <Button 
+              type="submit" 
+              className="bg-estate-red hover:bg-red-700 text-white font-medium py-3 px-6"
+              disabled={submitting}
+            >
+              {submitting ? 'Subscribing...' : 'Subscribe Now'}
             </Button>
           </form>
           

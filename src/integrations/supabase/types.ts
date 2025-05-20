@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      applications: {
+        Row: {
+          cover_letter: string | null
+          email: string
+          experience: string | null
+          full_name: string
+          id: string
+          phone: string
+          position: string
+          resume_url: string | null
+          status: string | null
+          submitted_at: string | null
+        }
+        Insert: {
+          cover_letter?: string | null
+          email: string
+          experience?: string | null
+          full_name: string
+          id?: string
+          phone: string
+          position: string
+          resume_url?: string | null
+          status?: string | null
+          submitted_at?: string | null
+        }
+        Update: {
+          cover_letter?: string | null
+          email?: string
+          experience?: string | null
+          full_name?: string
+          id?: string
+          phone?: string
+          position?: string
+          resume_url?: string | null
+          status?: string | null
+          submitted_at?: string | null
+        }
+        Relationships: []
+      }
       BlogPost: {
         Row: {
           created_at: string
@@ -39,6 +78,45 @@ export type Database = {
           id?: number
           LastName?: string | null
           Post?: string | null
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string
+          responded: boolean | null
+          responded_at: string | null
+          responded_by: string | null
+          subject: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone: string
+          responded?: boolean | null
+          responded_at?: string | null
+          responded_by?: string | null
+          subject: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
+          responded?: boolean | null
+          responded_at?: string | null
+          responded_by?: string | null
+          subject?: string
         }
         Relationships: []
       }
@@ -168,6 +246,27 @@ export type Database = {
           property_ids?: string[]
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          email: string
+          id: string
+          is_active: boolean | null
+          subscribed_at: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          is_active?: boolean | null
+          subscribed_at?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          subscribed_at?: string | null
         }
         Relationships: []
       }
