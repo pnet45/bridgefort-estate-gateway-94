@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { BlogDetail } from '@/components/blog/BlogDetail';
+import BlogDetail from '@/components/blog/BlogDetail';
 import BlogNewsletter from '@/components/blog/BlogNewsletter';
 
 const BlogPost = () => {
