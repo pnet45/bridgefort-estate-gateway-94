@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { HeartHandshake, Scale, CheckCircle } from 'lucide-react';
+import { HeartHandshake, Scale, CheckCircle, Construction, LandPlot, BarChart, GraduationCap } from 'lucide-react';
+import { Card } from "@/components/ui/card";
 
 const AdditionalServices = () => {
   return (
@@ -13,7 +14,7 @@ const AdditionalServices = () => {
           </p>
         </div>
         
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Construction and Development */}
           <Card className="overflow-hidden shadow-lg border-0">
             <div className="flex flex-col md:flex-row">

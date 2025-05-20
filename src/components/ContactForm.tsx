@@ -12,11 +12,12 @@ const ContactForm = () => {
     email: '',
     phone: '',
     subject: '',
-    message: ''
+    message: '',
+    interested: 'residential'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prevData => ({
       ...prevData,
@@ -57,7 +58,8 @@ const ContactForm = () => {
         email: '',
         phone: '',
         subject: '',
-        message: ''
+        message: '',
+        interested: 'residential'
       });
     } catch (error: any) {
       toast({
@@ -121,6 +123,22 @@ const ContactForm = () => {
             required
           />
         </div>
+      </div>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">I'm Interested In</label>
+        <select
+          name="interested"
+          value={formData.interested}
+          onChange={handleChange}
+          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-estate-blue"
+        >
+          <option value="residential">Residential Properties</option>
+          <option value="commercial">Commercial Properties</option>
+          <option value="land">Land</option>
+          <option value="investment">Investment Packages</option>
+          <option value="other">Other</option>
+        </select>
       </div>
       
       <div>

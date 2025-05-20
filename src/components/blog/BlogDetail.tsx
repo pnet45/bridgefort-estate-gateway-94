@@ -1,79 +1,89 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar } from '@/components/ui/avatar';
+import { AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { CalendarIcon, Clock, Tag } from 'lucide-react';
 import { format } from 'date-fns';
-import { Calendar, ChevronLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface BlogDetailProps {
   post: any;
 }
 
 const BlogDetail = ({ post }: BlogDetailProps) => {
-  const navigate = useNavigate();
-  
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, 'MMMM d, yyyy');
+  if (!post) return <div>No post found</div>;
+
+  const formatDate = (date: string) => {
+    try {
+      return format(new Date(date), 'MMMM dd, yyyy');
+    } catch (error) {
+      return "Unknown date";
+    }
   };
-  
-  const imageSrc = post.image_path ? (
-    post.image_path.startsWith('/') 
-      ? post.image_path
-      : `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/imagbucket/${post.image_path}`
-  ) : '/placeholder.svg';
+
+  // Create author initials from the post author
+  const getAuthorInitials = () => {
+    if (post.profiles?.first_name && post.profiles?.last_name) {
+      return `${post.profiles.first_name[0]}${post.profiles.last_name[0]}`;
+    }
+    return 'AU';
+  };
+
+  // Combine first and last name for display
+  const authorName = post.profiles 
+    ? `${post.profiles.first_name || ''} ${post.profiles.last_name || ''}`.trim() 
+    : 'Anonymous';
 
   return (
-    <article className="container-custom my-24 pt-10">
-      <div className="mb-8">
-        <Button 
-          variant="outline"
-          onClick={() => navigate('/blog')}
-          className="mb-6 text-estate-blue border-estate-blue hover:bg-estate-blue/10"
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back to Blog
-        </Button>
+    <article className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
+      {/* Post image */}
+      {post.image_path && (
+        <div className="mb-6">
+          <img
+            src={post.image_path}
+            alt={post.title}
+            className="w-full h-72 object-cover rounded-lg"
+          />
+        </div>
+      )}
+
+      {/* Post header */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">{post.title}</h1>
         
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 text-estate-blue">{post.title}</h1>
-        
-        <div className="flex items-center text-gray-500 mb-8">
-          <Calendar size={16} className="mr-1" />
-          <span>{formatDate(post.created_at)}</span>
-          <span className="mx-2">•</span>
-          <span>By {post.profiles.first_name} {post.profiles.last_name}</span>
-          <span className="mx-2">•</span>
-          <span>{post.category}</span>
+        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+          <div className="flex items-center">
+            <Avatar className="h-8 w-8 mr-2">
+              <AvatarFallback>{getAuthorInitials()}</AvatarFallback>
+            </Avatar>
+            <span>{authorName}</span>
+          </div>
+          
+          <div className="flex items-center">
+            <CalendarIcon size={16} className="mr-1" />
+            <span>{formatDate(post.created_at)}</span>
+          </div>
+          
+          {post.category && (
+            <div className="flex items-center">
+              <Tag size={16} className="mr-1" />
+              <span>{post.category}</span>
+            </div>
+          )}
         </div>
       </div>
-      
-      <div className="relative h-[300px] md:h-[500px] w-full mb-10 overflow-hidden rounded-lg shadow-lg">
-        <img 
-          src={imageSrc}
-          alt={post.title} 
-          className="w-full h-full object-cover"
-          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-            e.currentTarget.src = '/placeholder.svg';
-          }}
-        />
-      </div>
-      
-      <div className="prose prose-lg max-w-none">
-        {post.content.split('\n').map((paragraph: string, index: number) => (
-          <p key={index} className="mb-4">{paragraph}</p>
-        ))}
-      </div>
-      
-      <div className="mt-12 pt-6 border-t border-gray-200">
-        <Button 
-          variant="outline"
-          onClick={() => navigate('/blog')}
-          className="text-estate-blue border-estate-blue hover:bg-estate-blue/10"
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Back to Blog
-        </Button>
-      </div>
+
+      {/* Post excerpt */}
+      {post.excerpt && (
+        <div className="mb-6">
+          <p className="text-lg text-gray-700 italic">{post.excerpt}</p>
+        </div>
+      )}
+
+      {/* Post content in scrollable area */}
+      <ScrollArea className="h-[500px] rounded-md border p-4">
+        <div className="post-content" dangerouslySetInnerHTML={{ __html: post.content }} />
+      </ScrollArea>
     </article>
   );
 };

@@ -132,9 +132,9 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">© {new Date().getFullYear()} PWAN Bridgefort Estate and Investment Ltd. All rights reserved.</p>
             <div className="mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 text-sm hover:text-white mr-4">Privacy Policy</a>
-              <a href="#" className="text-gray-400 text-sm hover:text-white mr-4">Terms of Service</a>
-              <a href="#" className="text-gray-400 text-sm hover:text-white">Sitemap</a>
+              <Link to="/privacy-policy" className="text-gray-400 text-sm hover:text-white mr-4">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="text-gray-400 text-sm hover:text-white mr-4">Terms of Service</Link>
+              <Link to="/sitemap" className="text-gray-400 text-sm hover:text-white">Sitemap</Link>
             </div>
           </div>
         </div>

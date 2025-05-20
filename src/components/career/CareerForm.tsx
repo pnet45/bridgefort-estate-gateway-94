@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { FileUpload } from "./FileUpload";
@@ -16,6 +17,11 @@ interface CareerFormValues {
   position: string;
   experience: string;
   coverLetter: string;
+  gender: string;
+  dateOfBirth: string;
+  state: string;
+  localGovernment: string;
+  address: string;
 }
 
 const CareerForm = () => {
@@ -63,7 +69,12 @@ const CareerForm = () => {
             experience: data.experience,
             cover_letter: data.coverLetter,
             resume_url: resumeUrl,
-            submitted_at: new Date().toISOString()
+            submitted_at: new Date().toISOString(),
+            gender: data.gender,
+            date_of_birth: data.dateOfBirth,
+            state: data.state,
+            local_government: data.localGovernment,
+            address: data.address
           }
         ]);
         
@@ -126,6 +137,31 @@ const CareerForm = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
+            <Label htmlFor="gender">Gender</Label>
+            <Select>
+              <SelectTrigger id="gender">
+                <SelectValue placeholder="Select gender" {...register("gender")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+            <Input
+              id="dateOfBirth"
+              type="date"
+              {...register("dateOfBirth")}
+            />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
             <Label htmlFor="phone">Phone Number *</Label>
             <Input
               id="phone"
@@ -137,13 +173,47 @@ const CareerForm = () => {
           
           <div>
             <Label htmlFor="position">Position You're Applying For *</Label>
-            <Input
-              id="position"
-              {...register("position", { required: "Position is required" })}
-              className={errors.position ? "border-red-500" : ""}
-            />
+            <Select>
+              <SelectTrigger id="position">
+                <SelectValue placeholder="Select position" {...register("position", { required: "Position is required" })} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="estate_manager">Estate Manager</SelectItem>
+                <SelectItem value="marketing_executive">Marketing Executive</SelectItem>
+                <SelectItem value="customer_service">Customer Service</SelectItem>
+                <SelectItem value="admin_assistant">Administrative Assistant</SelectItem>
+                <SelectItem value="surveyor">Surveyor</SelectItem>
+                <SelectItem value="legal_adviser">Legal Adviser</SelectItem>
+              </SelectContent>
+            </Select>
             {errors.position && <p className="text-red-500 text-sm mt-1">{errors.position.message}</p>}
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <Label htmlFor="state">State</Label>
+            <Input
+              id="state"
+              {...register("state")}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="localGovernment">Local Government</Label>
+            <Input
+              id="localGovernment"
+              {...register("localGovernment")}
+            />
+          </div>
+        </div>
+        
+        <div>
+          <Label htmlFor="address">Address</Label>
+          <Input
+            id="address"
+            {...register("address")}
+          />
         </div>
         
         <div>

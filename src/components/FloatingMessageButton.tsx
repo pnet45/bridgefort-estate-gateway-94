@@ -7,7 +7,7 @@ const FloatingMessageButton = () => {
   return (
     <Link 
       to="/contact" 
-      className="fixed right-6 top-24 z-40 bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded-full shadow-lg transition duration-300 flex items-center"
+      className="fixed bottom-6 right-6 z-40 bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded-full shadow-lg transition duration-300 flex items-center"
       aria-label="Send Message"
     >
       <MessageCircle size={18} className="mr-2" />
