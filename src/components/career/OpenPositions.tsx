@@ -29,7 +29,7 @@ const positions = [
       'Strong understanding of digital marketing channels and strategies',
       'Excellent project management and leadership skills',
       'Creative thinking with analytical abilities',
-      'Bachelor's degree in Marketing, Business, or related field'
+      "Bachelor's degree in Marketing, Business, or related field"
     ]
   },
   {
