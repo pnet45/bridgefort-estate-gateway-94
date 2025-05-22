@@ -1,27 +1,30 @@
 
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { RegistrationFormData } from './types';
+import { TrainingFormValues, trainingFormSchema, TrainingRegistrationFormProps } from './types';
 import PersonalInfoFields from './PersonalInfoFields';
 import AddressFields from './AddressFields';
 import AdditionalOptionsFields from './AdditionalOptionsFields';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-const TrainingRegistrationForm = ({ eventTitle, eventDate }: { eventTitle?: string; eventDate?: string }) => {
+const TrainingRegistrationForm = ({ open, onClose, eventTitle, eventDate }: TrainingRegistrationFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showInvitee, setShowInvitee] = useState(false);
   const { toast } = useToast();
-  const form = useForm<RegistrationFormData>({
+  const form = useForm<TrainingFormValues>({
+    resolver: zodResolver(trainingFormSchema),
     defaultValues: {
       name: '',
       email: '',
       phone: '',
       gender: '',
-      isPBO: 'no',
+      isPBO: 'No',
       country: 'Nigeria',
       state: '',
       localGovernment: '',
@@ -30,10 +33,12 @@ const TrainingRegistrationForm = ({ eventTitle, eventDate }: { eventTitle?: stri
       inviteeName: '',
       inviteePhone: '',
       needReminder: false,
+      eventTitle: eventTitle,
+      eventDate: eventDate,
     }
   });
 
-  const onSubmit = async (data: RegistrationFormData) => {
+  const onSubmit = async (data: TrainingFormValues) => {
     setIsSubmitting(true);
     
     try {
@@ -67,6 +72,7 @@ const TrainingRegistrationForm = ({ eventTitle, eventDate }: { eventTitle?: stri
       });
       
       form.reset();
+      onClose();
     } catch (error: any) {
       toast({
         title: "Registration failed",
@@ -80,27 +86,40 @@ const TrainingRegistrationForm = ({ eventTitle, eventDate }: { eventTitle?: stri
   };
 
   return (
-    <ScrollArea className="h-[600px] pr-4">
-      <div className="px-1">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pb-4">
-            <PersonalInfoFields form={form} />
-            <AddressFields form={form} />
-            <AdditionalOptionsFields form={form} />
-            
-            <div className="pt-4">
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-estate-blue hover:bg-estate-darkBlue"
-              >
-                {isSubmitting ? 'Submitting...' : 'Register Now'}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
-    </ScrollArea>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md md:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-estate-blue">
+            {eventTitle ? `Register for ${eventTitle}` : 'Training Registration'}
+          </DialogTitle>
+        </DialogHeader>
+        <ScrollArea className="h-[60vh] md:h-[70vh] pr-4">
+          <div className="px-1">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-4">
+                <PersonalInfoFields control={form.control} />
+                <AddressFields control={form.control} />
+                <AdditionalOptionsFields 
+                  control={form.control} 
+                  showInvitee={showInvitee} 
+                  setShowInvitee={setShowInvitee} 
+                />
+                
+                <div className="pt-4">
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="w-full bg-estate-blue hover:bg-estate-darkBlue"
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Register Now'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 };
 

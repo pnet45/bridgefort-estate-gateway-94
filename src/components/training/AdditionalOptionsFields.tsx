@@ -4,13 +4,7 @@ import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { TrainingFormValues } from "./types";
-
-interface AdditionalOptionsFieldsProps {
-  control: Control<TrainingFormValues>;
-  showInvitee: boolean;
-  setShowInvitee: (show: boolean) => void;
-}
+import { TrainingFormValues, AdditionalOptionsFieldsProps } from "./types";
 
 const AdditionalOptionsFields: React.FC<AdditionalOptionsFieldsProps> = ({ 
   control, 

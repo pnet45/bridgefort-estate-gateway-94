@@ -3,11 +3,7 @@ import React from "react";
 import { Control } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { TrainingFormValues } from "./types";
-
-interface PersonalInfoFieldsProps {
-  control: Control<TrainingFormValues>;
-}
+import { TrainingFormValues, PersonalInfoFieldsProps } from "./types";
 
 const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({ control }) => {
   return (

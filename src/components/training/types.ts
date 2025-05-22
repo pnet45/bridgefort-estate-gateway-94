@@ -27,3 +27,20 @@ export interface TrainingRegistrationFormProps {
   eventTitle?: string;
   eventDate?: string;
 }
+
+// Interface for the PersonalInfoFields component
+export interface PersonalInfoFieldsProps {
+  control: any;
+}
+
+// Interface for the AddressFields component
+export interface AddressFieldsProps {
+  control: any;
+}
+
+// Interface for the AdditionalOptionsFields component
+export interface AdditionalOptionsFieldsProps {
+  control: any;
+  showInvitee: boolean;
+  setShowInvitee: (show: boolean) => void;
+}
