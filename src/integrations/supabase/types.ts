@@ -11,38 +11,53 @@ export type Database = {
     Tables: {
       applications: {
         Row: {
+          address: string | null
           cover_letter: string | null
+          date_of_birth: string | null
           email: string
           experience: string | null
           full_name: string
+          gender: string | null
           id: string
+          local_government: string | null
           phone: string
           position: string | null
           resume_url: string | null
+          state: string | null
           status: string | null
           submitted_at: string | null
         }
         Insert: {
+          address?: string | null
           cover_letter?: string | null
+          date_of_birth?: string | null
           email: string
           experience?: string | null
           full_name: string
+          gender?: string | null
           id?: string
+          local_government?: string | null
           phone: string
           position?: string | null
           resume_url?: string | null
+          state?: string | null
           status?: string | null
           submitted_at?: string | null
         }
         Update: {
+          address?: string | null
           cover_letter?: string | null
+          date_of_birth?: string | null
           email?: string
           experience?: string | null
           full_name?: string
+          gender?: string | null
           id?: string
+          local_government?: string | null
           phone?: string
           position?: string | null
           resume_url?: string | null
+          state?: string | null
           status?: string | null
           submitted_at?: string | null
         }
@@ -267,6 +282,30 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           subscribed_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
