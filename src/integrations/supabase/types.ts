@@ -17,7 +17,7 @@ export type Database = {
           full_name: string
           id: string
           phone: string
-          position: string
+          position: string | null
           resume_url: string | null
           status: string | null
           submitted_at: string | null
@@ -29,7 +29,7 @@ export type Database = {
           full_name: string
           id?: string
           phone: string
-          position: string
+          position?: string | null
           resume_url?: string | null
           status?: string | null
           submitted_at?: string | null
@@ -41,7 +41,7 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string
-          position?: string
+          position?: string | null
           resume_url?: string | null
           status?: string | null
           submitted_at?: string | null

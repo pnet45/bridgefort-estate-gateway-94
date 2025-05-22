@@ -108,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .eq('id', userId)
         .single();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user profile:', error);
         return;
       }
@@ -153,11 +153,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
       });
 
-      if (!error && data.user) {
-        await fetchUserProfile(data.user.id);
-        await fetchUserRole(data.user.id);
-      }
-
       return { data, error };
     } catch (error: any) {
       return { data: null, error };
@@ -191,6 +186,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           },
         },
       });
+
+      if (!error) {
+        try {
+          // Create profile entry in profiles table
+          await supabase.from('profiles').insert([
+            {
+              id: data.user?.id,
+              first_name: firstName,
+              last_name: lastName,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          ]);
+        } catch (profileError) {
+          console.error('Error creating profile:', profileError);
+        }
+      }
 
       return { data, error };
     } catch (error: any) {
