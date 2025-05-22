@@ -127,9 +127,8 @@ const AdditionalServices = () => {
             </div>
           </Card>
         </div>
-        </div>            
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 mt-8">
           {/* Real Estate Management */}
           <div className="bg-white p-8 rounded-xl shadow-md">
             <div className="flex items-center mb-6">
