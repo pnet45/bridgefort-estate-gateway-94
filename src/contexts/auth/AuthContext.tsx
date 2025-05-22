@@ -2,34 +2,9 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../../integrations/supabase/client';
-import { UserProfile } from './types';
+import { UserProfile, AuthContextProps } from './authTypes';
+import { fetchUserProfile, fetchUserRole } from './authUtils';
 import { toast } from "@/hooks/use-toast";
-
-interface AuthContextProps {
-  user: User | null;
-  session: Session | null;
-  profile: UserProfile | null;
-  userRole: string | null;
-  isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{
-    error: Error | null;
-    data: any;
-  }>;
-  signInWithGoogle: () => Promise<{
-    error: Error | null;
-    data: any;
-  }>;
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{
-    error: Error | null;
-    data: any;
-  }>;
-  resetPassword: (email: string) => Promise<{
-    error: Error | null;
-    data: any;
-  }>;
-  signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-}
 
 export const AuthContext = createContext<AuthContextProps>({
   user: null,
@@ -74,8 +49,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // When we have a user, fetch their profile and role
         if (session?.user) {
           setTimeout(() => {
-            fetchUserProfile(session.user.id);
-            fetchUserRole(session.user.id);
+            fetchUserProfile(session.user.id).then(setProfile);
+            fetchUserRole(session.user.id).then(setUserRole);
           }, 0);
         } else {
           setProfile(null);
@@ -90,8 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserProfile(session.user.id);
-        fetchUserRole(session.user.id);
+        fetchUserProfile(session.user.id).then(setProfile);
+        fetchUserRole(session.user.id).then(setUserRole);
       }
       
       setLoading(false);
@@ -100,49 +75,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user profile:', error);
-        return;
-      }
-
-      setProfile(data);
-    } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
-    }
-  };
-
-  const fetchUserRole = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        // PGRST116 is "not found" error - normal for users without roles
-        console.error('Error fetching user role:', error);
-        return;
-      }
-
-      setUserRole(data?.role || null);
-    } catch (error) {
-      console.error('Error in fetchUserRole:', error);
-    }
-  };
-
   const refreshProfile = async () => {
     if (user) {
-      await fetchUserProfile(user.id);
-      await fetchUserRole(user.id);
+      const updatedProfile = await fetchUserProfile(user.id);
+      const updatedRole = await fetchUserRole(user.id);
+      setProfile(updatedProfile);
+      setUserRole(updatedRole);
     }
   };
 
@@ -187,12 +125,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
       });
 
-      if (!error) {
+      if (!error && data.user) {
         try {
           // Create profile entry in profiles table
           await supabase.from('profiles').insert([
             {
-              id: data.user?.id,
+              id: data.user.id,
               first_name: firstName,
               last_name: lastName,
               created_at: new Date().toISOString(),
