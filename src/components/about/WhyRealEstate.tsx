@@ -1,9 +1,6 @@
-
 import React from 'react';
-
 const WhyRealEstate = () => {
-  return (
-    <section className="section-padding bg-gray-50">
+  return <section className="section-padding bg-gray-50">
       <div className="container-custom">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
@@ -33,7 +30,7 @@ const WhyRealEstate = () => {
           </div>
           
           <div>
-            <img src="public/lovable-uploads/84195595-cefb-44c6-90c9-1d17b754d992.png" alt="Real Estate Investment" className="w-full h-auto rounded-lg shadow-lg mb-8 hover:scale-[1.02] transition-transform duration-300" />
+            <img src="public/lovable-uploads/84195595-cefb-44c6-90c9-1d17b754d992.png" alt="Real Estate Investment" className="w-full h-auto rounded-lg shadow-lg mb-8 hover:scale-[1.02] transition-transform duration-300 object-scale-down" />
             
             <h3 className="text-2xl font-bold mb-4">Why Choose PWAN Bridgefort?</h3>
             <p className="text-gray-700 mb-6">
@@ -70,8 +67,6 @@ const WhyRealEstate = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default WhyRealEstate;
