@@ -93,11 +93,21 @@
 
   body {
     @apply bg-background text-foreground font-poppins;
-    padding-top: 0; /* Remove default top padding */
+    padding-top: 0;
+    color: black;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-montserrat font-semibold;
+    color: black;
+  }
+
+  input, textarea, select {
+    color: black !important;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    color: black !important;
   }
 }
 
@@ -107,7 +117,7 @@
   }
   
   .section-padding {
-    @apply py-16 md:py-24;
+    @apply py-8 md:py-16 lg:py-24;
   }
   
   .btn-primary {
@@ -119,10 +129,9 @@
   }
   
   .input-field {
-    @apply px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-estate-blue;
+    @apply px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-estate-blue text-black;
   }
 
-  /* Navbar styling */
   .navbar-container {
     @apply fixed top-0 w-full bg-white shadow-md z-50;
   }
@@ -138,17 +147,54 @@
   .navbar-phone {
     @apply text-blue-600;
   }
+
+  /* Enhanced Mobile Responsive */
+  @media (max-width: 768px) {
+    .container-custom {
+      @apply px-3;
+    }
+    
+    .section-padding {
+      @apply py-6;
+    }
+    
+    .grid {
+      @apply gap-4;
+    }
+    
+    h1 {
+      @apply text-2xl;
+    }
+    
+    h2 {
+      @apply text-xl;
+    }
+    
+    h3 {
+      @apply text-lg;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .container-custom {
+      @apply px-2;
+    }
+    
+    .section-padding {
+      @apply py-4;
+    }
+  }
 }
 
-/* Ensure content starts below the navbar */
 main, section:first-of-type {
-  padding-top: 5rem !important; /* Add important to override any other styles */
+  padding-top: 5rem !important;
 }
 
 .hero-section {
   padding-top: 5rem !important;
 }
 
+/* Enhanced Animations with Box-in Effects */
 @keyframes slideInFromLeft {
   0% {
     transform: translateX(-100%);
@@ -182,19 +228,24 @@ main, section:first-of-type {
   }
 }
 
-.animate-slide-in-left {
-  animation: slideInFromLeft 0.5s ease-out;
+@keyframes boxIn {
+  0% {
+    transform: scale(0.9) rotateY(15deg);
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+  }
+  50% {
+    transform: scale(1.05) rotateY(0deg);
+    opacity: 0.8;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  100% {
+    transform: scale(1) rotateY(0deg);
+    opacity: 1;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
 }
 
-.animate-slide-in-right {
-  animation: slideInFromRight 0.5s ease-out;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.5s ease-out;
-}
-
-/* Add fade-in animation for property filters */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -206,6 +257,79 @@ main, section:first-of-type {
   }
 }
 
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(43, 45, 125, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(43, 45, 125, 0.6), 0 0 30px rgba(126, 34, 206, 0.4);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInFromLeft 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInFromRight 0.6s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease-out;
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-box-in {
+  animation: boxIn 0.7s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Focus and Hover Effects */
+.focus-box-in:focus-within {
+  animation: boxIn 0.3s ease-out forwards;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+/* Color Variations */
+.gradient-red-purple {
+  background: linear-gradient(135deg, #e31e24, #7e22ce);
+}
+
+.gradient-blue-green {
+  background: linear-gradient(135deg, #2b2d7d, #059669);
+}
+
+.gradient-orange-red {
+  background: linear-gradient(135deg, #ea580c, #dc2626);
+}
+
+.gradient-purple-blue {
+  background: linear-gradient(135deg, #7e22ce, #2563eb);
+}
+
+.gradient-green-blue {
+  background: linear-gradient(135deg, #059669, #2563eb);
+}
+
+/* Responsive Text Colors */
+@media (max-width: 768px) {
+  body, h1, h2, h3, h4, h5, h6, p, span, div {
+    color: black !important;
+  }
+  
+  input, textarea, select {
+    color: black !important;
+    background-color: white !important;
+  }
 }

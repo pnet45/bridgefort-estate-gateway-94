@@ -9,77 +9,84 @@ const PropertySearch = () => {
   const [location, setLocation] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [priceRange, setPriceRange] = useState('');
+  const [searchText, setSearchText] = useState('');
   const navigate = useNavigate();
-  const { properties, setSearchQuery, setFilters } = usePropertyContext();
+  const { setSearchQuery, setFilters } = usePropertyContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Check if at least one search parameter is provided
-    if (!location && !propertyType && !priceRange) {
+    if (!location && !propertyType && !priceRange && !searchText) {
       toast({
         title: "Search Parameters Required",
-        description: "Please select at least one search criteria.",
+        description: "Please enter at least one search criteria.",
         variant: "destructive",
       });
       return;
     }
     
-    // Build search query parameters
-    const params = new URLSearchParams();
-    if (location) params.append('location', location);
-    if (propertyType) params.append('type', propertyType);
-    if (priceRange) params.append('price', priceRange);
-    
-    // Set filters for direct application when on properties page
-    if (propertyType) {
-      setFilters({
-        category: 'all', // Preserve existing values
-        type: propertyType,
-        minPrice: '',
-        maxPrice: ''
-      });
+    // Build search query for location, name, price, type
+    let searchQuery = '';
+    if (searchText) {
+      searchQuery = searchText;
+    } else if (location) {
+      searchQuery = location;
     }
+    
+    // Set search query for text-based search
+    if (searchQuery) {
+      setSearchQuery(searchQuery);
+    }
+    
+    // Set filters for dropdowns
+    const newFilters = {
+      category: 'all',
+      type: propertyType || 'all',
+      minPrice: '',
+      maxPrice: ''
+    };
     
     if (priceRange) {
       const [minPrice, maxPrice] = priceRange.split('-');
-      setFilters({
-        category: 'all', // Preserve existing values
-        type: propertyType || 'all',
-        minPrice: minPrice || '',
-        maxPrice: maxPrice?.replace('+', '') || ''
-      });
+      newFilters.minPrice = minPrice || '';
+      newFilters.maxPrice = maxPrice?.replace('+', '') || '';
     }
     
-    // Set location as search query
-    if (location) {
-      setSearchQuery(location);
-    }
+    setFilters(newFilters);
     
-    // Navigate to properties page with search parameters
-    navigate(`/properties?${params.toString()}`);
+    // Navigate to properties page
+    navigate('/properties');
     
-    // Show success toast
     toast({
       title: "Search Initiated",
       description: "Redirecting to search results...",
     });
-    
-    console.log("Searching properties with filters:", { location, propertyType, priceRange });
-    console.log("Available properties:", properties.length);
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg -mt-20 relative z-10 mx-auto max-w-5xl">
+    <div className="bg-white p-6 rounded-lg shadow-lg -mt-20 relative z-10 mx-auto max-w-5xl hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in">
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="md:col-span-1">
+            <label htmlFor="searchText" className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input
+              id="searchText"
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Search by name, location, price..."
+              className="input-field w-full text-black focus:text-black"
+            />
+          </div>
+
           <div className="md:col-span-1">
             <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
             <select
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="input-field w-full"
+              className="input-field w-full text-black focus:text-black"
             >
               <option value="">Any Location</option>
               <option value="lagos">Lagos</option>
@@ -101,7 +108,7 @@ const PropertySearch = () => {
               id="propertyType"
               value={propertyType}
               onChange={(e) => setPropertyType(e.target.value)}
-              className="input-field w-full"
+              className="input-field w-full text-black focus:text-black"
             >
               <option value="">Any Type</option>
               <option value="residential">Residential</option>
@@ -119,7 +126,7 @@ const PropertySearch = () => {
               id="priceRange"
               value={priceRange}
               onChange={(e) => setPriceRange(e.target.value)}
-              className="input-field w-full"
+              className="input-field w-full text-black focus:text-black"
             >
               <option value="">Any Price</option>
               <option value="0-10000000">₦0 - ₦10M</option>
@@ -133,7 +140,7 @@ const PropertySearch = () => {
           <div className="md:col-span-1 flex items-end">
             <button
               type="submit"
-              className="w-full bg-estate-blue hover:bg-estate-darkBlue text-white py-2 px-4 rounded flex items-center justify-center transition duration-300"
+              className="w-full bg-estate-blue hover:bg-estate-darkBlue text-white py-2 px-4 rounded flex items-center justify-center transition duration-300 hover:scale-105 focus:scale-105 focus:ring-2 focus:ring-purple-500"
             >
               <Search size={18} className="mr-2" />
               Search

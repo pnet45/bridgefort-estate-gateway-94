@@ -33,7 +33,8 @@ const NewsletterForm = () => {
       if (existingSubscriber) {
         toast({
           title: "Already subscribed",
-          description: "This email is already subscribed to our newsletter."
+          description: "This email is already subscribed to our newsletter.",
+          className: "bg-orange-50 border-orange-200"
         });
         setEmail('');
         return;
@@ -52,7 +53,8 @@ const NewsletterForm = () => {
       
       toast({
         title: "Success!",
-        description: "You've been added to our newsletter."
+        description: "You've been added to our newsletter.",
+        className: "bg-green-50 border-green-200"
       });
       
       setEmail('');
@@ -73,14 +75,14 @@ const NewsletterForm = () => {
       <Input
         type="email"
         placeholder="Enter your email"
-        className="bg-white p-3 rounded-lg focus:ring-2 focus:ring-estate-blue focus:border-estate-blue hover:scale-105 transition-all duration-300"
+        className="bg-white p-3 rounded-lg focus:ring-2 focus:ring-estate-blue focus:border-estate-blue hover:scale-105 transition-all duration-300 text-black focus:text-black"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
       />
       <Button 
         type="submit" 
-        className="bg-estate-blue hover:bg-estate-darkBlue text-white px-6 py-2 md:py-0 hover:scale-105 transition-all duration-300" 
+        className="bg-gradient-to-r from-estate-blue to-green-600 hover:from-estate-darkBlue hover:to-green-700 text-white px-6 py-2 md:py-0 hover:scale-105 transition-all duration-300 focus:scale-105 focus:ring-2 focus:ring-orange-500" 
         disabled={submitting}
       >
         {submitting ? 'Subscribing...' : 'Subscribe'}

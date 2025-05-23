@@ -9,13 +9,17 @@ export const applyFilters = (
 ): Property[] => {
   let filtered = [...props];
 
-  // Apply search query filter
+  // Apply search query filter (search name, location, price, type)
   if (query) {
-    filtered = filtered.filter(property =>
-      property.title.toLowerCase().includes(query.toLowerCase()) ||
-      property.location.toLowerCase().includes(query.toLowerCase()) ||
-      property.propertyType.toLowerCase().includes(query.toLowerCase())
-    );
+    const searchLower = query.toLowerCase();
+    filtered = filtered.filter(property => {
+      const titleMatch = property.title.toLowerCase().includes(searchLower);
+      const locationMatch = property.location.toLowerCase().includes(searchLower);
+      const typeMatch = property.propertyType.toLowerCase().includes(searchLower);
+      const priceMatch = property.price.toLowerCase().includes(searchLower);
+      
+      return titleMatch || locationMatch || typeMatch || priceMatch;
+    });
   }
 
   // Apply category filter
