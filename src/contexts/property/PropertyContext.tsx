@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Property, Filters, PropertyContextType } from './types';
 import { applyFilters, applyCustomFilters } from './propertyUtils';
 import { supabase } from '@/integrations/supabase/client';
-import { Estate } from '@/types/estate';
 
 const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
 
@@ -28,7 +27,7 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLoading(true);
     try {
       const { data: estates, error } = await supabase
-        .from('Estate')
+        .from('estate')
         .select('*');
       
       if (error) {
@@ -37,16 +36,28 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       if (estates) {
         // Convert database estates to our Property format
-        const propertyData: Property[] = estates.map((estate: Estate) => ({
-          id: estate.id,
-          title: estate.name,
-          location: estate.location || '',
-          price: estate.promo_price ? `₦${estate.promo_price?.toLocaleString()}` : 'Price on Request',
-          imageUrl: estate.media && estate.media.length > 0 ? estate.media[0] : '/placeholder.svg',
-          sqm: estate.size || 0,
-          propertyType: estate.type || 'Land',
-          phase: estate.phase
-        }));
+        const propertyData: Property[] = estates.map((estate: any) => {
+          // Determine price based on available price fields
+          let price = 'Price on Request';
+          if (estate.promo_price) {
+            price = `₦${estate.promo_price.toLocaleString()}`;
+          } else if (estate.prelaunch_price && estate.actual_price) {
+            price = `Pre-Launch: ₦${estate.prelaunch_price.toLocaleString()} | Actual: ₦${estate.actual_price.toLocaleString()}`;
+          } else if (estate.actual_price) {
+            price = `₦${estate.actual_price.toLocaleString()}`;
+          }
+
+          return {
+            id: estate.id,
+            title: estate.name,
+            location: estate.location || '',
+            price: price,
+            imageUrl: estate.media && estate.media.length > 0 ? estate.media[0] : '/placeholder.svg',
+            sqm: estate.size || 0,
+            propertyType: estate.type || 'Land',
+            phase: estate.phase || 1
+          };
+        });
         
         setProperties(propertyData);
         setFilteredProperties(applyFilters(propertyData, searchQuery, filters));
