@@ -18,7 +18,7 @@ const managementTeam = [{
   bio: 'Network marketing guru with expertise in real estate portfolio management and optimization. Mrs Precious ensures smooth daily operations across all departments. With a strong background in operations and project management, she streamlines processes and supports organizational efficiency and innovation.',
   imageUrl: '/lovable-uploads/Precious.png',
   social: {
-    linkedin: 'https://linkedin.com',
+    linkedin: 'https://linkedin.com/Precioussilva',
     email: 'precious.silva@pwanbridgefort.ng',
     phone: '+234 807 244 0090'
   }
@@ -28,7 +28,7 @@ const managementTeam = [{
   bio: 'Mr Vincent leads the finance and HR departments, managing budgets, financial reporting, and team coordination. His attention to detail and integrity ensures strong fiscal management and a productive workplace.',
   imageUrl: '/lovable-uploads/GV.png',
   social: {
-    linkedin: 'https://linkedin.com',
+    linkedin: 'https://linkedin.com/gvince',
     email: 'gideon.vincent@pwanbridgefort.ng',
     phone: '+234 803 768 8503'
   }
