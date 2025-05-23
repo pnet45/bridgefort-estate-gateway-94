@@ -35,7 +35,6 @@ const PropertyGrid = ({ properties, hiddenProperties = [], user, onToggleVisibil
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {properties.map((property, index) => {
-        const { scheme, ...rest } = property;
         const isHidden = hiddenProperties.includes(property.id);
         
         return (
@@ -44,7 +43,7 @@ const PropertyGrid = ({ properties, hiddenProperties = [], user, onToggleVisibil
             className="relative animate-fade-in"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
-            <PropertyCard {...rest} />
+            <PropertyCard {...property} />
             
             {user && onToggleVisibility && (
               <Button
