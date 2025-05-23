@@ -1,6 +1,6 @@
 
 import { User } from '@supabase/supabase-js';
-import { Eye, EyeOff } from 'lucide-react';
+import { EyeOff } from 'lucide-react';
 import PropertyCard from '../PropertyCard';
 import { Button } from '@/components/ui/button';
 
@@ -19,10 +19,13 @@ interface PropertyGridProps {
   properties: Property[];
   hiddenProperties?: string[];
   user: User | null;
+  userRole: string | null;
   onToggleVisibility?: (propertyId: string) => void;
 }
 
-const PropertyGrid = ({ properties, hiddenProperties = [], user, onToggleVisibility }: PropertyGridProps) => {
+const PropertyGrid = ({ properties, hiddenProperties = [], user, userRole, onToggleVisibility }: PropertyGridProps) => {
+  const isAdmin = userRole === 'admin';
+
   if (properties.length === 0) {
     return (
       <div className="col-span-full text-center py-12 animate-fade-in">
@@ -40,29 +43,20 @@ const PropertyGrid = ({ properties, hiddenProperties = [], user, onToggleVisibil
         return (
           <div 
             key={property.id} 
-            className="relative animate-fade-in"
+            className="relative animate-fade-in hover:scale-105 transition-all duration-300 group"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             <PropertyCard {...property} />
             
-            {user && onToggleVisibility && (
+            {user && isAdmin && onToggleVisibility && (
               <Button
                 variant="outline"
                 size="sm"
-                className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-300 hover:scale-105"
+                className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm hover:bg-white transition-all duration-300 hover:scale-105 opacity-0 group-hover:opacity-100"
                 onClick={() => onToggleVisibility(property.id)}
               >
-                {isHidden ? (
-                  <>
-                    <Eye size={16} className="mr-1 transition-transform duration-300" />
-                    <span className="text-xs">Show</span>
-                  </>
-                ) : (
-                  <>
-                    <EyeOff size={16} className="mr-1 transition-transform duration-300" />
-                    <span className="text-xs">Hide</span>
-                  </>
-                )}
+                <EyeOff size={16} className="mr-1 transition-transform duration-300" />
+                <span className="text-xs">Hide</span>
               </Button>
             )}
           </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -15,8 +14,10 @@ import {
 } from '@/components/ui/table';
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import PropertyForm from '../properties/PropertyForm';
+import { useAuth } from '@/contexts/auth';
 
 const PropertyManagement: React.FC = () => {
+  const { userRole } = useAuth();
   const [estates, setEstates] = useState<Estate[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -24,6 +25,8 @@ const PropertyManagement: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [estateToDelete, setEstateToDelete] = useState<Estate | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const isAdmin = userRole === 'admin';
 
   useEffect(() => {
     fetchEstates();
@@ -53,22 +56,46 @@ const PropertyManagement: React.FC = () => {
   };
 
   const handleAddNew = () => {
+    if (!isAdmin) {
+      toast({
+        title: "Access denied",
+        description: "Only administrators can add new properties",
+        variant: "destructive"
+      });
+      return;
+    }
     setSelectedEstate(undefined);
     setIsFormOpen(true);
   };
 
   const handleEdit = (estate: Estate) => {
+    if (!isAdmin) {
+      toast({
+        title: "Access denied",
+        description: "Only administrators can edit properties",
+        variant: "destructive"
+      });
+      return;
+    }
     setSelectedEstate(estate);
     setIsFormOpen(true);
   };
 
   const handleDelete = (estate: Estate) => {
+    if (!isAdmin) {
+      toast({
+        title: "Access denied",
+        description: "Only administrators can delete properties",
+        variant: "destructive"
+      });
+      return;
+    }
     setEstateToDelete(estate);
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
-    if (!estateToDelete) return;
+    if (!estateToDelete || !isAdmin) return;
     
     setIsDeleting(true);
     try {
@@ -102,13 +129,21 @@ const PropertyManagement: React.FC = () => {
     fetchEstates();
   };
 
+  if (!isAdmin) {
+    return (
+      <div className="text-center py-8 animate-fade-in">
+        <p className="text-gray-500">Access denied. Only administrators can manage properties.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Property Management</h2>
         <Button 
           onClick={handleAddNew}
-          className="bg-estate-blue hover:bg-estate-darkBlue"
+          className="bg-estate-blue hover:bg-estate-darkBlue hover:scale-105 transition-all duration-300"
         >
           <Plus size={16} className="mr-2" />
           Add New Property
@@ -120,7 +155,7 @@ const PropertyManagement: React.FC = () => {
           <Loader2 className="animate-spin text-estate-blue" size={32} />
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300">
           <Table>
             <TableHeader>
               <TableRow>
@@ -142,7 +177,7 @@ const PropertyManagement: React.FC = () => {
                 </TableRow>
               ) : (
                 estates.map((estate) => (
-                  <TableRow key={estate.id}>
+                  <TableRow key={estate.id} className="hover:bg-gray-50 transition-colors duration-300">
                     <TableCell className="font-medium">{estate.name}</TableCell>
                     <TableCell>{estate.location}</TableCell>
                     <TableCell>{estate.type || 'Land'}</TableCell>
@@ -156,7 +191,7 @@ const PropertyManagement: React.FC = () => {
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleEdit(estate)}
-                        className="mr-2"
+                        className="mr-2 hover:scale-110 transition-transform duration-300"
                       >
                         <Pencil size={16} />
                       </Button>
@@ -164,7 +199,7 @@ const PropertyManagement: React.FC = () => {
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleDelete(estate)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 hover:scale-110 transition-all duration-300"
                       >
                         <Trash2 size={16} />
                       </Button>
@@ -177,7 +212,6 @@ const PropertyManagement: React.FC = () => {
         </div>
       )}
       
-      {/* Property Form Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -193,7 +227,6 @@ const PropertyManagement: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -210,6 +243,7 @@ const PropertyManagement: React.FC = () => {
               variant="destructive" 
               onClick={confirmDelete}
               disabled={isDeleting}
+              className="hover:scale-105 transition-transform duration-300"
             >
               {isDeleting ? (
                 <>

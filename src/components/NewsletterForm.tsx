@@ -24,7 +24,6 @@ const NewsletterForm = () => {
     setSubmitting(true);
     
     try {
-      // Check if the email already exists
       const { data: existingSubscriber } = await supabase
         .from('newsletter_subscribers')
         .select('*')
@@ -40,7 +39,6 @@ const NewsletterForm = () => {
         return;
       }
       
-      // Submit to database
       const { error } = await supabase
         .from('newsletter_subscribers')
         .insert([
@@ -52,13 +50,11 @@ const NewsletterForm = () => {
       
       if (error) throw error;
       
-      // Show success message
       toast({
         title: "Success!",
         description: "You've been added to our newsletter."
       });
       
-      // Clear form
       setEmail('');
     } catch (error) {
       toast({
@@ -77,14 +73,14 @@ const NewsletterForm = () => {
       <Input
         type="email"
         placeholder="Enter your email"
-        className="bg-white p-3 rounded-lg focus:ring-2 focus:ring-estate-blue focus:border-estate-blue"
+        className="bg-white p-3 rounded-lg focus:ring-2 focus:ring-estate-blue focus:border-estate-blue hover:scale-105 transition-all duration-300"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
       />
       <Button 
         type="submit" 
-        className="bg-estate-blue hover:bg-estate-darkBlue text-white px-6 py-2 md:py-0" 
+        className="bg-estate-blue hover:bg-estate-darkBlue text-white px-6 py-2 md:py-0 hover:scale-105 transition-all duration-300" 
         disabled={submitting}
       >
         {submitting ? 'Subscribing...' : 'Subscribe'}
