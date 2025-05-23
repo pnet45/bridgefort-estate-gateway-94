@@ -99,7 +99,7 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-montserrat font-semibold;
-    color: black;
+    color: rgb(193, 189, 189);
   }
 
   input, textarea, select {
