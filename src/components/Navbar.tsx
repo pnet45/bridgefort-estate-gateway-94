@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import NavLinks from './navbar/NavLinks';
 import NavbarUserMenu from './navbar/NavbarUserMenu';
 import MobileMenu from './navbar/MobileMenu';
+import CartIcon from './ecommerce/CartIcon';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,6 +51,9 @@ const Navbar = () => {
                 <span>+2348030624059</span>
               </a>
             </div>
+
+            {/* Shopping Cart Icon */}
+            <CartIcon />
             
             {user ? (
               <NavbarUserMenu profile={profile} userRole={userRole} />
@@ -64,6 +68,11 @@ const Navbar = () => {
             <div className="flex items-center text-blue-500 mr-4">
               <Phone size={16} className="mr-1" />
               <span className="text-sm font-bold">+234 803 062 4059</span>
+            </div>
+            
+            {/* Mobile Cart Icon */}
+            <div className="mr-2">
+              <CartIcon />
             </div>
             
             {user && (

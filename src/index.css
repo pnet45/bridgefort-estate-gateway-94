@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
 
 @tailwind base;
@@ -300,7 +301,7 @@ main, section:first-of-type {
   transition: all 0.3s ease;
 }
 
-/* Color Variations */
+/* Enhanced Color Variations with Mixed Colors */
 .gradient-red-purple {
   background: linear-gradient(135deg, #e31e24, #7e22ce);
 }
@@ -321,6 +322,18 @@ main, section:first-of-type {
   background: linear-gradient(135deg, #059669, #2563eb);
 }
 
+.gradient-estate-mix {
+  background: linear-gradient(135deg, #e31e24, #2b2d7d, #7e22ce);
+}
+
+.gradient-warm-mix {
+  background: linear-gradient(135deg, #ea580c, #e31e24, #7e22ce);
+}
+
+.gradient-cool-mix {
+  background: linear-gradient(135deg, #2b2d7d, #059669, #2563eb);
+}
+
 /* Responsive Text Colors */
 @media (max-width: 768px) {
   body, p, span, div {
@@ -335,4 +348,29 @@ main, section:first-of-type {
     color: rgb(99, 98, 98) !important;
     background-color: white !important;
   }
+}
+
+/* Enhanced Ecommerce Specific Styles */
+.cart-badge {
+  @apply absolute -top-2 -right-2 bg-estate-red text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-pulse-glow;
+}
+
+.checkout-step {
+  @apply transition-all duration-300 hover:scale-105 focus-box-in;
+}
+
+.plot-progress {
+  @apply bg-gradient-to-r from-estate-blue to-green-500;
+}
+
+.ecommerce-button {
+  @apply bg-gradient-estate-mix hover:bg-gradient-warm-mix transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus-box-in;
+}
+
+.property-sold-overlay {
+  @apply absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center;
+}
+
+.sold-out-badge {
+  @apply bg-estate-red text-white px-4 py-2 rounded-lg font-bold text-lg animate-pulse-glow;
 }

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { EcommerceProvider } from '@/contexts/ecommerce';
 import Index from './pages/Index';
 import About from './pages/About';
 import Properties from './pages/Properties';
@@ -23,33 +24,37 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Sitemap from './pages/Sitemap';
 import ResetPassword from './pages/ResetPassword';
+import CartSidebar from './components/ecommerce/CartSidebar';
 
 function App() {
   return (
     <Router>
-      <ScrollToTop />
-      <FloatingMessageButton />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/properties" element={<Properties />} />
-        <Route path="/services" element={<Services />} />
-        <Route path="/buy2sell" element={<Buy2Sell />} />
-        <Route path="/training" element={<Training />} />
-        <Route path="/career" element={<Career />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/blog/:id" element={<BlogPost />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/create-post" element={<PrivateRoute><CreatePost /></PrivateRoute>} />
-        <Route path="/edit-post/:id" element={<PrivateRoute><EditPost /></PrivateRoute>} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-of-service" element={<TermsOfService />} />
-        <Route path="/sitemap" element={<Sitemap />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-      </Routes>
+      <EcommerceProvider>
+        <ScrollToTop />
+        <FloatingMessageButton />
+        <CartSidebar />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/properties" element={<Properties />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/buy2sell" element={<Buy2Sell />} />
+          <Route path="/training" element={<Training />} />
+          <Route path="/career" element={<Career />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:id" element={<BlogPost />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/create-post" element={<PrivateRoute><CreatePost /></PrivateRoute>} />
+          <Route path="/edit-post/:id" element={<PrivateRoute><EditPost /></PrivateRoute>} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/sitemap" element={<Sitemap />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+        </Routes>
+      </EcommerceProvider>
     </Router>
   );
 }
