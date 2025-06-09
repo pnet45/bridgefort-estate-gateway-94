@@ -9,6 +9,7 @@ import Footer from '../components/Footer';
 import { useAuth } from '@/contexts/auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PropertyManagement from '@/components/admin/PropertyManagement';
+import DashboardStats from '@/components/dashboard/DashboardStats';
 
 // Import dashboard components
 import AccountInformation from '@/components/dashboard/AccountInformation';
@@ -21,7 +22,7 @@ const Dashboard = () => {
   const [userPosts, setUserPosts] = useState<any[]>([]);
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('posts');
+  const [activeTab, setActiveTab] = useState('overview');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -126,10 +127,15 @@ const Dashboard = () => {
           <h1 className="text-3xl font-bold mb-8 text-center">Dashboard</h1>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-8">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="posts">Blog Posts</TabsTrigger>
               {isAdmin && <TabsTrigger value="properties">Properties</TabsTrigger>}
             </TabsList>
+            
+            <TabsContent value="overview">
+              <DashboardStats />
+            </TabsContent>
             
             <TabsContent value="posts">
               <BlogPostsTab 

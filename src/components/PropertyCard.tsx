@@ -15,6 +15,7 @@ interface PropertyCardProps {
   price: string;
   imageUrl: string;
   propertyType: string;
+  sqm?: number;
   totalPlots?: number;
   availablePlots?: number;
   pricePerPlot?: number;
@@ -27,6 +28,7 @@ const PropertyCard = ({
   price, 
   imageUrl, 
   propertyType,
+  sqm = 500,
   totalPlots = 100,
   availablePlots = 50,
   pricePerPlot = 0
@@ -43,10 +45,10 @@ const PropertyCard = ({
       propertyId: id,
       propertyName: title,
       location,
-      pricePerPlot: pricePerPlot || 1000000, // Default price if not provided
+      pricePerPlot: pricePerPlot || 1000000,
       plotNumber: Math.floor(Math.random() * 1000) + 1,
       imageUrl,
-      size: 500,
+      size: sqm,
       propertyType,
     };
     
@@ -69,7 +71,6 @@ const PropertyCard = ({
             )}
           </div>
           
-          {/* Add to Cart Button - Always visible */}
           <div className="absolute top-3 right-3">
             <Button
               onClick={handleAddToCart}
@@ -105,7 +106,10 @@ const PropertyCard = ({
             <p className="text-2xl font-bold text-estate-red">
               ₦{(pricePerPlot || 0).toLocaleString()} <span className="text-sm text-gray-600">per plot</span>
             </p>
-            <p className="text-sm text-gray-600">Property Type: {propertyType}</p>
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-gray-600">Property Type: {propertyType}</p>
+              <p className="text-sm text-gray-600 font-medium">Plot Size: {sqm} SQM</p>
+            </div>
           </div>
         </CardContent>
       </Card>

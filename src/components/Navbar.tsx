@@ -25,9 +25,6 @@ const Navbar = () => {
     return `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`;
   };
   
-  // Only show login button on blog page
-  const shouldShowLogin = location.pathname.includes('/blog') && !user;
-  
   return (
     <nav className="fixed w-full z-50 bg-white shadow-md py-2 animate-fade-in">
       <div className="container-custom mx-auto px-4">
@@ -66,7 +63,7 @@ const Navbar = () => {
               {/* User authentication */}
               {user ? (
                 <NavbarUserMenu profile={profile} userRole={userRole} />
-              ) : shouldShowLogin && (
+              ) : (
                 <Button onClick={() => navigate('/auth')} variant="default" className="bg-estate-blue hover:bg-estate-darkBlue hover:scale-105 transition-all duration-300">
                   Sign In
                 </Button>
@@ -86,13 +83,17 @@ const Navbar = () => {
               <CartIcon />
             </div>
             
-            {user && (
+            {user ? (
               <Button variant="ghost" className="mr-2 hover:scale-105 transition-transform duration-300" onClick={() => navigate('/dashboard')}>
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-estate-blue text-white">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
+              </Button>
+            ) : (
+              <Button onClick={() => navigate('/auth')} variant="outline" size="sm" className="mr-2">
+                Sign In
               </Button>
             )}
             <button onClick={toggleMenu} className="text-gray-800 focus:outline-none hover:scale-110 transition-transform duration-300">
@@ -105,7 +106,7 @@ const Navbar = () => {
       <MobileMenu 
         isOpen={isOpen} 
         toggleMenu={toggleMenu} 
-        shouldShowLogin={shouldShowLogin} 
+        shouldShowLogin={!user} 
       />
     </nav>
   );

@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
 
 @tailwind base;
@@ -97,8 +96,19 @@
     color: rgb(193, 189, 189);
   }
 
+  /* Headers on white/grey backgrounds use estate-blue, on dark backgrounds stay white */
   h1, h2, h3, h4, h5, h6 {
     @apply font-montserrat font-semibold;
+    color: #2B2D7D !important; /* estate-blue for default white/grey backgrounds */
+  }
+
+  /* Headers on dark backgrounds and images stay white */
+  .bg-black h1, .bg-black h2, .bg-black h3, .bg-black h4, .bg-black h5, .bg-black h6,
+  .bg-gray-800 h1, .bg-gray-800 h2, .bg-gray-800 h3, .bg-gray-800 h4, .bg-gray-800 h5, .bg-gray-800 h6,
+  .bg-gray-900 h1, .bg-gray-900 h2, .bg-gray-900 h3, .bg-gray-900 h4, .bg-gray-900 h5, .bg-gray-900 h6,
+  [style*="background-image"] h1, [style*="background-image"] h2, [style*="background-image"] h3,
+  [style*="background-image"] h4, [style*="background-image"] h5, [style*="background-image"] h6,
+  .hero-overlay h1, .hero-overlay h2, .hero-overlay h3, .hero-overlay h4, .hero-overlay h5, .hero-overlay h6 {
     color: white !important;
   }
 

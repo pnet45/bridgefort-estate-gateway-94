@@ -16,6 +16,7 @@ import {
   Minus
 } from 'lucide-react';
 import { useEcommerce } from '@/contexts/ecommerce';
+import Navbar from '../Navbar';
 import CheckoutForm from './CheckoutForm';
 
 const CartPage = () => {
@@ -171,46 +172,49 @@ const CartPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="container-custom">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar */}
-          <div className="lg:w-64">
-            <Card className="sticky top-24">
-              <CardHeader>
-                <CardTitle className="text-lg text-estate-blue">Account Menu</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <nav className="space-y-1">
-                  {menuItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id)}
-                        className={`w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-100 transition-colors ${
-                          activeTab === item.id ? 'bg-estate-blue text-white hover:bg-estate-darkBlue' : 'text-gray-700'
-                        }`}
-                      >
-                        <Icon size={18} />
-                        <span>{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </nav>
-              </CardContent>
-            </Card>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="pt-20">
+        <div className="container-custom">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Sidebar */}
+            <div className="lg:w-64">
+              <Card className="sticky top-24">
+                <CardHeader>
+                  <CardTitle className="text-lg text-estate-blue">Account Menu</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <nav className="space-y-1">
+                    {menuItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveTab(item.id)}
+                          className={`w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-100 transition-colors ${
+                            activeTab === item.id ? 'bg-estate-blue text-white hover:bg-estate-darkBlue' : 'text-gray-700'
+                          }`}
+                        >
+                          <Icon size={18} />
+                          <span>{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </nav>
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            {activeTab === 'cart' && renderCartContent()}
-            {activeTab === 'dashboard' && renderPlaceholderContent('Dashboard')}
-            {activeTab === 'properties' && renderPlaceholderContent('My Properties')}
-            {activeTab === 'documents' && renderPlaceholderContent('My Documents')}
-            {activeTab === 'inspections' && renderPlaceholderContent('Property Inspections')}
-            {activeTab === 'payments' && renderPlaceholderContent('My Payments')}
-            {activeTab === 'installments' && renderPlaceholderContent('My Installments')}
+            {/* Main Content */}
+            <div className="flex-1">
+              {activeTab === 'cart' && renderCartContent()}
+              {activeTab === 'dashboard' && renderPlaceholderContent('Dashboard')}
+              {activeTab === 'properties' && renderPlaceholderContent('My Properties')}
+              {activeTab === 'documents' && renderPlaceholderContent('My Documents')}
+              {activeTab === 'inspections' && renderPlaceholderContent('Property Inspections')}
+              {activeTab === 'payments' && renderPlaceholderContent('My Payments')}
+              {activeTab === 'installments' && renderPlaceholderContent('My Installments')}
+            </div>
           </div>
         </div>
       </div>
