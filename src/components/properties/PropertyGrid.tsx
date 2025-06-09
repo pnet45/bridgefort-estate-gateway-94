@@ -13,6 +13,9 @@ interface Property {
   sqm: number;
   propertyType: string;
   phase?: number;
+  totalPlots?: number;
+  availablePlots?: number;
+  pricePerPlot?: number;
 }
 
 interface PropertyGridProps {
@@ -62,7 +65,7 @@ const PropertyGrid = ({ properties, hiddenProperties = [], user, userRole, onTog
               >
                 <EyeOff size={16} className="mr-1 transition-transform duration-300" />
                 <span className="text-xs">Hide</span>
-              </button>
+              </Button>
             )}
           </div>
         );
