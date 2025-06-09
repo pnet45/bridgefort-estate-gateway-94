@@ -14,6 +14,9 @@ interface Property {
   sqm: number;
   propertyType: string;
   phase?: number;
+  totalPlots?: number;
+  availablePlots?: number;
+  pricePerPlot?: number;
 }
 
 interface HiddenPropertiesSectionProps {
