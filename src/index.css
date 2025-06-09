@@ -364,7 +364,8 @@ main, section:first-of-type {
 }
 
 .ecommerce-button {
-  @apply bg-gradient-estate-mix hover:bg-gradient-warm-mix transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus-box-in;
+  background: linear-gradient(135deg, #e31e24, #2b2d7d, #7e22ce);
+  @apply hover:opacity-90 transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus-box-in;
 }
 
 .property-sold-overlay {
