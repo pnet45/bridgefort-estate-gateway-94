@@ -25,6 +25,7 @@ import TermsOfService from './pages/TermsOfService';
 import Sitemap from './pages/Sitemap';
 import ResetPassword from './pages/ResetPassword';
 import CartSidebar from './components/ecommerce/CartSidebar';
+import CartPage from './components/ecommerce/CartPage';
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/sitemap" element={<Sitemap />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/cart" element={<CartPage />} />
         </Routes>
       </EcommerceProvider>
     </Router>

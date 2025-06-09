@@ -32,6 +32,7 @@ const Navbar = () => {
     <nav className="fixed w-full z-50 bg-white shadow-md py-2 animate-fade-in">
       <div className="container-custom mx-auto px-4">
         <div className="flex justify-between items-center">
+          {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
               <img 
@@ -42,28 +43,38 @@ const Navbar = () => {
             </Link>
           </div>
           
-          <div className="hidden lg:flex items-center space-x-6">
-            <NavLinks />
-
-            <div className="hidden md:flex items-center ml-4">
-              <a href="tel:+2348030624059" className="flex items-center text-red font-bold whitespace-nowrap hover:text-red transition duration-200 hover:scale-105">
-                <Phone size={18} className="mr-2 text-blue-500"/>
-                <span>+2348030624059</span>
-              </a>
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center flex-1 justify-between ml-8">
+            {/* Navigation Links */}
+            <div className="flex items-center space-x-6">
+              <NavLinks />
             </div>
 
-            {/* Shopping Cart Icon */}
-            <CartIcon />
-            
-            {user ? (
-              <NavbarUserMenu profile={profile} userRole={userRole} />
-            ) : shouldShowLogin && (
-              <Button onClick={() => navigate('/auth')} variant="default" className="bg-estate-blue hover:bg-estate-darkBlue hover:scale-105 transition-all duration-300">
-                Sign In
-              </Button>
-            )}
+            {/* Right side items */}
+            <div className="flex items-center space-x-4">
+              {/* Phone number */}
+              <div className="flex items-center">
+                <a href="tel:+2348030624059" className="flex items-center text-red font-bold whitespace-nowrap hover:text-red transition duration-200 hover:scale-105">
+                  <Phone size={18} className="mr-2 text-blue-500"/>
+                  <span>+2348030624059</span>
+                </a>
+              </div>
+
+              {/* Shopping Cart Icon */}
+              <CartIcon />
+              
+              {/* User authentication */}
+              {user ? (
+                <NavbarUserMenu profile={profile} userRole={userRole} />
+              ) : shouldShowLogin && (
+                <Button onClick={() => navigate('/auth')} variant="default" className="bg-estate-blue hover:bg-estate-darkBlue hover:scale-105 transition-all duration-300">
+                  Sign In
+                </Button>
+              )}
+            </div>
           </div>
           
+          {/* Mobile Navigation */}
           <div className="lg:hidden flex items-center">
             <div className="flex items-center text-blue-500 mr-4">
               <Phone size={16} className="mr-1" />

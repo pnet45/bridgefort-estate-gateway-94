@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, MapPin } from 'lucide-react';
+import { Download, MapPin, ShoppingCart } from 'lucide-react';
 import { Button } from './ui/button';
 import { AspectRatio } from './ui/aspect-ratio';
 import { ScrollArea } from './ui/scroll-area';
@@ -17,6 +17,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useEcommerce } from '@/contexts/ecommerce';
+import { Plot } from '@/contexts/ecommerce/types';
 
 interface PropertyDetailsDialogProps {
   property: {
@@ -32,9 +34,9 @@ interface PropertyDetailsDialogProps {
 
 const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProps) => {
   const isMobile = useIsMobile();
+  const { addToCart } = useEcommerce();
   
   const handleDownload = () => {
-    // Get the appropriate PDF for each property
     const pdfUrl = getPropertyPDF(property.title);
     const link = document.createElement('a');
     link.href = pdfUrl;
@@ -44,36 +46,51 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
     document.body.removeChild(link);
   };
 
-  // Function to get the appropriate PDF for each property
+  const handleAddToCart = () => {
+    const plot: Plot = {
+      id: `${property.id}-plot-1`,
+      propertyId: property.id,
+      propertyName: property.title,
+      location: property.location,
+      pricePerPlot: parseFloat(property.price.replace(/[^0-9.]/g, '')) || 500000,
+      plotNumber: 1,
+      imageUrl: property.imageUrl,
+      size: 500,
+      propertyType: property.propertyType,
+    };
+    
+    addToCart(plot, 1);
+  };
+
   const getPropertyPDF = (propertyTitle: string) => {
     switch(propertyTitle) {
       case "Fortress Hills Estate":
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "Afaoma Castle Estate":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "Akuchi Luxury Estate":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "Fountain Springs Estate":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "Greenfield County":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "Hampton Ville Estate":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "Olanma Gardens":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "Precious Gardens Estate":
       case "Precious Garden Estate":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "The Big League County":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "The Big League Smart City":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "The Big League Paradise":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "The Big League Heaven":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "Bridgefort County - Lagoon Front Estate":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`; // Replace with actual PDF when available
+        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       default:
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
     }
@@ -122,7 +139,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
       </DialogTrigger>
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[85vh]`}>
-          {/* Image section - Increased height */}
+          {/* Image section */}
           <div className={`${isMobile ? 'w-full h-[40vh]' : 'w-1/2 h-full'}`}>
             <div className="h-full p-6 flex flex-col">
               <div className="flex-1 relative">
@@ -191,14 +208,22 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
               </div>
             </ScrollArea>
             
-            {/* Download button - Fixed at bottom */}
-            <div className="mt-4 pt-2 border-t border-gray-100">
+            {/* Action buttons - Fixed at bottom */}
+            <div className="mt-4 pt-2 border-t border-gray-100 space-y-3">
               <Button 
                 onClick={handleDownload}
                 className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full py-3"
               >
                 <Download className="mr-2" />
                 Download Subscription Form
+              </Button>
+              
+              <Button 
+                onClick={handleAddToCart}
+                className="ecommerce-button text-white w-full py-3"
+              >
+                <ShoppingCart className="mr-2" />
+                Add to Cart
               </Button>
             </div>
           </div>
