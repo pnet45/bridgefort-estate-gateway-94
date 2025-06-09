@@ -15,9 +15,9 @@ interface PropertyCardProps {
   price: string;
   imageUrl: string;
   propertyType: string;
-  totalPlots: number;
-  availablePlots: number;
-  pricePerPlot: number;
+  totalPlots?: number;
+  availablePlots?: number;
+  pricePerPlot?: number;
 }
 
 const PropertyCard = ({ 
@@ -27,12 +27,12 @@ const PropertyCard = ({
   price, 
   imageUrl, 
   propertyType,
-  totalPlots,
-  availablePlots,
-  pricePerPlot
+  totalPlots = 100,
+  availablePlots = 50,
+  pricePerPlot = 0
 }: PropertyCardProps) => {
   const { addToCart } = useEcommerce();
-  const soldPercentage = ((totalPlots - availablePlots) / totalPlots) * 100;
+  const soldPercentage = totalPlots > 0 ? ((totalPlots - availablePlots) / totalPlots) * 100 : 0;
   const isSoldOut = availablePlots === 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -43,7 +43,7 @@ const PropertyCard = ({
       propertyId: id,
       propertyName: title,
       location,
-      pricePerPlot,
+      pricePerPlot: pricePerPlot || 1000000, // Default price if not provided
       plotNumber: Math.floor(Math.random() * 1000) + 1,
       imageUrl,
       size: 500,
@@ -103,7 +103,7 @@ const PropertyCard = ({
           
           <div className="space-y-2">
             <p className="text-2xl font-bold text-estate-red">
-              ₦{pricePerPlot.toLocaleString()} <span className="text-sm text-gray-600">per plot</span>
+              ₦{(pricePerPlot || 0).toLocaleString()} <span className="text-sm text-gray-600">per plot</span>
             </p>
             <p className="text-sm text-gray-600">Property Type: {propertyType}</p>
           </div>

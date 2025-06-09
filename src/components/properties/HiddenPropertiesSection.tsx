@@ -38,7 +38,12 @@ const HiddenPropertiesSection = ({ hiddenProperties, user, onUnhideProperty }: H
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             <div className="opacity-50">
-              <PropertyCard {...property} />
+              <PropertyCard 
+                {...property} 
+                totalPlots={property.totalPlots || 100}
+                availablePlots={property.availablePlots || 50}
+                pricePerPlot={property.pricePerPlot || 1000000}
+              />
             </div>
             
             <Button

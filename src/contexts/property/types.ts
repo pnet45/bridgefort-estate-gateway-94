@@ -1,4 +1,3 @@
-
 export interface Property {
   id: string;
   title: string;
@@ -8,13 +7,16 @@ export interface Property {
   sqm: number;
   propertyType: string;
   phase?: number;
+  totalPlots?: number;
+  availablePlots?: number;
+  pricePerPlot?: number;
 }
 
 export interface Filters {
   category: string;
   type: string;
-  minPrice: string | number;
-  maxPrice: string | number;
+  minPrice: string;
+  maxPrice: string;
 }
 
 export interface PropertyContextType {

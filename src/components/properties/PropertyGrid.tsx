@@ -46,7 +46,12 @@ const PropertyGrid = ({ properties, hiddenProperties = [], user, userRole, onTog
             className="relative animate-fade-in hover:scale-105 transition-all duration-300 group"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
-            <PropertyCard {...property} />
+            <PropertyCard 
+              {...property} 
+              totalPlots={property.totalPlots || 100}
+              availablePlots={property.availablePlots || 50}
+              pricePerPlot={property.pricePerPlot || 1000000}
+            />
             
             {user && isAdmin && onToggleVisibility && (
               <Button
@@ -57,7 +62,7 @@ const PropertyGrid = ({ properties, hiddenProperties = [], user, userRole, onTog
               >
                 <EyeOff size={16} className="mr-1 transition-transform duration-300" />
                 <span className="text-xs">Hide</span>
-              </Button>
+              </button>
             )}
           </div>
         );
