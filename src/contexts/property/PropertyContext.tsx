@@ -73,7 +73,7 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             name: estate.name,
             title: estate.name, // For backward compatibility
             location: estate.location || '',
-            price: price, // For backward compatibility
+            price: price, // Required field
             imageUrl: estate.media && estate.media.length > 0 ? estate.media[0] : '/placeholder.svg',
             size: estate.size || 0,
             sqm: estate.size || 0, // For backward compatibility
@@ -89,7 +89,10 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             promoPrice: estate.promo_price,
             actualPrice: estate.actual_price,
             prelaunchPrice: estate.prelaunch_price,
-            scheme: estate.scheme
+            scheme: estate.scheme,
+            features: [], // Default empty array
+            amenities: [], // Default empty array
+            paymentPlans: [] // Default empty array
           };
         });
         

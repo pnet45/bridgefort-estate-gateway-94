@@ -23,7 +23,7 @@ export interface Property {
   amenities?: string[]; // Added missing property
   paymentPlans?: string[]; // Added missing property
   // Legacy properties for backward compatibility
-  price?: string;
+  price: string; // Made required instead of optional
   sqm?: number;
 }
 
