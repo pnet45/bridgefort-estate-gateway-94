@@ -206,7 +206,7 @@ const ProfileForm = () => {
                         <Checkbox
                           id={language}
                           checked={formData.languagesSpoken.includes(language)}
-                          onCheckedChange={(checked) => handleLanguageChange(language, checked as boolean)}
+                          onCheckedChange={(checked) => handleLanguageChange(language, !!checked)}
                         />
                         <Label htmlFor={language}>{language}</Label>
                       </div>
@@ -381,7 +381,7 @@ const ProfileForm = () => {
                   <Checkbox
                     id="terms"
                     checked={termsAccepted}
-                    onCheckedChange={setTermsAccepted}
+                    onCheckedChange={(checked) => setTermsAccepted(!!checked)}
                   />
                   <Label htmlFor="terms" className="text-sm">
                     I accept the terms and conditions *
