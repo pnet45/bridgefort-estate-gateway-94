@@ -17,8 +17,11 @@ export interface Property {
   description?: string;
   media?: string[];
   subForm?: string;
-  title?: string;
+  title: string; // Made required instead of optional
   type?: string;
+  features?: string[]; // Added missing property
+  amenities?: string[]; // Added missing property
+  paymentPlans?: string[]; // Added missing property
   // Legacy properties for backward compatibility
   price?: string;
   sqm?: number;
