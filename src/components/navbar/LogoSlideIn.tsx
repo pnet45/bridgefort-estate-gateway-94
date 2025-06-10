@@ -17,7 +17,7 @@ const LogoSlideIn = () => {
   return (
     <Link to="/" className="flex items-center">
       <img
-        src="/lovable-uploads/pwanlogo.png"
+        src="/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png"
         alt="PWAN Bridgefort Logo"
         className={`h-10 w-auto transition-all duration-1000 ease-out ${
           isVisible 
