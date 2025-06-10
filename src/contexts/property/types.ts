@@ -24,7 +24,7 @@ export interface Property {
   paymentPlans?: string[]; // Added missing property
   // Legacy properties for backward compatibility
   price: string; // Made required instead of optional
-  sqm?: number;
+  sqm: number; // Made required to fix TypeScript errors
 }
 
 export interface Filters {

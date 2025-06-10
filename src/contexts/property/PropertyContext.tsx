@@ -63,10 +63,10 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             pricePerPlot = estate.actual_price;
           }
 
-          // Calculate plot information
-          const totalPlots = estate.total_plots || 100; // Default to 100 if not specified
-          const soldPlots = estate.sold_plots || Math.floor(Math.random() * 30); // Random sold plots if not specified
-          const availablePlots = totalPlots - soldPlots;
+          // Calculate plot information - check for sold out estates
+          const totalPlots = estate.total_plots || 100;
+          const soldPlots = estate.sold_plots || 0;
+          const availablePlots = Math.max(0, totalPlots - soldPlots);
 
           return {
             id: estate.id,
@@ -76,11 +76,11 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             price: price, // Required field
             imageUrl: estate.media && estate.media.length > 0 ? estate.media[0] : '/placeholder.svg',
             size: estate.size || 0,
-            sqm: estate.size || 0, // For backward compatibility
+            sqm: estate.size || 0, // Required field
             propertyType: estate.type || 'Land',
             phase: estate.phase || 1,
             totalPlots,
-            availablePlots: Math.max(0, availablePlots),
+            availablePlots,
             pricePerPlot,
             description: estate.description,
             media: estate.media,

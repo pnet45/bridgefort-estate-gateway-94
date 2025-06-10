@@ -15,6 +15,7 @@ import DashboardStats from '@/components/dashboard/DashboardStats';
 import AccountInformation from '@/components/dashboard/AccountInformation';
 import BlogPostsTab from '@/components/dashboard/BlogPostsTab';
 import DeletePostDialog from '@/components/dashboard/DeletePostDialog';
+import ClientDashboard from '@/components/dashboard/ClientDashboard';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -28,6 +29,8 @@ const Dashboard = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   
   const isAdmin = userRole === 'admin';
+  const isStaffOrAdmin = userRole === 'admin' || userRole === 'staff';
+  const isClient = userRole === 'client' || !userRole; // Default to client if no role
 
   useEffect(() => {
     if (!user) {
@@ -39,40 +42,45 @@ const Dashboard = () => {
       try {
         setLoading(true);
         
-        // Fetch user's own posts
-        const { data: userPostsData, error: userPostsError } = await supabase
-          .from('posts')
-          .select('*')
-          .eq('author_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (userPostsError) throw userPostsError;
-        setUserPosts(userPostsData || []);
-        
-        // If admin, fetch all posts
-        if (userRole === 'admin') {
-          const { data: allPostsData, error: allPostsError } = await supabase
+        // Only fetch posts if user can create them (staff or admin)
+        if (isStaffOrAdmin) {
+          // Fetch user's own posts
+          const { data: userPostsData, error: userPostsError } = await supabase
             .from('posts')
-            .select('*, profiles:author_id(*)')
+            .select('*')
+            .eq('author_id', user.id)
             .order('created_at', { ascending: false });
-            
-          if (allPostsError) throw allPostsError;
-          setAllPosts(allPostsData || []);
+
+          if (userPostsError && userPostsError.code !== 'PGRST116') {
+            console.error('Error fetching user posts:', userPostsError);
+          } else {
+            setUserPosts(userPostsData || []);
+          }
+          
+          // If admin, fetch all posts
+          if (userRole === 'admin') {
+            const { data: allPostsData, error: allPostsError } = await supabase
+              .from('posts')
+              .select('*, profiles:author_id(*)')
+              .order('created_at', { ascending: false });
+              
+            if (allPostsError && allPostsError.code !== 'PGRST116') {
+              console.error('Error fetching all posts:', allPostsError);
+            } else {
+              setAllPosts(allPostsData || []);
+            }
+          }
         }
       } catch (error) {
         console.error('Error fetching posts:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load posts",
-          variant: "destructive"
-        });
+        // Don't show error toast for missing posts table - it's expected for new users
       } finally {
         setLoading(false);
       }
     };
 
     fetchPosts();
-  }, [user, navigate, userRole]);
+  }, [user, navigate, userRole, isStaffOrAdmin]);
   
   const handleEditPost = (postId: string) => {
     navigate(`/edit-post/${postId}`);
@@ -127,26 +135,28 @@ const Dashboard = () => {
           <h1 className="text-3xl font-bold mb-8 text-center">Dashboard</h1>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-8">
+            <TabsList className={`grid w-full max-w-lg mx-auto mb-8 ${isClient ? 'grid-cols-2' : isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="posts">Blog Posts</TabsTrigger>
+              {isStaffOrAdmin && <TabsTrigger value="posts">Blog Posts</TabsTrigger>}
               {isAdmin && <TabsTrigger value="properties">Properties</TabsTrigger>}
             </TabsList>
             
             <TabsContent value="overview">
-              <DashboardStats />
+              {isClient ? <ClientDashboard /> : <DashboardStats />}
             </TabsContent>
             
-            <TabsContent value="posts">
-              <BlogPostsTab 
-                isAdmin={isAdmin}
-                allPosts={allPosts}
-                userPosts={userPosts}
-                loading={loading}
-                onEditPost={handleEditPost}
-                onDeleteClick={handleDeleteClick}
-              />
-            </TabsContent>
+            {isStaffOrAdmin && (
+              <TabsContent value="posts">
+                <BlogPostsTab 
+                  isAdmin={isAdmin}
+                  allPosts={allPosts}
+                  userPosts={userPosts}
+                  loading={loading}
+                  onEditPost={handleEditPost}
+                  onDeleteClick={handleDeleteClick}
+                />
+              </TabsContent>
+            )}
             
             {isAdmin && (
               <TabsContent value="properties">
@@ -162,13 +172,15 @@ const Dashboard = () => {
       <Footer />
       <Toaster />
       
-      <DeletePostDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        postToDelete={postToDelete}
-        isDeleting={isDeleting}
-        onConfirmDelete={handleDeleteConfirm}
-      />
+      {isStaffOrAdmin && (
+        <DeletePostDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          postToDelete={postToDelete}
+          isDeleting={isDeleting}
+          onConfirmDelete={handleDeleteConfirm}
+        />
+      )}
     </div>
   );
 };

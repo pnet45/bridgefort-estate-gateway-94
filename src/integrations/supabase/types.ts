@@ -182,8 +182,10 @@ export type Database = {
           promo_price: number | null
           scheme: number | null
           size: number | null
+          sold_plots: number | null
           sub_form: string | null
           title: string | null
+          total_plots: number | null
           type: string | null
         }
         Insert: {
@@ -199,8 +201,10 @@ export type Database = {
           promo_price?: number | null
           scheme?: number | null
           size?: number | null
+          sold_plots?: number | null
           sub_form?: string | null
           title?: string | null
+          total_plots?: number | null
           type?: string | null
         }
         Update: {
@@ -216,8 +220,10 @@ export type Database = {
           promo_price?: number | null
           scheme?: number | null
           size?: number | null
+          sold_plots?: number | null
           sub_form?: string | null
           title?: string | null
+          total_plots?: number | null
           type?: string | null
         }
         Relationships: []
@@ -293,6 +299,42 @@ export type Database = {
           id?: string
           property_ids?: string[]
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      inspection_bookings: {
+        Row: {
+          created_at: string
+          estate_name: string
+          id: string
+          inspection_date: string
+          inspection_time: string
+          message: string | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          estate_name: string
+          id?: string
+          inspection_date: string
+          inspection_time: string
+          message?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          estate_name?: string
+          id?: string
+          inspection_date?: string
+          inspection_time?: string
+          message?: string | null
+          status?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -542,7 +584,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "staff" | "pbo" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -657,6 +699,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "staff", "pbo", "client"],
+    },
   },
 } as const

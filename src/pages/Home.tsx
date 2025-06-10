@@ -12,6 +12,7 @@ import CTASection from '../components/home/CTASection';
 import SeminarAndTraining from '../components/home/SeminarAndTraining';
 import HomeHeroImage from '@/components/HomeHeroImage';
 import YouTubeSection from '../components/home/YouTubeSection';
+import { PropertyProvider } from '../contexts/property';
 
 const Home = () => {
   return (
@@ -22,9 +23,11 @@ const Home = () => {
       <HomeHeroImage />
       
       {/* Property Search */}
-      <div className="container-custom">
-        <PropertySearch />
-      </div>
+      <PropertyProvider>
+        <div className="container-custom">
+          <PropertySearch />
+        </div>
+      </PropertyProvider>
       
       {/* Mission Statement */}
       <MissionStatement />

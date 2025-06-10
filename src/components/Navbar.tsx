@@ -1,110 +1,94 @@
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth';
-import { Menu, X, Phone } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useNavigate } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
+import MobileMenu from './navbar/MobileMenu';
 import NavLinks from './navbar/NavLinks';
 import NavbarUserMenu from './navbar/NavbarUserMenu';
-import MobileMenu from './navbar/MobileMenu';
-import CartIcon from './ecommerce/CartIcon';
 import NavbarLoginIcon from './navbar/NavbarLoginIcon';
+import LogoSlideIn from './navbar/LogoSlideIn';
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { user, profile, userRole } = useAuth();
+  const { user, userRole } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const getInitials = () => {
-    if (!profile) return 'U';
-    return `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`;
-  };
+  const [profile, setProfile] = useState<any>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
+  // Control when to show login button (not on auth page)
+  const shouldShowLogin = !window.location.pathname.includes('/auth');
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+      
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
   return (
-    <nav className="fixed w-full z-50 bg-white shadow-md py-2 animate-fade-in">
-      <div className="container-custom mx-auto px-4">
-        <div className="flex justify-between items-center">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center">
-              <img 
-                src="/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png" 
-                alt="PWAN Bridgefort" 
-                className="h-12 md:h-16 hover:scale-105 transition-transform duration-300"
-              />
-            </Link>
-          </div>
+    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+      <div className="container-custom">
+        <div className="flex justify-between items-center py-4">
+          {/* Logo with slide-in animation */}
+          <LogoSlideIn />
           
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center flex-1 justify-between ml-8">
-            {/* Navigation Links */}
-            <div className="flex items-center space-x-6">
-              <NavLinks />
-            </div>
-
-            {/* Right side items */}
-            <div className="flex items-center space-x-4">
-              {/* Phone number */}
-              <div className="flex items-center">
-                <a href="tel:+2348030624059" className="flex items-center text-red font-bold whitespace-nowrap hover:text-red transition duration-200 hover:scale-105">
-                  <Phone size={18} className="mr-2 text-blue-500"/>
-                  <span>+2348030624059</span>
-                </a>
-              </div>
-
-              {/* Shopping Cart Icon */}
-              <CartIcon />
-              
-              {/* User authentication */}
-              {user ? (
-                <NavbarUserMenu profile={profile} userRole={userRole} />
-              ) : (
-                <NavbarLoginIcon />
-              )}
-            </div>
+          <div className="hidden lg:flex items-center space-x-8">
+            <NavLinks className="hover:text-estate-blue transition" />
           </div>
           
-          {/* Mobile Navigation */}
-          <div className="lg:hidden flex items-center">
-            <div className="flex items-center text-blue-500 mr-4">
-              <Phone size={16} className="mr-1" />
-              <span className="text-sm font-bold">+234 803 062 4059</span>
-            </div>
-            
-            {/* Mobile Cart Icon */}
-            <div className="mr-2">
-              <CartIcon />
-            </div>
-            
+          {/* Desktop Auth Section */}
+          <div className="hidden lg:flex items-center space-x-4">
             {user ? (
-              <Button variant="ghost" className="mr-2 hover:scale-105 transition-transform duration-300" onClick={() => navigate('/dashboard')}>
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-estate-blue text-white">
-                    {getInitials()}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            ) : (
-              <Button onClick={() => navigate('/auth')} variant="outline" size="sm" className="mr-2">
-                Sign In
-              </Button>
-            )}
-            <button onClick={toggleMenu} className="text-gray-800 focus:outline-none hover:scale-110 transition-transform duration-300">
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+              <NavbarUserMenu profile={profile} userRole={userRole} />
+            ) : shouldShowLogin ? (
+              <>
+                <NavbarLoginIcon />
+                <Button onClick={() => navigate('/auth')} className="bg-estate-blue hover:bg-estate-darkBlue">
+                  Sign In
+                </Button>
+              </>
+            ) : null}
           </div>
+          
+          {/* Mobile Menu Button */}
+          <button
+            className="lg:hidden"
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </div>
       
+      {/* Mobile Menu */}
       <MobileMenu 
-        isOpen={isOpen} 
-        toggleMenu={toggleMenu} 
-        shouldShowLogin={!user} 
+        isOpen={isMenuOpen} 
+        toggleMenu={toggleMenu}
+        shouldShowLogin={shouldShowLogin}
       />
     </nav>
   );
