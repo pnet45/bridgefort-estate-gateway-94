@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
@@ -9,6 +8,7 @@ import NavLinks from './navbar/NavLinks';
 import NavbarUserMenu from './navbar/NavbarUserMenu';
 import MobileMenu from './navbar/MobileMenu';
 import CartIcon from './ecommerce/CartIcon';
+import NavbarLoginIcon from './navbar/NavbarLoginIcon';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -64,9 +64,7 @@ const Navbar = () => {
               {user ? (
                 <NavbarUserMenu profile={profile} userRole={userRole} />
               ) : (
-                <Button onClick={() => navigate('/auth')} variant="default" className="bg-estate-blue hover:bg-estate-darkBlue hover:scale-105 transition-all duration-300">
-                  Sign In
-                </Button>
+                <NavbarLoginIcon />
               )}
             </div>
           </div>

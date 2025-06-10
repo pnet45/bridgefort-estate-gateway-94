@@ -1,91 +1,63 @@
-
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 
 const NewsletterForm = () => {
   const [email, setEmail] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !email.includes('@')) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setSubmitting(true);
-    
+    if (!email) return;
+
+    setLoading(true);
     try {
-      const { data: existingSubscriber } = await supabase
-        .from('newsletter_subscribers')
-        .select('*')
-        .eq('email', email)
-        .single();
-      
-      if (existingSubscriber) {
+      const { error } = await supabase
+        .from('newsletter_subscriptions')
+        .insert({ email });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast({
+            title: "Already subscribed",
+            description: "You're already subscribed to our newsletter!"
+          });
+        } else {
+          throw error;
+        }
+      } else {
         toast({
-          title: "Already subscribed",
-          description: "This email is already subscribed to our newsletter.",
-          className: "bg-orange-50 border-orange-200"
+          title: "Subscribed!",
+          description: "Thank you for subscribing to our newsletter."
         });
         setEmail('');
-        return;
       }
-      
-      const { error } = await supabase
-        .from('newsletter_subscribers')
-        .insert([
-          { 
-            email,
-            subscribed_at: new Date().toISOString()
-          }
-        ]);
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Success!",
-        description: "You've been added to our newsletter.",
-        className: "bg-green-50 border-green-200"
-      });
-      
-      setEmail('');
     } catch (error) {
+      console.error('Error subscribing to newsletter:', error);
       toast({
         title: "Error",
-        description: "There was a problem subscribing to the newsletter. Please try again.",
+        description: "Failed to subscribe. Please try again.",
         variant: "destructive"
       });
-      console.error("Newsletter subscription error:", error);
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
-  
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
       <Input
         type="email"
         placeholder="Enter your email"
-        className="bg-white p-3 rounded-lg focus:ring-2 focus:ring-estate-blue focus:border-estate-blue hover:scale-105 transition-all duration-300 text-black focus:text-black"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
+        className="input-field flex-grow"
       />
-      <Button 
-        type="submit" 
-        className="bg-gradient-to-r from-estate-blue to-green-600 hover:from-estate-darkBlue hover:to-green-700 text-white px-6 py-2 md:py-0 hover:scale-105 transition-all duration-300 focus:scale-105 focus:ring-2 focus:ring-orange-500" 
-        disabled={submitting}
-      >
-        {submitting ? 'Subscribing...' : 'Subscribe'}
+      <Button type="submit" disabled={loading || !email} className="btn-cta">
+        {loading ? 'Subscribing...' : 'Subscribe'}
       </Button>
     </form>
   );

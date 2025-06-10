@@ -108,7 +108,10 @@
   .bg-gray-900 h1, .bg-gray-900 h2, .bg-gray-900 h3, .bg-gray-900 h4, .bg-gray-900 h5, .bg-gray-900 h6,
   [style*="background-image"] h1, [style*="background-image"] h2, [style*="background-image"] h3,
   [style*="background-image"] h4, [style*="background-image"] h5, [style*="background-image"] h6,
-  .hero-overlay h1, .hero-overlay h2, .hero-overlay h3, .hero-overlay h4, .hero-overlay h5, .hero-overlay h6 {
+  .hero-overlay h1, .hero-overlay h2, .hero-overlay h3, .hero-overlay h4, .hero-overlay h5, .hero-overlay h6,
+  .bg-estate-blue h1, .bg-estate-blue h2, .bg-estate-blue h3, .bg-estate-blue h4, .bg-estate-blue h5, .bg-estate-blue h6,
+  .bg-blue-500 h1, .bg-blue-500 h2, .bg-blue-500 h3, .bg-blue-500 h4, .bg-blue-500 h5, .bg-blue-500 h6,
+  .bg-blue-600 h1, .bg-blue-600 h2, .bg-blue-600 h3, .bg-blue-600 h4, .bg-blue-600 h5, .bg-blue-600 h6 {
     color: white !important;
   }
 
@@ -384,4 +387,18 @@ main, section:first-of-type {
 
 .sold-out-badge {
   @apply bg-estate-red text-white px-4 py-2 rounded-lg font-bold text-lg animate-pulse-glow;
+}
+
+/* Login Hover Panel */
+.login-hover-panel {
+  @apply absolute top-full right-0 w-80 bg-white shadow-xl border rounded-lg p-6 transform transition-all duration-300 ease-out z-50;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px) translateX(10px);
+}
+
+.login-icon-container:hover .login-hover-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) translateX(0);
 }

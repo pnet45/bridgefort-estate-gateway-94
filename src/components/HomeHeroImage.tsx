@@ -1,19 +1,36 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const HomeHeroImage = () => {
-  // Using a new image for the hero section
-  const heroImage = '/lovable-uploads/Homeslider2.png';
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // Array of hero images for the slideshow
+  const heroImages = [
+    '/lovable-uploads/Homeslider2.png',
+    '/lovable-uploads/Homeslider.png',
+    '/lovable-uploads/Homeslider3.png',
+    '/lovable-uploads/Homeslider4.png'
+  ];
+  
   const heroTitle = "PWAN Bridgefort. ...Rebuilding the Future!";
   const heroSubtitle = "At PWAN Bridgefort, we're not just selling properties—we're building legacies.";
+
+  // Auto-slide every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prevSlide) => (prevSlide + 1) % heroImages.length);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
 
   return (
     <section className="relative w-full h-[80vh] md:h-[90vh]">
       <div className="h-full">
         <div 
-          className="h-full bg-cover bg-center" 
+          className="h-full bg-cover bg-center transition-all duration-1000 ease-in-out" 
           style={{
-            backgroundImage: `url(${heroImage})`
+            backgroundImage: `url(${heroImages[currentSlide]})`
           }}
         >
           {/* Dark overlay for better text visibility */}
@@ -30,6 +47,20 @@ const HomeHeroImage = () => {
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* Slide indicators */}
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+        {heroImages.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentSlide(index)}
+            className={`h-2 w-8 mx-1 rounded-full transition-colors duration-300 ${
+              currentSlide === index ? 'bg-white' : 'bg-white/50'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
       </div>
     </section>
   );

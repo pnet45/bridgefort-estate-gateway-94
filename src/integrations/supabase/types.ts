@@ -135,6 +135,39 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_submissions: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          subject: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          subject?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          subject?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       estate: {
         Row: {
           actual_price: number | null
@@ -285,26 +318,110 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscriptions: {
+        Row: {
+          email: string
+          id: string
+          is_active: boolean | null
+          subscribed_at: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          is_active?: boolean | null
+          subscribed_at?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          subscribed_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          address: string | null
           created_at: string | null
+          current_residence: string | null
+          date_of_birth: string | null
+          employer_address: string | null
+          employer_name: string | null
           first_name: string | null
+          gender: string | null
           id: string
+          languages_spoken: string[] | null
           last_name: string | null
+          local_government: string | null
+          marital_status: string | null
+          nationality: string | null
+          next_of_kin_address: string | null
+          next_of_kin_email: string | null
+          next_of_kin_name: string | null
+          next_of_kin_phone: string | null
+          next_of_kin_relationship: string | null
+          occupation: string | null
+          phone_number: string | null
+          profile_completed: boolean | null
+          spouse_name: string | null
+          state_of_origin: string | null
+          terms_accepted: boolean | null
           updated_at: string | null
         }
         Insert: {
+          address?: string | null
           created_at?: string | null
+          current_residence?: string | null
+          date_of_birth?: string | null
+          employer_address?: string | null
+          employer_name?: string | null
           first_name?: string | null
+          gender?: string | null
           id: string
+          languages_spoken?: string[] | null
           last_name?: string | null
+          local_government?: string | null
+          marital_status?: string | null
+          nationality?: string | null
+          next_of_kin_address?: string | null
+          next_of_kin_email?: string | null
+          next_of_kin_name?: string | null
+          next_of_kin_phone?: string | null
+          next_of_kin_relationship?: string | null
+          occupation?: string | null
+          phone_number?: string | null
+          profile_completed?: boolean | null
+          spouse_name?: string | null
+          state_of_origin?: string | null
+          terms_accepted?: boolean | null
           updated_at?: string | null
         }
         Update: {
+          address?: string | null
           created_at?: string | null
+          current_residence?: string | null
+          date_of_birth?: string | null
+          employer_address?: string | null
+          employer_name?: string | null
           first_name?: string | null
+          gender?: string | null
           id?: string
+          languages_spoken?: string[] | null
           last_name?: string | null
+          local_government?: string | null
+          marital_status?: string | null
+          nationality?: string | null
+          next_of_kin_address?: string | null
+          next_of_kin_email?: string | null
+          next_of_kin_name?: string | null
+          next_of_kin_phone?: string | null
+          next_of_kin_relationship?: string | null
+          occupation?: string | null
+          phone_number?: string | null
+          profile_completed?: boolean | null
+          spouse_name?: string | null
+          state_of_origin?: string | null
+          terms_accepted?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
