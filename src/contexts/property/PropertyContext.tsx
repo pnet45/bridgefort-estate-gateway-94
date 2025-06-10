@@ -12,6 +12,8 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [hiddenProperties, setHiddenProperties] = useState<string[]>([]);
   const [filters, setFilters] = useState<Filters>({
     category: 'all',
     type: 'all',
@@ -21,6 +23,15 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Function to toggle filters visibility
   const toggleFilters = () => setShowFilters(!showFilters);
+
+  // Function to toggle property visibility
+  const togglePropertyVisibility = (propertyId: string) => {
+    setHiddenProperties(prev => 
+      prev.includes(propertyId) 
+        ? prev.filter(id => id !== propertyId)
+        : [...prev, propertyId]
+    );
+  };
 
   // Function to fetch properties from Supabase
   const fetchProperties = async () => {
@@ -59,16 +70,26 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
           return {
             id: estate.id,
-            title: estate.name,
+            name: estate.name,
+            title: estate.name, // For backward compatibility
             location: estate.location || '',
-            price: price,
+            price: price, // For backward compatibility
             imageUrl: estate.media && estate.media.length > 0 ? estate.media[0] : '/placeholder.svg',
-            sqm: estate.size || 0,
+            size: estate.size || 0,
+            sqm: estate.size || 0, // For backward compatibility
             propertyType: estate.type || 'Land',
             phase: estate.phase || 1,
             totalPlots,
             availablePlots: Math.max(0, availablePlots),
-            pricePerPlot
+            pricePerPlot,
+            description: estate.description,
+            media: estate.media,
+            subForm: estate.sub_form,
+            type: estate.type,
+            promoPrice: estate.promo_price,
+            actualPrice: estate.actual_price,
+            prelaunchPrice: estate.prelaunch_price,
+            scheme: estate.scheme
           };
         });
         
@@ -117,7 +138,14 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         showFilters,
         toggleFilters,
         setFilter,
-        refreshProperties
+        refreshProperties,
+        // Legacy properties for backward compatibility
+        searchTerm: searchQuery,
+        setSearchTerm: setSearchQuery,
+        selectedProperty,
+        setSelectedProperty,
+        hiddenProperties,
+        togglePropertyVisibility
       }}
     >
       {children}

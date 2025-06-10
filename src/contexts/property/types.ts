@@ -19,6 +19,16 @@ export interface Property {
   subForm?: string;
   title?: string;
   type?: string;
+  // Legacy properties for backward compatibility
+  price?: string;
+  sqm?: number;
+}
+
+export interface Filters {
+  category: string;
+  type: string;
+  minPrice: string;
+  maxPrice: string;
 }
 
 export interface Plot {
@@ -32,9 +42,24 @@ export interface Plot {
 
 export interface PropertyContextType {
   properties: Property[];
+  filteredProperties: Property[];
+  loading: boolean;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  filters: Filters;
+  setFilters: (filters: Filters) => void;
+  showFilters: boolean;
+  toggleFilters: () => void;
+  setFilter: (filter: {
+    location?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    propertyType?: string;
+  }) => void;
+  refreshProperties: () => Promise<void>;
+  // Legacy properties for backward compatibility
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  filteredProperties: Property[];
   selectedProperty: Property | null;
   setSelectedProperty: (property: Property | null) => void;
   hiddenProperties: string[];
