@@ -10,6 +10,7 @@ import NavLinks from './navbar/NavLinks';
 import NavbarUserMenu from './navbar/NavbarUserMenu';
 import NavbarLoginIcon from './navbar/NavbarLoginIcon';
 import LogoSlideIn from './navbar/LogoSlideIn';
+import CartIcon from './ecommerce/CartIcon';
 
 const Navbar = () => {
   const { user, userRole } = useAuth();
@@ -62,7 +63,10 @@ const Navbar = () => {
           {/* Desktop Auth Section */}
           <div className="hidden lg:flex items-center space-x-4">
             {user ? (
-              <NavbarUserMenu profile={profile} userRole={userRole} />
+              <>
+                <CartIcon />
+                <NavbarUserMenu profile={profile} userRole={userRole} />
+              </>
             ) : shouldShowLogin ? (
               <>
                 <NavbarLoginIcon />

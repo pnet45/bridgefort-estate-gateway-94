@@ -1,343 +1,258 @@
 
 import React, { useState } from 'react';
-import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { FileUpload } from "./FileUpload";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import FileUpload from './FileUpload';
 
-// Create a schema for form validation
-const formSchema = z.object({
-  fullName: z.string().min(1, "Full name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(1, "Phone number is required"),
-  position: z.string().optional(),
-  experience: z.string().optional(),
-  coverLetter: z.string().optional(),
-  gender: z.string().optional(),
-  dateOfBirth: z.string().optional(),
-  state: z.string().optional(),
-  localGovernment: z.string().optional(),
-  address: z.string().optional(),
-});
-
-type CareerFormValues = z.infer<typeof formSchema>;
+const positions = [
+  'Real Estate Agent',
+  'Sales Executive',
+  'Property Consultant',
+  'Marketing Executive',
+  'Customer Service Representative',
+  'Admin Officer',
+  'Accountant',
+  'Legal Officer',
+  'IT Support',
+  'Human Resources',
+  'Other'
+];
 
 const CareerForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [resumeError, setResumeError] = useState<string | null>(null);
-  
-  const form = useForm<CareerFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      fullName: "",
-      email: "",
-      phone: "",
-      position: "",
-      experience: "",
-      coverLetter: "",
-      gender: "",
-      dateOfBirth: "",
-      state: "",
-      localGovernment: "",
-      address: "",
-    },
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    position: '',
+    experience: '',
+    address: '',
+    state: '',
+    local_government: '',
+    gender: '',
+    date_of_birth: '',
+    cover_letter: '',
+    resume_url: ''
   });
-  
-  const onSubmit = async (data: CareerFormValues) => {
-    // Validate resume file
-    if (!resumeFile) {
-      setResumeError("Resume is required");
-      return;
-    } else {
-      setResumeError(null);
-    }
-    
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
-      // Handle file upload if a resume is provided
-      let resumeUrl = null;
-      
-      // Upload the resume file
-      const fileExt = resumeFile.name.split('.').pop();
-      const fileName = `${Date.now().toString()}.${fileExt}`;
-      const filePath = `applications/${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('public')
-        .upload(filePath, resumeFile);
-        
-      if (uploadError) {
-        throw new Error('Error uploading file');
-      }
-      
-      const { data: urlData } = supabase.storage
-        .from('public')
-        .getPublicUrl(filePath);
-        
-      resumeUrl = urlData.publicUrl;
-      
-      // Submit form data to database
       const { error } = await supabase
         .from('applications')
-        .insert([
-          {
-            full_name: data.fullName,
-            email: data.email,
-            phone: data.phone,
-            position: data.position,
-            experience: data.experience,
-            cover_letter: data.coverLetter,
-            resume_url: resumeUrl,
-            submitted_at: new Date().toISOString(),
-            gender: data.gender,
-            date_of_birth: data.dateOfBirth,
-            state: data.state,
-            local_government: data.localGovernment,
-            address: data.address
-          }
-        ]);
-        
+        .insert([formData]);
+
       if (error) throw error;
-      
-      // Show success message
+
       toast({
-        title: "Application submitted",
-        description: "Thank you! We'll review your application and get back to you soon.",
+        title: "Application submitted successfully!",
+        description: "Thank you for your interest. We'll review your application and get back to you soon."
       });
-      
+
       // Reset form
-      form.reset();
-      setResumeFile(null);
+      setFormData({
+        full_name: '',
+        email: '',
+        phone: '',
+        position: '',
+        experience: '',
+        address: '',
+        state: '',
+        local_government: '',
+        gender: '',
+        date_of_birth: '',
+        cover_letter: '',
+        resume_url: ''
+      });
+
     } catch (error) {
       console.error('Error submitting application:', error);
       toast({
         title: "Submission failed",
-        description: "There was a problem submitting your application. Please try again later.",
-        variant: "destructive",
+        description: "There was an error submitting your application. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
+  const handleFileUpload = (url: string) => {
+    setFormData(prev => ({
+      ...prev,
+      resume_url: url
+    }));
+  };
+
   return (
-    <div id="application-form" className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
-      <h3 className="text-2xl font-semibold mb-6">Job Application</h3>
-      
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name *</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address *</FormLabel>
-                  <FormControl>
-                    <Input type="email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    <Card className="max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-2xl text-center">Career Application</CardTitle>
+        <CardDescription className="text-center">
+          Fill out the form below to apply for a position with PWAN Bridgefort
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="full_name" className="text-gray-900">Full Name *</Label>
+              <Input
+                id="full_name"
+                value={formData.full_name}
+                onChange={(e) => handleInputChange('full_name', e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-gray-900">Email Address *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                required
+              />
+            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="gender"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Gender</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="dateOfBirth"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date of Birth</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-gray-900">Phone Number *</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="position" className="text-gray-900">Position Applied For *</Label>
+              <Select value={formData.position} onValueChange={(value) => handleInputChange('position', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
+                <SelectContent>
+                  {positions.map((position) => (
+                    <SelectItem key={position} value={position}>
+                      {position}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number *</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="position"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Position You're Applying For</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select position" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="estate_manager">Estate Manager</SelectItem>
-                      <SelectItem value="marketing_executive">Marketing Executive</SelectItem>
-                      <SelectItem value="customer_service">Customer Service</SelectItem>
-                      <SelectItem value="admin_assistant">Administrative Assistant</SelectItem>
-                      <SelectItem value="surveyor">Surveyor</SelectItem>
-                      <SelectItem value="legal_adviser">Legal Adviser</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
+
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="gender" className="text-gray-900">Gender</Label>
+              <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="date_of_birth" className="text-gray-900">Date of Birth</Label>
+              <Input
+                id="date_of_birth"
+                type="date"
+                value={formData.date_of_birth}
+                onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="experience" className="text-gray-900">Years of Experience</Label>
+              <Input
+                id="experience"
+                value={formData.experience}
+                onChange={(e) => handleInputChange('experience', e.target.value)}
+                placeholder="e.g., 2 years"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="address" className="text-gray-900">Address</Label>
+            <Input
+              id="address"
+              value={formData.address}
+              onChange={(e) => handleInputChange('address', e.target.value)}
+              placeholder="Your full address"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>State</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="localGovernment"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Local Government</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="state" className="text-gray-900">State</Label>
+              <Input
+                id="state"
+                value={formData.state}
+                onChange={(e) => handleInputChange('state', e.target.value)}
+                placeholder="Your state"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="local_government" className="text-gray-900">Local Government</Label>
+              <Input
+                id="local_government"
+                value={formData.local_government}
+                onChange={(e) => handleInputChange('local_government', e.target.value)}
+                placeholder="Your LGA"
+              />
+            </div>
           </div>
-          
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Address</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="experience"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Years of Experience</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="coverLetter"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cover Letter / Additional Information</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    rows={5}
-                    placeholder="Tell us why you're interested in this position and what makes you a good fit..."
-                    {...field}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          
+
           <div className="space-y-2">
-            <Label>Upload Resume (PDF, DOC, DOCX) *</Label>
-            <FileUpload 
-              label=""
-              onFileSelect={setResumeFile}
-              file={resumeFile}
-              acceptedTypes=".pdf,.doc,.docx"
+            <Label htmlFor="cover_letter" className="text-gray-900">Cover Letter</Label>
+            <Textarea
+              id="cover_letter"
+              value={formData.cover_letter}
+              onChange={(e) => handleInputChange('cover_letter', e.target.value)}
+              rows={4}
+              placeholder="Tell us why you're interested in this position and what makes you a great fit..."
             />
-            {resumeError && <p className="text-sm font-medium text-destructive">{resumeError}</p>}
           </div>
-          
-          <div className="flex justify-end">
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="bg-estate-blue hover:bg-estate-darkBlue"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Application'}
-            </Button>
+
+          <div className="space-y-2">
+            <Label className="text-gray-900">Resume/CV</Label>
+            <FileUpload
+              onFileUpload={handleFileUpload}
+              currentFile={formData.resume_url}
+            />
           </div>
+
+          <Button 
+            type="submit" 
+            className="w-full bg-estate-blue hover:bg-estate-darkBlue"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Application'}
+          </Button>
         </form>
-      </Form>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

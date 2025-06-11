@@ -1,65 +1,47 @@
 
 import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 interface Buy2SellIntroProps {
   isLoaded: boolean;
 }
 
-const Buy2SellIntro: React.FC<Buy2SellIntroProps> = ({ isLoaded }) => {
+const Buy2SellIntro = ({ isLoaded }: Buy2SellIntroProps) => {
   return (
-    <section className="py-12 bg-gray-50">
+    <section className="section-padding bg-white">
       <div className="container-custom">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          <div className={`${isLoaded ? 'animate-fade-in' : 'opacity-0'} transition-all duration-500 space-y-4`}>
-            <h2 className="text-3xl font-bold mb-4 text-estate-blue">What is Buy to Sell?</h2>
-            <p className="text-lg">
-              Buy to Sell is a fast and reliable source of income while trading with PWAN Group. Real Estate serves more than residential purposes. With Buy to Sell, you can buy from our Estates and we help you sell the property in 12 or 24 months for as high as 40% profit. This is the best mode of passive income that allows you to earn without risks as your income is certain from the moment you buy.
-            </p>
-            <Button 
-              className="bg-estate-red hover:bg-red-700 mt-4"
-              onClick={() => document.getElementById('investment-options')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              Explore for More Options
-            </Button>
-          </div>
-          
-          <div className="flex justify-center">
-            <Carousel className={`w-full max-w-md ${isLoaded ? 'animate-scale-in' : 'opacity-0'}`}>
-              <CarouselContent>
-                <CarouselItem>
-                  <img 
-                    src="/lovable-uploads/7134ea24-5432-4742-afa9-4a5b736dd8eb.png" 
-                    alt="Buy2Sell 6 Months Investment" 
-                    className="rounded-lg shadow-xl w-full h-auto hover:scale-105 transition-transform duration-500"
-                  />
-                </CarouselItem>
-                <CarouselItem>
-                  <img 
-                    src="/lovable-uploads/cc5f0271-0388-40f9-8e69-1fbd5ea1e606.png" 
-                    alt="Buy2Sell 12 Months Investment" 
-                    className="rounded-lg shadow-xl w-full h-auto hover:scale-105 transition-transform duration-500"
-                  />
-                </CarouselItem>
-                <CarouselItem>
-                  <img 
-                    src="/lovable-uploads/aeaad90d-a317-4a58-8cba-912498e233e5.png" 
-                    alt="Buy2Sell ROI Table" 
-                    className="rounded-lg shadow-xl w-full h-auto hover:scale-105 transition-transform duration-500"
-                  />
-                </CarouselItem>
-                <CarouselItem>
-                  <img 
-                    src="/lovable-uploads/2f745990-7323-42b1-87f3-eb1a3f2db0ba.png" 
-                    alt="Flourish Luxury Villas" 
-                    className="rounded-lg shadow-xl w-full h-auto hover:scale-105 transition-transform duration-500"
-                  />
-                </CarouselItem>
-              </CarouselContent>
-              <CarouselPrevious className="left-1" />
-              <CarouselNext className="right-1" />
-            </Carousel>
+        <div className={`text-center max-w-4xl mx-auto transition-all duration-1000 ${isLoaded ? 'animate-fade-in' : 'opacity-0'}`}>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-estate-blue">What is Buy to Sell?</h2>
+          <div className="w-20 h-1 bg-estate-red mx-auto mb-8"></div>
+          <p className="text-lg text-gray-900 mb-8 leading-relaxed">
+            <a className="text-gray-900">
+              Buy to Sell is PWAN Bridgefort's innovative investment program that guarantees your returns. 
+              When you purchase land through our Buy to Sell program, we commit to buying it back from you 
+              at a predetermined higher price within 24 months. This gives you the security of guaranteed 
+              returns while benefiting from real estate appreciation.
+            </a>
+          </p>
+          <div className="grid md:grid-cols-3 gap-8 mt-12">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-estate-blue rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-white text-2xl font-bold">1</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-3 text-estate-blue">Purchase</h3>
+              <p className="text-gray-600">Buy land through our Buy to Sell program with flexible payment options</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-estate-red rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-white text-2xl font-bold">2</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-3 text-estate-blue">Hold</h3>
+              <p className="text-gray-600">Keep your investment secure for the agreed period (up to 24 months)</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-white text-2xl font-bold">3</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-3 text-estate-blue">Profit</h3>
+              <p className="text-gray-600">Sell back to us at the guaranteed higher price and enjoy your returns</p>
+            </div>
           </div>
         </div>
       </div>
