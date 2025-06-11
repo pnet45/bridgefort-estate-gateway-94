@@ -49,52 +49,61 @@ const Navbar = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   return (
-    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
-      <div className="container-custom">
-        <div className="flex justify-between items-center py-4">
-          {/* Logo with slide-in animation */}
-          <LogoSlideIn />
-          
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            <NavLinks className="hover:text-estate-blue transition" />
+    <>
+      <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+        <div className="container-custom">
+          <div className="flex justify-between items-center py-4">
+            {/* Logo with slide-in animation */}
+            <LogoSlideIn />
+            
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-8">
+              <NavLinks className="hover:text-estate-blue transition" />
+            </div>
+            
+            {/* Desktop Auth Section */}
+            <div className="hidden lg:flex items-center space-x-4">
+              {user ? (
+                <>
+                  <CartIcon />
+                  <NavbarUserMenu profile={profile} userRole={userRole} />
+                </>
+              ) : shouldShowLogin ? (
+                <>
+                  <NavbarLoginIcon />
+                  <Button onClick={() => navigate('/auth')} className="bg-estate-blue hover:bg-estate-darkBlue">
+                    Sign In
+                  </Button>
+                </>
+              ) : null}
+            </div>
+            
+            {/* Mobile Menu Button */}
+            <button
+              className="lg:hidden"
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
-          
-          {/* Desktop Auth Section */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {user ? (
-              <>
-                <CartIcon />
-                <NavbarUserMenu profile={profile} userRole={userRole} />
-              </>
-            ) : shouldShowLogin ? (
-              <>
-                <NavbarLoginIcon />
-                <Button onClick={() => navigate('/auth')} className="bg-estate-blue hover:bg-estate-darkBlue">
-                  Sign In
-                </Button>
-              </>
-            ) : null}
-          </div>
-          
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
-      </div>
+        
+        {/* Mobile Menu */}
+        <MobileMenu 
+          isOpen={isMenuOpen} 
+          toggleMenu={toggleMenu}
+          shouldShowLogin={shouldShowLogin}
+        />
+      </nav>
       
-      {/* Mobile Menu */}
-      <MobileMenu 
-        isOpen={isMenuOpen} 
-        toggleMenu={toggleMenu}
-        shouldShowLogin={shouldShowLogin}
-      />
-    </nav>
+      {/* Sticky Phone Number */}
+      <div className="fixed top-20 right-4 z-40 bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in">
+        <a href="tel:+2348030624059" className="text-sm font-medium hover:text-gray-200 transition-colors">
+          📞 +234 803 062 4059
+        </a>
+      </div>
+    </>
   );
 };
 

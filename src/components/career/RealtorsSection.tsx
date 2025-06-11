@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, TrendingUp, Users, Award } from 'lucide-react';
+import { MapPin, TrendingUp, Users, Award, Download } from 'lucide-react';
 
 const RealtorsSection = () => {
   const benefits = [
@@ -25,6 +25,14 @@ const RealtorsSection = () => {
       description: "Regular recognition and awards for outstanding performance and client satisfaction."
     }
   ];
+
+  const handleDownloadEstateInfo = () => {
+    // Create a link to download estate information package
+    const link = document.createElement('a');
+    link.href = '/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf';
+    link.download = 'PWAN-Estate-Information-Package.pdf';
+    link.click();
+  };
 
   return (
     <section className="py-16 bg-estate-blue text-white">
@@ -51,14 +59,27 @@ const RealtorsSection = () => {
           })}
         </div>
 
-        <div className="bg-white bg-opacity-10 rounded-lg p-8 text-center">
+        <div className="bg-white bg-opacity-10 rounded-lg p-8 text-center mb-8">
           <h3 className="text-2xl font-bold mb-4">Ready to Join Our Team?</h3>
           <p className="text-lg mb-6">
             Become part of Nigeria's fastest-growing real estate company and unlock unlimited earning potential
           </p>
+          
+          <div className="flex flex-wrap justify-center gap-4 mb-6">
+            <button
+              onClick={handleDownloadEstateInfo}
+              className="bg-estate-red hover:bg-red-600 text-white font-bold py-3 px-8 rounded-lg transition duration-300 flex items-center gap-2"
+            >
+              <Download size={20} />
+              Download Estate Info & Forms
+            </button>
+          </div>
+          
           <div className="flex flex-wrap justify-center gap-4">
             <a 
-              href="#apply" 
+              href="https://portal.pboworld.com/44641"
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-estate-red hover:bg-red-600 text-white font-bold py-3 px-8 rounded-lg transition duration-300"
             >
               Apply as Realtor

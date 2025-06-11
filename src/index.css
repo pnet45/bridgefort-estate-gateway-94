@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
 
 @tailwind base;
@@ -100,6 +101,12 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-montserrat font-semibold;
     color: #2B2D7D !important; /* estate-blue for default white/grey backgrounds */
+  }
+
+  /* Headers on grey backgrounds specifically use estate-blue */
+  .bg-gray-50 h1, .bg-gray-50 h2, .bg-gray-50 h3, .bg-gray-50 h4, .bg-gray-50 h5, .bg-gray-50 h6,
+  .bg-gray-100 h1, .bg-gray-100 h2, .bg-gray-100 h3, .bg-gray-100 h4, .bg-gray-100 h5, .bg-gray-100 h6 {
+    color: #2B2D7D !important; /* estate-blue */
   }
 
   /* Headers on dark backgrounds and images stay white */
