@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import FileUpload from './FileUpload';
+import { FileUpload } from './FileUpload';
 
 const positions = [
   'Real Estate Agent',
@@ -238,8 +237,39 @@ const CareerForm = () => {
           <div className="space-y-2">
             <Label className="text-gray-900">Resume/CV</Label>
             <FileUpload
-              onFileUpload={handleFileUpload}
-              currentFile={formData.resume_url}
+              label="Upload Resume"
+              onFileSelect={(file: File | null) => {
+                if (file) {
+                  // Upload the file to Supabase storage
+                  supabase.storage
+                    .from('resumes')
+                    .upload(`${formData.full_name}-${file.name}`, file, {
+                      cacheControl: '3600',
+                      upsert: false
+                    })
+                    .then(({ data, error }) => {
+                      if (error) {
+                        console.error('Error uploading file:', error);
+                        toast({
+                          title: "Upload failed",
+                          description: "There was an error uploading your resume. Please try again.",
+                          variant: "destructive"
+                        });
+                      } else {
+                        console.log('File uploaded successfully:', data);
+                        const resumeURL = `${supabase.storageUrl}/object/public/${data.Key}`;
+                        handleFileUpload(resumeURL);
+                        toast({
+                          title: "Resume uploaded successfully!",
+                          description: "Your resume has been uploaded."
+                        });
+                      }
+                    });
+                } else {
+                  handleFileUpload('');
+                }
+              }}
+              file={formData.resume_url ? new File([], formData.resume_url.split('/').pop() || 'resume') : null}
             />
           </div>
 

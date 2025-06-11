@@ -1,24 +1,16 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, X } from 'lucide-react';
 import SummitDetailsContent from './SummitDetailsContent';
 
-interface SummitDetailsDialogProps {
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
-  onRegisterClick: () => void;
-}
+const SummitDetailsDialog = () => {
+  const [isOpen, setIsOpen] = useState(false);
 
-const SummitDetailsDialog: React.FC<SummitDetailsDialogProps> = ({ 
-  isOpen, 
-  setIsOpen,
-  onRegisterClick
-}) => {
   const handleRegisterClick = () => {
     setIsOpen(false);
-    onRegisterClick();
+    // User can call the registration number or contact
   };
 
   return (
