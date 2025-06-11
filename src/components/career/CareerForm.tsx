@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -255,9 +256,9 @@ const CareerForm = () => {
                           description: "There was an error uploading your resume. Please try again.",
                           variant: "destructive"
                         });
-                      } else {
+                      } else if (data) {
                         console.log('File uploaded successfully:', data);
-                        const resumeURL = `${supabase.storageUrl}/object/public/${data.Key}`;
+                        const resumeURL = `https://xyvspvtdaacqfmfocvhw.supabase.co/storage/v1/object/public/resumes/${data.path}`;
                         handleFileUpload(resumeURL);
                         toast({
                           title: "Resume uploaded successfully!",
