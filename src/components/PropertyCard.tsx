@@ -189,7 +189,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           price,
           imageUrl,
           propertyType,
-          name: title,
           sqm,
           phase,
           totalPlots,

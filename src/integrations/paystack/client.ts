@@ -32,7 +32,13 @@ export interface PaystackResponse {
 // Function to initialize payment
 export const initializePayment = async (paymentData: PaystackPaymentData): Promise<PaystackResponse> => {
   try {
-    const { data, error } = await window.supabase.functions.invoke('paystack-initialize', {
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_ANON_KEY
+    );
+
+    const { data, error } = await supabase.functions.invoke('paystack-initialize', {
       body: paymentData
     });
     
@@ -47,7 +53,13 @@ export const initializePayment = async (paymentData: PaystackPaymentData): Promi
 // Function to verify payment
 export const verifyPayment = async (reference: string) => {
   try {
-    const { data, error } = await window.supabase.functions.invoke('paystack-verify', {
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_ANON_KEY
+    );
+
+    const { data, error } = await supabase.functions.invoke('paystack-verify', {
       body: { reference }
     });
     

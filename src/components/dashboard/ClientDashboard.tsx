@@ -25,12 +25,18 @@ const ClientDashboard = () => {
   const [inspections, setInspections] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [allPosts, setAllPosts] = useState([]);
+  const [userPosts, setUserPosts] = useState([]);
 
   useEffect(() => {
     if (user) {
       fetchUserData();
+      if (userRole === 'admin') {
+        fetchAllPosts();
+      }
+      fetchUserPosts();
     }
-  }, [user]);
+  }, [user, userRole]);
 
   const fetchUserData = async () => {
     try {
@@ -61,6 +67,68 @@ const ClientDashboard = () => {
       console.error('Error fetching user data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAllPosts = async () => {
+    try {
+      const { data } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          profiles:author_id (
+            first_name,
+            last_name
+          )
+        `)
+        .order('created_at', { ascending: false });
+      
+      setAllPosts(data || []);
+    } catch (error) {
+      console.error('Error fetching all posts:', error);
+    }
+  };
+
+  const fetchUserPosts = async () => {
+    try {
+      const { data } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          profiles:author_id (
+            first_name,
+            last_name
+          )
+        `)
+        .eq('author_id', user?.id)
+        .order('created_at', { ascending: false });
+      
+      setUserPosts(data || []);
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+    }
+  };
+
+  const handleEditPost = (id: string) => {
+    window.location.href = `/edit-post/${id}`;
+  };
+
+  const handleDeletePost = async (post: any) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', post.id);
+
+      if (error) throw error;
+
+      // Refresh both lists
+      if (userRole === 'admin') {
+        fetchAllPosts();
+      }
+      fetchUserPosts();
+    } catch (error) {
+      console.error('Error deleting post:', error);
     }
   };
 
@@ -176,7 +244,7 @@ const ClientDashboard = () => {
 
         <TabsContent value="inspections">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <InspectionBookingForm onBookingSuccess={fetchUserData} />
+            <InspectionBookingForm onBookingCreated={fetchUserData} />
             
             <Card>
               <CardHeader>
@@ -256,7 +324,14 @@ const ClientDashboard = () => {
 
         {userRole === 'admin' && (
           <TabsContent value="blog">
-            <BlogPostsTab />
+            <BlogPostsTab 
+              isAdmin={userRole === 'admin'}
+              allPosts={allPosts}
+              userPosts={userPosts}
+              loading={loading}
+              onEditPost={handleEditPost}
+              onDeleteClick={handleDeletePost}
+            />
           </TabsContent>
         )}
       </Tabs>
