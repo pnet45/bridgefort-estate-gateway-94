@@ -96,7 +96,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       }
 
       // Initialize Paystack payment
-      const response = await fetch('/api/paystack/initialize', {
+      const response = await fetch('https://xyvspvtdaacqfmfocvhw.supabase.co/functions/v1/paystack-initialize', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

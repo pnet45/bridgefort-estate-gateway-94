@@ -27,7 +27,7 @@ const PaymentSuccess = () => {
 
   const verifyPayment = async (reference: string) => {
     try {
-      const response = await fetch(`/api/paystack/verify/${reference}`);
+      const response = await fetch(`https://xyvspvtdaacqfmfocvhw.supabase.co/functions/v1/paystack-verify/${reference}`);
       const data = await response.json();
 
       if (data.status && data.data.status === 'success') {

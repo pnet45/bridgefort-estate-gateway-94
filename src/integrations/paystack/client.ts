@@ -31,7 +31,7 @@ export interface PaystackResponse {
 
 // Function to initialize payment
 export const initializePayment = async (paymentData: PaystackPaymentData): Promise<PaystackResponse> => {
-  const response = await fetch('/api/paystack/initialize', {
+  const response = await fetch('https://xyvspvtdaacqfmfocvhw.supabase.co/functions/v1/paystack-initialize', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export const initializePayment = async (paymentData: PaystackPaymentData): Promi
 
 // Function to verify payment
 export const verifyPayment = async (reference: string) => {
-  const response = await fetch(`/api/paystack/verify/${reference}`);
+  const response = await fetch(`https://xyvspvtdaacqfmfocvhw.supabase.co/functions/v1/paystack-verify/${reference}`);
   
   if (!response.ok) {
     throw new Error('Failed to verify payment');

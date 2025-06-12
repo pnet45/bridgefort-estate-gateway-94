@@ -40,6 +40,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   const handleAddToCart = () => {
     const plot = {
       id: `${id}-plot-${Date.now()}`,
+      propertyId: id,
       plotNumber: Math.floor(Math.random() * totalPlots) + 1,
       size: sqm,
       pricePerPlot,
