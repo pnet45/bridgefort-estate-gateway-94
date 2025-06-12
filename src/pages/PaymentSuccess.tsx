@@ -5,6 +5,7 @@ import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEcommerce } from '@/contexts/ecommerce';
+import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -27,8 +28,13 @@ const PaymentSuccess = () => {
 
   const verifyPayment = async (reference: string) => {
     try {
-      const response = await fetch(`https://xyvspvtdaacqfmfocvhw.supabase.co/functions/v1/paystack-verify/${reference}`);
-      const data = await response.json();
+      const { data, error } = await supabase.functions.invoke('paystack-verify', {
+        body: { reference }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
 
       if (data.status && data.data.status === 'success') {
         setVerificationStatus('success');

@@ -1,111 +1,88 @@
 
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const BlogNewsletter = () => {
   const [email, setEmail] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !email.includes('@')) {
+    if (!email) {
       toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
+        title: "Error",
+        description: "Please enter your email address",
         variant: "destructive"
       });
       return;
     }
-    
-    setSubmitting(true);
-    
+
+    setIsLoading(true);
+
     try {
-      // Check if the email already exists
-      const { data: existingSubscriber } = await supabase
-        .from('newsletter_subscribers')
-        .select('*')
-        .eq('email', email)
-        .single();
-      
-      if (existingSubscriber) {
+      const { error } = await supabase
+        .from('newsletter_subscriptions')
+        .insert([{ email }]);
+
+      if (error) {
+        if (error.code === '23505') {
+          toast({
+            title: "Already Subscribed",
+            description: "You're already subscribed to our newsletter!",
+            variant: "destructive"
+          });
+        } else {
+          throw error;
+        }
+      } else {
         toast({
-          title: "Already subscribed",
-          description: "This email is already subscribed to our newsletter."
+          title: "Success!",
+          description: "Thank you for subscribing to our newsletter!",
         });
         setEmail('');
-        return;
       }
-      
-      // Submit to database
-      const { error } = await supabase
-        .from('newsletter_subscribers')
-        .insert([
-          { 
-            email,
-            subscribed_at: new Date().toISOString()
-          }
-        ]);
-      
-      if (error) throw error;
-      
-      // Show success message
-      toast({
-        title: "Success!",
-        description: "You've been added to our newsletter."
-      });
-      
-      // Clear form
-      setEmail('');
     } catch (error) {
+      console.error('Newsletter subscription error:', error);
       toast({
         title: "Error",
-        description: "There was a problem subscribing to the newsletter. Please try again.",
+        description: "Failed to subscribe. Please try again.",
         variant: "destructive"
       });
-      console.error("Newsletter subscription error:", error);
     } finally {
-      setSubmitting(false);
+      setIsLoading(false);
     }
   };
-  
+
   return (
-    <section className="py-16 bg-estate-blue">
+    <section className="py-16 bg-gray-100">
       <div className="container-custom">
-        <div className="bg-white p-8 md:p-12 rounded-lg shadow-lg max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-estate-blue">
-              Subscribe to Our Newsletter
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Stay updated with the latest news, property listings, investment tips, and training events from PWAN Bridgefort.
-            </p>
-          </div>
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-estate-blue mb-4">Subscribe to Our Newsletter</h2>
+          <p className="text-gray-600 mb-8">
+            Stay updated with the latest real estate news, investment tips, and market insights.
+          </p>
           
-          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4">
-            <Input 
-              type="email" 
-              placeholder="Your email address" 
-              className="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-estate-blue"
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+            <Input
+              type="email"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              className="flex-1"
+              disabled={isLoading}
             />
             <Button 
               type="submit" 
-              className="bg-estate-red hover:bg-red-700 text-white font-medium py-3 px-6"
-              disabled={submitting}
+              className="bg-estate-red hover:bg-red-600"
+              disabled={isLoading}
             >
-              {submitting ? 'Subscribing...' : 'Subscribe Now'}
+              {isLoading ? 'Subscribing...' : 'Subscribe'}
             </Button>
           </form>
-          
-          <p className="text-xs text-gray-500 mt-4 text-center">
-            By subscribing, you agree to receive emails from PWAN Bridgefort. You can unsubscribe at any time.
-          </p>
         </div>
       </div>
     </section>

@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Phone } from 'lucide-react';
 import MobileMenu from './navbar/MobileMenu';
 import NavLinks from './navbar/NavLinks';
 import NavbarUserMenu from './navbar/NavbarUserMenu';
@@ -63,11 +63,9 @@ const Navbar = () => {
             
             {/* Desktop Auth Section */}
             <div className="hidden lg:flex items-center space-x-4">
+              <CartIcon />
               {user ? (
-                <>
-                  <CartIcon />
-                  <NavbarUserMenu profile={profile} userRole={userRole} />
-                </>
+                <NavbarUserMenu profile={profile} userRole={userRole} />
               ) : shouldShowLogin ? (
                 <>
                   <NavbarLoginIcon />
@@ -97,10 +95,18 @@ const Navbar = () => {
         />
       </nav>
       
-      {/* Sticky Phone Number */}
-      <div className="fixed top-20 right-4 z-40 bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in">
-        <a href="tel:+2348030624059" className="text-sm font-medium hover:text-gray-200 transition-colors">
-          📞 +234 803 062 4059
+      {/* Sticky Phone Number - Desktop */}
+      <div className="fixed top-20 right-4 z-40 bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg animate-slide-in-right hidden md:block">
+        <a href="tel:+2348030624059" className="text-sm font-medium hover:text-gray-200 transition-colors flex items-center gap-2">
+          <Phone size={16} />
+          +234 803 062 4059
+        </a>
+      </div>
+
+      {/* Sticky Phone Number - Mobile (Phone icon only) */}
+      <div className="fixed top-20 right-4 z-40 bg-estate-blue text-white p-3 rounded-full shadow-lg animate-slide-in-right md:hidden">
+        <a href="tel:+2348030624059" className="hover:text-gray-200 transition-colors">
+          <Phone size={20} />
         </a>
       </div>
     </>

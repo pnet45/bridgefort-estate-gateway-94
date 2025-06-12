@@ -1,10 +1,22 @@
 
 import React from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
-import { LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import NavLinks from './NavLinks';
+import {
+  Home,
+  Building,
+  User,
+  Info,
+  Phone,
+  BookOpen,
+  Briefcase,
+  LogOut,
+  LogIn,
+  Landmark,
+  GraduationCap
+} from 'lucide-react';
+import CartIcon from '../ecommerce/CartIcon';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -12,42 +24,82 @@ interface MobileMenuProps {
   shouldShowLogin: boolean;
 }
 
-const MobileMenu = ({ isOpen, toggleMenu, shouldShowLogin }: MobileMenuProps) => {
+const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowLogin }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
     toggleMenu();
+    navigate('/');
   };
-
-  if (!isOpen) return null;
   
+  const menuItems = [
+    { name: 'Home', icon: <Home size={20} />, path: '/' },
+    { name: 'Properties', icon: <Building size={20} />, path: '/properties' },
+    { name: 'Buy to Sell', icon: <Landmark size={20} />, path: '/buy2sell' },
+    { name: 'Services', icon: <Briefcase size={20} />, path: '/services' },
+    { name: 'Training', icon: <GraduationCap size={20} />, path: '/training' },
+    { name: 'Blog', icon: <BookOpen size={20} />, path: '/blog' },
+    { name: 'About Us', icon: <Info size={20} />, path: '/about' },
+    { name: 'Contact', icon: <Phone size={20} />, path: '/contact' },
+  ];
+  
+  if (!isOpen) return null;
+
   return (
-    <div className="lg:hidden bg-white shadow-lg py-4 px-4 absolute w-full">
-      <div className="flex flex-col space-y-3">
-        <NavLinks 
-          className="py-2"
-          onClick={toggleMenu}
-        />
-        
-        {user ? (
-          <>
-            <NavLink to="/dashboard" className={({isActive}) => `${isActive ? 'text-estate-blue font-bold bg-blue-100 px-3 py-2 rounded-md' : 'text-gray-800'} py-2`} onClick={toggleMenu}>
-              <span className="font-bold">Dashboard</span>
-            </NavLink>
-            <Button variant="ghost" className="justify-start px-2" onClick={handleSignOut}>
-              <LogOut size={16} className="mr-2" />
-              Sign Out
-            </Button>
-          </>
-        ) : shouldShowLogin && (
-          <Button onClick={() => { navigate('/auth'); toggleMenu(); }} className="bg-estate-blue hover:bg-estate-darkBlue w-full">
-            Sign In
-          </Button>
-        )}
+    <div className="absolute top-full left-0 right-0 bg-white shadow-lg z-50 py-4 overflow-hidden animate-fade-in lg:hidden">
+      <div className="mb-4 px-4">
+        <CartIcon />
       </div>
+      
+      <nav className="flex flex-col">
+        {menuItems.map((item) => (
+          <Link
+            key={item.name}
+            to={item.path}
+            className="flex items-center px-4 py-3 hover:bg-gray-100"
+            onClick={toggleMenu}
+          >
+            <span className="mr-3 text-gray-500">{item.icon}</span>
+            <span className="font-medium">{item.name}</span>
+          </Link>
+        ))}
+
+        <div className="border-t mt-2 pt-2 px-4">
+          {user ? (
+            <>
+              <Link
+                to="/dashboard"
+                className="flex items-center py-3 hover:text-estate-blue"
+                onClick={toggleMenu}
+              >
+                <User size={20} className="mr-3 text-gray-500" />
+                <span className="font-medium">Dashboard</span>
+              </Link>
+              <Button
+                variant="destructive"
+                className="w-full mt-2"
+                onClick={handleSignOut}
+              >
+                <LogOut size={20} className="mr-2" />
+                Sign Out
+              </Button>
+            </>
+          ) : shouldShowLogin ? (
+            <Button
+              className="w-full bg-estate-blue hover:bg-estate-darkBlue"
+              onClick={() => {
+                toggleMenu();
+                navigate('/auth');
+              }}
+            >
+              <LogIn size={20} className="mr-2" />
+              Sign In
+            </Button>
+          ) : null}
+        </div>
+      </nav>
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   LayoutDashboard, 
   Home, 
@@ -13,13 +14,16 @@ import {
   Calendar,
   Trash2,
   Plus,
-  Minus
+  Minus,
+  ChevronLeft
 } from 'lucide-react';
 import { useEcommerce } from '@/contexts/ecommerce';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
 import CheckoutForm from './CheckoutForm';
 
 const CartPage = () => {
+  const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, getTotalAmount, getTotalItems } = useEcommerce();
   const [activeTab, setActiveTab] = useState('cart');
   const [showCheckout, setShowCheckout] = useState(false);
@@ -45,112 +49,139 @@ const CartPage = () => {
   const renderCartContent = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-estate-blue">Shopping Cart</h1>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft size={16} />
+          Continue Shopping
+        </Button>
         <Badge variant="secondary" className="text-lg px-3 py-1">
           {getTotalItems()} items
         </Badge>
       </div>
 
       {cart.length === 0 ? (
-        <Card className="text-center py-12">
+        <Card className="text-center py-12 bg-white">
           <CardContent>
             <h3 className="text-xl font-semibold mb-2">Your cart is empty</h3>
             <p className="text-gray-600 mb-4">Add some properties to get started</p>
-            <Button onClick={() => window.history.back()}>
-              Continue Shopping
+            <Button onClick={() => navigate('/properties')}>
+              Browse Properties
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <>
-          <div className="space-y-4">
-            {cart.map((item) => (
-              <Card key={item.plot.id} className="overflow-hidden">
-                <CardContent className="p-6">
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="w-full md:w-32 h-32 bg-cover bg-center rounded-lg" 
-                         style={{ backgroundImage: `url(${item.plot.imageUrl})` }} />
-                    
-                    <div className="flex-1 space-y-2">
-                      <h3 className="text-xl font-semibold text-estate-blue">
-                        {item.plot.propertyName}
-                      </h3>
-                      <p className="text-gray-600">{item.plot.location}</p>
-                      <p className="text-sm text-gray-500">
-                        Plot #{item.plot.plotNumber} • {item.plot.size}sqm • {item.plot.propertyType}
-                      </p>
-                      <p className="text-lg font-bold text-estate-red">
-                        ₦{item.plot.pricePerPlot.toLocaleString()} per plot
-                      </p>
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle>Shopping Cart</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[300px] pr-4">
+                  <div className="space-y-4">
+                    {cart.map((item) => (
+                      <Card key={item.plot.id} className="overflow-hidden border-gray-200">
+                        <CardContent className="p-6">
+                          <div className="flex flex-col md:flex-row gap-4">
+                            <div className="w-full md:w-32 h-32 bg-cover bg-center rounded-lg" 
+                                style={{ backgroundImage: `url(${item.plot.imageUrl})` }} />
+                            
+                            <div className="flex-1 space-y-2">
+                              <h3 className="text-xl font-semibold text-estate-blue">
+                                {item.plot.propertyName}
+                              </h3>
+                              <p className="text-gray-600">{item.plot.location}</p>
+                              <p className="text-sm text-gray-500">
+                                Plot #{item.plot.plotNumber} • {item.plot.size}sqm • {item.plot.propertyType}
+                              </p>
+                              <p className="text-lg font-bold text-estate-red">
+                                ₦{item.plot.pricePerPlot.toLocaleString()} per plot
+                              </p>
+                            </div>
 
-                    <div className="flex flex-col items-end space-y-3">
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleQuantityUpdate(item.plot.id, item.quantity - 1)}
-                        >
-                          <Minus size={16} />
-                        </Button>
-                        <span className="px-3 py-1 bg-gray-100 rounded font-medium">
-                          {item.quantity}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleQuantityUpdate(item.plot.id, item.quantity + 1)}
-                        >
-                          <Plus size={16} />
-                        </Button>
-                      </div>
-                      
-                      <p className="font-bold text-lg">
-                        ₦{(item.plot.pricePerPlot * item.quantity).toLocaleString()}
-                      </p>
-                      
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeFromCart(item.plot.id)}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
+                            <div className="flex flex-col items-end space-y-3">
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleQuantityUpdate(item.plot.id, item.quantity - 1)}
+                                >
+                                  <Minus size={16} />
+                                </Button>
+                                <span className="px-3 py-1 bg-gray-100 rounded font-medium">
+                                  {item.quantity}
+                                </span>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleQuantityUpdate(item.plot.id, item.quantity + 1)}
+                                >
+                                  <Plus size={16} />
+                                </Button>
+                              </div>
+                              
+                              <p className="font-bold text-lg">
+                                ₦{(item.plot.pricePerPlot * item.quantity).toLocaleString()}
+                              </p>
+                              
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => removeFromCart(item.plot.id)}
+                              >
+                                <Trash2 size={16} />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </ScrollArea>
+              </CardContent>
+            </Card>
           </div>
 
-          <Card className="bg-gray-50">
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <div className="flex justify-between text-lg">
-                  <span>Subtotal ({getTotalItems()} items):</span>
-                  <span className="font-semibold">₦{getTotalAmount().toLocaleString()}</span>
+          <div>
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Subtotal ({getTotalItems()} items):</span>
+                    <span className="font-semibold">₦{getTotalAmount().toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Processing Fee (2%):</span>
+                    <span>₦{(getTotalAmount() * 0.02).toLocaleString()}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Processing Fee:</span>
-                  <span>₦{(getTotalAmount() * 0.02).toLocaleString()}</span>
-                </div>
+                
                 <Separator />
-                <div className="flex justify-between text-xl font-bold">
+                
+                <div className="flex justify-between text-lg font-bold">
                   <span>Total:</span>
                   <span className="text-estate-red">
                     ₦{(getTotalAmount() * 1.02).toLocaleString()}
                   </span>
                 </div>
+                
                 <Button 
                   className="w-full bg-estate-blue hover:bg-estate-darkBlue text-white py-3 text-lg"
                   onClick={() => setShowCheckout(true)}
                 >
                   Proceed to Checkout
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -158,7 +189,7 @@ const CartPage = () => {
   const renderPlaceholderContent = (title: string) => (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-estate-blue">{title}</h1>
-      <Card>
+      <Card className="bg-white">
         <CardContent className="text-center py-12">
           <h3 className="text-xl font-semibold mb-2">Coming Soon</h3>
           <p className="text-gray-600">This feature is under development</p>
@@ -175,11 +206,11 @@ const CartPage = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="pt-20">
-        <div className="container-custom">
+        <div className="container-custom py-8">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Sidebar */}
             <div className="lg:w-64">
-              <Card className="sticky top-24">
+              <Card className="sticky top-24 bg-white">
                 <CardHeader>
                   <CardTitle className="text-lg text-estate-blue">Account Menu</CardTitle>
                 </CardHeader>

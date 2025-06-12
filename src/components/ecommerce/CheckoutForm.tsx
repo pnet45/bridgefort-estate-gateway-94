@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, CreditCard, User, MapPin } from 'lucide-react';
+import { ArrowLeft, CreditCard, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useEcommerce } from '@/contexts/ecommerce';
 import { useAuth } from '@/contexts/auth';
-import { Customer, PaymentInfo } from '@/contexts/ecommerce/types';
+import { Customer } from '@/contexts/ecommerce/types';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,7 +20,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [step, setStep] = useState(1);
   
   const [customerInfo, setCustomerInfo] = useState<Customer>({
     firstName: '',
@@ -95,13 +94,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         throw new Error('Failed to create order');
       }
 
-      // Initialize Paystack payment
-      const response = await fetch('https://xyvspvtdaacqfmfocvhw.supabase.co/functions/v1/paystack-initialize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Initialize Paystack payment using the edge function
+      const { data: paymentData, error: paymentError } = await supabase.functions.invoke('paystack-initialize', {
+        body: {
           email: customerInfo.email,
           amount: totalAmount,
           reference,
@@ -121,10 +116,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
               }
             ]
           }
-        }),
+        }
       });
 
-      const paymentData = await response.json();
+      if (paymentError) {
+        throw new Error('Failed to initialize payment');
+      }
 
       if (paymentData.status) {
         // Redirect to Paystack payment page
@@ -153,130 +150,132 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
     <div className="fixed inset-0 z-50 flex">
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onBack} />
       
-      <div className="ml-auto w-full max-w-lg bg-white h-full shadow-xl overflow-y-auto animate-slide-in-right">
-        <div className="flex items-center gap-3 p-4 border-b">
+      <div className="ml-auto w-full max-w-lg bg-white h-full shadow-xl overflow-hidden animate-slide-in-right">
+        <div className="flex items-center gap-3 p-4 border-b bg-white">
           <Button variant="ghost" size="sm" onClick={onBack}>
             <ArrowLeft size={20} />
           </Button>
           <h2 className="text-lg font-semibold">Checkout</h2>
         </div>
 
-        <div className="p-4">
-          {/* Order Summary */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-semibold mb-3">Order Summary</h3>
-            <div className="space-y-2">
-              {cart.map((item) => (
-                <div key={item.plot.id} className="flex justify-between text-sm">
-                  <span>{item.plot.propertyName} x {item.quantity}</span>
-                  <span>₦{(item.plot.pricePerPlot * item.quantity).toLocaleString()}</span>
-                </div>
-              ))}
-              <div className="border-t pt-2 font-bold">
+        <div className="h-full overflow-y-auto bg-white">
+          <div className="p-4">
+            {/* Order Summary */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-semibold mb-3">Order Summary</h3>
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {cart.map((item) => (
+                  <div key={item.plot.id} className="flex justify-between text-sm">
+                    <span className="truncate mr-2">{item.plot.propertyName} x {item.quantity}</span>
+                    <span className="whitespace-nowrap">₦{(item.plot.pricePerPlot * item.quantity).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t pt-2 mt-2 font-bold">
                 <div className="flex justify-between">
                   <span>Total:</span>
                   <span>₦{getTotalAmount().toLocaleString()}</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Customer Information */}
-          <div className="space-y-4 animate-fade-in">
-            <h3 className="font-semibold flex items-center gap-2">
-              <User size={18} />
-              Customer Information
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-4">
+            {/* Customer Information */}
+            <div className="space-y-4 animate-fade-in">
+              <h3 className="font-semibold flex items-center gap-2">
+                <User size={18} />
+                Customer Information
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={customerInfo.firstName}
+                    onChange={(e) => handleCustomerInfoChange('firstName', e.target.value)}
+                    placeholder="John"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={customerInfo.lastName}
+                    onChange={(e) => handleCustomerInfoChange('lastName', e.target.value)}
+                    placeholder="Doe"
+                  />
+                </div>
+              </div>
+
               <div>
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="firstName"
-                  value={customerInfo.firstName}
-                  onChange={(e) => handleCustomerInfoChange('firstName', e.target.value)}
-                  placeholder="John"
+                  id="email"
+                  type="email"
+                  value={customerInfo.email}
+                  onChange={(e) => handleCustomerInfoChange('email', e.target.value)}
+                  placeholder="john@example.com"
+                  disabled
                 />
               </div>
+
               <div>
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="phone">Phone</Label>
                 <Input
-                  id="lastName"
-                  value={customerInfo.lastName}
-                  onChange={(e) => handleCustomerInfoChange('lastName', e.target.value)}
-                  placeholder="Doe"
+                  id="phone"
+                  value={customerInfo.phone}
+                  onChange={(e) => handleCustomerInfoChange('phone', e.target.value)}
+                  placeholder="+234 xxx xxx xxxx"
                 />
               </div>
-            </div>
 
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={customerInfo.email}
-                onChange={(e) => handleCustomerInfoChange('email', e.target.value)}
-                placeholder="john@example.com"
-                disabled
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                value={customerInfo.phone}
-                onChange={(e) => handleCustomerInfoChange('phone', e.target.value)}
-                placeholder="+234 xxx xxx xxxx"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                value={customerInfo.address}
-                onChange={(e) => handleCustomerInfoChange('address', e.target.value)}
-                placeholder="123 Main Street"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="address">Address</Label>
                 <Input
-                  id="city"
-                  value={customerInfo.city}
-                  onChange={(e) => handleCustomerInfoChange('city', e.target.value)}
-                  placeholder="Lagos"
+                  id="address"
+                  value={customerInfo.address}
+                  onChange={(e) => handleCustomerInfoChange('address', e.target.value)}
+                  placeholder="123 Main Street"
                 />
               </div>
-              <div>
-                <Label htmlFor="state">State</Label>
-                <Input
-                  id="state"
-                  value={customerInfo.state}
-                  onChange={(e) => handleCustomerInfoChange('state', e.target.value)}
-                  placeholder="Lagos"
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    value={customerInfo.city}
+                    onChange={(e) => handleCustomerInfoChange('city', e.target.value)}
+                    placeholder="Lagos"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="state">State</Label>
+                  <Input
+                    id="state"
+                    value={customerInfo.state}
+                    onChange={(e) => handleCustomerInfoChange('state', e.target.value)}
+                    placeholder="Lagos"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-blue-800 mb-2">Payment via Paystack</h4>
-              <p className="text-sm text-blue-700">
-                You will be redirected to Paystack to complete your payment securely. 
-                We accept all major cards and bank transfers.
-              </p>
-            </div>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-blue-800 mb-2">Payment via Paystack</h4>
+                <p className="text-sm text-blue-700">
+                  You will be redirected to Paystack to complete your payment securely. 
+                  We accept all major cards and bank transfers.
+                </p>
+              </div>
 
-            <Button
-              onClick={handlePaystackPayment}
-              disabled={!validateStep1() || isProcessing}
-              className="w-full bg-estate-blue hover:bg-estate-darkBlue"
-            >
-              {isProcessing ? 'Processing...' : `Pay ₦${getTotalAmount().toLocaleString()} with Paystack`}
-            </Button>
+              <Button
+                onClick={handlePaystackPayment}
+                disabled={!validateStep1() || isProcessing}
+                className="w-full bg-estate-blue hover:bg-estate-darkBlue"
+              >
+                {isProcessing ? 'Processing...' : `Pay ₦${getTotalAmount().toLocaleString()} with Paystack`}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

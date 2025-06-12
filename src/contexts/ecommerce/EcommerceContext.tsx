@@ -47,6 +47,9 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       title: "Added to Cart",
       description: `${quantity} plot(s) of ${plot.propertyName} added to cart`,
     });
+
+    // Automatically open cart when adding items
+    setIsCartOpen(true);
   };
 
   const removeFromCart = (plotId: string) => {
@@ -75,6 +78,7 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const clearCart = () => {
     setCart([]);
+    localStorage.removeItem('pwan_cart');
     toast({
       title: "Cart Cleared",
       description: "All items removed from cart",

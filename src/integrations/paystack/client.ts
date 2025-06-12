@@ -31,28 +31,30 @@ export interface PaystackResponse {
 
 // Function to initialize payment
 export const initializePayment = async (paymentData: PaystackPaymentData): Promise<PaystackResponse> => {
-  const response = await fetch('https://xyvspvtdaacqfmfocvhw.supabase.co/functions/v1/paystack-initialize', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(paymentData),
-  });
-
-  if (!response.ok) {
+  try {
+    const { data, error } = await window.supabase.functions.invoke('paystack-initialize', {
+      body: paymentData
+    });
+    
+    if (error) throw new Error(error.message);
+    return data;
+  } catch (error) {
+    console.error('Paystack payment error:', error);
     throw new Error('Failed to initialize payment');
   }
-
-  return response.json();
 };
 
 // Function to verify payment
 export const verifyPayment = async (reference: string) => {
-  const response = await fetch(`https://xyvspvtdaacqfmfocvhw.supabase.co/functions/v1/paystack-verify/${reference}`);
-  
-  if (!response.ok) {
+  try {
+    const { data, error } = await window.supabase.functions.invoke('paystack-verify', {
+      body: { reference }
+    });
+    
+    if (error) throw new Error(error.message);
+    return data;
+  } catch (error) {
+    console.error('Paystack verification error:', error);
     throw new Error('Failed to verify payment');
   }
-
-  return response.json();
 };

@@ -53,13 +53,20 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     addToCart(plot, 1);
   };
 
+  const handleCardClick = () => {
+    setIsDetailsOpen(true);
+  };
+
   const occupancyRate = ((totalPlots - availablePlots) / totalPlots) * 100;
   const isHighDemand = occupancyRate > 70;
   const isSoldOut = availablePlots === 0;
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 animate-fade-in group">
+      <div 
+        className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 animate-fade-in group cursor-pointer"
+        onClick={handleCardClick}
+      >
         {/* Image Container */}
         <div className="relative h-48 overflow-hidden">
           <img 
@@ -101,7 +108,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
         {/* Content */}
         <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-2 hover:text-estate-blue transition-colors cursor-pointer">
+          <h3 className="text-xl font-bold text-gray-900 mb-2 hover:text-estate-blue transition-colors">
             {title}
           </h3>
           
@@ -149,7 +156,10 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             <Button 
               variant="outline" 
               className="flex-1 border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white transition-colors"
-              onClick={() => setIsDetailsOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDetailsOpen(true);
+              }}
             >
               View Details
             </Button>
@@ -157,7 +167,10 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             {!isSoldOut && (
               <Button 
                 className="flex-1 bg-estate-red hover:bg-red-600 text-white transition-colors"
-                onClick={handleAddToCart}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddToCart();
+                }}
               >
                 Add to Cart
               </Button>
@@ -176,11 +189,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           price,
           imageUrl,
           propertyType,
+          name: title,
+          sqm,
           phase,
           totalPlots,
           availablePlots,
-          pricePerPlot,
-          name: title
+          pricePerPlot
         }}
       />
     </>

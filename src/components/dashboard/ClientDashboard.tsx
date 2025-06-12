@@ -1,183 +1,265 @@
 
-import React, { useEffect, useState } from 'react';
-import InspectionBookingForm from './InspectionBookingForm';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Home, Calendar, FileText, User, CheckCircle, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Home, 
+  FileText, 
+  Eye, 
+  CreditCard, 
+  Calendar,
+  User,
+  Building,
+  ShoppingCart
+} from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
+import AccountInformation from './AccountInformation';
+import InspectionBookingForm from './InspectionBookingForm';
+import BlogPostsTab from './BlogPostsTab';
+import SavedCartItems from './SavedCartItems';
 
 const ClientDashboard = () => {
-  const { user } = useAuth();
-  const [inspectionBookings, setInspectionBookings] = useState<any[]>([]);
+  const { user, userRole } = useAuth();
+  const [inspections, setInspections] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
-      fetchInspectionBookings();
+      fetchUserData();
     }
   }, [user]);
 
-  const fetchInspectionBookings = async () => {
+  const fetchUserData = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch inspections
+      const { data: inspectionData } = await supabase
         .from('inspection_bookings')
         .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching inspection bookings:', error);
-        return;
+      setInspections(inspectionData || []);
+
+      // Fetch orders if table exists
+      try {
+        const { data: orderData } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user?.id)
+          .order('created_at', { ascending: false });
+
+        setOrders(orderData || []);
+      } catch (error) {
+        console.log('Orders table not found, skipping...');
+        setOrders([]);
       }
 
-      setInspectionBookings(data || []);
     } catch (error) {
-      console.error('Error fetching inspection bookings:', error);
+      console.error('Error fetching user data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const approvedInspections = inspectionBookings.filter(booking => booking.status === 'approved');
-  const pendingInspections = inspectionBookings.filter(booking => booking.status === 'pending');
+  const statsCards = [
+    {
+      title: "Total Properties",
+      value: "0",
+      icon: Home,
+      color: "text-blue-600"
+    },
+    {
+      title: "Active Inspections", 
+      value: inspections.filter(i => i.status === 'pending').length.toString(),
+      icon: Eye,
+      color: "text-green-600"
+    },
+    {
+      title: "Total Orders",
+      value: orders.length.toString(),
+      icon: CreditCard,
+      color: "text-purple-600"
+    },
+    {
+      title: "Documents",
+      value: "0",
+      icon: FileText,
+      color: "text-orange-600"
+    }
+  ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">My Properties</CardTitle>
-            <Home className="h-4 w-4 ml-auto text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              Properties in your portfolio
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Inspections</CardTitle>
-            <Calendar className="h-4 w-4 ml-auto text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{inspectionBookings.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Total inspection bookings
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Documents</CardTitle>
-            <FileText className="h-4 w-4 ml-auto text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground">
-              Available documents
-            </p>
-          </CardContent>
-        </Card>
+    <div className="container mx-auto px-4 py-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {statsCards.map((stat, index) => {
+          const IconComponent = stat.icon;
+          return (
+            <Card key={index} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                    <p className="text-2xl font-bold">{stat.value}</p>
+                  </div>
+                  <IconComponent className={`h-8 w-8 ${stat.color}`} />
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* Approved Inspections Section */}
-      {approvedInspections.length > 0 && (
-        <Card className="border-green-200 bg-green-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-700">
-              <CheckCircle className="h-5 w-5" />
-              Approved Inspections
-            </CardTitle>
-            <CardDescription className="text-green-600">
-              Your inspection requests have been approved! Please note the scheduled dates and times.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {approvedInspections.map((booking) => (
-                <div key={booking.id} className="bg-white p-4 rounded-lg border border-green-200">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold text-green-800">{booking.estate_name}</h4>
-                      <p className="text-sm text-green-600">
-                        Date: {new Date(booking.inspection_date).toLocaleDateString()}
+      {/* Main Content Tabs */}
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="properties">Properties</TabsTrigger>
+          <TabsTrigger value="inspections">Inspections</TabsTrigger>
+          <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="account">Account</TabsTrigger>
+          {userRole === 'admin' && <TabsTrigger value="blog">Blog</TabsTrigger>}
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SavedCartItems />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar size={20} />
+                  Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {inspections.slice(0, 3).map((inspection: any) => (
+                    <div key={inspection.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <p className="font-medium text-sm">{inspection.estate_name}</p>
+                        <p className="text-xs text-gray-600">
+                          {new Date(inspection.inspection_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Badge variant={inspection.status === 'confirmed' ? 'default' : 'secondary'}>
+                        {inspection.status}
+                      </Badge>
+                    </div>
+                  ))}
+                  
+                  {inspections.length === 0 && (
+                    <p className="text-gray-600 text-center py-4">No recent activity</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="properties">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building size={20} />
+                My Properties
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">No properties found. Start browsing our available properties to make your first purchase.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="inspections">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <InspectionBookingForm onBookingSuccess={fetchUserData} />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>My Inspection Bookings</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {inspections.map((inspection: any) => (
+                    <div key={inspection.id} className="p-4 border rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold">{inspection.estate_name}</h4>
+                        <Badge variant={inspection.status === 'confirmed' ? 'default' : 'secondary'}>
+                          {inspection.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-1">
+                        Date: {new Date(inspection.inspection_date).toLocaleDateString()}
                       </p>
-                      <p className="text-sm text-green-600">
-                        Time: {booking.inspection_time}
+                      <p className="text-sm text-gray-600 mb-1">
+                        Time: {inspection.inspection_time}
                       </p>
-                      {booking.message && (
-                        <p className="text-sm text-gray-600 mt-2">
-                          Message: {booking.message}
+                      {inspection.message && (
+                        <p className="text-sm text-gray-600">
+                          Message: {inspection.message}
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-1 text-green-600">
-                      <CheckCircle className="h-4 w-4" />
-                      <span className="text-xs font-medium">Approved</span>
-                    </div>
-                  </div>
+                  ))}
+                  
+                  {inspections.length === 0 && (
+                    <p className="text-gray-600">No inspection bookings found.</p>
+                  )}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Pending Inspections Section */}
-      {pendingInspections.length > 0 && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-yellow-700">
-              <Clock className="h-5 w-5" />
-              Pending Inspections
-            </CardTitle>
-            <CardDescription className="text-yellow-600">
-              Your inspection requests are being reviewed.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {pendingInspections.map((booking) => (
-                <div key={booking.id} className="bg-white p-4 rounded-lg border border-yellow-200">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold text-yellow-800">{booking.estate_name}</h4>
-                      <p className="text-sm text-yellow-600">
-                        Requested Date: {new Date(booking.inspection_date).toLocaleDateString()}
-                      </p>
-                      <p className="text-sm text-yellow-600">
-                        Requested Time: {booking.inspection_time}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 text-yellow-600">
-                      <Clock className="h-4 w-4" />
-                      <span className="text-xs font-medium">Pending</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Book inspections and manage your real estate journey
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4">
-            <InspectionBookingForm onBookingCreated={fetchInspectionBookings} />
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="orders">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard size={20} />
+                My Orders
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {orders.map((order: any) => (
+                  <div key={order.id} className="p-4 border rounded-lg">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold">Order #{order.id.slice(0, 8)}</h4>
+                      <Badge variant={order.payment_status === 'completed' ? 'default' : 'secondary'}>
+                        {order.payment_status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-1">
+                      Total: ₦{order.total_amount?.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Date: {new Date(order.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+                
+                {orders.length === 0 && (
+                  <p className="text-gray-600">No orders found.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="account">
+          <AccountInformation />
+        </TabsContent>
+
+        {userRole === 'admin' && (
+          <TabsContent value="blog">
+            <BlogPostsTab />
+          </TabsContent>
+        )}
+      </Tabs>
     </div>
   );
 };
