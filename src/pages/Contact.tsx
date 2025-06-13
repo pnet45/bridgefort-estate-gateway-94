@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -28,8 +29,8 @@ const Contact = () => {
             {/* Contact Information */}
             <div className="lg:col-span-1">
               <div className="bg-white p-6 rounded-lg shadow-md h-full hover:shadow-lg transition-all duration-300 hover:scale-105">
-                <h2 className="text-2xl font-bold mb-6 animate-fade-in">Get In Touch</h2>
-                <div className="space-y-6">
+                <h2 className="text-2xl font-bold mb-6 animate-fade-in text-left">Get In Touch</h2>
+                <div className="space-y-6 text-left">
                   <div className="flex items-start animate-fade-in">
                     <div className="bg-estate-blue bg-opacity-10 p-3 rounded-full mr-4 hover:scale-110 transition-transform duration-300">
                       <MapPin size={24} className="text-estate-blue" />
@@ -92,7 +93,7 @@ const Contact = () => {
                   </div>
                 </div>
 
-                <div className="mt-8 animate-fade-in">
+                <div className="mt-8 animate-fade-in text-left">
                   <h3 className="text-lg font-semibold mb-3">Connect With Us</h3>
                   <div className="flex space-x-4">
                     <a href="https://facebook.com" className="bg-estate-blue text-white p-2 rounded-full hover:bg-estate-darkBlue transition duration-300 hover:scale-110">

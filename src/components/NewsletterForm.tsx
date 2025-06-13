@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -47,7 +48,7 @@ const NewsletterForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md">
       <Input
         type="email"
         placeholder="Enter your email"
@@ -56,7 +57,11 @@ const NewsletterForm = () => {
         required
         className="input-field flex-grow"
       />
-      <Button type="submit" disabled={loading || !email} className="btn-cta">
+      <Button 
+        type="submit" 
+        disabled={loading || !email} 
+        className="bg-estate-red hover:bg-red-600 text-white font-medium py-2 px-6 rounded transition duration-300"
+      >
         {loading ? 'Subscribing...' : 'Subscribe'}
       </Button>
     </form>

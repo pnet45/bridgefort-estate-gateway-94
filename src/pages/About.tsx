@@ -2,6 +2,7 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import WhatsAppChat from '../components/WhatsAppChat';
 import AboutHero from '../components/about/AboutHero';
 import VisionMission from '../components/about/VisionMission';
 import CoreValues from '../components/about/CoreValues';
@@ -41,6 +42,7 @@ const About = () => {
       <BoardOfDirectors />
       <CallToAction />
       <Footer />
+      <WhatsAppChat />
     </div>
   );
 };

@@ -19,7 +19,7 @@ const LogoSlideIn = () => {
       <img
         src="/lovable-uploads/c38e476b-49df-4b14-a2e9-d78048192d53.png"
         alt="PWAN Bridgefort Logo"
-        className={`h-10 w-auto transition-all duration-1000 ease-out ${
+        className={`h-16 w-auto transition-all duration-1000 ease-out ${
           isVisible 
             ? 'transform translate-x-0 opacity-100' 
             : 'transform -translate-x-full opacity-0'

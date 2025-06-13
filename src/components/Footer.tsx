@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, MessageSquare } from 'lucide-react';
 import NewsletterForm from './NewsletterForm';
@@ -8,7 +9,7 @@ const Footer = () => {
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
-          <div className="animate-fade-in">
+          <div className="animate-fade-in text-left">
             <div className="mb-4">
               <span className="text-2xl font-bold text-white font-montserrat">PWAN</span>
               <span className="text-xl font-semibold text-estate-lightBlue font-montserrat ml-2">Bridgefort</span>
@@ -34,7 +35,7 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="animate-fade-in">
+          <div className="animate-fade-in text-left">
             <h3 className="text-lg font-semibold mb-4 font-montserrat">Quick Links</h3>
             <ul className="space-y-2">
               <li><Link to="/" className="text-gray-300 hover:text-white transition duration-200 hover:scale-105">Home</Link></li>
@@ -47,7 +48,7 @@ const Footer = () => {
           </div>
 
           {/* Contact Info */}
-          <div className="animate-fade-in">
+          <div className="animate-fade-in text-left">
             <h3 className="text-lg font-semibold mb-4 font-montserrat">Contact Us</h3>
             <ul className="space-y-3">
               <li className="flex items-start">
@@ -79,7 +80,7 @@ const Footer = () => {
           </div>
 
           {/* Newsletter */}
-          <div className="animate-fade-in">
+          <div className="animate-fade-in text-left">
             <h3 className="text-lg font-semibold mb-4 font-montserrat">Newsletter</h3>
             <p className="text-gray-300 mb-4">Subscribe to our newsletter for updates on new properties and investment opportunities.</p>
             <NewsletterForm />

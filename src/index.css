@@ -94,7 +94,7 @@
   body {
     @apply bg-background text-foreground font-poppins;
     padding-top: 0;
-    color: rgb(193, 189, 189);
+    color: rgb(75, 85, 99); /* Default gray-600 for better readability */
   }
 
   /* Headers on white/grey backgrounds use estate-blue, on dark backgrounds stay white */
@@ -119,6 +119,21 @@
   .bg-estate-blue h1, .bg-estate-blue h2, .bg-estate-blue h3, .bg-estate-blue h4, .bg-estate-blue h5, .bg-estate-blue h6,
   .bg-blue-500 h1, .bg-blue-500 h2, .bg-blue-500 h3, .bg-blue-500 h4, .bg-blue-500 h5, .bg-blue-500 h6,
   .bg-blue-600 h1, .bg-blue-600 h2, .bg-blue-600 h3, .bg-blue-600 h4, .bg-blue-600 h5, .bg-blue-600 h6 {
+    color: white !important;
+  }
+
+  /* Text color adjustments for better contrast */
+  .bg-white p, .bg-white span, .bg-white div:not(.bg-gray-50):not(.bg-estate-blue) {
+    color: rgb(75, 85, 99) !important; /* gray-600 */
+  }
+  
+  .bg-gray-50 p, .bg-gray-50 span, .bg-gray-50 div:not(.bg-white):not(.bg-estate-blue) {
+    color: rgb(75, 85, 99) !important; /* gray-600 */
+  }
+
+  .bg-gray-900 p, .bg-gray-900 span, .bg-gray-900 div,
+  .bg-gray-800 p, .bg-gray-800 span, .bg-gray-800 div,
+  .bg-black p, .bg-black span, .bg-black div {
     color: white !important;
   }
 
@@ -166,6 +181,11 @@
 
   .navbar-phone {
     @apply text-blue-600;
+  }
+
+  /* Estate images increased height */
+  .estate-image {
+    @apply h-80 object-cover; /* Increased from default height */
   }
 
   /* Enhanced Mobile Responsive */
@@ -354,22 +374,6 @@ main, section:first-of-type {
   background: linear-gradient(135deg, #2b2d7d, #059669, #2563eb);
 }
 
-/* Responsive Text Colors */
-@media (max-width: 768px) {
-  body, p, span, div {
-    color: rgb(99, 98, 98) !important;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    color: white !important;
-  }
-  
-  input, textarea, select {
-    color: rgb(99, 98, 98) !important;
-    background-color: white !important;
-  }
-}
-
 /* Enhanced Ecommerce Specific Styles */
 .cart-badge {
   @apply absolute -top-2 -right-2 bg-estate-red text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-pulse-glow;
@@ -408,4 +412,9 @@ main, section:first-of-type {
   opacity: 1;
   visibility: visible;
   transform: translateY(0) translateX(0);
+}
+
+/* "Join the PWAN Bridgefort Family Today" text styling */
+.cta-heading {
+  color: #2B2D7D !important; /* estate-blue */
 }

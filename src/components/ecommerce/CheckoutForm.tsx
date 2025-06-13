@@ -4,6 +4,7 @@ import { ArrowLeft, CreditCard, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEcommerce } from '@/contexts/ecommerce';
 import { useAuth } from '@/contexts/auth';
 import { Customer } from '@/contexts/ecommerce/types';
@@ -150,132 +151,144 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
     <div className="fixed inset-0 z-50 flex">
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onBack} />
       
-      <div className="ml-auto w-full max-w-lg bg-white h-full shadow-xl overflow-hidden animate-slide-in-right">
+      <div className="ml-auto w-full max-w-2xl bg-white h-full shadow-xl overflow-hidden animate-slide-in-right">
         <div className="flex items-center gap-3 p-4 border-b bg-white">
           <Button variant="ghost" size="sm" onClick={onBack}>
             <ArrowLeft size={20} />
           </Button>
-          <h2 className="text-lg font-semibold">Checkout</h2>
+          <h2 className="text-lg font-semibold text-estate-blue">Checkout</h2>
         </div>
 
-        <div className="h-full overflow-y-auto bg-white">
-          <div className="p-4">
-            {/* Order Summary */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold mb-3">Order Summary</h3>
-              <div className="space-y-2 max-h-32 overflow-y-auto">
+        <div className="flex h-[calc(100vh-80px)]">
+          {/* Left Sidebar - Order Summary */}
+          <div className="w-1/3 bg-gray-50 border-r p-4">
+            <h3 className="font-semibold mb-4 text-estate-blue">Order Summary</h3>
+            <ScrollArea className="h-[calc(100vh-200px)]">
+              <div className="space-y-3">
                 {cart.map((item) => (
-                  <div key={item.plot.id} className="flex justify-between text-sm">
-                    <span className="truncate mr-2">{item.plot.propertyName} x {item.quantity}</span>
-                    <span className="whitespace-nowrap">₦{(item.plot.pricePerPlot * item.quantity).toLocaleString()}</span>
+                  <div key={item.plot.id} className="bg-white p-3 rounded-lg shadow-sm">
+                    <div className="text-sm font-medium text-estate-blue truncate">{item.plot.propertyName}</div>
+                    <div className="text-xs text-gray-600">Quantity: {item.quantity}</div>
+                    <div className="text-sm font-semibold">₦{(item.plot.pricePerPlot * item.quantity).toLocaleString()}</div>
                   </div>
                 ))}
               </div>
-              <div className="border-t pt-2 mt-2 font-bold">
-                <div className="flex justify-between">
+              <div className="border-t pt-4 mt-4 bg-white p-3 rounded-lg shadow-sm">
+                <div className="flex justify-between font-bold text-lg text-estate-blue">
                   <span>Total:</span>
                   <span>₦{getTotalAmount().toLocaleString()}</span>
                 </div>
               </div>
-            </div>
+            </ScrollArea>
+          </div>
 
-            {/* Customer Information */}
-            <div className="space-y-4 animate-fade-in">
-              <h3 className="font-semibold flex items-center gap-2">
-                <User size={18} />
-                Customer Information
-              </h3>
-              
-              <div className="grid grid-cols-2 gap-4">
+          {/* Right Content - Customer Information Form */}
+          <div className="flex-1 p-6">
+            <ScrollArea className="h-full">
+              <div className="space-y-6 animate-fade-in">
+                <h3 className="font-semibold flex items-center gap-2 text-estate-blue">
+                  <User size={18} />
+                  Customer Information
+                </h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="firstName" className="text-estate-blue">First Name *</Label>
+                    <Input
+                      id="firstName"
+                      value={customerInfo.firstName}
+                      onChange={(e) => handleCustomerInfoChange('firstName', e.target.value)}
+                      placeholder="First Name"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lastName" className="text-estate-blue">Last Name *</Label>
+                    <Input
+                      id="lastName"
+                      value={customerInfo.lastName}
+                      onChange={(e) => handleCustomerInfoChange('lastName', e.target.value)}
+                      placeholder="Last Name"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="email" className="text-estate-blue">Email *</Label>
                   <Input
-                    id="firstName"
-                    value={customerInfo.firstName}
-                    onChange={(e) => handleCustomerInfoChange('firstName', e.target.value)}
-                    placeholder="John"
+                    id="email"
+                    type="email"
+                    value={customerInfo.email}
+                    onChange={(e) => handleCustomerInfoChange('email', e.target.value)}
+                    placeholder="your.email@example.com"
+                    disabled
+                    className="mt-1"
                   />
                 </div>
+
                 <div>
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="phone" className="text-estate-blue">Phone *</Label>
                   <Input
-                    id="lastName"
-                    value={customerInfo.lastName}
-                    onChange={(e) => handleCustomerInfoChange('lastName', e.target.value)}
-                    placeholder="Doe"
+                    id="phone"
+                    value={customerInfo.phone}
+                    onChange={(e) => handleCustomerInfoChange('phone', e.target.value)}
+                    placeholder="+234 xxx xxx xxxx"
+                    className="mt-1"
                   />
                 </div>
-              </div>
 
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={customerInfo.email}
-                  onChange={(e) => handleCustomerInfoChange('email', e.target.value)}
-                  placeholder="john@example.com"
-                  disabled
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={customerInfo.phone}
-                  onChange={(e) => handleCustomerInfoChange('phone', e.target.value)}
-                  placeholder="+234 xxx xxx xxxx"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={customerInfo.address}
-                  onChange={(e) => handleCustomerInfoChange('address', e.target.value)}
-                  placeholder="123 Main Street"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="city">City</Label>
+                  <Label htmlFor="address" className="text-estate-blue">Address *</Label>
                   <Input
-                    id="city"
-                    value={customerInfo.city}
-                    onChange={(e) => handleCustomerInfoChange('city', e.target.value)}
-                    placeholder="Lagos"
+                    id="address"
+                    value={customerInfo.address}
+                    onChange={(e) => handleCustomerInfoChange('address', e.target.value)}
+                    placeholder="123 Main Street"
+                    className="mt-1"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="state">State</Label>
-                  <Input
-                    id="state"
-                    value={customerInfo.state}
-                    onChange={(e) => handleCustomerInfoChange('state', e.target.value)}
-                    placeholder="Lagos"
-                  />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="city" className="text-estate-blue">City</Label>
+                    <Input
+                      id="city"
+                      value={customerInfo.city}
+                      onChange={(e) => handleCustomerInfoChange('city', e.target.value)}
+                      placeholder="Lagos"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="state" className="text-estate-blue">State</Label>
+                    <Input
+                      id="state"
+                      value={customerInfo.state}
+                      onChange={(e) => handleCustomerInfoChange('state', e.target.value)}
+                      placeholder="Lagos"
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-blue-800 mb-2">Payment via Paystack</h4>
-                <p className="text-sm text-blue-700">
-                  You will be redirected to Paystack to complete your payment securely. 
-                  We accept all major cards and bank transfers.
-                </p>
-              </div>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2">Payment via Paystack</h4>
+                  <p className="text-sm text-blue-700">
+                    You will be redirected to Paystack to complete your payment securely. 
+                    We accept all major cards and bank transfers.
+                  </p>
+                </div>
 
-              <Button
-                onClick={handlePaystackPayment}
-                disabled={!validateStep1() || isProcessing}
-                className="w-full bg-estate-blue hover:bg-estate-darkBlue"
-              >
-                {isProcessing ? 'Processing...' : `Pay ₦${getTotalAmount().toLocaleString()} with Paystack`}
-              </Button>
-            </div>
+                <Button
+                  onClick={handlePaystackPayment}
+                  disabled={!validateStep1() || isProcessing}
+                  className="w-full bg-estate-blue hover:bg-estate-darkBlue text-white py-3"
+                >
+                  {isProcessing ? 'Processing...' : `Pay ₦${getTotalAmount().toLocaleString()} with Paystack`}
+                </Button>
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </div>
