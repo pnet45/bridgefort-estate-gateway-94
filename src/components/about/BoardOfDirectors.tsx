@@ -29,7 +29,7 @@ const BoardOfDirectors = () => {
   return <section className="section-padding bg-opacity-5 bg-[#070f5c]/[0.54]">
       <div className="container-custom">
         <div className="text-center mb-10 bg-white">
-          <h2 className="text-3xl font-bold mb-4 text-estate-blue">MEET OUR BOARD OF DIRECTORS</h2>
+          <h2 className="text-3xl font-bold mb-4 text-white">MEET OUR BOARD OF DIRECTORS</h2>
           <p className="max-w-3xl mx-auto text-green-50">
             Our distinguished board brings decades of industry expertise and strategic vision.
           </p>
