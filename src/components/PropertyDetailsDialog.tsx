@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Download, MapPin, ShoppingCart } from 'lucide-react';
 import { Button } from './ui/button';
@@ -6,7 +7,6 @@ import { ScrollArea } from './ui/scroll-area';
 import {
   Dialog,
   DialogContent,
-  DialogTrigger,
 } from "./ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Link } from 'react-router-dom';
@@ -21,6 +21,8 @@ import { useEcommerce } from '@/contexts/ecommerce';
 import { Plot } from '@/contexts/ecommerce/types';
 
 interface PropertyDetailsDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
   property: {
     id: string;
     title: string;
@@ -29,10 +31,9 @@ interface PropertyDetailsDialogProps {
     imageUrl: string;
     propertyType: string;
   };
-  children: React.ReactNode;
 }
 
-const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProps) => {
+const PropertyDetailsDialog = ({ isOpen, onClose, property }: PropertyDetailsDialogProps) => {
   const isMobile = useIsMobile();
   const { addToCart } = useEcommerce();
   
@@ -133,10 +134,7 @@ const PropertyDetailsDialog = ({ property, children }: PropertyDetailsDialogProp
   const propertyImages = getPropertyImages(property.title);
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[85vh]`}>
           {/* Image section */}
