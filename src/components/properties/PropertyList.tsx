@@ -155,13 +155,7 @@ const PropertyList: React.FC = () => {
         </p>
       </div>
 
-      <PropertyGrid 
-        properties={currentProperties}
-        hiddenProperties={hiddenProperties}
-        user={user}
-        userRole={userRole}
-        onToggleVisibility={togglePropertyVisibility}
-      />
+      <PropertyGrid />
 
       {visibleProperties.length > propertiesPerPage && (
         <div className="mt-10 animate-fade-in">

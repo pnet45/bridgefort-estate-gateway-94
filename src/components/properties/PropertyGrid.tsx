@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { useProperty } from '@/contexts/property';
+import { usePropertyContext } from '@/contexts/property';
 import AnimatedPropertyGrid from './AnimatedPropertyGrid';
 
 const PropertyGrid = () => {
-  const { properties } = useProperty();
+  const { filteredProperties } = usePropertyContext();
 
-  if (!properties || properties.length === 0) {
+  if (!filteredProperties || filteredProperties.length === 0) {
     return (
       <div className="text-center py-12">
         <h3 className="text-xl font-semibold text-gray-600 mb-2">No Properties Found</h3>
@@ -15,7 +15,7 @@ const PropertyGrid = () => {
     );
   }
 
-  return <AnimatedPropertyGrid properties={properties} />;
+  return <AnimatedPropertyGrid properties={filteredProperties} />;
 };
 
 export default PropertyGrid;

@@ -107,8 +107,20 @@ const BlogPosts = () => {
         console.error('Error fetching posts:', error);
         setBlogPosts(fallbackPosts);
       } else {
-        // If no posts in database, use fallback posts
-        setBlogPosts(data && data.length > 0 ? data : fallbackPosts);
+        // Transform the data to match our BlogPost interface
+        const transformedPosts: BlogPost[] = data && data.length > 0 ? data.map(post => ({
+          id: post.id,
+          title: post.title,
+          excerpt: post.excerpt,
+          image_path: post.image_path,
+          created_at: post.created_at,
+          category: post.category,
+          profiles: Array.isArray(post.profiles) && post.profiles.length > 0 
+            ? post.profiles[0] 
+            : post.profiles || { first_name: 'Unknown', last_name: 'Author' }
+        })) : fallbackPosts;
+        
+        setBlogPosts(transformedPosts);
       }
     } catch (error) {
       console.error('Error:', error);
