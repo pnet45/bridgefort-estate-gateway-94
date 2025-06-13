@@ -53,7 +53,7 @@ const Navbar = () => {
     <>
       <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
         <div className="container-custom">
-          <div className="flex justify-between items-center py-2">
+          <div className="flex justify-between items-center py-4">
             {/* Logo with slide-in animation */}
             <LogoSlideIn />
             
@@ -90,7 +90,7 @@ const Navbar = () => {
       </nav>
       
       {/* Sticky Phone Number - Desktop */}
-      <div className="fixed top-25 right-4 z-40 bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg animate-slide-in-right hidden md:block">
+      <div className="fixed top-20 right-4 z-40 bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg animate-slide-in-right hidden md:block">
         <a href="tel:+2348030624059" className="text-sm font-medium hover:text-gray-200 transition-colors flex items-center gap-2">
           <Phone size={18} />
           +234 803 062 4059
