@@ -1,64 +1,52 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Share } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 
-const blogPosts = [
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  image_path: string;
+  created_at: string;
+  category: string;
+  profiles?: {
+    first_name: string;
+    last_name: string;
+  };
+}
+
+// Fallback static posts (will be used if database is empty)
+const fallbackPosts = [
   {
     id: '1',
     title: 'Success Summit 2025 - Gearing Up for the Next Real Estate Revolution',
     excerpt: 'Join us for an unforgettable experience at the MAY 2025 SUCCESS SUMMIT — LIVE in Port Harcourt with industry leaders and experts.',
-    image: '/lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png',
-    date: 'May 1, 2025',
+    image_path: '/lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png',
+    created_at: '2025-05-01T00:00:00Z',
     category: 'Training Events',
-    author: 'Dr. Dalvin Silva'
+    profiles: { first_name: 'Dr. Dalvin', last_name: 'Silva' }
   },
   {
     id: '2',
     title: 'Estate Inspection Day - Exploring Our Newest Developments',
     excerpt: 'Explore our newest estates with our expert team. See firsthand the investment opportunities awaiting you.',
-    image: '/lovable-uploads/8038c999-40e2-49bf-afec-2cb0b5bc2c14.png',
-    date: 'April 22, 2025',
+    image_path: '/lovable-uploads/8038c999-40e2-49bf-afec-2cb0b5bc2c14.png',
+    created_at: '2025-04-22T00:00:00Z',
     category: 'Estate News',
-    author: 'Precious Silva'
+    profiles: { first_name: 'Precious', last_name: 'Silva' }
   },
   {
     id: '3',
     title: 'Masterclass: Real Estate Sales Strategies for 2025',
     excerpt: 'Learn cutting-edge sales techniques from our top performers in this intensive masterclass designed for both beginners and professionals.',
-    image: '/lovable-uploads/796b8bc3-c103-4ea9-bc00-f5ccc19ab812.png',
-    date: 'April 15, 2025',
+    image_path: '/lovable-uploads/796b8bc3-c103-4ea9-bc00-f5ccc19ab812.png',
+    created_at: '2025-04-15T00:00:00Z',
     category: 'Training Events',
-    author: 'Gideon Vincent'
-  },
-  {
-    id: '4',
-    title: 'Office Training: Building Your Real Estate Portfolio',
-    excerpt: 'Our recent office training session focused on helping clients build robust real estate portfolios for long-term wealth generation.',
-    image: '/lovable-uploads/f9bcac5d-3d64-47a5-9da3-0e2fcfd2bb57.png',
-    date: 'April 8, 2025',
-    category: 'Training Events',
-    author: 'Dr. Dalvin Silva'
-  },
-  {
-    id: '5',
-    title: 'Certificate Award Ceremony for Top Performers',
-    excerpt: 'Celebrating excellence and dedication in our recent certificate award ceremony for outstanding real estate professionals.',
-    image: '/lovable-uploads/62e9d362-2fac-4c6b-b437-8045c86dfc53.png',
-    date: 'March 28, 2025',
-    category: 'Success Stories',
-    author: 'Dr. Dalvin Silva'
-  },
-  {
-    id: '6',
-    title: 'Introducing Bridgefort County - Our Premium Lagoon Front Estate',
-    excerpt: 'Discover luxury living with our newest premium development: Bridgefort County Lagoon Front Estate, offering unparalleled views and amenities.',
-    image: '/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png',
-    date: 'March 20, 2025',
-    category: 'Estate News',
-    author: 'Precious Silva'
+    profiles: { first_name: 'Gideon', last_name: 'Vincent' }
   }
 ];
 
@@ -88,6 +76,57 @@ const shareArticle = (articleId: string, title: string) => {
 };
 
 const BlogPosts = () => {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchBlogPosts();
+  }, []);
+
+  const fetchBlogPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          id,
+          title,
+          excerpt,
+          image_path,
+          created_at,
+          category,
+          profiles:author_id (
+            first_name,
+            last_name
+          )
+        `)
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (error) {
+        console.error('Error fetching posts:', error);
+        setBlogPosts(fallbackPosts);
+      } else {
+        // If no posts in database, use fallback posts
+        setBlogPosts(data && data.length > 0 ? data : fallbackPosts);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setBlogPosts(fallbackPosts);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-3xl font-bold mb-10">Latest News & Updates</h2>
+        <p>Loading posts...</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <h2 className="text-3xl font-bold mb-10 text-center">Latest News & Updates</h2>
@@ -97,7 +136,7 @@ const BlogPosts = () => {
           <div key={post.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300">
             <div className="relative h-56 overflow-hidden">
               <img 
-                src={post.image} 
+                src={post.image_path} 
                 alt={post.title} 
                 className="w-full h-full object-cover transition duration-500 hover:scale-105"
               />
@@ -111,9 +150,9 @@ const BlogPosts = () => {
             <div className="p-5">
               <div className="flex items-center text-gray-500 text-sm mb-3">
                 <Calendar size={14} className="mr-1" />
-                <span>{post.date}</span>
+                <span>{new Date(post.created_at).toLocaleDateString()}</span>
                 <span className="mx-2">•</span>
-                <span>By {post.author}</span>
+                <span>By {post.profiles?.first_name} {post.profiles?.last_name}</span>
               </div>
               
               <h3 className="text-xl font-semibold mb-3 text-gray-800">

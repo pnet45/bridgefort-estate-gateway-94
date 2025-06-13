@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Menu, X, Phone } from 'lucide-react';
 import MobileMenu from './navbar/MobileMenu';
-import NavLinks from './navbar/NavLinks';
 import NavbarUserMenu from './navbar/NavbarUserMenu';
 import NavbarLoginIcon from './navbar/NavbarLoginIcon';
 import LogoSlideIn from './navbar/LogoSlideIn';
 import CartIcon from './ecommerce/CartIcon';
+import AnimatedNavLinks from './navbar/AnimatedNavLinks';
+import AnimatedAuthSection from './navbar/AnimatedAuthSection';
 
 const Navbar = () => {
   const { user, userRole } = useAuth();
@@ -58,23 +59,16 @@ const Navbar = () => {
             
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-8">
-              <NavLinks className="hover:text-estate-blue transition" />
+              <AnimatedNavLinks className="hover:text-estate-blue transition" />
             </div>
             
             {/* Desktop Auth Section */}
-            <div className="hidden lg:flex items-center space-x-4">
-              <CartIcon />
-              {user ? (
-                <NavbarUserMenu profile={profile} userRole={userRole} />
-              ) : shouldShowLogin ? (
-                <>
-                  <NavbarLoginIcon />
-                  <Button onClick={() => navigate('/auth')} className="bg-estate-blue hover:bg-estate-darkBlue">
-                    Sign In
-                  </Button>
-                </>
-              ) : null}
-            </div>
+            <AnimatedAuthSection 
+              user={user}
+              profile={profile}
+              userRole={userRole}
+              shouldShowLogin={shouldShowLogin}
+            />
             
             {/* Mobile Menu Button */}
             <button

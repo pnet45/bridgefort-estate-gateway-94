@@ -381,6 +381,48 @@ export type Database = {
         }
         Relationships: []
       }
+      posts: {
+        Row: {
+          author_id: string
+          category: string
+          content: string
+          created_at: string
+          excerpt: string | null
+          id: string
+          image_path: string | null
+          published: boolean
+          slug: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          image_path?: string | null
+          published?: boolean
+          slug?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          image_path?: string | null
+          published?: boolean
+          slug?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null

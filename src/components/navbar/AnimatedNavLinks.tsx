@@ -1,0 +1,46 @@
+
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+
+interface AnimatedNavLinksProps {
+  className?: string;
+  onClick?: () => void;
+}
+
+const AnimatedNavLinks = ({ className = '', onClick }: AnimatedNavLinksProps) => {
+  const links = [
+    { to: '/', label: 'Home' },
+    { to: '/about', label: 'About Us' },
+    { to: '/properties', label: 'Properties' },
+    { to: '/services', label: 'Services' },
+    { to: '/buy2sell', label: 'Buy to Sell' },
+    { to: '/training', label: 'Training' },
+    { to: '/career', label: 'Careers' },
+    { to: '/contact', label: 'Contact' },
+    { to: '/blog', label: 'Blog' }
+  ];
+
+  return (
+    <>
+      {links.map((link, index) => (
+        <NavLink 
+          key={link.to} 
+          to={link.to} 
+          className={({isActive}) => 
+            `nav-link font-bold animate-fade-in ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'} ${className}`
+          }
+          style={{
+            animationDelay: `${index * 150}ms`,
+            opacity: 0,
+            animation: `slideDown 0.6s ease-out ${index * 150}ms forwards`
+          }}
+          onClick={onClick}
+        >
+          <span className="font-bold">{link.label}</span>
+        </NavLink>
+      ))}
+    </>
+  );
+};
+
+export default AnimatedNavLinks;

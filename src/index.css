@@ -1,6 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,80 +8,61 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 199 89% 48%; /* Ocean Blue */
+    --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 199 89% 48%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.75rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
 
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Estate Blue Theme */
+    --estate-blue: 221 83% 20%;
+    --estate-dark-blue: 221 83% 15%;
+    --estate-red: 0 84% 60%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 199 89% 48%;
-    --primary-foreground: 210 40% 98%;
-
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -90,331 +70,108 @@
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground font-poppins;
-    padding-top: 0;
-    color: rgb(75, 85, 99); /* Default gray-600 for better readability */
-  }
-
-  /* Headers on white/grey backgrounds use estate-blue, on dark backgrounds stay white */
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-montserrat font-semibold;
-    color: #2B2D7D !important; /* estate-blue for default white/grey backgrounds */
-  }
-
-  /* Headers on grey backgrounds specifically use estate-blue */
-  .bg-gray-50 h1, .bg-gray-50 h2, .bg-gray-50 h3, .bg-gray-50 h4, .bg-gray-50 h5, .bg-gray-50 h6,
-  .bg-gray-100 h1, .bg-gray-100 h2, .bg-gray-100 h3, .bg-gray-100 h4, .bg-gray-100 h5, .bg-gray-100 h6 {
-    color: #2B2D7D !important; /* estate-blue */
-  }
-
-  /* Headers on dark backgrounds and images stay white */
-  .bg-black h1, .bg-black h2, .bg-black h3, .bg-black h4, .bg-black h5, .bg-black h6,
-  .bg-gray-800 h1, .bg-gray-800 h2, .bg-gray-800 h3, .bg-gray-800 h4, .bg-gray-800 h5, .bg-gray-800 h6,
-  .bg-gray-900 h1, .bg-gray-900 h2, .bg-gray-900 h3, .bg-gray-900 h4, .bg-gray-900 h5, .bg-gray-900 h6,
-  [style*="background-image"] h1, [style*="background-image"] h2, [style*="background-image"] h3,
-  [style*="background-image"] h4, [style*="background-image"] h5, [style*="background-image"] h6,
-  .hero-overlay h1, .hero-overlay h2, .hero-overlay h3, .hero-overlay h4, .hero-overlay h5, .hero-overlay h6,
-  .bg-estate-blue h1, .bg-estate-blue h2, .bg-estate-blue h3, .bg-estate-blue h4, .bg-estate-blue h5, .bg-estate-blue h6,
-  .bg-blue-500 h1, .bg-blue-500 h2, .bg-blue-500 h3, .bg-blue-500 h4, .bg-blue-500 h5, .bg-blue-500 h6,
-  .bg-blue-600 h1, .bg-blue-600 h2, .bg-blue-600 h3, .bg-blue-600 h4, .bg-blue-600 h5, .bg-blue-600 h6 {
-    color: white !important;
-  }
-
-  /* Text color adjustments for better contrast */
-  .bg-white p, .bg-white span, .bg-white div:not(.bg-gray-50):not(.bg-estate-blue) {
-    color: rgb(75, 85, 99) !important; /* gray-600 */
-  }
-  
-  .bg-gray-50 p, .bg-gray-50 span, .bg-gray-50 div:not(.bg-white):not(.bg-estate-blue) {
-    color: rgb(75, 85, 99) !important; /* gray-600 */
-  }
-
-  .bg-gray-900 p, .bg-gray-900 span, .bg-gray-900 div,
-  .bg-gray-800 p, .bg-gray-800 span, .bg-gray-800 div,
-  .bg-black p, .bg-black span, .bg-black div {
-    color: white !important;
-  }
-
-  input, textarea, select {
-    color: black !important;
-  }
-
-  input:focus, textarea:focus, select:focus {
-    color: black !important;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', sans-serif;
   }
 }
 
-@layer components {
+@layer utilities {
   .container-custom {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
   
   .section-padding {
-    @apply py-8 md:py-16 lg:py-24;
-  }
-  
-  .btn-primary {
-    @apply bg-estate-blue hover:bg-estate-darkBlue text-white font-medium py-2 px-6 rounded transition duration-300;
+    @apply py-16 lg:py-24;
   }
   
   .btn-cta {
-    @apply bg-estate-red hover:bg-red-600 text-white font-medium py-2 px-6 rounded transition duration-300;
+    @apply bg-estate-red hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300 inline-block;
   }
   
-  .input-field {
-    @apply px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-estate-blue text-black;
+  .text-gradient {
+    @apply bg-gradient-to-r from-estate-blue to-estate-red bg-clip-text text-transparent;
+  }
+  
+  .estate-blue {
+    color: hsl(var(--estate-blue));
+  }
+  
+  .bg-estate-blue {
+    background-color: hsl(var(--estate-blue));
+  }
+  
+  .border-estate-blue {
+    border-color: hsl(var(--estate-blue));
+  }
+  
+  .bg-estate-darkBlue {
+    background-color: hsl(var(--estate-dark-blue));
+  }
+  
+  .estate-red {
+    color: hsl(var(--estate-red));
+  }
+  
+  .bg-estate-red {
+    background-color: hsl(var(--estate-red));
+  }
+  
+  .border-estate-red {
+    border-color: hsl(var(--estate-red));
   }
 
-  .navbar-container {
-    @apply fixed top-0 w-full bg-white shadow-md z-50;
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
   }
 
-  .navbar-link {
-    @apply font-bold transition-colors;
-  }
-
-  .navbar-link.active {
-    @apply font-bold bg-gray-100 px-3 py-1 rounded;
-  }
-
-  .navbar-phone {
-    @apply text-blue-600;
-  }
-
-  /* Estate images increased height */
-  .estate-image {
-    @apply h-80 object-cover; /* Increased from default height */
-  }
-
-  /* Enhanced Mobile Responsive */
-  @media (max-width: 768px) {
-    .container-custom {
-      @apply px-3;
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
     }
-    
-    .section-padding {
-      @apply py-6;
-    }
-    
-    .grid {
-      @apply gap-4;
-    }
-    
-    h1 {
-      @apply text-2xl;
-    }
-    
-    h2 {
-      @apply text-xl;
-    }
-    
-    h3 {
-      @apply text-lg;
+    50% {
+      box-shadow: 0 0 30px rgba(34, 197, 94, 0.8);
     }
   }
 
-  @media (max-width: 480px) {
-    .container-custom {
-      @apply px-2;
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
     }
-    
-    .section-padding {
-      @apply py-4;
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
-}
 
-main, section:first-of-type {
-  padding-top: 5rem !important;
-}
-
-.hero-section {
-  padding-top: 5rem !important;
-}
-
-/* Enhanced Animations with Box-in Effects */
-@keyframes slideInFromLeft {
-  0% {
-    transform: translateX(-100%);
-    opacity: 0;
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
-}
 
-@keyframes slideInFromRight {
-  0% {
-    transform: translateX(100%);
-    opacity: 0;
+  .animate-slide-in-left {
+    animation: slideInLeft 0.7s ease-out forwards;
   }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.7s ease-out forwards;
   }
-}
-
-@keyframes scaleIn {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes boxIn {
-  0% {
-    transform: scale(0.9) rotateY(15deg);
-    opacity: 0;
-    box-shadow: 0 0 0 rgba(0,0,0,0);
-  }
-  50% {
-    transform: scale(1.05) rotateY(0deg);
-    opacity: 0.8;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-  }
-  100% {
-    transform: scale(1) rotateY(0deg);
-    opacity: 1;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(43, 45, 125, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(43, 45, 125, 0.6), 0 0 30px rgba(126, 34, 206, 0.4);
-  }
-}
-
-.animate-slide-in-left {
-  animation: slideInFromLeft 0.6s ease-out;
-}
-
-.animate-slide-in-right {
-  animation: slideInFromRight 0.6s ease-out;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.5s ease-out;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-.animate-box-in {
-  animation: boxIn 0.7s ease-out forwards;
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 2s ease-in-out infinite;
-}
-
-/* Focus and Hover Effects */
-.focus-box-in:focus-within {
-  animation: boxIn 0.3s ease-out forwards;
-}
-
-.hover-lift:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-}
-
-/* Enhanced Color Variations with Mixed Colors */
-.gradient-red-purple {
-  background: linear-gradient(135deg, #e31e24, #7e22ce);
-}
-
-.gradient-blue-green {
-  background: linear-gradient(135deg, #2b2d7d, #059669);
-}
-
-.gradient-orange-red {
-  background: linear-gradient(135deg, #ea580c, #dc2626);
-}
-
-.gradient-purple-blue {
-  background: linear-gradient(135deg, #7e22ce, #2563eb);
-}
-
-.gradient-green-blue {
-  background: linear-gradient(135deg, #059669, #2563eb);
-}
-
-.gradient-estate-mix {
-  background: linear-gradient(135deg, #e31e24, #2b2d7d, #7e22ce);
-}
-
-.gradient-warm-mix {
-  background: linear-gradient(135deg, #ea580c, #e31e24, #7e22ce);
-}
-
-.gradient-cool-mix {
-  background: linear-gradient(135deg, #2b2d7d, #059669, #2563eb);
-}
-
-/* Enhanced Ecommerce Specific Styles */
-.cart-badge {
-  @apply absolute -top-2 -right-2 bg-estate-red text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-pulse-glow;
-}
-
-.checkout-step {
-  @apply transition-all duration-300 hover:scale-105 focus-box-in;
-}
-
-.plot-progress {
-  @apply bg-gradient-to-r from-estate-blue to-green-500;
-}
-
-.ecommerce-button {
-  background: linear-gradient(135deg, #e31e24, #2b2d7d, #7e22ce);
-  @apply hover:opacity-90 transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus-box-in;
-}
-
-.property-sold-overlay {
-  @apply absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center;
-}
-
-.sold-out-badge {
-  @apply bg-estate-red text-white px-4 py-2 rounded-lg font-bold text-lg animate-pulse-glow;
-}
-
-/* Login Hover Panel */
-.login-hover-panel {
-  @apply absolute top-full right-0 w-80 bg-white shadow-xl border rounded-lg p-6 transform transition-all duration-300 ease-out z-50;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-10px) translateX(10px);
-}
-
-.login-icon-container:hover .login-hover-panel {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0) translateX(0);
-}
-
-/* "Join the PWAN Bridgefort Family Today" text styling */
-.cta-heading {
-  color: #2B2D7D !important; /* estate-blue */
 }

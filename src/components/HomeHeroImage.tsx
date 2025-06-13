@@ -25,7 +25,7 @@ const HomeHeroImage = () => {
   }, [heroImages.length]);
 
   return (
-    <section className="relative w-full h-[80vh] md:h-[90vh]">
+    <section className="relative w-full h-[60vh] md:h-[70vh] lg:h-[80vh]">
       <div className="h-full">
         <div 
           className="h-full bg-cover bg-center transition-all duration-1000 ease-in-out" 
@@ -35,11 +35,11 @@ const HomeHeroImage = () => {
         >
           {/* Dark overlay for better text visibility */}
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center">
-            <div className="container-custom text-white">
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 max-w-3xl leading-tight animate-fade-in">
+            <div className="container-custom text-white px-4">
+              <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 md:mb-6 max-w-3xl leading-tight animate-fade-in">
                 {heroTitle}
               </h1>
-              <p className="text-lg md:text-xl lg:text-2xl mb-8 max-w-2xl animate-fade-in" style={{
+              <p className="text-base md:text-lg lg:text-xl xl:text-2xl mb-6 md:mb-8 max-w-2xl animate-fade-in" style={{
                 animationDelay: '200ms'
               }}>
                 {heroSubtitle}
@@ -55,7 +55,7 @@ const HomeHeroImage = () => {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`h-2 w-8 mx-1 rounded-full transition-colors duration-300 ${
+            className={`h-2 w-6 md:w-8 mx-1 rounded-full transition-colors duration-300 ${
               currentSlide === index ? 'bg-white' : 'bg-white/50'
             }`}
             aria-label={`Go to slide ${index + 1}`}
