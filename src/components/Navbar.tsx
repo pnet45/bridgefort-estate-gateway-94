@@ -62,13 +62,7 @@ const Navbar = () => {
               <AnimatedNavLinks className="hover:text-estate-blue transition" />
             </div>
             
-            {/* Desktop Auth Section */}
-            <AnimatedAuthSection 
-              user={user}
-              profile={profile}
-              userRole={userRole}
-              shouldShowLogin={shouldShowLogin}
-            />
+           
             
             {/* Mobile Menu Button */}
             <button
