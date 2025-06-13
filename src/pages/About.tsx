@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -11,9 +12,11 @@ import TeamPhoto from '../components/about/TeamPhoto';
 import ManagementTeam from '../components/about/ManagementTeam';
 import BoardOfDirectors from '../components/about/BoardOfDirectors';
 import CallToAction from '../components/about/CallToAction';
+
 const About = () => {
-  return <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <Navbar className="bg-gray-950" />
+  return (
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <Navbar />
       <AboutHero />
       
       <div className="py-8 bg-estate-blue bg-opacity-5">
@@ -40,6 +43,8 @@ const About = () => {
       <CallToAction />
       <Footer />
       <WhatsAppChat />
-    </div>;
+    </div>
+  );
 };
+
 export default About;
