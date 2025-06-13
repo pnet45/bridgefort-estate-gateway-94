@@ -16,12 +16,12 @@ const About = () => {
       <Navbar />
       <AboutHero />
       
-      <div className="py-8 bg-opacity-5 bg-slate-950">
+      <div className="py-8 bg-estate-blue bg-opacity-5">
         <div className="container-custom">
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-estate-blue">PWAN Bridgefort: Redefining Property Investment with Integrity, Expertise, and Lasting Value</h1>
+          <div className="text-center text-indigo-950">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-estate-blue">About PWAN Bridgefort</h1>
             <div className="w-20 h-1 bg-estate-red mx-auto mb-6"></div>
-            <p className="text-lg max-w-3xl mx-auto text-zinc-50">
+            <p className="text-lg text-gray-700 max-w-3xl mx-auto">
               PWAN Bridgefort is one of Nigeria's leading real estate investment companies, 
               providing affordable land and housing solutions while helping individuals 
               build sustainable wealth through property ownership.
