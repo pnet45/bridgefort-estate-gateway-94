@@ -2,6 +2,7 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import WhatsAppChat from '../components/WhatsAppChat';
 import { Toaster } from "@/components/ui/toaster";
 import BlogHeader from '../components/blog/BlogHeader';
 import BlogPosts from '../components/blog/BlogPosts';
@@ -39,6 +40,7 @@ const Blog = () => {
       <BlogNewsletter />
       
       <Footer />
+      <WhatsAppChat />
       <Toaster />
     </div>
   );

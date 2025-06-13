@@ -2,6 +2,7 @@
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PropertySearch from '../components/PropertySearch';
+import WhatsAppChat from '../components/WhatsAppChat';
 import MissionStatement from '../components/MissionStatement';
 import FeaturedProperties from '../components/home/FeaturedProperties';
 import InvestmentServices from '../components/home/InvestmentServices';
@@ -57,6 +58,7 @@ const Home = () => {
       <CTASection />
       
       <Footer />
+      <WhatsAppChat />
     </div>
   );
 };

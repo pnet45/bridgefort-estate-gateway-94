@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import Navbar from '../components/Navbar';
+import WhatsAppChat from '../components/WhatsAppChat';
 import Footer from '../components/Footer';
 import ContactForm from '../components/ContactForm';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
@@ -158,6 +159,8 @@ const Contact = () => {
       </section>
 
       <Footer />
+      <WhatsAppChat />
+
     </div>
   );
 };

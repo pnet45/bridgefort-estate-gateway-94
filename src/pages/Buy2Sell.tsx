@@ -8,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Buy2SellHero from '../components/buy2sell/Buy2SellHero';
 import Buy2SellIntro from '../components/buy2sell/Buy2SellIntro';
 import ProcessSteps from '../components/buy2sell/ProcessSteps';
+import WhatsAppChat from '../components/WhatsAppChat';
 import InvestmentOptions from '../components/buy2sell/InvestmentOptions';
 import ROITable from '../components/buy2sell/ROITable';
 import FeaturedProperty from '../components/buy2sell/FeaturedProperty';
@@ -59,6 +60,7 @@ const Buy2Sell = () => {
       <CTA />
 
       <Footer />
+      <WhatsAppChat />
     </div>
   );
 };

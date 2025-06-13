@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { PropertyProvider } from '../contexts/property';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import WhatsAppChat from '../components/WhatsAppChat';
 import CareerHero from '../components/career/CareerHero';
 import CareerForm from '../components/career/CareerForm';
 import OpenPositions from '../components/career/OpenPositions';
@@ -45,6 +46,7 @@ const Career = () => {
         
         <Footer />
         <Toaster />
+        <WhatsAppChat />
       </div>
     </PropertyProvider>
   );

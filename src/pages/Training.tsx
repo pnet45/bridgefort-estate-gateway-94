@@ -2,6 +2,7 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import WhatsAppChat from '../components/WhatsAppChat';
 import TrainingHero from '../components/training/TrainingHero';
 import TrainingCategories from '../components/training/TrainingCategories';
 import TrainingContent from '../components/training/TrainingContent';
@@ -42,6 +43,7 @@ const Training = () => {
       <TrainingCTA />
       
       <Footer />
+      <WhatsAppChat />
       <Toaster />
     </div>
   );

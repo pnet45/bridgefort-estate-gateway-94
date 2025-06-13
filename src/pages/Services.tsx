@@ -2,6 +2,7 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import WhatsAppChat from '../components/WhatsAppChat';
 import ServicesHero from '../components/services/ServicesHero';
 import InvestmentPackages from '../components/services/InvestmentPackages';
 import ROICalculator from '../components/services/ROICalculator';
@@ -43,6 +44,7 @@ const Services = () => {
       <ServicesCTA />
 
       <Footer />
+      <WhatsAppChat />
     </div>
   );
 };

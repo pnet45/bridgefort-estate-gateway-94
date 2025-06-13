@@ -1,6 +1,7 @@
 
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import WhatsAppChat from '../components/WhatsAppChat';
 import PropertyFilters from '../components/properties/PropertyFilters';
 import PropertyHero from '../components/properties/PropertyHero';
 import PropertyList from '../components/properties/PropertyList';
@@ -30,6 +31,7 @@ const Properties = () => {
         <SubscriptionGuide />
         
         <Footer />
+        <WhatsAppChat />
         <Toaster />
       </div>
     </PropertyProvider>
