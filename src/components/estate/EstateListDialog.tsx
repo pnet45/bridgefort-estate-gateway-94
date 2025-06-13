@@ -3,7 +3,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
-import { useProperty } from '@/contexts/property';
+import { usePropertyContext } from '@/contexts/property';
 
 interface EstateListDialogProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ interface EstateListDialogProps {
 }
 
 const EstateListDialog: React.FC<EstateListDialogProps> = ({ isOpen, onClose }) => {
-  const { properties } = useProperty();
+  const { properties } = usePropertyContext();
 
   const handleDownloadForm = (estateName: string) => {
     // For now, use the general form. In production, each estate would have its own form
