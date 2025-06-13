@@ -1,10 +1,7 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 const OurEstates = () => {
-  return (
-    <section className="section-padding bg-gradient-to-r from-blue-50 to-purple-50">
+  return <section className="section-padding bg-gradient-to-r from-blue-50 to-purple-50">
       <div className="container-custom">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold mb-4 text-estate-blue">Our Estates: A World of Opportunity</h2>
@@ -45,9 +42,9 @@ const OurEstates = () => {
           </div>
         </div>
         
-        <div className="text-center mt-10 bg-estate-blue bg-opacity-10 p-8 rounded-lg">
+        <div className="text-center mt-10 bg-opacity-10 p-8 rounded-lg bg-gray-950">
           <h3 className="text-2xl font-bold mb-4 text-estate-blue">Join the PWAN Bridgefort Family Today</h3>
-          <p className="text-gray-700 mb-6 max-w-3xl mx-auto">
+          <p className="mb-6 max-w-3xl mx-auto text-zinc-50">
             At PWAN Bridgefort, we're more than a real estate company; we're a bridge to your dreams. Let's help you turn your aspirations into reality, one property at a time.
           </p>
           <p className="text-lg font-medium text-estate-red mb-6">Invest now, because tomorrow begins today.</p>
@@ -57,8 +54,6 @@ const OurEstates = () => {
           </Link>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default OurEstates;

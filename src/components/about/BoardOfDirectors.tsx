@@ -1,7 +1,5 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
 const boardOfDirectors = [{
   name: 'Dr. Austin Onwumere',
   role: 'Founding Chairman, PWAN Group',
@@ -27,33 +25,27 @@ const boardOfDirectors = [{
   role: 'Executive Director, PWAN Bridgefort',
   imageUrl: '/lovable-uploads/Precious.png'
 }];
-
 const BoardOfDirectors = () => {
-  return (
-    <section className="section-padding bg-estate-blue bg-opacity-5">
+  return <section className="section-padding bg-opacity-5 bg-[#070f5c]/[0.54]">
       <div className="container-custom">
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 bg-indigo-950">
           <h2 className="text-3xl font-bold mb-4 text-estate-blue">MEET OUR BOARD OF DIRECTORS</h2>
-          <p className="text-gray-600 max-w-3xl mx-auto">
+          <p className="max-w-3xl mx-auto text-green-50">
             Our distinguished board brings decades of industry expertise and strategic vision.
           </p>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {boardOfDirectors.map((director, index) => (
-            <div key={index} className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          {boardOfDirectors.map((director, index) => <div key={index} className="bg-white p-6 rounded-lg shadow-md text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <Avatar className="mx-auto mb-4 h-40 w-40">
                 <AvatarImage src={director.imageUrl} alt={director.name} className="object-cover" />
                 <AvatarFallback>{director.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
               </Avatar>
               <h3 className="text-xl font-bold mb-2">{director.name}</h3>
               <p className="text-estate-blue">{director.role}</p>
-            </div>
-          ))}
+            </div>)}
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default BoardOfDirectors;
