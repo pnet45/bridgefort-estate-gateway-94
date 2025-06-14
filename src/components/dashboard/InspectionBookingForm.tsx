@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +9,10 @@ import { Calendar, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import EstateSelect from "./input/EstateSelect";
+import DateInput from "./input/DateInput";
+import TimeInput from "./input/TimeInput";
+import MessageTextarea from "./input/MessageTextarea";
 
 interface InspectionBookingFormProps {
   onBookingCreated?: () => void;
@@ -143,61 +146,26 @@ const InspectionBookingForm = ({ onBookingCreated }: InspectionBookingFormProps)
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="estate_name">Property *</Label>
-            <Select value={formData.estate_name} onValueChange={(value) => handleInputChange('estate_name', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a property to inspect" />
-              </SelectTrigger>
-              <SelectContent>
-                {estates.map((estate) => (
-                  <SelectItem key={estate.name} value={estate.name}>
-                    {estate.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="inspection_date">Preferred Date *</Label>
-            <Input
-              id="inspection_date"
-              type="date"
-              min={minDate}
-              value={formData.inspection_date}
-              onChange={(e) => handleInputChange('inspection_date', e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="inspection_time">Preferred Time *</Label>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gray-400" />
-              <Input
-                id="inspection_time"
-                type="time"
-                value={formData.inspection_time}
-                onChange={(e) => handleInputChange('inspection_time', e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="message">Additional Message</Label>
-            <Textarea
-              id="message"
-              placeholder="Any specific requirements or questions..."
-              value={formData.message}
-              onChange={(e) => handleInputChange('message', e.target.value)}
-              rows={3}
-            />
-          </div>
-
+          <EstateSelect
+            estates={estates}
+            value={formData.estate_name}
+            onChange={(value) => handleInputChange("estate_name", value)}
+          />
+          <DateInput
+            min={minDate}
+            value={formData.inspection_date}
+            onChange={(value) => handleInputChange("inspection_date", value)}
+          />
+          <TimeInput
+            value={formData.inspection_time}
+            onChange={(value) => handleInputChange("inspection_time", value)}
+          />
+          <MessageTextarea
+            value={formData.message}
+            onChange={(value) => handleInputChange("message", value)}
+          />
           <Button 
-            type="submit" 
+            type="submit"
             className="w-full bg-estate-blue hover:bg-estate-darkBlue"
             disabled={isSubmitting}
           >
@@ -210,4 +178,3 @@ const InspectionBookingForm = ({ onBookingCreated }: InspectionBookingFormProps)
 };
 
 export default InspectionBookingForm;
-
