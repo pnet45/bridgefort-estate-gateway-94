@@ -1,25 +1,14 @@
-
 import React from 'react';
 import { Download, MapPin, ShoppingCart } from 'lucide-react';
 import { Button } from './ui/button';
 import { AspectRatio } from './ui/aspect-ratio';
 import { ScrollArea } from './ui/scroll-area';
-import {
-  Dialog,
-  DialogContent,
-} from "./ui/dialog";
+import { Dialog, DialogContent } from "./ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Link } from 'react-router-dom';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useEcommerce } from '@/contexts/ecommerce';
 import { Plot } from '@/contexts/ecommerce/types';
-
 interface PropertyDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -32,11 +21,15 @@ interface PropertyDetailsDialogProps {
     propertyType: string;
   };
 }
-
-const PropertyDetailsDialog = ({ isOpen, onClose, property }: PropertyDetailsDialogProps) => {
+const PropertyDetailsDialog = ({
+  isOpen,
+  onClose,
+  property
+}: PropertyDetailsDialogProps) => {
   const isMobile = useIsMobile();
-  const { addToCart } = useEcommerce();
-  
+  const {
+    addToCart
+  } = useEcommerce();
   const handleDownload = () => {
     const pdfUrl = getPropertyPDF(property.title);
     const link = document.createElement('a');
@@ -46,7 +39,6 @@ const PropertyDetailsDialog = ({ isOpen, onClose, property }: PropertyDetailsDia
     link.click();
     document.body.removeChild(link);
   };
-
   const handleAddToCart = () => {
     const plot: Plot = {
       id: `${property.id}-plot-1`,
@@ -57,14 +49,12 @@ const PropertyDetailsDialog = ({ isOpen, onClose, property }: PropertyDetailsDia
       plotNumber: 1,
       imageUrl: property.imageUrl,
       size: 500,
-      propertyType: property.propertyType,
+      propertyType: property.propertyType
     };
-    
     addToCart(plot, 1);
   };
-
   const getPropertyPDF = (propertyTitle: string) => {
-    switch(propertyTitle) {
+    switch (propertyTitle) {
       case "Fortress Hills Estate":
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "Afaoma Castle Estate":
@@ -96,9 +86,8 @@ const PropertyDetailsDialog = ({ isOpen, onClose, property }: PropertyDetailsDia
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
     }
   };
-
   const getPropertyImages = (propertyTitle: string) => {
-    switch(propertyTitle) {
+    switch (propertyTitle) {
       case "Afaoma Castle Estate":
         return ["/lovable-uploads/0add771b-8dfc-41da-9ae6-6e80617172e1.png"];
       case "Akuchi Luxury Estate":
@@ -130,11 +119,8 @@ const PropertyDetailsDialog = ({ isOpen, onClose, property }: PropertyDetailsDia
         return [property.imageUrl];
     }
   };
-
   const propertyImages = getPropertyImages(property.title);
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+  return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[85vh]`}>
           {/* Image section */}
@@ -143,24 +129,16 @@ const PropertyDetailsDialog = ({ isOpen, onClose, property }: PropertyDetailsDia
               <div className="flex-1 relative">
                 <Carousel className="w-full h-full">
                   <CarouselContent className="h-full">
-                    {propertyImages.map((img, index) => (
-                      <CarouselItem key={index} className="h-full">
+                    {propertyImages.map((img, index) => <CarouselItem key={index} className="h-full">
                         <div className="h-full w-full flex items-center justify-center">
-                          <img 
-                            src={img}
-                            alt={`${property.title} view ${index + 1}`}
-                            className="max-h-full max-w-full object-contain"
-                          />
+                          <img src={img} alt={`${property.title} view ${index + 1}`} className="max-h-full max-w-full object-contain" />
                         </div>
-                      </CarouselItem>
-                    ))}
+                      </CarouselItem>)}
                   </CarouselContent>
-                  {propertyImages.length > 1 && (
-                    <>
+                  {propertyImages.length > 1 && <>
                       <CarouselPrevious className="absolute left-2 z-10" />
                       <CarouselNext className="absolute right-2 z-10" />
-                    </>
-                  )}
+                    </>}
                 </Carousel>
               </div>
             </div>
@@ -195,11 +173,11 @@ const PropertyDetailsDialog = ({ isOpen, onClose, property }: PropertyDetailsDia
                   </div>
 
                   <div className="bg-estate-blue bg-opacity-5 p-4 rounded-lg space-y-4">
-                    <p className="font-semibold">📢 Don't Miss This Opportunity!</p>
+                    <p className="font-semibold text-zinc-50">📢 Don't Miss This Opportunity!</p>
                     <div>
-                      <p className="font-medium">📞 Call/WhatsApp: +2348030624059 For Further Inquiries & Site Inspection</p>
-                      <p className="font-medium">💳 Payments To: Zenith Bank – PWAN Bridgefort Estates & Investment Ltd</p>
-                      <p className="font-medium">Account Number: 1310762860</p>
+                      <p className="font-medium text-zinc-50">📞 Call/WhatsApp: +2348030624059 For Further Inquiries & Site Inspection</p>
+                      <p className="font-medium text-zinc-50">💳 Payments To: Zenith Bank – PWAN Bridgefort Estates & Investment Ltd</p>
+                      <p className="font-medium text-zinc-50">Account Number: 1310762860</p>
                     </div>
                   </div>
                 </div>
@@ -208,18 +186,12 @@ const PropertyDetailsDialog = ({ isOpen, onClose, property }: PropertyDetailsDia
             
             {/* Action buttons - Fixed at bottom */}
             <div className="mt-4 pt-2 border-t border-gray-100 space-y-3">
-              <Button 
-                onClick={handleDownload}
-                className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full py-3"
-              >
+              <Button onClick={handleDownload} className="bg-estate-blue hover:bg-estate-darkBlue text-white w-full py-3">
                 <Download className="mr-2" />
                 Download Subscription Form
               </Button>
               
-              <Button 
-                onClick={handleAddToCart}
-                className="ecommerce-button text-white w-full py-3"
-              >
+              <Button onClick={handleAddToCart} className="ecommerce-button text-white w-full py-3">
                 <ShoppingCart className="mr-2" />
                 Add to Cart
               </Button>
@@ -227,8 +199,6 @@ const PropertyDetailsDialog = ({ isOpen, onClose, property }: PropertyDetailsDia
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
-
 export default PropertyDetailsDialog;
