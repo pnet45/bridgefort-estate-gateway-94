@@ -89,7 +89,7 @@ const Navbar = () => {
         />
       </nav>
       
-<div className="mt-auto md:block right-4 z-40 bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg animate-slide-in-right hidden md:block">
+<div className="mt-auto md:block top-20 right-4 z-40 bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg animate-slide-in-right hidden md:block">
         <a href="tel:+2348030624059" className="text-sm font-medium hover:text-gray-200 transition-colors flex items-center gap-2">
           {/* Assuming Phone is an icon component */}
           <Phone size={18} /> 
