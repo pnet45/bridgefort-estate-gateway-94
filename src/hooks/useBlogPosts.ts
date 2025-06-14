@@ -35,7 +35,7 @@ export function useBlogPosts(limit = 6) {
         .limit(limit);
 
       if (error || !data || data.length === 0) {
-        setPosts(sortPostsByDate(fallbackPosts));
+        setPosts(sortPostsByDate<BlogPost>(fallbackPosts));
       } else {
         const transformedPosts: BlogPost[] = data.map((post: any) => {
           let profileData = null;
@@ -56,10 +56,10 @@ export function useBlogPosts(limit = 6) {
             profiles: profileData || { first_name: "Unknown", last_name: "Author" }
           };
         });
-        setPosts(sortPostsByDate(transformedPosts));
+        setPosts(sortPostsByDate<BlogPost>(transformedPosts));
       }
     } catch (error) {
-      setPosts(sortPostsByDate(fallbackPosts));
+      setPosts(sortPostsByDate<BlogPost>(fallbackPosts));
     } finally {
       setLoading(false);
     }
