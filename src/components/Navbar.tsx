@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, Phone } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import MobileMenu from './navbar/MobileMenu';
 import NavbarUserMenu from './navbar/NavbarUserMenu';
 import NavbarLoginIcon from './navbar/NavbarLoginIcon';
@@ -79,18 +79,6 @@ const Navbar = () => {
             </button>
           </div>
           {/* Flex grow pushes .phone-contact to bottom */}
-          <div className="flex-grow" />
-          <div className="phone-contact block md:block w-full mt-auto">
-            <div className="flex justify-end">
-              <a
-                href="tel:+2348030624059"
-                className="bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg font-medium hover:text-gray-200 transition-colors flex items-center gap-2 mb-2"
-              >
-                <Phone size={18} /> 
-                +234 803 062 4059
-              </a>
-            </div>
-          </div>
         </div>
 
         {/* Mobile Menu */}

@@ -1,1 +1,7 @@
-project_id = "xyvspvtdaacqfmfocvhw"
+
+project_id = "default"
+
+[functions.paystack-initialize]
+[functions.paystack-verify]
+[functions.generate-blog-article]
+verify_jwt = false

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,11 +15,37 @@ interface BlogDetailProps {
 const BlogDetail = ({ post }: BlogDetailProps) => {
   const navigate = useNavigate();
   const [currentUrl, setCurrentUrl] = useState("");
+  const [articleContent, setArticleContent] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
-    // Set the current URL for sharing
     setCurrentUrl(window.location.href);
   }, []);
+
+  // Fetch article content if missing or too short (less than 400 chars)
+  useEffect(() => {
+    const fetchAIContent = async () => {
+      if (!post?.content || post.content.length < 400) {
+        setIsGenerating(true);
+        try {
+          const response = await fetch('/functions/v1/generate-blog-article', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: post?.title || 'Real Estate Insights' })
+          });
+          const data = await response.json();
+          setArticleContent(data.generatedArticle || data.article || data.text || "An error occurred.");
+        } catch (e) {
+          setArticleContent("Unable to generate article at this time.");
+        } finally {
+          setIsGenerating(false);
+        }
+      } else {
+        setArticleContent(null);
+      }
+    };
+    fetchAIContent();
+  }, [post?.content, post?.title]);
 
   if (!post) return <div>No post found</div>;
 
@@ -148,7 +173,21 @@ const BlogDetail = ({ post }: BlogDetailProps) => {
 
       {/* Post content in scrollable area */}
       <ScrollArea className="h-[500px] rounded-md border p-4">
-        <div className="post-content" dangerouslySetInnerHTML={{ __html: post.content || generateArticleContent() }} />
+        <div className="post-content">
+          {isGenerating && (
+            <div className="text-gray-400 italic mb-3">
+              Generating article using AI...
+            </div>
+          )}
+          <div
+            dangerouslySetInnerHTML={{
+              __html:
+                articleContent !== null
+                  ? articleContent
+                  : post.content || generateArticleContent()
+            }}
+          />
+        </div>
       </ScrollArea>
 
       {/* Social share buttons (bottom) */}

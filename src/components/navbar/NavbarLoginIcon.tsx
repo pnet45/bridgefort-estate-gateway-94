@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, LogIn } from 'lucide-react';
@@ -46,9 +45,10 @@ const NavbarLoginIcon = () => {
     }
   };
 
-  // Open panel on icon click or hover (and closes on mouse leave)
+  // Only open login panel on click - removing mouse hover triggers
   return (
-    <div className="login-icon-container relative z-40"
+    <div 
+      className="login-icon-container relative z-40"
       onMouseLeave={() => setShowPanel(false)}
     >
       <Button
@@ -56,7 +56,7 @@ const NavbarLoginIcon = () => {
         size="sm"
         className="p-2"
         aria-label="Login"
-        onMouseEnter={() => setShowPanel(true)}
+        // Removed onMouseEnter
         onClick={() => setShowPanel((s) => !s)}
       >
         <User size={20} className="text-estate-blue" />
@@ -70,7 +70,7 @@ const NavbarLoginIcon = () => {
         style={{
           zIndex: 1000,
         }}
-        onMouseEnter={() => setShowPanel(true)}
+        // Removed onMouseEnter
       >
         <div className="p-6">
           <h3 className="text-lg font-semibold mb-4 text-estate-blue">Quick Login</h3>

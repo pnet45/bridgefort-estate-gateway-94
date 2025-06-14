@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -11,11 +10,13 @@ import BlogNewsletter from '../components/blog/BlogNewsletter';
 import MondayMotivation from '../components/blog/MondayMotivation';
 import RealEstateContent from '../components/blog/RealEstateContent';
 import YouTubeSection from '../components/blog/YouTubeSection';
+import PhoneContactBar from '../components/PhoneContactBar';
 
 const Blog = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+      <PhoneContactBar />
       
       <BlogHeader />
       
