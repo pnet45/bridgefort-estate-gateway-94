@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 
+// Updated with both uploaded images
 const motivationData = [
   {
     id: "motivation1",
@@ -68,4 +69,3 @@ const MondayMotivationHero = () => {
 };
 
 export default MondayMotivationHero;
-
