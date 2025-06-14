@@ -1,26 +1,21 @@
+
 import React, { useState, useEffect } from 'react';
 import PropertyGrid from './PropertyGrid';
+import PropertyPagination from './PropertyPagination';
 import HiddenPropertiesSection from './HiddenPropertiesSection';
 import { usePropertyContext } from '../../contexts/property';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+
+const propertiesPerPage = 6;
 
 const PropertyList: React.FC = () => {
-  const { filteredProperties, refreshProperties } = usePropertyContext();
+  const { filteredProperties } = usePropertyContext();
   const { user, userRole } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [hiddenProperties, setHiddenProperties] = useState<string[]>([]);
-  const propertiesPerPage = 6;
-  
+
   useEffect(() => {
     const fetchHiddenProperties = async () => {
       if (user) {
@@ -28,8 +23,7 @@ const PropertyList: React.FC = () => {
           .from('hidden_properties')
           .select('property_ids')
           .eq('user_id', user.id)
-          .single();
-          
+          .maybeSingle();
         if (data && !error) {
           setHiddenProperties(data.property_ids || []);
         } else if (error && error.code !== 'PGRST116') {
@@ -37,32 +31,30 @@ const PropertyList: React.FC = () => {
         }
       }
     };
-    
     fetchHiddenProperties();
   }, [user]);
-  
+
+  // Do filtering before paginating:
   const visibleProperties = filteredProperties.filter(
     prop => !hiddenProperties.includes(prop.id)
   );
-  
   const hiddenPropertiesData = filteredProperties.filter(
     prop => hiddenProperties.includes(prop.id)
   );
-  
+
+  const totalPages = Math.ceil(visibleProperties.length / propertiesPerPage);
   const indexOfLastProperty = currentPage * propertiesPerPage;
   const indexOfFirstProperty = indexOfLastProperty - propertiesPerPage;
   const currentProperties = visibleProperties.slice(indexOfFirstProperty, indexOfLastProperty);
-  
-  const totalPages = Math.ceil(visibleProperties.length / propertiesPerPage);
-  
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  
+
+  // Toggle property visibility for admins
   const togglePropertyVisibility = async (propertyId: string) => {
     if (!user || userRole !== 'admin') return;
-    
     try {
       let newHiddenProperties;
       if (hiddenProperties.includes(propertyId)) {
@@ -78,30 +70,24 @@ const PropertyList: React.FC = () => {
           description: "This property is now hidden"
         });
       }
-      
       setHiddenProperties(newHiddenProperties);
-      
+
       const { error } = await supabase
         .from('hidden_properties')
         .upsert(
-          { 
-            user_id: user.id, 
-            property_ids: newHiddenProperties
-          },
+          { user_id: user.id, property_ids: newHiddenProperties },
           { onConflict: 'user_id' }
         );
-      
+
       if (error) throw error;
-      
+
+      // If removing a property results in empty current page, go back a page:
       const remainingOnCurrentPage = visibleProperties.slice(
-        indexOfFirstProperty, 
-        indexOfLastProperty
+        indexOfFirstProperty, indexOfLastProperty
       ).length;
-      
       if (remainingOnCurrentPage === 0 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
       }
-      
     } catch (error) {
       console.error('Error toggling property visibility:', error);
       toast({
@@ -112,30 +98,26 @@ const PropertyList: React.FC = () => {
     }
   };
 
+  // Unhide property for current user
   const handleUnhideProperty = async (propertyId: string) => {
     if (!user) return;
-    
     try {
       const newHiddenProperties = hiddenProperties.filter(id => id !== propertyId);
       setHiddenProperties(newHiddenProperties);
-      
+
       const { error } = await supabase
         .from('hidden_properties')
         .upsert(
-          { 
-            user_id: user.id, 
-            property_ids: newHiddenProperties
-          },
+          { user_id: user.id, property_ids: newHiddenProperties },
           { onConflict: 'user_id' }
         );
-      
+
       if (error) throw error;
-      
+
       toast({
         title: "Property unhidden",
         description: "This property is now visible again"
       });
-      
     } catch (error) {
       console.error('Error unhiding property:', error);
       toast({
@@ -156,36 +138,13 @@ const PropertyList: React.FC = () => {
 
       <PropertyGrid properties={currentProperties} />
 
-      {visibleProperties.length > propertiesPerPage && (
-        <div className="mt-10 animate-fade-in">
-          <Pagination>
-            <PaginationContent>
-              {currentPage > 1 && (
-                <PaginationItem>
-                  <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} />
-                </PaginationItem>
-              )}
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    isActive={currentPage === page}
-                    onClick={() => handlePageChange(page)}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-
-              {currentPage < totalPages && (
-                <PaginationItem>
-                  <PaginationNext onClick={() => handlePageChange(currentPage + 1)} />
-                </PaginationItem>
-              )}
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
+      <div className="mt-10 animate-fade-in">
+        <PropertyPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </div>
 
       <HiddenPropertiesSection
         hiddenProperties={hiddenPropertiesData}
