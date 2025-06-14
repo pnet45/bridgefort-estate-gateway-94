@@ -76,6 +76,7 @@ const InspectionBookingForm = ({ onBookingCreated }: InspectionBookingFormProps)
         .from('inspection_bookings')
         .insert({
           user_id: user.id,
+          email: user.email, // Include the client's email!
           estate_name: formData.estate_name,
           inspection_date: formData.inspection_date,
           inspection_time: formData.inspection_time,
@@ -209,3 +210,4 @@ const InspectionBookingForm = ({ onBookingCreated }: InspectionBookingFormProps)
 };
 
 export default InspectionBookingForm;
+

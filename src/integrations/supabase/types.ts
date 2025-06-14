@@ -306,6 +306,7 @@ export type Database = {
       inspection_bookings: {
         Row: {
           created_at: string
+          email: string | null
           estate_name: string
           id: string
           inspection_date: string
@@ -317,6 +318,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string | null
           estate_name: string
           id?: string
           inspection_date: string
@@ -328,6 +330,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string | null
           estate_name?: string
           id?: string
           inspection_date?: string
