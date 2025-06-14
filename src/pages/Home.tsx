@@ -23,9 +23,6 @@ const Home = () => {
       {/* Hero Section with Static Image */}
       <HomeHeroImage />
 
-      {/* Monday Motivation Animated Hero */}
-      <MondayMotivationHero />
-
       {/* Property Search */}
       <PropertyProvider>
         <div className="container-custom">
@@ -42,7 +39,10 @@ const Home = () => {
       {/* Investment Services */}
       <InvestmentServices />
       
-      {/* Seminar And Training */}
+      {/* Monday Motivation Animated Hero */}
+      <MondayMotivationHero />
+
+      {/* Seminar And Training (Upcoming Events) */}
       <SeminarAndTraining />
       
       {/* Why Choose Us */}
