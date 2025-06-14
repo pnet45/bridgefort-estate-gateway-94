@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -33,7 +32,6 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
   };
 
   if (!user) return null;
-
   return (
     <div className="flex-1 p-6">
       <ScrollArea className="h-full">
@@ -128,7 +126,8 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
           <Button
             onClick={onPay}
             disabled={!validateStep1() || isProcessing}
-            className="w-full bg-estate-blue hover:bg-estate-darkBlue text-white py-3"
+            className="w-full bg-estate-blue hover:bg-estate-darkBlue text-white py-3 animate-fade-in"
+            type="button"
           >
             {isProcessing ? 'Processing...' : 'Pay with Paystack'}
           </Button>
@@ -137,5 +136,4 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
     </div>
   );
 };
-
 export default CustomerInfoForm;

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
@@ -57,7 +56,6 @@ const FeaturedProperties = () => {
             Explore our selection of premium properties, handpicked for their exceptional value and investment potential. Buy plots directly online!
           </p>
         </div>
-        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {featuredProperties.map((property, index) => (
             <div 
@@ -69,7 +67,6 @@ const FeaturedProperties = () => {
             </div>
           ))}
         </div>
-        
         <div className="text-center mt-12 animate-fade-in">
           <Link 
             to="/properties" 

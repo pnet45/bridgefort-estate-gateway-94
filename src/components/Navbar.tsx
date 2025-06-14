@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,12 +50,12 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
-        <div className="container-custom">
-          <div className="flex justify-between items-center py-4">
+      <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50 flex flex-col" style={{ minHeight: 80 }}>
+        <div className="container-custom flex flex-col flex-1" style={{ minHeight: 80 }}>
+          <div className="flex justify-between items-center py-4 flex-shrink-0">
             {/* Logo with slide-in animation */}
             <LogoSlideIn />
-            
+
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-8">
               <AnimatedNavLinks className="hover:text-estate-blue transition" />
@@ -79,8 +78,21 @@ const Navbar = () => {
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
+          {/* Flex grow pushes .phone-contact to bottom */}
+          <div className="flex-grow" />
+          <div className="phone-contact block md:block w-full mt-auto">
+            <div className="flex justify-end">
+              <a
+                href="tel:+2348030624059"
+                className="bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg font-medium hover:text-gray-200 transition-colors flex items-center gap-2 mb-2"
+              >
+                <Phone size={18} /> 
+                +234 803 062 4059
+              </a>
+            </div>
+          </div>
         </div>
-        
+
         {/* Mobile Menu */}
         <MobileMenu 
           isOpen={isMenuOpen} 
@@ -88,30 +100,6 @@ const Navbar = () => {
           shouldShowLogin={shouldShowLogin}
         />
       </nav>
-      
-<div className="mt-auto md:block top-20 right-4 z-40 bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg animate-slide-in-right hidden md:block">
-        <a href="tel:+2348030624059" className="text-sm font-medium hover:text-gray-200 transition-colors flex items-center gap-2">
-          {/* Assuming Phone is an icon component */}
-          <Phone size={18} /> 
-          +234 803 062 4059
-        </a>
-      </div>
-
-
-      {/* Sticky Phone Number - Desktop *
-      <div className="fixed top-20 right-4 z-40 bg-estate-blue text-white px-4 py-2 rounded-lg shadow-lg animate-slide-in-right hidden md:block">
-        <a href="tel:+2348030624059" className="text-sm font-medium hover:text-gray-200 transition-colors flex items-center gap-2">
-          <Phone size={18} />
-          +234 803 062 4059
-        </a>
-      </div>*/}
-
-      {/* Sticky Phone Number - Mobile (Phone icon only) */}
-      <div className="fixed top-20 right-4 z-40 bg-estate-blue text-white p-3 rounded-full shadow-lg animate-slide-in-right md:hidden">
-        <a href="tel:+2348030624059" className="hover:text-gray-200 transition-colors">
-          <Phone size={20} />
-        </a>
-      </div>
     </>
   );
 };

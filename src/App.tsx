@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth';
@@ -7,6 +6,7 @@ import PrivateRoute from '@/components/PrivateRoute';
 import ScrollToTop from '@/components/ScrollToTop';
 import FloatingMessageButton from '@/components/FloatingMessageButton';
 import CartSidebar from '@/components/ecommerce/CartSidebar';
+import WhatsAppChat from "@/components/WhatsAppChat";
 
 // Pages
 import Index from '@/pages/Index';
@@ -94,6 +94,7 @@ function App() {
               
               <FloatingMessageButton />
               <CartSidebar />
+              <WhatsAppChat /> {/* Make WhatsApp icon global */}
             </div>
           </EcommerceProvider>
         </AuthProvider>

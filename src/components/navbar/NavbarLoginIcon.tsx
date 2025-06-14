@@ -14,11 +14,11 @@ const NavbarLoginIcon = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPanel, setShowPanel] = useState(false);
 
   const handleQuickLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
-
     setLoading(true);
     try {
       const { error } = await signIn(email, password);
@@ -46,61 +46,81 @@ const NavbarLoginIcon = () => {
     }
   };
 
+  // Open panel on icon click or hover (and closes on mouse leave)
   return (
-    <div className="login-icon-container relative">
-      <Button variant="ghost" size="sm" className="p-2">
+    <div className="login-icon-container relative z-40"
+      onMouseLeave={() => setShowPanel(false)}
+    >
+      <Button
+        variant="ghost"
+        size="sm"
+        className="p-2"
+        aria-label="Login"
+        onMouseEnter={() => setShowPanel(true)}
+        onClick={() => setShowPanel((s) => !s)}
+      >
         <User size={20} className="text-estate-blue" />
       </Button>
-      
-      <div className="login-hover-panel">
-        <h3 className="text-lg font-semibold mb-4 text-estate-blue">Quick Login</h3>
-        <form onSubmit={handleQuickLogin} className="space-y-4">
-          <div>
-            <Label htmlFor="quick-email">Email</Label>
-            <Input
-              id="quick-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="quick-password">Password</Label>
-            <Input
-              id="quick-password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              type="submit" 
-              size="sm" 
-              disabled={loading || !email || !password}
-              className="bg-estate-blue hover:bg-estate-darkBlue flex-1"
-            >
-              <LogIn size={16} className="mr-1" />
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
-            <Button 
-              type="button"
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate('/auth')}
-              className="flex-1"
-            >
-              Register
-            </Button>
-          </div>
-        </form>
+      <div
+        className={`
+          fixed top-20 right-2 max-w-xs w-[325px] bg-white shadow-2xl rounded-lg border animate-slide-in-right
+          transition-transform transition-opacity duration-300
+          ${showPanel ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none translate-x-20'}
+        `}
+        style={{
+          zIndex: 1000,
+        }}
+        onMouseEnter={() => setShowPanel(true)}
+      >
+        <div className="p-6">
+          <h3 className="text-lg font-semibold mb-4 text-estate-blue">Quick Login</h3>
+          <form onSubmit={handleQuickLogin} className="space-y-4">
+            <div>
+              <Label htmlFor="quick-email">Email</Label>
+              <Input
+                id="quick-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="quick-password">Password</Label>
+              <Input
+                id="quick-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                type="submit" 
+                size="sm" 
+                disabled={loading || !email || !password}
+                className="bg-estate-blue hover:bg-estate-darkBlue flex-1"
+              >
+                <LogIn size={16} className="mr-1" />
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
+              <Button 
+                type="button"
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/auth')}
+                className="flex-1"
+              >
+                Register
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
 };
-
 export default NavbarLoginIcon;
