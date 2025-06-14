@@ -8,6 +8,8 @@ export interface UserProfile {
   email?: string;
   avatar_url?: string;
   updated_at?: string;
+  phone_number?: string;
+  address?: string;
 }
 
 export interface AuthContextProps {
