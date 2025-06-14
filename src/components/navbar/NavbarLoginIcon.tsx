@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, LogIn } from 'lucide-react';
@@ -7,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
 
+// Remove window-covering effect and add backdrop for modal-like quick login panel
 const NavbarLoginIcon = () => {
   const navigate = useNavigate();
   const { signIn } = useAuth();
@@ -32,6 +34,7 @@ const NavbarLoginIcon = () => {
           title: "Login successful",
           description: "Welcome back!"
         });
+        setShowPanel(false);
         navigate('/dashboard');
       }
     } catch (error) {
@@ -45,12 +48,11 @@ const NavbarLoginIcon = () => {
     }
   };
 
-  // Only open login panel on click - never auto-open, never open on mount
+  // Hide quick login when overlay (backdrop) is clicked
+  const handleBackdropClick = () => setShowPanel(false);
+
   return (
-    <div 
-      className="login-icon-container relative z-40"
-      // Remove auto-close on mouse leave for mobile friendliness
-    >
+    <div className="login-icon-container relative z-40">
       <Button
         variant="ghost"
         size="sm"
@@ -60,11 +62,18 @@ const NavbarLoginIcon = () => {
       >
         <User size={20} className="text-estate-blue" />
       </Button>
+      {/* Overlay/Backdrop, appears when panel is open */}
+      {showPanel && (
+        <div
+          className="fixed inset-0 z-[999] bg-black/30 transition-opacity duration-300"
+          onClick={handleBackdropClick}
+        ></div>
+      )}
       <div
         className={`
-          fixed top-20 right-2 max-w-xs w-[325px] bg-white shadow-2xl rounded-lg border animate-slide-in-right
-          transition-transform transition-opacity duration-300
-          ${showPanel ? 'opacity-100 pointer-events-auto translate-x-0' : 'opacity-0 pointer-events-none translate-x-20'}
+          fixed top-20 right-2 max-w-xs w-[325px] bg-white shadow-2xl rounded-lg border
+          animate-slide-in-right transition-transform transition-opacity duration-300
+          ${showPanel ? 'opacity-100 pointer-events-auto translate-x-0 z-[1000]' : 'opacity-0 pointer-events-none translate-x-20'}
         `}
         style={{
           zIndex: 1000,
@@ -109,7 +118,10 @@ const NavbarLoginIcon = () => {
                 type="button"
                 variant="outline" 
                 size="sm"
-                onClick={() => navigate('/auth')}
+                onClick={() => {
+                  setShowPanel(false);
+                  navigate('/auth');
+                }}
                 className="flex-1"
               >
                 Register
@@ -121,4 +133,5 @@ const NavbarLoginIcon = () => {
     </div>
   );
 };
+
 export default NavbarLoginIcon;
