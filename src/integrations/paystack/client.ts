@@ -1,6 +1,6 @@
 
 // Paystack configuration
-export const PAYSTACK_PUBLIC_KEY = 'pk_test_ad163ed4f2eba23711f502a7411e8b2ab891ae86';
+export const PAYSTACK_PUBLIC_KEY = 'pk_live_6d09681e7719b416bced07927ea4855f5b9f848e';
 
 export interface PaystackPaymentData {
   email: string;
