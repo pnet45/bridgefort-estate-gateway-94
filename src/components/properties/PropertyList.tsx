@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PropertyGrid from './PropertyGrid';
 import HiddenPropertiesSection from './HiddenPropertiesSection';
@@ -155,7 +154,7 @@ const PropertyList: React.FC = () => {
         </p>
       </div>
 
-      <PropertyGrid />
+      <PropertyGrid properties={currentProperties} />
 
       {visibleProperties.length > propertiesPerPage && (
         <div className="mt-10 animate-fade-in">
@@ -166,10 +165,10 @@ const PropertyList: React.FC = () => {
                   <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} />
                 </PaginationItem>
               )}
-              
+
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                 <PaginationItem key={page}>
-                  <PaginationLink 
+                  <PaginationLink
                     isActive={currentPage === page}
                     onClick={() => handlePageChange(page)}
                   >
@@ -177,7 +176,7 @@ const PropertyList: React.FC = () => {
                   </PaginationLink>
                 </PaginationItem>
               ))}
-              
+
               {currentPage < totalPages && (
                 <PaginationItem>
                   <PaginationNext onClick={() => handlePageChange(currentPage + 1)} />
