@@ -108,17 +108,27 @@ const BlogPosts = () => {
         setBlogPosts(fallbackPosts);
       } else {
         // Transform the data to match our BlogPost interface
-        const transformedPosts: BlogPost[] = data && data.length > 0 ? data.map(post => ({
-          id: post.id,
-          title: post.title,
-          excerpt: post.excerpt,
-          image_path: post.image_path,
-          created_at: post.created_at,
-          category: post.category,
-          profiles: Array.isArray(post.profiles) && post.profiles.length > 0 
-            ? post.profiles[0] 
-            : post.profiles || { first_name: 'Unknown', last_name: 'Author' }
-        })) : fallbackPosts;
+        const transformedPosts: BlogPost[] = data && data.length > 0 ? data.map(post => {
+          // Handle profiles - it can be an object, array, or null
+          let profileData = null;
+          if (post.profiles) {
+            if (Array.isArray(post.profiles)) {
+              profileData = post.profiles.length > 0 ? post.profiles[0] : null;
+            } else {
+              profileData = post.profiles;
+            }
+          }
+          
+          return {
+            id: post.id,
+            title: post.title,
+            excerpt: post.excerpt,
+            image_path: post.image_path,
+            created_at: post.created_at,
+            category: post.category,
+            profiles: profileData || { first_name: 'Unknown', last_name: 'Author' }
+          };
+        }) : fallbackPosts;
         
         setBlogPosts(transformedPosts);
       }
