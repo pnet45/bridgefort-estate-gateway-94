@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calendar, Share } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -76,10 +75,10 @@ const shareArticle = (articleId: string, title: string) => {
 };
 
 const BlogPosts = () => {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [blogPosts, setBlogPosts] = React.useState<BlogPost[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  useEffect(() => {
+  React.useEffect(() => {
     fetchBlogPosts();
   }, []);
 
@@ -104,12 +103,13 @@ const BlogPosts = () => {
         .limit(6);
 
       if (error) {
-        console.error('Error fetching posts:', error);
-        setBlogPosts(fallbackPosts);
+        setBlogPosts(
+          [...fallbackPosts].sort((a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )
+        );
       } else {
-        // Transform the data to match our BlogPost interface
         const transformedPosts: BlogPost[] = data && data.length > 0 ? data.map(post => {
-          // Handle profiles - it can be an object, array, or null
           let profileData = null;
           if (post.profiles) {
             if (Array.isArray(post.profiles)) {
@@ -118,7 +118,6 @@ const BlogPosts = () => {
               profileData = post.profiles;
             }
           }
-          
           return {
             id: post.id,
             title: post.title,
@@ -128,13 +127,21 @@ const BlogPosts = () => {
             category: post.category,
             profiles: profileData || { first_name: 'Unknown', last_name: 'Author' }
           };
-        }) : fallbackPosts;
-        
-        setBlogPosts(transformedPosts);
+        }) : [...fallbackPosts];
+
+        // Sort all posts newest first
+        setBlogPosts(
+          [...transformedPosts].sort((a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )
+        );
       }
     } catch (error) {
-      console.error('Error:', error);
-      setBlogPosts(fallbackPosts);
+      setBlogPosts(
+        [...fallbackPosts].sort((a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+      );
     } finally {
       setLoading(false);
     }
@@ -152,14 +159,13 @@ const BlogPosts = () => {
   return (
     <>
       <h2 className="text-3xl font-bold mb-10 text-center">Latest News & Updates</h2>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {blogPosts.map(post => (
           <div key={post.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300">
             <div className="relative h-56 overflow-hidden">
-              <img 
-                src={post.image_path} 
-                alt={post.title} 
+              <img
+                src={post.image_path}
+                alt={post.title}
                 className="w-full h-full object-cover transition duration-500 hover:scale-105"
               />
               <div className="absolute top-4 left-4">
@@ -168,7 +174,6 @@ const BlogPosts = () => {
                 </span>
               </div>
             </div>
-            
             <div className="p-5">
               <div className="flex items-center text-gray-500 text-sm mb-3">
                 <Calendar size={14} className="mr-1" />
@@ -176,30 +181,26 @@ const BlogPosts = () => {
                 <span className="mx-2">•</span>
                 <span>By {post.profiles?.first_name} {post.profiles?.last_name}</span>
               </div>
-              
               <h3 className="text-xl font-semibold mb-3 text-gray-800">
                 {post.title}
               </h3>
-              
               <p className="text-gray-600 mb-4">
                 {post.excerpt}
               </p>
-              
               <div className="flex justify-between items-center">
-                <Link 
-                  to={`/blog/${post.id}`} 
+                <Link
+                  to={`/blog/${post.id}`}
                   className="text-estate-blue font-medium hover:underline inline-flex items-center"
                 >
-                  Read More 
+                  Read More
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </Link>
-                
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button 
+                      <button
                         onClick={() => shareArticle(post.id, post.title)}
                         className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                       >
@@ -216,7 +217,6 @@ const BlogPosts = () => {
           </div>
         ))}
       </div>
-      
       <div className="mt-12 text-center">
         <button className="bg-white border border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white font-medium py-2 px-6 rounded-lg transition duration-300">
           Load More Posts
@@ -227,3 +227,5 @@ const BlogPosts = () => {
 };
 
 export default BlogPosts;
+
+// NOTE: This file is getting long! Refactoring into smaller components is recommended.

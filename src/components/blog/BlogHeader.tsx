@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 
 const BlogHeader = () => {
@@ -6,10 +5,12 @@ const BlogHeader = () => {
   
   // Array of hero images for the slideshow
   const heroImages = [
-    '/lovable-uploads/984f2569-d567-46c5-a58e-7de931171e95.jpg',
-    '/lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png',
-    '/lovable-uploads/8038c999-40e2-49bf-afec-2cb0b5bc2c14.png',
-    '/lovable-uploads/796b8bc3-c103-4ea9-bc00-f5ccc19ab812.png'
+    '/lovable-uploads/Bridgefort County - Ikota .jpg',
+    '/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png',
+    '/lovable-uploads/f27b5aee-88b8-457a-ba3a-45bff68f8d85.png',
+    '/lovable-uploads/d6f71783-c6ac-4ff8-885e-f4290eba3780.png',
+    '/lovable-uploads/Precious Gardens Estate.jpg',
+    '/lovable-uploads/Precious.png'
   ];
   
   // Auto-slide every 10 seconds

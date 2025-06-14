@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -11,35 +12,50 @@ import MondayMotivation from '../components/blog/MondayMotivation';
 import RealEstateContent from '../components/blog/RealEstateContent';
 import YouTubeSection from '../components/blog/YouTubeSection';
 import PhoneContactBar from '../components/PhoneContactBar';
+import FeaturedAnnouncements from '../components/blog/FeaturedAnnouncements';
+import InvestmentSpotlight from '../components/blog/InvestmentSpotlight';
+import SuccessStories from '../components/blog/SuccessStories';
+import MarketUpdates from '../components/blog/MarketUpdates';
+import IncentivePrograms from '../components/blog/IncentivePrograms';
 
 const Blog = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <PhoneContactBar />
-      
+
       <BlogHeader />
-      
+
       <section className="py-12 bg-gray-50">
         <div className="container-custom">
           <BlogCategories />
         </div>
       </section>
-      
+
+      <FeaturedAnnouncements />
+
       <MondayMotivation />
-      
+
+      <InvestmentSpotlight />
+
       <section className="py-16">
         <div className="container-custom">
           <BlogPosts />
         </div>
       </section>
-      
+
+      <SuccessStories />
+
+      <MarketUpdates />
+
       <RealEstateContent />
-      
+
+      <IncentivePrograms />
+
       <YouTubeSection />
-      
+
       <BlogNewsletter />
-      
+
       <Footer />
       <WhatsAppChat />
       <Toaster />

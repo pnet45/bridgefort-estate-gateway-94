@@ -9,7 +9,7 @@ const realEstateContent = [
     id: 're1',
     title: 'Bridgefort County: The Future of Lagos Waterfront Living',
     excerpt: 'Discover the unique features of our premium lagoon front estate offering unparalleled luxury, security, and investment potential just minutes from Lagos business centers.',
-    image: '/lovable-uploads/5ec8d74e-628c-4efc-8322-f98d4138140d.png',
+    image: "/lovable-uploads/Bridgefort County - Ikota .jpg",
     date: 'May 3, 2025',
     author: 'Precious Silva',
     category: 'Property Spotlight'
@@ -17,29 +17,29 @@ const realEstateContent = [
   {
     id: 're2',
     title: 'Real Estate Market Trends: Q2 2025 Analysis',
-    excerpt: 'Our quarterly market analysis explores emerging trends, price forecasts, and investment opportunities in key Nigerian real estate markets.',
-    image: '/lovable-uploads/8038c999-40e2-49bf-afec-2cb0b5bc2c14.png',
+    excerpt: "Our quarterly market analysis explores emerging trends, price forecasts, and investment opportunities in key Nigerian real estate markets.",
+    image: "/lovable-uploads/d6f71783-c6ac-4ff8-885e-f4290eba3780.png",
     date: 'April 25, 2025',
     author: 'Dr. Dalvin Silva',
     category: 'Market Analysis'
   },
   {
     id: 're3',
-    title: 'Fortress Hills: Sustainable Community Development',
-    excerpt: 'How our newest development is incorporating green technologies, community spaces, and sustainable practices to create a model for future Nigerian estates.',
-    image: '/lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png',
-    date: 'April 18, 2025',
-    author: 'Dr. Dalvin Silva',
-    category: 'Development News'
+    title: "Fortress Hills: Sustainable Community Development",
+    excerpt: "How our newest development is incorporating green technologies, community spaces, and sustainable practices to create a model for future Nigerian estates.",
+    image: "/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png",
+    date: "April 18, 2025",
+    author: "Dr. Dalvin Silva",
+    category: "Development News"
   },
   {
     id: 're4',
     title: 'Investment Strategies: Land Banking for Future Gains',
-    excerpt: 'Learn how strategic land banking can create long-term wealth and provide substantial returns in emerging Nigerian property corridors.',
-    image: '/lovable-uploads/62e9d362-2fac-4c6b-b437-8045c86dfc53.png',
-    date: 'April 11, 2025',
-    author: 'Gideon Vincent',
-    category: 'Investment Tips'
+    excerpt: "Learn how strategic land banking can create long-term wealth and provide substantial returns in emerging Nigerian property corridors.",
+    image: "/lovable-uploads/Precious Gardens Estate.jpg",
+    date: "April 11, 2025",
+    author: "Gideon Vincent",
+    category: "Investment Tips"
   }
 ];
 
