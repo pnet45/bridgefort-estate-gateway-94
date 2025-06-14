@@ -113,10 +113,19 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         }
       });
 
-      if (paymentError) throw new Error('Failed to initialize payment');
+      console.log("Paystack response:", paymentData, paymentError);
 
-      if (paymentData.status) {
+      // Defensive checks for Paystack edge function response structure
+      if (paymentError || !paymentData) throw new Error('Failed to initialize payment');
+      if (typeof paymentData === "object" && paymentData.error) {
+        throw new Error(paymentData.error);
+      }
+      if (paymentData.status && paymentData.data && paymentData.data.authorization_url) {
         window.location.href = paymentData.data.authorization_url;
+      } else if (paymentData.data && paymentData.data.authorization_url) {
+        window.location.href = paymentData.data.authorization_url;
+      } else if (paymentData.authorization_url) {
+        window.location.href = paymentData.authorization_url;
       } else {
         throw new Error(paymentData.message || 'Failed to initialize payment');
       }

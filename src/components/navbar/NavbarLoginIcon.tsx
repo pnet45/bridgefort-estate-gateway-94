@@ -45,18 +45,17 @@ const NavbarLoginIcon = () => {
     }
   };
 
-  // Only open login panel on click - removing mouse hover triggers
+  // Only open login panel on click - never auto-open, never open on mount
   return (
     <div 
       className="login-icon-container relative z-40"
-      onMouseLeave={() => setShowPanel(false)}
+      // Remove auto-close on mouse leave for mobile friendliness
     >
       <Button
         variant="ghost"
         size="sm"
         className="p-2"
         aria-label="Login"
-        // Removed onMouseEnter
         onClick={() => setShowPanel((s) => !s)}
       >
         <User size={20} className="text-estate-blue" />
@@ -65,12 +64,11 @@ const NavbarLoginIcon = () => {
         className={`
           fixed top-20 right-2 max-w-xs w-[325px] bg-white shadow-2xl rounded-lg border animate-slide-in-right
           transition-transform transition-opacity duration-300
-          ${showPanel ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none translate-x-20'}
+          ${showPanel ? 'opacity-100 pointer-events-auto translate-x-0' : 'opacity-0 pointer-events-none translate-x-20'}
         `}
         style={{
           zIndex: 1000,
         }}
-        // Removed onMouseEnter
       >
         <div className="p-6">
           <h3 className="text-lg font-semibold mb-4 text-estate-blue">Quick Login</h3>
