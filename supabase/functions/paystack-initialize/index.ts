@@ -13,8 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const { email, amount, metadata, reference } = await req.json();
-    
+    const { email, amount, metadata, reference, user_id } = await req.json();
+
     const PAYSTACK_SECRET_KEY = Deno.env.get('PAYSTACK_SECRET_KEY');
     if (!PAYSTACK_SECRET_KEY) {
       throw new Error('Paystack secret key not configured');
@@ -28,7 +28,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         email,
-        amount: amount * 100, // Convert to kobo
+        amount: amount * 100,
         currency: 'NGN',
         reference,
         metadata,
@@ -36,10 +36,27 @@ serve(async (req) => {
       }),
     });
 
-    const data = await response.json();
+    const paystackData = await response.json();
+
+    // Insert a payment record into payments table (new schema)
+    if (paystackData.status && paystackData.data?.reference) {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+
+      // Insert payment with user_id
+      await supabase.from('payments').insert([{
+        order_id: metadata?.custom_fields?.find(cf => cf.variable_name === 'order_id')?.value,
+        paystack_reference: paystackData.data.reference,
+        status: 'pending',
+        amount: amount,
+        user_id: user_id,
+      }]);
+    }
 
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify(paystackData),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: response.status,

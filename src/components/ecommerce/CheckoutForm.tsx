@@ -70,7 +70,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       const totalAmount = getTotalAmount();
       const reference = `PWAN_${Date.now()}_${user?.id}`;
 
-      // Create order in database first
+      // Create order in database first (now with new orders schema)
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -95,12 +95,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         throw new Error('Failed to create order');
       }
 
-      // Initialize Paystack payment using the edge function
+      // Initialize Paystack payment using the edge function,
+      // and include the user_id as per the fixed schema
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke('paystack-initialize', {
         body: {
           email: customerInfo.email,
           amount: totalAmount,
           reference,
+          user_id: user?.id,
           metadata: {
             customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
             phone: customerInfo.phone,
@@ -112,7 +114,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
               },
               {
                 display_name: "Order ID",
-                variable_name: "order_id", 
+                variable_name: "order_id",
                 value: orderData.id
               }
             ]

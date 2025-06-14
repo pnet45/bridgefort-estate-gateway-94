@@ -30,7 +30,7 @@ export interface PaystackResponse {
 }
 
 // Function to initialize payment
-export const initializePayment = async (paymentData: PaystackPaymentData): Promise<PaystackResponse> => {
+export const initializePayment = async (paymentData: PaystackPaymentData & { user_id?: string }) => {
   try {
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(
@@ -38,10 +38,19 @@ export const initializePayment = async (paymentData: PaystackPaymentData): Promi
       import.meta.env.VITE_SUPABASE_ANON_KEY
     );
 
+    // Ensure user_id is present for the upgraded schema
+    const fullPaymentData = { ...paymentData };
+    if (!fullPaymentData.user_id && supabase.auth.getUser) {
+      // If running in a browser context, get logged-in user_id (fallback)
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user?.id) {
+        fullPaymentData.user_id = userData.user.id;
+      }
+    }
+
     const { data, error } = await supabase.functions.invoke('paystack-initialize', {
-      body: paymentData
+      body: fullPaymentData
     });
-    
     if (error) throw new Error(error.message);
     return data;
   } catch (error) {
@@ -51,7 +60,7 @@ export const initializePayment = async (paymentData: PaystackPaymentData): Promi
 };
 
 // Function to verify payment
-export const verifyPayment = async (reference: string) => {
+export const verifyPayment = async (reference: string, user_id?: string) => {
   try {
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(
@@ -59,10 +68,11 @@ export const verifyPayment = async (reference: string) => {
       import.meta.env.VITE_SUPABASE_ANON_KEY
     );
 
+    const payload = { reference, ...(user_id ? { user_id } : {}) };
     const { data, error } = await supabase.functions.invoke('paystack-verify', {
-      body: { reference }
+      body: payload,
     });
-    
+
     if (error) throw new Error(error.message);
     return data;
   } catch (error) {

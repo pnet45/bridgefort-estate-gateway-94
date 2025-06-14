@@ -623,7 +623,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      count_users: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      delete_user_profile: {
+        Args: { user_id: number }
+        Returns: undefined
+      }
+      get_user_profile: {
+        Args: { user_id: number }
+        Returns: {
+          id: number
+          first_name: string
+          last_name: string
+          email: string
+        }[]
+      }
+      list_all_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: number
+          first_name: string
+          last_name: string
+          email: string
+        }[]
+      }
+      update_user_profile: {
+        Args: { user_id: number; first_name: string; last_name: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "staff" | "pbo" | "client"
