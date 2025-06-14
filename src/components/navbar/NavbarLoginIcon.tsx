@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
 
-// Remove window-covering effect and add backdrop for modal-like quick login panel
+// Quick Login panel now slides in from bottom left
 const NavbarLoginIcon = () => {
   const navigate = useNavigate();
   const { signIn } = useAuth();
@@ -48,7 +48,6 @@ const NavbarLoginIcon = () => {
     }
   };
 
-  // Hide quick login when overlay (backdrop) is clicked
   const handleBackdropClick = () => setShowPanel(false);
 
   return (
@@ -62,7 +61,7 @@ const NavbarLoginIcon = () => {
       >
         <User size={20} className="text-estate-blue" />
       </Button>
-      {/* Overlay/Backdrop, appears when panel is open */}
+      {/* Overlay/Backdrop */}
       {showPanel && (
         <div
           className="fixed inset-0 z-[999] bg-black/30 transition-opacity duration-300"
@@ -71,9 +70,9 @@ const NavbarLoginIcon = () => {
       )}
       <div
         className={`
-          fixed top-20 right-2 max-w-xs w-[325px] bg-white shadow-2xl rounded-lg border
-          animate-slide-in-right transition-transform transition-opacity duration-300
-          ${showPanel ? 'opacity-100 pointer-events-auto translate-x-0 z-[1000]' : 'opacity-0 pointer-events-none translate-x-20'}
+          fixed bottom-6 left-4 max-w-xs w-[325px] bg-white shadow-2xl rounded-lg border
+          animate-slide-in-up transition-transform transition-opacity duration-300
+          ${showPanel ? 'opacity-100 pointer-events-auto translate-y-0 z-[1000]' : 'opacity-0 pointer-events-none translate-y-20'}
         `}
         style={{
           zIndex: 1000,
