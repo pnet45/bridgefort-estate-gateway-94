@@ -1,4 +1,3 @@
-
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PropertySearch from '../components/PropertySearch';
@@ -14,15 +13,19 @@ import SeminarAndTraining from '../components/home/SeminarAndTraining';
 import HomeHeroImage from '@/components/HomeHeroImage';
 import YouTubeSection from '../components/home/YouTubeSection';
 import { PropertyProvider } from '../contexts/property';
+import MondayMotivationHero from '../components/home/MondayMotivationHero';
 
 const Home = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      
+
       {/* Hero Section with Static Image */}
       <HomeHeroImage />
-      
+
+      {/* Monday Motivation Animated Hero */}
+      <MondayMotivationHero />
+
       {/* Property Search */}
       <PropertyProvider>
         <div className="container-custom">
