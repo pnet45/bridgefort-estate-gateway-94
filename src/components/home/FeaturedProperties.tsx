@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
@@ -15,7 +16,7 @@ const featuredProperties = [
     propertyType: 'Land',
     phase: 1,
     totalPlots: 150,
-    availablePlots: 98,
+    availablePlots: 0, // SOLD OUT
     pricePerPlot: 1500000
   },
   {
@@ -58,7 +59,7 @@ const FeaturedProperties = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {featuredProperties.map((property, index) => (
-            <div 
+            <div
               key={property.id}
               className="animate-fade-in focus-box-in"
               style={{ animationDelay: `${index * 0.2}s` }}

@@ -7,130 +7,135 @@ const PrivacyPolicy = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      
       <main className="flex-grow pt-24 pb-16">
         <div className="container-custom">
           <div className="bg-white rounded-lg shadow-md p-6 md:p-10">
             <h1 className="text-3xl md:text-4xl font-bold mb-6 text-estate-blue">Privacy Policy</h1>
             <p className="text-gray-600 mb-6">Effective Date: May 20, 2025</p>
-            <p className="text-gray-600 mb-6">Company Name: PWAN Bridgefort Estate and Investment Ltd<br />
-            Website: www.pwanbridgefort.ng</p>
+            <p className="text-gray-600 mb-6">
+              Company Name: PWAN Bridgefort Estate and Investment Ltd<br />
+              Website: www.pwanbridgefort.ng
+            </p>
             <hr className="my-6" />
-            
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">1. Introduction</h2>
-              <p className="mb-4">At PWAN Bridgefort, we value your privacy and are committed to protecting your personal information. This Privacy Policy explains how we collect, use, disclose, and protect your data when you visit our website, use our services, or contact us.</p>
-              <p className="mb-4">By using our website and services, you agree to the terms outlined in this policy.</p>
+              <p className="mb-4">
+                PWAN Bridgefort Estate & Investment Ltd ("we", "our", "us") is a fully corporate, Nigerian real estate and e-commerce company that provides innovative land banking, digital property sales, investment programs, training, and land trading services. This Privacy Policy describes how we collect, use, protect, and share your personal information.
+              </p>
+              <p className="mb-4">
+                By using our website or any of our platforms, you agree to this policy and our data practices.
+              </p>
             </section>
-            
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">2. Information We Collect</h2>
-              <p className="mb-4">We collect the following types of information:</p>
-              
-              <h3 className="text-xl font-semibold mb-2">a. Personal Information</h3>
               <ul className="list-disc pl-6 mb-4 space-y-1">
-                <li>Full Name</li>
-                <li>Phone Number</li>
-                <li>Email Address</li>
-                <li>Home or Office Address (if provided)</li>
-                <li>Investment preferences and financial goals</li>
-                <li>Identification documents (for transactions requiring KYC verification)</li>
+                <li>Personal information: full name, phone numbers, email, postal address, date of birth, government-issued ID (for compliance/KYC/AML), and photographs.</li>
+                <li>Automatically collected data: IP address, location, browser/device info, transaction logs, page visits, cookies, session analytics, and referral sources.</li>
+                <li>Financial/payment information: card details, bank info, billing addresses (processed securely and never stored on our servers).</li>
+                <li>Purchase history, investment portfolio, and communications with our support or sales teams.</li>
+                <li>Business or commission information for realtors and agents.</li>
               </ul>
-              
-              <h3 className="text-xl font-semibold mb-2">b. Usage Information</h3>
-              <ul className="list-disc pl-6 mb-4 space-y-1">
-                <li>IP address</li>
-                <li>Browser type</li>
-                <li>Pages visited on our website</li>
-                <li>Device information</li>
-                <li>Date and time of your visit</li>
-              </ul>
-              
-              <h3 className="text-xl font-semibold mb-2">c. Cookies and Tracking</h3>
-              <p>We use cookies and similar technologies to enhance your browsing experience and analyze website traffic. You may disable cookies through your browser settings.</p>
+              <p>
+                We strive to collect only the minimum data necessary, and you may use many site features without providing sensitive data.
+              </p>
             </section>
-            
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">3. How We Use Your Information</h2>
-              <p className="mb-2">We use the information we collect to:</p>
               <ul className="list-disc pl-6 space-y-1">
-                <li>Provide and improve our real estate and investment services</li>
-                <li>Process transactions and manage investments</li>
-                <li>Communicate with you regarding your inquiries or ongoing services</li>
-                <li>Send newsletters, marketing materials, or promotional offers (you may opt out at any time)</li>
-                <li>Comply with legal obligations and prevent fraud</li>
-                <li>Customize user experience on our website</li>
+                <li>Facilitate land/property transactions, cart/e-commerce management, and delivery of e-contracts and documents.</li>
+                <li>Verify identity for regulatory compliance (anti-money laundering, KYC).</li>
+                <li>Investments: Analyze risk, calculate returns, and optimize land banking and trading products.</li>
+                <li>To process secure payments through trusted providers. PWAN Bridgefort does not store customers’ card details.</li>
+                <li>Marketing, service updates, and industry insights/education by email or SMS (opt-out any time).</li>
+                <li>Customer support and dispute resolution.</li>
+                <li>Site and investment security, including fraud prevention.</li>
+                <li>Analytics to improve our services and user experience.</li>
               </ul>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">4. Data Sharing and Disclosure</h2>
-              <p className="mb-4">We do not sell your personal information. We may share data with:</p>
-              <ul className="list-disc pl-6 mb-4 space-y-1">
-                <li>Our internal departments (sales, legal, admin)</li>
-                <li>Partner companies within the PWAN Group (only as necessary)</li>
-                <li>Third-party service providers for legal, technical, or marketing support</li>
-                <li>Government agencies or law enforcement when required by law</li>
+              <h2 className="text-2xl font-bold mb-4">4. Data Sharing & International Transfers</h2>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>With internal departments and partners within the PWAN Group for investment, digital commerce, and compliance operations.</li>
+                <li>Third-party service providers (e.g., Paystack, regulatory databases, CRM systems) only as needed for operations.</li>
+                <li>Payment and verification partners who have appropriate data security standards.</li>
+                <li>Regulators, anti-fraud authorities, and Nigerian government agencies when legally required.</li>
+                <li>Data may be processed in Nigeria or externally (where privacy rules apply, e.g., GDPR for global users).</li>
               </ul>
-              <p>All third parties are required to respect the security and confidentiality of your data.</p>
             </section>
-            
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">5. Data Security</h2>
-              <p className="mb-4">We implement appropriate technical and organizational measures to protect your personal data against unauthorized access, loss, or misuse. This includes:</p>
               <ul className="list-disc pl-6 space-y-1">
-                <li>Secure data storage</li>
-                <li>Limited access to sensitive data</li>
-                <li>Regular software updates and backups</li>
+                <li>Encryption, secure payments, and encrypted transmission of personal/financial info.</li>
+                <li>Regular audits and staff training in regulatory and cybersecurity best practices.</li>
+                <li>Access control: only authorized staff may access sensitive info.</li>
+                <li>We promptly report any breaches and take remediation steps as needed.</li>
               </ul>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">6. Your Rights</h2>
-              <p className="mb-4">You have the right to:</p>
+              <h2 className="text-2xl font-bold mb-4">6. Your Data Rights</h2>
               <ul className="list-disc pl-6 mb-4 space-y-1">
-                <li>Request access to the personal data we hold about you</li>
-                <li>Correct or update your personal information</li>
-                <li>Withdraw consent for marketing communications</li>
-                <li>Request deletion of your data (subject to legal requirements)</li>
+                <li>Request a copy of your data</li>
+                <li>Request correction, deletion, or restriction of your data</li>
+                <li>Object to processing for marketing</li>
+                <li>Withdraw consent for marketing at any time</li>
               </ul>
-              <p>To exercise any of these rights, contact us at info@pwanbridgefort.ng.</p>
+              <p>To exercise your rights, email <a href="mailto:info@pwanbridgefort.ng" className="text-estate-blue hover:underline">info@pwanbridgefort.ng</a>. Certain requests may take 14 business days and require verification for your protection.</p>
             </section>
-            
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">7. Data Retention</h2>
-              <p>We retain personal data only as long as necessary to fulfill the purposes outlined in this policy, or to comply with legal, tax, or regulatory requirements.</p>
+              <p>
+                Data is kept as long as necessary for legal, financial, or regulatory purposes. We conduct regular purges to remove unnecessary info.
+              </p>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">8. International Users</h2>
-              <p>If you are accessing our services from outside Nigeria, note that your information may be transferred to, stored, or processed in Nigeria, where our servers and offices are located.</p>
+              <h2 className="text-2xl font-bold mb-4">8. Minors</h2>
+              <p>
+                We do not target or knowingly collect data from anyone under 18. Parents may request removal of children's info.
+              </p>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">9. Updates to This Policy</h2>
-              <p>We may update this Privacy Policy periodically. Changes will be posted on this page with an updated effective date. Continued use of our services constitutes your acceptance of the revised policy.</p>
+              <h2 className="text-2xl font-bold mb-4">9. International & Regulatory Compliance</h2>
+              <p>
+                We comply with Nigeria Data Protection Act, NDPR, and international privacy standards. Where required, global data transfers are protected by standard contractual clauses.
+              </p>
             </section>
-            
+            <section className="mb-8" id="amlkyc">
+              <h2 className="text-2xl font-bold mb-4">10. Anti-Money Laundering (AML) & KYC Policy</h2>
+              <p>
+                To meet Nigerian and global standards, we collect KYC information for large transactions, may request additional verification, and monitor transactions to detect suspicious patterns.
+              </p>
+            </section>
+            <section className="mb-8" id="risk">
+              <h2 className="text-2xl font-bold mb-4">11. Risk Disclosure</h2>
+              <p>
+                Investment in real estate, land banking and trading involves risks. We make efforts to secure your data, prevent fraud, and provide education, but all investments carry risk of loss, including (rarely) data-related incidents.
+              </p>
+            </section>
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">10. Contact Us</h2>
-              <p className="mb-4">If you have any questions or concerns about this Privacy Policy, please contact:</p>
+              <h2 className="text-2xl font-bold mb-4">12. Changes to this Policy</h2>
+              <p>
+                We may update this Privacy Policy at any time, with dates posted above. Continued use of our platforms indicates acceptance of updated terms.
+              </p>
+            </section>
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold mb-4">13. Contact Us</h2>
               <div className="bg-gray-50 p-4 rounded">
                 <p><strong>PWAN Bridgefort Estate and Investment Ltd</strong></p>
-                <p>📍 Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate,<br />
-                VGC Bus Stop, Lekki-Ajah, Lagos</p>
+                <p>
+                  📍 Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate,<br />
+                  VGC Bus Stop, Lekki-Ajah, Lagos
+                </p>
                 <p>📧 <a href="mailto:info@pwanbridgefort.ng" className="text-estate-blue hover:underline">info@pwanbridgefort.ng</a></p>
                 <p>📞 <a href="tel:+2348030624059" className="text-estate-blue hover:underline">+234 803 062 4059</a></p>
               </div>
             </section>
-            
             <footer className="text-center text-gray-600 mt-10">
-              © 2025 PWAN Bridgefort Estate and Investment Ltd. All rights reserved.
+              © 2025 PWAN Bridgefort Estate and Investment Ltd. All rights reserved. <br />
+              This platform and all data are protected under Nigerian law and global privacy standards.
             </footer>
           </div>
         </div>
       </main>
-      
       <Footer />
     </div>
   );

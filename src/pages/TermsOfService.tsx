@@ -7,112 +7,128 @@ const TermsOfService = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      
       <main className="flex-grow pt-24 pb-16">
         <div className="container-custom">
           <div className="bg-white rounded-lg shadow-md p-6 md:p-10">
-            <h1 className="text-3xl md:text-4xl font-bold mb-6 text-estate-blue">Terms and Conditions</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-6 text-estate-blue">Terms and Conditions of Use</h1>
             <p className="text-gray-600 mb-6">Effective Date: May 20, 2025</p>
             <p className="text-gray-600 mb-6">Company Name: PWAN Bridgefort Estate and Investment Ltd<br />
             Website: www.pwanbridgefort.ng</p>
             <hr className="my-6" />
-            
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">1. Acceptance of Terms</h2>
-              <p className="mb-4">By accessing or using our website (the "Site") and services offered by PWAN Bridgefort ("we", "us", or "our"), you agree to be bound by these Terms and Conditions and our Privacy Policy. If you do not agree to these terms, please do not use our website.</p>
+              <p className="mb-4">
+                By using this website or any of our digital services ("the Site"), you accept these Terms and our Privacy Policy. If you do not agree, please do not use or transact on our e-commerce and investment platform.
+              </p>
             </section>
-            
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">2. Services Provided</h2>
-              <p className="mb-4">PWAN Bridgefort offers real estate investment and property services, including but not limited to:</p>
               <ul className="list-disc pl-6 mb-4 space-y-1">
-                <li>Sale of residential and commercial land/property</li>
-                <li>Buy2Sell investment packages</li>
+                <li>Digital sale of residential and commercial property and land in Nigeria</li>
+                <li>Land banking, land trading, and Buy2Sell investment programs</li>
+                <li>End-to-end e-commerce cart, checkout and payment via trusted gateways</li>
                 <li>Property management and development</li>
-                <li>Training programs and consultancy</li>
-                <li>Rental income plans</li>
-                <li>Investment advisory and performance tracking tools</li>
+                <li>Training, education, and seminars on real estate investment</li>
+                <li>Performance analytics and order tracking through our dashboard</li>
               </ul>
-              <p>All services are provided in accordance with applicable Nigerian laws and are subject to change without prior notice.</p>
+              <p>
+                All services are provided in accordance with Nigerian law and international best e-commerce practices.
+              </p>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">3. Eligibility</h2>
-              <p className="mb-4">Our services are available to individuals who are 18 years or older and legally capable of entering into binding contracts. By using this website, you represent and warrant that you meet these requirements.</p>
+              <h2 className="text-2xl font-bold mb-4">3. Customer Eligibility</h2>
+              <ul className="list-disc pl-6 mb-4 space-y-1">
+                <li>You must be at least 18 years old and legally capable of entering contracts to transact.</li>
+                <li>Property purchases for non-Nigerian citizens or companies may attract special documentation.</li>
+              </ul>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">4. Investment Disclaimer</h2>
-              <p className="mb-4">Real estate investments carry inherent risks. Although PWAN Bridgefort provides projections (e.g., through the Buy2Sell program or Land Banking Calculator), these are estimates based on historical data and market trends. Actual results may vary, and past performance is not indicative of future results. Always consult with our certified investment advisors before making financial decisions.</p>
+              <h2 className="text-2xl font-bold mb-4">4. Investment and Land Banking Disclaimer</h2>
+              <p>
+                All land banking and trading investments are subject to market risks. Projected ROI and resale dates are advisory only. Always consult a certified advisor before making investment decisions.
+              </p>
+              <p>
+                We are not liable for market downturns, external regulatory changes, or loss of expected returns.
+              </p>
             </section>
-            
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">5. User Responsibilities</h2>
-              <p className="mb-4">By using our website or services, you agree to:</p>
               <ul className="list-disc pl-6 mb-4 space-y-1">
-                <li>Provide accurate, complete, and current information.</li>
-                <li>Not use our services for illegal purposes.</li>
-                <li>Not impersonate another person or misrepresent your affiliation with a person or entity.</li>
-                <li>Keep your account credentials secure if a login is required.</li>
+                <li>Providing accurate and current information during registration and purchases.</li>
+                <li>Not engaging in fraudulent, illegal or abusive activity on our platform.</li>
+                <li>Maintaining confidentiality of all login credentials and reporting suspicious activity promptly.</li>
+                <li>Following contract, policy, and regulatory requirements of all transactions.</li>
               </ul>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">6. Buy2Sell Program Terms</h2>
-              <p className="mb-4">Buy2Sell is an investment option that allows you to purchase property with the intention of reselling it within 12 months. While PWAN Bridgefort strives to secure up to 30% returns, these returns are not guaranteed. Properties must meet program criteria, and resale timing may depend on market conditions.</p>
-              <p className="mb-4">Specific contracts and conditions will apply and be provided at the point of sale or investment.</p>
+              <h2 className="text-2xl font-bold mb-4">6. Payment & E-commerce Terms</h2>
+              <ul className="list-disc pl-6 mb-4 space-y-1">
+                <li>All property and service payments must be made through our approved payment gateway (e.g., Paystack).</li>
+                <li>No cash is to be paid to agents or staff outside the platform or official channels.</li>
+                <li>Refund and cancellation policies apply as published for each property or service.</li>
+                <li>Order confirmation/receipts will be sent automatically by email and available on your dashboard.</li>
+              </ul>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">7. Intellectual Property</h2>
-              <p className="mb-4">All content on the Site—including text, graphics, logos, videos, documents, calculators, and software—is the property of PWAN Bridgefort or its licensors. You may not reproduce, distribute, or exploit any content without our prior written consent.</p>
+              <h2 className="text-2xl font-bold mb-4">7. Land Banking & Trading Compliance</h2>
+              <p>
+                As a digital land banking provider, we comply fully with the Nigerian Land Use Act and all relevant state/local laws. Title search/KYC/AML and legal paperwork are mandatory for investment.
+              </p>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">8. Third-Party Links</h2>
-              <p className="mb-4">Our website may contain links to third-party websites or services not owned or controlled by PWAN Bridgefort. We are not responsible for the content, policies, or practices of these websites and encourage users to read their terms and conditions.</p>
+              <h2 className="text-2xl font-bold mb-4">8. Intellectual Property</h2>
+              <p>
+                All Site content (text, photos, documents, calculators, videos) remains the property of PWAN Bridgefort unless explicitly licensed separately. Use of content for personal research/decision is permitted; publishing or copying is prohibited without written permission.
+              </p>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">9. Limitation of Liability</h2>
-              <p className="mb-4">PWAN Bridgefort shall not be liable for any indirect, incidental, special, or consequential damages arising out of your use of our website or services, including loss of investment or profit.</p>
-              <p className="mb-4">While we strive for accuracy, we do not guarantee the completeness or reliability of information displayed on the Site.</p>
+              <h2 className="text-2xl font-bold mb-4">9. Third-Party Links</h2>
+              <p>
+                Our website may contain links or integrations with payment processors, third party property partners, learning platforms, or regulatory sites. We cannot guarantee the accuracy or privacy practices of external sites.
+              </p>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">10. Privacy</h2>
-              <p className="mb-4">Our Privacy Policy explains how we collect, use, and protect your personal data. By using our Site and services, you consent to the practices described in our Privacy Policy.</p>
+              <h2 className="text-2xl font-bold mb-4">10. Limitation of Liability</h2>
+              <ul className="list-disc pl-6 mb-4 space-y-1">
+                <li>PWAN Bridgefort is not liable for indirect, incidental, or consequential losses resulting from use of the platform.</li>
+                <li>No guarantees are made for future price appreciation of any property, investment, or land banking package.</li>
+                <li>Platform reliability cannot be guaranteed during scheduled maintenance or uncontrollable external downtime.</li>
+              </ul>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">11. Modifications to Terms</h2>
-              <p className="mb-4">PWAN Bridgefort reserves the right to update or modify these Terms at any time. We will notify users by updating the "Effective Date" above. Your continued use of our website following any changes means you accept the revised Terms.</p>
+              <h2 className="text-2xl font-bold mb-4">11. Privacy and Data Security</h2>
+              <p>
+                Use of our platform is governed by our <Link to="/privacy-policy" className="text-estate-blue hover:underline">Privacy Policy</Link>. All payments are processed via secure, encrypted channels, fully compliant with Nigerian law.
+              </p>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">12. Governing Law</h2>
-              <p className="mb-4">These Terms and any dispute arising out of your use of our services shall be governed by and construed in accordance with the laws of the Federal Republic of Nigeria.</p>
+              <h2 className="text-2xl font-bold mb-4">12. Dispute Resolution and Regulatory Compliance</h2>
+              <p>
+                Disputes will first be handled via mediation by our internal compliance team. Unresolved matters may be referred to regulatory authorities or, if needed, to arbitration in Lagos, under Nigerian law.
+              </p>
             </section>
-            
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">13. Contact Information</h2>
-              <p className="mb-4">For questions about these Terms or our services, contact us at:</p>
+              <h2 className="text-2xl font-bold mb-4">13. Changes to Terms</h2>
+              <p>
+                We reserve the right to update or amend these Terms at any time. Changes will be posted with new effective dates. Use of the platform indicates acceptance of the amended Terms.
+              </p>
+            </section>
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold mb-4">14. Contact Information & Regulatory Address</h2>
               <div className="bg-gray-50 p-4 rounded">
                 <p><strong>PWAN Bridgefort Estate and Investment Ltd</strong></p>
                 <p>Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate,<br />
-                VGC Bus Stop, Lekki-Ajah, Lagos</p>
+                  VGC Bus Stop, Lekki-Ajah, Lagos, Nigeria</p>
                 <p>📞 <a href="tel:+2348030624059" className="text-estate-blue hover:underline">+234 803 062 4059</a></p>
                 <p>📧 <a href="mailto:info@pwanbridgefort.ng" className="text-estate-blue hover:underline">info@pwanbridgefort.ng</a></p>
               </div>
             </section>
-            
             <footer className="text-center text-gray-600 mt-10">
-              © 2025 PWAN Bridgefort Estate and Investment Ltd. All rights reserved.
+              © 2025 PWAN Bridgefort Estate and Investment Ltd. E-commerce, digital real estate and land investment platform. Regulated and protected under Nigerian law.
             </footer>
           </div>
         </div>
       </main>
-      
       <Footer />
     </div>
   );
