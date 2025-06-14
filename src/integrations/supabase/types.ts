@@ -682,6 +682,10 @@ export type Database = {
           email: string
         }[]
       }
+      has_role: {
+        Args: { _user_id: string; _role: string }
+        Returns: boolean
+      }
       list_all_users: {
         Args: Record<PropertyKey, never>
         Returns: {
