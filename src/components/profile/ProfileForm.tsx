@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +11,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import KYCUploadField from './KYCUploadField';
 
 const ProfileForm = () => {
   const { user } = useAuth();
@@ -47,6 +47,48 @@ const ProfileForm = () => {
     nextOfKinEmail: ''
   });
 
+  const [kycDocs, setKycDocs] = useState<{[key: string]: { url: string; name: string; type: string }}>({});
+  // New step flow config
+  const steps = [
+    { key: "personal", label: "Personal Info" },
+    { key: "employment", label: "Employment" },
+    { key: "kyc", label: "KYC Documents" },
+    { key: "aml", label: "Compliance & AML" },
+    { key: "review", label: "Review & Submit" },
+  ];
+
+  // Add new form fields for KYC/Compliance
+  const [amlData, setAmlData] = useState({
+    idType: '',
+    idNumber: '',
+    idExpiry: '',
+    employmentStatus: '',
+    employerCountry: '',
+    sourceOfIncome: '',
+    monthlyIncome: '',
+    bankingDetails: '',
+    isForeigner: false,
+    residencePermit: '',
+    visaStatus: '',
+    amlRiskRating: '',
+    amlNotes: '',
+  });
+
+  // Simple multi-step validation (crude for brevity)
+  const canProceed = {
+    personal: !!formData.dateOfBirth && !!formData.gender && !!formData.phoneNumber,
+    employment: true,
+    kyc: ["passport", "national_id", "utility"].every(doc => !!kycDocs[doc]?.url),
+    aml: !!amlData.idType && !!amlData.idNumber,
+    review: true,
+  };
+
+  const firstInvalidStep = steps.find(step => !canProceed[step.key as keyof typeof canProceed])?.key;
+
+  const handleAmlInput = (field: string, value: string | boolean) => {
+    setAmlData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -62,7 +104,6 @@ const ProfileForm = () => {
 
   const handleSubmit = async () => {
     if (!user) return;
-    
     setLoading(true);
     try {
       const { error } = await supabase
@@ -87,6 +128,20 @@ const ProfileForm = () => {
           next_of_kin_address: formData.nextOfKinAddress,
           next_of_kin_phone: formData.nextOfKinPhone,
           next_of_kin_email: formData.nextOfKinEmail,
+          kyc_docs: kycDocs,
+          id_type: amlData.idType,
+          id_number: amlData.idNumber,
+          id_expiry: amlData.idExpiry,
+          employment_status: amlData.employmentStatus,
+          employer_country: amlData.employerCountry,
+          source_of_income: amlData.sourceOfIncome,
+          monthly_income: amlData.monthlyIncome,
+          banking_details: amlData.bankingDetails,
+          is_foreigner: amlData.isForeigner,
+          residence_permit: amlData.residencePermit,
+          visa_status: amlData.visaStatus,
+          aml_risk_rating: amlData.amlRiskRating,
+          aml_notes: amlData.amlNotes,
           terms_accepted: termsAccepted,
           profile_completed: true,
           updated_at: new Date().toISOString()
@@ -97,9 +152,9 @@ const ProfileForm = () => {
 
       toast({
         title: "Profile Updated",
-        description: "Your profile has been completed successfully!"
+        description: "Your profile & KYC were saved successfully!"
       });
-      
+
       navigate('/dashboard');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -121,18 +176,24 @@ const ProfileForm = () => {
         <CardHeader>
           <CardTitle className="text-2xl text-center">Complete Your Profile</CardTitle>
           <p className="text-center text-muted-foreground">
-            Please fill out the following information to complete your account setup.
+            Please fill out the following KYC & AML information to verify your account.
           </p>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="personal">Personal Info</TabsTrigger>
-              <TabsTrigger value="employment">Employment</TabsTrigger>
-              <TabsTrigger value="nextofkin">Next of Kin</TabsTrigger>
-              <TabsTrigger value="review">Review & Submit</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-5">
+              {steps.map(s => (
+                <TabsTrigger
+                  key={s.key}
+                  value={s.key}
+                  disabled={firstInvalidStep && steps.findIndex(st => st.key === s.key) > steps.findIndex(st => st.key === firstInvalidStep)}
+                >
+                  {s.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
-            
+
+            {/* Step 1: Personal Info */}
             <TabsContent value="personal" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -269,6 +330,7 @@ const ProfileForm = () => {
               </div>
             </TabsContent>
 
+            {/* Step 2: Employment */}
             <TabsContent value="employment" className="space-y-6">
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-2">
@@ -302,74 +364,115 @@ const ProfileForm = () => {
                   />
                 </div>
               </div>
-            </TabsContent>
-
-            <TabsContent value="nextofkin" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="nextOfKinName">Next of Kin Name *</Label>
+                  <Label htmlFor="employmentStatus">Employment Status</Label>
                   <Input
-                    id="nextOfKinName"
-                    value={formData.nextOfKinName}
-                    onChange={(e) => handleInputChange('nextOfKinName', e.target.value)}
-                    placeholder="Enter next of kin's name"
-                    required
+                    id="employmentStatus"
+                    value={amlData.employmentStatus}
+                    onChange={e => handleAmlInput('employmentStatus', e.target.value)}
+                    placeholder="Employed, Self-employed, Unemployed, Student, Retired"
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="nextOfKinRelationship">Next of Kin Relationship *</Label>
-                  <Select value={formData.nextOfKinRelationship} onValueChange={(value) => handleInputChange('nextOfKinRelationship', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="spouse">Spouse</SelectItem>
-                      <SelectItem value="parent">Parent</SelectItem>
-                      <SelectItem value="sibling">Sibling</SelectItem>
-                      <SelectItem value="child">Child</SelectItem>
-                      <SelectItem value="friend">Friend</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="nextOfKinAddress">Next of Kin Address *</Label>
-                  <Textarea
-                    id="nextOfKinAddress"
-                    value={formData.nextOfKinAddress}
-                    onChange={(e) => handleInputChange('nextOfKinAddress', e.target.value)}
-                    placeholder="Enter next of kin's address"
-                    rows={3}
-                    required
+                  <Label htmlFor="sourceOfIncome">Source of Income</Label>
+                  <Input
+                    id="sourceOfIncome"
+                    value={amlData.sourceOfIncome}
+                    onChange={e => handleAmlInput('sourceOfIncome', e.target.value)}
+                    placeholder="e.g. Salary, Business, Pension"
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="nextOfKinPhone">Next of Kin Phone Number *</Label>
+                  <Label htmlFor="monthlyIncome">Estimated Monthly Income (₦)</Label>
                   <Input
-                    id="nextOfKinPhone"
-                    value={formData.nextOfKinPhone}
-                    onChange={(e) => handleInputChange('nextOfKinPhone', e.target.value)}
-                    placeholder="Enter next of kin's phone number"
-                    required
+                    id="monthlyIncome"
+                    type="number"
+                    value={amlData.monthlyIncome}
+                    onChange={e => handleAmlInput('monthlyIncome', e.target.value)}
+                    placeholder="e.g. 500000"
                   />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="nextOfKinEmail">Next of Kin Email Address</Label>
+                  <Label htmlFor="bankingDetails">Banking Details</Label>
                   <Input
-                    id="nextOfKinEmail"
-                    type="email"
-                    value={formData.nextOfKinEmail}
-                    onChange={(e) => handleInputChange('nextOfKinEmail', e.target.value)}
-                    placeholder="Enter next of kin's email address"
+                    id="bankingDetails"
+                    value={amlData.bankingDetails}
+                    onChange={e => handleAmlInput('bankingDetails', e.target.value)}
+                    placeholder="Account number or details"
                   />
                 </div>
               </div>
             </TabsContent>
 
+            {/* Step 3: KYC Documents */}
+            <TabsContent value="kyc" className="space-y-6">
+              <div className="space-y-2">
+                <KYCUploadField
+                  label="International Passport"
+                  bucket="kyc-documents"
+                  userId={user.id}
+                  docKey="passport"
+                  existingUrl={kycDocs["passport"]?.url}
+                  onUploaded={(url, name, type) => setKycDocs(prev => ({ ...prev, passport: { url, name, type } }))}
+                />
+                <KYCUploadField
+                  label="National ID Card"
+                  bucket="kyc-documents"
+                  userId={user.id}
+                  docKey="national_id"
+                  existingUrl={kycDocs["national_id"]?.url}
+                  onUploaded={(url, name, type) => setKycDocs(prev => ({ ...prev, national_id: { url, name, type } }))}
+                />
+                <KYCUploadField
+                  label="Proof of Address (Utility Bill)"
+                  bucket="kyc-documents"
+                  userId={user.id}
+                  docKey="utility"
+                  existingUrl={kycDocs["utility"]?.url}
+                  onUploaded={(url, name, type) => setKycDocs(prev => ({ ...prev, utility: { url, name, type } }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="idType">ID Type Provided</Label>
+                <Input id="idType" value={amlData.idType} onChange={e => handleAmlInput("idType", e.target.value)} placeholder="e.g. Passport" />
+                <Label htmlFor="idNumber">ID Number</Label>
+                <Input id="idNumber" value={amlData.idNumber} onChange={e => handleAmlInput("idNumber", e.target.value)} placeholder="Document Number" />
+                <Label htmlFor="idExpiry">ID Expiry Date</Label>
+                <Input type="date" id="idExpiry" value={amlData.idExpiry} onChange={e => handleAmlInput("idExpiry", e.target.value)} />
+              </div>
+            </TabsContent>
+
+            {/* Step 4: Compliance & AML */}
+            <TabsContent value="aml" className="space-y-6">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Are you a foreign national?</label>
+                <select value={amlData.isForeigner ? "yes" : "no"} onChange={e => handleAmlInput("isForeigner", e.target.value === "yes")}>
+                  <option value="no">No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </div>
+              {amlData.isForeigner && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="residencePermit">Residence Permit Details</Label>
+                    <Input id="residencePermit" value={amlData.residencePermit} onChange={e => handleAmlInput("residencePermit", e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="visaStatus">Visa Status</Label>
+                    <Input id="visaStatus" value={amlData.visaStatus} onChange={e => handleAmlInput("visaStatus", e.target.value)} />
+                  </div>
+                </>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="amlRiskRating">AML Risk Assessment</Label>
+                <Input id="amlRiskRating" value={amlData.amlRiskRating} onChange={e => handleAmlInput("amlRiskRating", e.target.value)} placeholder="Low, Medium, High" />
+                <Label htmlFor="amlNotes">AML Remarks/Notes</Label>
+                <Input id="amlNotes" value={amlData.amlNotes} onChange={e => handleAmlInput("amlNotes", e.target.value)} placeholder="Risk notes or compliance comments" />
+              </div>
+            </TabsContent>
+
+            {/* Step 5: Review & Submit */}
             <TabsContent value="review" className="space-y-6">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Review Your Information</h3>
@@ -377,6 +480,9 @@ const ProfileForm = () => {
                   Please review all the information you've entered before submitting.
                 </p>
                 
+                <div className="space-y-2 bg-blue-100 p-3 rounded">
+                  <pre className="text-xs">{JSON.stringify({ ...formData, amlData, kycDocs }, null, 2)}</pre>
+                </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="terms"
@@ -393,7 +499,7 @@ const ProfileForm = () => {
                   disabled={loading || !termsAccepted}
                   className="w-full bg-estate-blue hover:bg-estate-darkBlue"
                 >
-                  {loading ? 'Submitting...' : 'Submit Profile'}
+                  {loading ? 'Submitting...' : 'Submit Profile & KYC'}
                 </Button>
               </div>
             </TabsContent>
