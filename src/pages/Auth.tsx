@@ -107,12 +107,12 @@ const Auth = () => {
         </h1>
       </div>
       
-      {/* Moved Go Back Home button just below the header */}
-      <div className="container-custom">
+      {/* Go Back Home button: aligned to left, directly under header */}
+      <div className="w-full px-4 sm:px-6 lg:px-8 mt-4 mb-2 flex justify-start">
         <Button
           type="button"
           variant="outline"
-          className="mt-4 mb-2 ml-0"
+          className=""
           onClick={() => navigate('/home')}
         >
           Cancel / Go Back Home
