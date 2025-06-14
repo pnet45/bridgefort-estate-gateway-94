@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import NavbarUserMenu from './NavbarUserMenu';
-import NavbarLoginIcon from './NavbarLoginIcon';
+// import NavbarLoginIcon from './NavbarLoginIcon'; // Removed
 import CartIcon from '../ecommerce/CartIcon';
 
 interface AnimatedAuthSectionProps {
@@ -41,16 +41,7 @@ const AnimatedAuthSection = ({ user, profile, userRole, shouldShowLogin }: Anima
         </div>
       ) : shouldShowLogin ? (
         <>
-          <div 
-            className="animate-fade-in"
-            style={{
-              animationDelay: '1.6s',
-              opacity: 0,
-              animation: 'slideInRight 0.6s ease-out 1.6s forwards'
-            }}
-          >
-            <NavbarLoginIcon />
-          </div>
+          {/* Removed inline NavbarLoginIcon and will use FloatingLoginButton globally */}
           <div 
             className="animate-fade-in"
             style={{
@@ -70,3 +61,4 @@ const AnimatedAuthSection = ({ user, profile, userRole, shouldShowLogin }: Anima
 };
 
 export default AnimatedAuthSection;
+
