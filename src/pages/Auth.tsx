@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
@@ -174,13 +175,23 @@ const Auth = () => {
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </Button>
           </form>
-          
-          <div className="mt-4 text-center">
-            <button type="button" onClick={toggleAuthMode} className="text-sm text-estate-blue hover:underline">
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleAuthMode}
+              className="text-sm text-estate-blue hover:underline"
+            >
               {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Sign In'}
             </button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate('/home')}
+            >
+              Cancel / Go Back Home
+            </Button>
           </div>
-          
           {isLogin && (
             <div className="mt-4 text-center">
               <Link to="/reset-password" className="text-sm text-gray-600 hover:underline">
