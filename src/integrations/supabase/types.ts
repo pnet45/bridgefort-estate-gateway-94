@@ -426,18 +426,29 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          aml_notes: string | null
+          aml_risk_rating: string | null
+          banking_details: string | null
           created_at: string | null
           current_residence: string | null
           date_of_birth: string | null
           employer_address: string | null
+          employer_country: string | null
           employer_name: string | null
+          employment_status: string | null
           first_name: string | null
           gender: string | null
           id: string
+          id_expiry: string | null
+          id_number: string | null
+          id_type: string | null
+          is_foreigner: boolean | null
+          kyc_docs: Json | null
           languages_spoken: string[] | null
           last_name: string | null
           local_government: string | null
           marital_status: string | null
+          monthly_income: number | null
           nationality: string | null
           next_of_kin_address: string | null
           next_of_kin_email: string | null
@@ -447,25 +458,39 @@ export type Database = {
           occupation: string | null
           phone_number: string | null
           profile_completed: boolean | null
+          residence_permit: string | null
+          source_of_income: string | null
           spouse_name: string | null
           state_of_origin: string | null
           terms_accepted: boolean | null
           updated_at: string | null
+          visa_status: string | null
         }
         Insert: {
           address?: string | null
+          aml_notes?: string | null
+          aml_risk_rating?: string | null
+          banking_details?: string | null
           created_at?: string | null
           current_residence?: string | null
           date_of_birth?: string | null
           employer_address?: string | null
+          employer_country?: string | null
           employer_name?: string | null
+          employment_status?: string | null
           first_name?: string | null
           gender?: string | null
           id: string
+          id_expiry?: string | null
+          id_number?: string | null
+          id_type?: string | null
+          is_foreigner?: boolean | null
+          kyc_docs?: Json | null
           languages_spoken?: string[] | null
           last_name?: string | null
           local_government?: string | null
           marital_status?: string | null
+          monthly_income?: number | null
           nationality?: string | null
           next_of_kin_address?: string | null
           next_of_kin_email?: string | null
@@ -475,25 +500,39 @@ export type Database = {
           occupation?: string | null
           phone_number?: string | null
           profile_completed?: boolean | null
+          residence_permit?: string | null
+          source_of_income?: string | null
           spouse_name?: string | null
           state_of_origin?: string | null
           terms_accepted?: boolean | null
           updated_at?: string | null
+          visa_status?: string | null
         }
         Update: {
           address?: string | null
+          aml_notes?: string | null
+          aml_risk_rating?: string | null
+          banking_details?: string | null
           created_at?: string | null
           current_residence?: string | null
           date_of_birth?: string | null
           employer_address?: string | null
+          employer_country?: string | null
           employer_name?: string | null
+          employment_status?: string | null
           first_name?: string | null
           gender?: string | null
           id?: string
+          id_expiry?: string | null
+          id_number?: string | null
+          id_type?: string | null
+          is_foreigner?: boolean | null
+          kyc_docs?: Json | null
           languages_spoken?: string[] | null
           last_name?: string | null
           local_government?: string | null
           marital_status?: string | null
+          monthly_income?: number | null
           nationality?: string | null
           next_of_kin_address?: string | null
           next_of_kin_email?: string | null
@@ -503,10 +542,13 @@ export type Database = {
           occupation?: string | null
           phone_number?: string | null
           profile_completed?: boolean | null
+          residence_permit?: string | null
+          source_of_income?: string | null
           spouse_name?: string | null
           state_of_origin?: string | null
           terms_accepted?: boolean | null
           updated_at?: string | null
+          visa_status?: string | null
         }
         Relationships: []
       }
