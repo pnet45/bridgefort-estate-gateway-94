@@ -107,6 +107,18 @@ const Auth = () => {
         </h1>
       </div>
       
+      {/* Moved Go Back Home button just below the header */}
+      <div className="container-custom">
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-4 mb-2 ml-0"
+          onClick={() => navigate('/home')}
+        >
+          Cancel / Go Back Home
+        </Button>
+      </div>
+
       <div className="container-custom py-12 flex-grow">
         <div className="max-w-md mx-auto">
           <form onSubmit={isLogin ? handleSignIn : handleSignUp} className="space-y-6">
@@ -183,14 +195,7 @@ const Auth = () => {
             >
               {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Sign In'}
             </button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate('/home')}
-            >
-              Cancel / Go Back Home
-            </Button>
+            {/* Removed Go Back Home button here */}
           </div>
           {isLogin && (
             <div className="mt-4 text-center">
