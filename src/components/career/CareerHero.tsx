@@ -1,16 +1,13 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 const CareerHero = () => {
-  return (
-    <section className="relative">
+  return <section className="relative">
       <div className="h-[50vh] bg-cover bg-center" style={{
-        backgroundImage: 'url(/lovable-uploads/b006d931-462b-4646-97c9-0b2f3bc1d210.jpg)'
-      }}>
+      backgroundImage: 'url(/lovable-uploads/b006d931-462b-4646-97c9-0b2f3bc1d210.jpg)'
+    }}>
         <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center">
           <div className="container-custom text-white">
-            <div className="max-w-3xl">
+            <div className="max-w-3xl my-0 rounded-none py-[12px]">
               <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white animate-slide-in-left">
                 Build Your Career With Us
               </h1>
@@ -30,8 +27,6 @@ const CareerHero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default CareerHero;
