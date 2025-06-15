@@ -74,7 +74,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       const totalAmount = selectedPlan.total;
       const reference = `PWAN_${Date.now()}_${user?.id}`;
       // Insert into payments table (creates a payment plan agreement)
-      const { data: paymentAgreement, error: paymentError } = await supabase
+      const { data: paymentAgreement, error: paymentAgreementError } = await supabase
         .from('payments')
         .insert({
           user_id: user?.id,
@@ -92,34 +92,34 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         .select()
         .single();
 
-    if (paymentError) throw new Error("Failed to create payment plan");
+      if (paymentAgreementError) throw new Error("Failed to create payment plan");
 
-    const { data: orderData, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        user_id: user?.id,
-        customer_email: customerInfo.email,
-        customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
-        total_amount: totalAmount,
-        payment_reference: reference,
-        payment_status: 'pending',
-        items: cart.map(item => ({
-          plot_id: item.plot.id,
-          plot_number: item.plot.plotNumber,
-          property_name: item.plot.propertyName,
-          quantity: item.quantity,
-          price: item.plot.pricePerPlot
-        }))
-      })
-      .select()
-      .single();
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user?.id,
+          customer_email: customerInfo.email,
+          customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
+          total_amount: totalAmount,
+          payment_reference: reference,
+          payment_status: 'pending',
+          items: cart.map(item => ({
+            plot_id: item.plot.id,
+            plot_number: item.plot.plotNumber,
+            property_name: item.plot.propertyName,
+            quantity: item.quantity,
+            price: item.plot.pricePerPlot
+          }))
+        })
+        .select()
+        .single();
 
       if (orderError) {
         throw new Error('Failed to create order');
       }
 
       // Initialize Paystack payment using the edge function
-      const { data: paymentData, error: paymentError } = await supabase.functions.invoke('paystack-initialize', {
+      const { data: paymentInitData, error: paymentInitError } = await supabase.functions.invoke('paystack-initialize', {
         body: {
           email: customerInfo.email,
           amount: totalAmount,
@@ -144,21 +144,20 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         }
       });
 
-      console.log("Paystack response:", paymentData, paymentError);
+      console.log("Paystack response:", paymentInitData, paymentInitError);
 
-      // Defensive checks for Paystack edge function response structure
-      if (paymentError || !paymentData) throw new Error('Failed to initialize payment');
-      if (typeof paymentData === "object" && paymentData.error) {
-        throw new Error(paymentData.error);
+      if (paymentInitError || !paymentInitData) throw new Error('Failed to initialize payment');
+      if (typeof paymentInitData === "object" && paymentInitData.error) {
+        throw new Error(paymentInitData.error);
       }
-      if (paymentData.status && paymentData.data && paymentData.data.authorization_url) {
-        window.location.href = paymentData.data.authorization_url;
-      } else if (paymentData.data && paymentData.data.authorization_url) {
-        window.location.href = paymentData.data.authorization_url;
-      } else if (paymentData.authorization_url) {
-        window.location.href = paymentData.authorization_url;
+      if (paymentInitData.status && paymentInitData.data && paymentInitData.data.authorization_url) {
+        window.location.href = paymentInitData.data.authorization_url;
+      } else if (paymentInitData.data && paymentInitData.data.authorization_url) {
+        window.location.href = paymentInitData.data.authorization_url;
+      } else if (paymentInitData.authorization_url) {
+        window.location.href = paymentInitData.authorization_url;
       } else {
-        throw new Error(paymentData.message || 'Failed to initialize payment');
+        throw new Error(paymentInitData.message || 'Failed to initialize payment');
       }
     } catch (error) {
       console.error('Payment error:', error);

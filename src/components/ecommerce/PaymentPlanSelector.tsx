@@ -15,7 +15,7 @@ interface PaymentPlanSelectorProps {
   selected: { months: number; type: PaymentPlanType } | null;
 }
 
-const plans = [
+const plans: { label: string; months: number; type: PaymentPlanType }[] = [
   { label: "Outright (One-off)", months: 1, type: "outright" },
   { label: "1-3 Months (5% extra)", months: 3, type: "1-3" },
   { label: "4-6 Months (12.5% extra)", months: 6, type: "4-6" },
@@ -40,7 +40,16 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
               selected?.type === plan.type ? "border-estate-blue bg-blue-50" : "border-gray-200 bg-white"
             }`}
             type="button"
-            onClick={() => onPlanSelect({ ...plan, ...result })}
+            onClick={() =>
+              onPlanSelect({
+                months: plan.months,
+                type: plan.type,
+                total: result.total,
+                principal: result.principal,
+                interest: result.interest,
+                interestRate: result.interestRate,
+              })
+            }
           >
             <div className="flex justify-between items-center">
               <span>{plan.label}</span>
@@ -55,3 +64,4 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
 );
 
 export default PaymentPlanSelector;
+
