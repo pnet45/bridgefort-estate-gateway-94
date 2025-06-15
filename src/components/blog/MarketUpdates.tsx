@@ -1,11 +1,8 @@
-
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 
 const updates = [
@@ -23,63 +20,79 @@ const updates = [
   },
   {
     title: "Plot Allocation for Precious Garden Estate",
-    img: "/lovable-uploads/5a69cf4b-e9ca-477d-bf00-2ac6fa768177.jpg",
+    img: "/lovable-uploads/Precious Gardens Estate.jpg",
     details:
-      "Plot allocation for Precious Garden Estate is now underway. Early subscribers are receiving their allocation documents, and guided site visits are available for new clients ready to claim their piece of the future.",
+      "Plot allocation at Precious Garden Estate is currently ongoing, with new landowners receiving documentation and enjoying prompt, guided allocation tours of their plots.",
   },
 ];
 
-const MarketUpdates = () => (
-  <section className="py-10 bg-gray-50">
-    <div className="container-custom">
-      <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">Market Updates</h2>
-      <Carousel
-        opts={{
-          align: "start",
-          loop: true,
-          slidesToScroll: 1,
-        }}
-        className="relative"
-      >
-        <CarouselContent className="!flex-row">
-          {updates.map((u, i) => (
-            <CarouselItem
-              key={i}
-              className="basis-full md:basis-1/2 px-3 transition-transform duration-700 animate-slide-in-right"
-            >
-              <div className="rounded-lg overflow-hidden shadow bg-white flex flex-col md:flex-row box-border h-full animate-[scale-in_0.4s_cubic-bezier(0.4,0,0.6,1)]">
-                <div className="md:w-1/3 h-44 md:h-52 overflow-hidden flex items-center">
-                  <img
-                    src={u.img}
-                    alt={u.title}
-                    className="w-full h-full object-cover rounded-md"
-                    loading="lazy"
-                  />
+const MarketUpdates = () => {
+  // Ref to keep Embla Carousel API instance for controls
+  const carouselApi = useRef<any>(null);
+
+  // Auto-slide every 7 seconds
+  useEffect(() => {
+    if (!carouselApi.current) return;
+    const api = carouselApi.current;
+    const interval = setInterval(() => {
+      if (api && typeof api.scrollNext === "function") {
+        api.scrollNext();
+      }
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [carouselApi.current]);
+
+  return (
+    <section className="py-10 bg-gray-50">
+      <div className="container-custom">
+        <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">Market Updates</h2>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+            slidesToScroll: 1,
+          }}
+          setApi={api => { carouselApi.current = api; }}
+          className="relative"
+        >
+          <CarouselContent className="!flex-row">
+            {updates.map((u, i) => (
+              <CarouselItem
+                key={i}
+                className="basis-full md:basis-1/2 px-3 transition-transform duration-700 animate-slide-in-right"
+              >
+                <div className="rounded-lg overflow-hidden shadow bg-white flex flex-col md:flex-row box-border h-full animate-[scale-in_0.4s_cubic-bezier(0.4,0,0.6,1)]">
+                  <div className="md:w-1/3 h-44 md:h-52 overflow-hidden flex items-center">
+                    <img
+                      src={u.img}
+                      alt={u.title}
+                      className="w-full h-full object-cover rounded-md"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="md:w-2/3 p-6 flex flex-col">
+                    <h3 className="font-bold text-xl text-estate-blue mb-2">
+                      {u.title}
+                    </h3>
+                    <p className="text-gray-700">{u.details}</p>
+                  </div>
                 </div>
-                <div className="md:w-2/3 p-6 flex flex-col">
-                  <h3 className="font-bold text-xl text-estate-blue mb-2">
-                    {u.title}
-                  </h3>
-                  <p className="text-gray-700">{u.details}</p>
-                </div>
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
-      <style>
-        {`
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+        <style>
+          {`
           @media (max-width: 768px) {
             /* On mobile, show 1 card per view */
             .embla__slide { min-width: 100% !important; }
           }
         `}
-      </style>
-    </div>
-  </section>
-);
+        </style>
+      </div>
+    </section>
+  );
+};
 
 export default MarketUpdates;
-
