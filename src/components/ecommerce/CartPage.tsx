@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,7 +37,7 @@ const CartPage = () => {
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/properties')}
           className="flex items-center gap-2"
         >
           <ChevronLeft size={16} />
