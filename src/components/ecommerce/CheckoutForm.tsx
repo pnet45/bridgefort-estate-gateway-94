@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,7 +32,18 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
     country: 'Nigeria',
     zipCode: ''
   });
-  const [selectedPlan, setSelectedPlan] = useState<{ months: number; type: PaymentPlanType; total: number; principal: number; interest: number; interestRate: number } | null>(null);
+
+  const [selectedPlan, setSelectedPlan] = useState<{
+    months: number;
+    type: PaymentPlanType;
+    total: number;
+    principal: number;
+    interest: number;
+    interestRate: number;
+    monthsToPay?: number;
+    monthlyPayment: number;
+    payAmount: number;
+  } | null>(null);
 
   React.useEffect(() => {
     if (!user) {
@@ -61,7 +71,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       });
       return;
     }
-    if (!selectedPlan) {
+    if (!selectedPlan || !selectedPlan.months) {
       toast({
         title: "Error",
         description: "Please select a payment plan",
@@ -70,20 +80,24 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       return;
     }
 
+    const monthsToPay = selectedPlan.monthsToPay || 1;
+    const payAmount = selectedPlan.type === "outright"
+      ? selectedPlan.total
+      : selectedPlan.monthlyPayment * monthsToPay;
+
     setIsProcessing(true);
     try {
-      const totalAmount = selectedPlan.total;
       const reference = `PWAN_${Date.now()}_${user?.id}`;
       console.log("[Checkout] Reference:", reference);
       console.log("[Checkout] Selected Plan:", selectedPlan);
       console.log("[Checkout] Cart Items:", cart);
 
-      // Insert payment plan agreement
+      // Insert payment plan agreement (if not already exists? For now, always create for this cart)
       const { data: paymentAgreement, error: paymentAgreementError } = await supabase
         .from('payments')
         .insert({
           user_id: user?.id,
-          property_id: cart[0]?.plot?.id, // One property at a time
+          property_id: cart[0]?.plot?.id,
           plan_type: selectedPlan.type,
           months: selectedPlan.months,
           principal_amount: selectedPlan.principal,
@@ -101,13 +115,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
 
       if (paymentAgreementError) throw new Error("Failed to create payment plan");
 
+      // Insert order (unchanged)
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user?.id,
           customer_email: customerInfo.email,
           customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
-          total_amount: totalAmount,
+          total_amount: selectedPlan.total,
           payment_reference: reference,
           payment_status: 'pending',
           items: cart.map(item => ({
@@ -127,14 +142,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         throw new Error('Failed to create order');
       }
 
-      // Initialize Paystack payment using the edge function
+      // Initialize Paystack payment using edge function
       console.log("[Checkout] Calling paystack-initialize...");
       const { data: paymentInitData, error: paymentInitError } = await supabase.functions.invoke('paystack-initialize', {
         body: {
           email: customerInfo.email,
-          amount: selectedPlan.type === 'outright' ?
-            totalAmount :
-            Math.ceil(totalAmount / selectedPlan.months),
+          amount: payAmount, // <<== user can select to pay for N months!
           reference,
           user_id: user?.id,
           metadata: {
@@ -155,6 +168,11 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
                 display_name: "Payment Plan",
                 variable_name: "payment_plan",
                 value: selectedPlan.type
+              },
+              {
+                display_name: "Months To Pay",
+                variable_name: "months_to_pay",
+                value: monthsToPay
               }
             ]
           }
@@ -180,6 +198,11 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         console.error('[Checkout] No authorization URL found in response', paymentInitData);
         throw new Error(paymentInitData.message || 'Failed to initialize payment');
       }
+
+      // The rest: Post-payment, handle hooks/webhooks or success redirect with reference.
+      // Ideally, in PaymentSuccess page, update `payments` entry: add amount_paid, subtract balance,
+      // and insert `payment_transactions` entry.
+
     } catch (error) {
       console.error('[Checkout] Payment error:', error);
       toast({
@@ -224,7 +247,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
                 <div>
                   Monthly Payment:&nbsp;
                   <span className="font-semibold">
-                    ₦{Math.ceil(selectedPlan.total / selectedPlan.months).toLocaleString()}
+                    ₦{selectedPlan.monthlyPayment?.toLocaleString()}
+                  </span>
+                </div>
+                <div>
+                  Paying for:&nbsp;
+                  <span>
+                    {selectedPlan.monthsToPay || 1} month{selectedPlan.monthsToPay && selectedPlan.monthsToPay > 1 ? "s" : ""}
+                    {" "}({selectedPlan.monthlyPayment && selectedPlan.monthsToPay ? "₦" + (selectedPlan.monthlyPayment * selectedPlan.monthsToPay).toLocaleString() : ""})
                   </span>
                 </div>
                 <div>

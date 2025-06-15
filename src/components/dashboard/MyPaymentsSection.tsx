@@ -96,30 +96,50 @@ const MyPaymentsSection: React.FC = () => {
           )}
 
           {/* Regular Estate Payments */}
-          {payments.map((pm) => (
-            <div
-              key={pm.id}
-              className="p-4 border rounded-lg bg-white flex flex-col md:flex-row md:items-center justify-between gap-3"
-            >
-              <div>
-                <div className="font-semibold text-estate-blue">
-                  Property: {pm.property_id}
-                </div>
-                <div className="text-xs">Plan: {PLAN_LABELS[pm.plan_type] || pm.plan_type}</div>
-                <div className="text-xs">Tenor: {pm.months} month(s)</div>
-              </div>
-              <div>
-                <div className="font-bold">Total: ₦{Number(pm.total_amount).toLocaleString()}</div>
-                <div className="text-sm text-green-700">Paid: ₦{Number(pm.amount_paid).toLocaleString()}</div>
-                <div className="text-sm text-red-700">Balance: ₦{Number(pm.balance).toLocaleString()}</div>
+          {payments.map((pm) => {
+            // Calculate progress
+            const totalPayments = pm.months;
+            const monthlyPayment = Math.ceil(Number(pm.total_amount) / totalPayments);
+            const paidPayments = Math.floor(Number(pm.amount_paid) / monthlyPayment);
+            const percentPaid = Math.round((Number(pm.amount_paid) / Number(pm.total_amount)) * 100);
+            return (
+              <div
+                key={pm.id}
+                className="p-4 border rounded-lg bg-white flex flex-col md:flex-row md:items-center justify-between gap-3"
+              >
                 <div>
-                  <Badge variant={pm.status === "completed" ? "default" : "secondary"}>
-                    {pm.status}
-                  </Badge>
+                  <div className="font-semibold text-estate-blue">
+                    Property: {pm.property_id}
+                  </div>
+                  <div className="text-xs">Plan: {PLAN_LABELS[pm.plan_type] || pm.plan_type}</div>
+                  <div className="text-xs">Tenor: {pm.months} month(s)</div>
+                  {pm.plan_type !== "outright" && (
+                    <div className="mt-2">
+                      <div className="w-full h-2 rounded bg-blue-100">
+                        <div
+                          className="h-2 rounded bg-estate-blue transition-all"
+                          style={{ width: percentPaid + '%' }}
+                        ></div>
+                      </div>
+                      <div className="text-xs mt-1 text-gray-500">
+                        {paidPayments} of {totalPayments} payments completed
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="font-bold">Total: ₦{Number(pm.total_amount).toLocaleString()}</div>
+                  <div className="text-sm text-green-700">Paid: ₦{Number(pm.amount_paid).toLocaleString()}</div>
+                  <div className="text-sm text-red-700">Balance: ₦{Number(pm.balance).toLocaleString()}</div>
+                  <div>
+                    <Badge variant={pm.status === "completed" ? "default" : "secondary"}>
+                      {pm.status}
+                    </Badge>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </CardContent>
     </Card>
