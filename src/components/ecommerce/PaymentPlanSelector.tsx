@@ -55,7 +55,14 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
               <span>{plan.label}</span>
               <span>₦{result.total.toLocaleString()}</span>
             </div>
-            <div className="text-xs text-gray-500">Pay over {plan.months} months</div>
+            {plan.type !== "outright" && (
+              <div className="text-xs text-blue-600">
+                ₦{Math.ceil(result.total / plan.months).toLocaleString()} per month × {plan.months} months
+              </div>
+            )}
+            <div className="text-xs text-gray-500">
+              Pay over {plan.months} {plan.months === 1 ? "month" : "months"}
+            </div>
           </button>
         );
       })}
@@ -64,4 +71,3 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
 );
 
 export default PaymentPlanSelector;
-

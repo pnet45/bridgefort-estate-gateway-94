@@ -7,17 +7,12 @@ import { Customer } from '@/contexts/ecommerce/types';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import CheckoutDrawer from './CheckoutDrawer';
 import OrderSummary from './OrderSummary';
 import CustomerInfoForm from './CustomerInfoForm';
 import PaymentPlanSelector from './PaymentPlanSelector';
 import { calculatePaymentPlan, PaymentPlanType } from "@/utils/paymentPlan";
 
-interface CheckoutFormProps {
-  onBack: () => void;
-}
-
-const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
+const CheckoutForm: React.FC = () => {
   const { cart, getTotalAmount, clearCart } = useEcommerce();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -73,12 +68,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
     try {
       const totalAmount = selectedPlan.total;
       const reference = `PWAN_${Date.now()}_${user?.id}`;
-      // Insert into payments table (creates a payment plan agreement)
+      // Insert payment plan agreement
       const { data: paymentAgreement, error: paymentAgreementError } = await supabase
         .from('payments')
         .insert({
           user_id: user?.id,
-          property_id: cart[0]?.plot?.id, // Assuming only one property at a time
+          property_id: cart[0]?.plot?.id, // One property at a time
           plan_type: selectedPlan.type,
           months: selectedPlan.months,
           principal_amount: selectedPlan.principal,
@@ -122,7 +117,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       const { data: paymentInitData, error: paymentInitError } = await supabase.functions.invoke('paystack-initialize', {
         body: {
           email: customerInfo.email,
-          amount: totalAmount,
+          amount: selectedPlan.type === 'outright' ? totalAmount : Math.ceil(totalAmount / selectedPlan.months),
           reference,
           user_id: user?.id,
           metadata: {
@@ -138,6 +133,11 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
                 display_name: "Order ID",
                 variable_name: "order_id",
                 value: orderData.id
+              },
+              {
+                display_name: "Payment Plan",
+                variable_name: "payment_plan",
+                value: selectedPlan.type
               }
             ]
           }
@@ -173,30 +173,52 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
 
   if (!user) return null;
 
+  // Main full-page checkout layout
   return (
-    <CheckoutDrawer onBack={onBack}>
+    <div className="min-h-screen bg-white">
       <div className="flex items-center gap-3 p-4 border-b bg-white">
-        <Button variant="ghost" size="sm" onClick={onBack}>
+        <button
+          className="rounded-md px-2 py-1 hover:bg-gray-100"
+          onClick={() => navigate(-1)}
+          aria-label="Go Back"
+        >
           <ArrowLeft size={20} />
-        </Button>
+        </button>
         <h2 className="text-lg font-semibold text-estate-blue">Checkout</h2>
       </div>
-      <div className="flex h-[calc(100vh-80px)]">
+      <div className="flex flex-col md:flex-row w-full h-full">
         <OrderSummary cart={cart} getTotalAmount={getTotalAmount} />
-        <PaymentPlanSelector
-          baseAmount={getTotalAmount()}
-          onPlanSelect={plan => setSelectedPlan(plan)}
-          selected={selectedPlan}
-        />
-        <CustomerInfoForm
-          user={user}
-          customerInfo={customerInfo}
-          setCustomerInfo={setCustomerInfo}
-          isProcessing={isProcessing}
-          onPay={() => handlePaystackPayment()}
-        />
+        <div className="flex-1 flex flex-col md:flex-row">
+          <div className="md:w-[340px] p-4">
+            <PaymentPlanSelector
+              baseAmount={getTotalAmount()}
+              onPlanSelect={plan => setSelectedPlan(plan)}
+              selected={selectedPlan}
+            />
+            {selectedPlan && selectedPlan.type !== "outright" && (
+              <div className="mt-4 bg-blue-50 p-3 rounded-lg text-blue-800 border border-blue-200">
+                <div>
+                  Monthly Payment:&nbsp;
+                  <span className="font-semibold">
+                    ₦{Math.ceil(selectedPlan.total / selectedPlan.months).toLocaleString()}
+                  </span>
+                </div>
+                <div>
+                  Over {selectedPlan.months} months (Total: ₦{selectedPlan.total.toLocaleString()})
+                </div>
+              </div>
+            )}
+          </div>
+          <CustomerInfoForm
+            user={user}
+            customerInfo={customerInfo}
+            setCustomerInfo={setCustomerInfo}
+            isProcessing={isProcessing}
+            onPay={() => handlePaystackPayment()}
+          />
+        </div>
       </div>
-    </CheckoutDrawer>
+    </div>
   );
 };
 
