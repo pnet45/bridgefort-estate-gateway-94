@@ -82,6 +82,14 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
     }
   };
 
+  // Calculate monthly payment and pay amount for current plan
+  const currentPlan =
+    planType && planMonths
+      ? calculatePaymentPlan(baseAmount, planMonths)
+      : null;
+  const monthlyPayment = currentPlan ? Math.ceil(currentPlan.total / planMonths) : 0;
+  const payAmount = monthlyPayment * monthsToPay;
+
   return (
     <div>
       <h4 className="font-semibold mb-2">Select Payment Plan</h4>
@@ -131,9 +139,11 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
             ))}
           </select>
           <div className="text-sm mt-2">
-            {selected?.months && selected?.months > 1
-              ? <>You will pay for <b>{monthsToPay}</b> month{monthsToPay > 1 && "s"}: <b className="text-estate-blue">₦{selected.monthlyPayment && selected.monthsToPay ? (selected.monthlyPayment * selected.monthsToPay).toLocaleString() : ""}</b></>
-              : ""}
+            {planMonths > 1 ? (
+              <>
+                You will pay for <b>{monthsToPay}</b> month{monthsToPay > 1 ? "s" : ""}: <b className="text-estate-blue">₦{payAmount.toLocaleString()}</b>
+              </>
+            ) : ""}
           </div>
         </div>
       )}
