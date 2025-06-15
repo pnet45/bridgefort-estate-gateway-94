@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,8 +42,8 @@ const DocumentationTab: React.FC = () => {
         id: `doc-${estate.id}`,
         propertyName: `${estate.name} Documentation`,
         location: estate.location,
-        plotNumber: "-", // not relevant
-        size: "-", // not relevant
+        plotNumber: 0, // fixed: provide a number value
+        size: 0,       // fixed: provide a number value
         imageUrl: "/placeholder.svg",
         pricePerPlot: DOCUMENTATION_PRICE,
         propertyType: "Documentation",
@@ -109,4 +108,3 @@ const DocumentationTab: React.FC = () => {
 };
 
 export default DocumentationTab;
-
