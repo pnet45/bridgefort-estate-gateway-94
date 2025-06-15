@@ -1,123 +1,103 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar } from '@/components/ui/avatar';
-import { AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { ArrowLeft, CalendarIcon, Clock, Tag } from 'lucide-react';
-import { format } from 'date-fns';
+import { AvatarFallback } from '@/components/ui/avatar';
+import { CalendarIcon, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SocialShareButtons from './SocialShareButtons';
+
+/**
+ * Placeholders you can use:
+ * - /lovable-uploads/796b8bc3-c103-4ea9-bc00-f5ccc19ab812.png
+ * - /lovable-uploads/8038c999-40e2-49bf-afec-2cb0b5bc2c14.png
+ * - /lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png
+ */
 
 interface BlogDetailProps {
   post: any;
 }
 
 const BlogDetail = ({ post }: BlogDetailProps) => {
-  const navigate = useNavigate();
-  const [currentUrl, setCurrentUrl] = useState("");
-  const [articleContent, setArticleContent] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState('');
 
   useEffect(() => {
     setCurrentUrl(window.location.href);
   }, []);
 
-  // Fetch article content if missing or too short (less than 400 chars)
-  useEffect(() => {
-    const fetchAIContent = async () => {
-      if (!post?.content || post.content.length < 400) {
-        setIsGenerating(true);
-        try {
-          const response = await fetch('/functions/v1/generate-blog-article', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: post?.title || 'Real Estate Insights' })
-          });
-          const data = await response.json();
-          setArticleContent(data.generatedArticle || data.article || data.text || "An error occurred.");
-        } catch (e) {
-          setArticleContent("Unable to generate article at this time.");
-        } finally {
-          setIsGenerating(false);
-        }
-      } else {
-        setArticleContent(null);
-      }
-    };
-    fetchAIContent();
-  }, [post?.content, post?.title]);
-
   if (!post) return <div>No post found</div>;
 
-  const formatDate = (date: string) => {
-    try {
-      return format(new Date(date), 'MMMM dd, yyyy');
-    } catch (error) {
-      return "Unknown date";
-    }
-  };
-
-  // Create author initials from the post author
+  // Author initials and name helpers
   const getAuthorInitials = () => {
     if (post.profiles?.first_name && post.profiles?.last_name) {
       return `${post.profiles.first_name[0]}${post.profiles.last_name[0]}`;
     }
     return 'AU';
   };
-
-  // Combine first and last name for display
-  const authorName = post.profiles 
-    ? `${post.profiles.first_name || ''} ${post.profiles.last_name || ''}`.trim() 
+  const authorName = post.profiles
+    ? `${post.profiles.first_name || ''} ${post.profiles.last_name || ''}`.trim()
     : 'Anonymous';
 
-  // Generate a lorem ipsum article if content is missing
-  const generateArticleContent = () => {
-    if (post.content && post.content.length > 300) return post.content;
-    
-    return `
-      <p>The real estate industry in Nigeria continues to evolve, presenting numerous opportunities for investors and homebuyers alike. With the country's growing population and increasing urbanization, demand for quality housing and commercial properties remains strong despite economic challenges.</p>
-      
-      <h2>Market Trends and Opportunities</h2>
-      <p>Nigeria's real estate sector has seen significant development in recent years, particularly in major urban centers like Lagos, Abuja, and Port Harcourt. The demand for affordable housing solutions continues to outstrip supply, creating opportunities for developers who can deliver quality projects at competitive prices.</p>
-      
-      <p>Investment in real estate remains attractive due to:</p>
-      <ul>
-        <li>Long-term appreciation potential</li>
-        <li>Rental income opportunities</li>
-        <li>Protection against inflation</li>
-        <li>Portfolio diversification</li>
-      </ul>
-      
-      <h2>Challenges in the Market</h2>
-      <p>Despite these opportunities, the sector faces several challenges, including:</p>
-      <ul>
-        <li>High construction costs</li>
-        <li>Limited access to affordable financing</li>
-        <li>Complex land documentation processes</li>
-        <li>Infrastructure deficits</li>
-      </ul>
-      
-      <h2>The Future of Real Estate in Nigeria</h2>
-      <p>Looking ahead, technology is expected to play an increasingly important role in transforming the real estate landscape. Digital platforms for property listings, virtual tours, and online transactions are making the market more accessible and transparent.</p>
-      
-      <p>Additionally, sustainable and eco-friendly building practices are gaining traction, reflecting growing awareness of environmental concerns and the need for energy-efficient solutions in a country with persistent power challenges.</p>
-      
-      <h2>Conclusion</h2>
-      <p>For those considering real estate investments in Nigeria, thorough research, due diligence on property titles, and working with reputable developers and agents remain essential strategies for success. Despite challenges, the fundamental drivers of demand in Nigeria's real estate market suggest continued growth and opportunity in the years ahead.</p>
-    `;
+  // Format date helper
+  const formatDate = (date: string) => {
+    const d = new Date(date);
+    if (isNaN(d as any)) return 'Unknown date';
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  // Custom post content with nice alignment and images
+  const getContentWithImages = () => {
+    // Use real post.content if available, but decorate further if you wish
+    let html = post.content || '';
+    // If content is short/lacking, supply our custom content with embedded images
+    if (!html || html.length < 300) {
+      html = `
+        <p>
+          <img src="/lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png" alt="Summit Event" class="rounded-lg w-full md:w-2/3 mx-auto mb-6 shadow-md" />
+          The Nigerian real estate industry is entering a new era with exciting opportunities for buyers and investors. As urban populations rise, housing demand continues to intensify in key cities.
+        </p>
+        <p>
+          Sustainable property development, smart communities, and digital-led services are reshaping the landscape.
+        </p>
+        <img src="/lovable-uploads/8038c999-40e2-49bf-afec-2cb0b5bc2c14.png" alt="Estate Tour" class="rounded-lg w-full md:w-2/3 mx-auto my-7 shadow-md" />
+        <h2 class="text-2xl font-semibold mt-10 mb-3">Major Trends &amp; Opportunities</h2>
+        <p>
+          <strong>Prime locations</strong> in Lagos, Abuja, and Port Harcourt are especially attractive for <span class="text-estate-blue font-semibold">first-time homeowners</span> and <span class="text-estate-red font-semibold">long-term investors</span>. Infrastructure and eco-friendly design are top priorities for developers.
+        </p>
+        <ul class="list-disc pl-7 my-6">
+          <li>Long-term appreciation and rental income potential</li>
+          <li>Creative payment/financing plans for flexible purchase options</li>
+          <li>Continuing innovation in estate amenities</li>
+        </ul>
+        <img src="/lovable-uploads/796b8bc3-c103-4ea9-bc00-f5ccc19ab812.png" alt="Real Estate Training" class="rounded-lg w-full md:w-2/3 mx-auto my-7 shadow-md" />
+        <h2 class="text-2xl font-semibold mt-10 mb-3">Overcoming Market Challenges</h2>
+        <p>
+          While costs and regulatory hurdles persist, progress is clear. Collaboration between realtors, investors, and policymakers is ushering in fresh solutions with real impact.
+        </p>
+        <h2 class="text-2xl font-semibold mt-10 mb-3">The Road Ahead</h2>
+        <p>
+          Whether you’re buying your dream home or seeking lucrative returns, staying informed and working with trusted firms is critical for future success.
+        </p>
+      `;
+    }
+    return html;
   };
 
   return (
-    <article className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      {/* Back button */}
+    <article className="max-w-4xl mx-auto p-2 sm:p-8 bg-white rounded-lg shadow-md">
+      {/* Back button (now always links to /blog) */}
       <div className="mb-6">
-        <Button 
-          variant="outline" 
+        <Button
+          asChild
+          variant="outline"
           size="sm"
           className="flex items-center gap-2"
-          onClick={() => navigate(-1)}
         >
-          <ArrowLeft size={16} /> Back to Blog
+          <Link to="/blog">
+            {/* Left arrow unicode */}
+            <span className="mr-1 text-xl">&#8592;</span> Back to Blog
+          </Link>
         </Button>
       </div>
 
@@ -127,15 +107,15 @@ const BlogDetail = ({ post }: BlogDetailProps) => {
           <img
             src={post.image_path}
             alt={post.title}
-            className="w-full h-72 object-cover rounded-lg"
+            className="w-full max-h-72 object-cover rounded-lg shadow"
           />
         </div>
       )}
 
       {/* Post header */}
-      <div className="mb-6">
+      <div className="mb-6 text-left">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">{post.title}</h1>
-        
+
         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6">
           <div className="flex items-center">
             <Avatar className="h-8 w-8 mr-2">
@@ -143,12 +123,12 @@ const BlogDetail = ({ post }: BlogDetailProps) => {
             </Avatar>
             <span>{authorName}</span>
           </div>
-          
+
           <div className="flex items-center">
             <CalendarIcon size={16} className="mr-1" />
             <span>{formatDate(post.created_at)}</span>
           </div>
-          
+
           {post.category && (
             <div className="flex items-center">
               <Tag size={16} className="mr-1" />
@@ -167,27 +147,19 @@ const BlogDetail = ({ post }: BlogDetailProps) => {
       {/* Post excerpt */}
       {post.excerpt && (
         <div className="mb-6">
-          <p className="text-lg text-gray-700 italic">{post.excerpt}</p>
+          <p className="text-lg text-gray-700 italic text-left">{post.excerpt}</p>
         </div>
       )}
 
       {/* Post content in scrollable area */}
-      <ScrollArea className="h-[500px] rounded-md border p-4">
-        <div className="post-content">
-          {isGenerating && (
-            <div className="text-gray-400 italic mb-3">
-              Generating article using AI...
-            </div>
-          )}
-          <div
-            dangerouslySetInnerHTML={{
-              __html:
-                articleContent !== null
-                  ? articleContent
-                  : post.content || generateArticleContent()
-            }}
-          />
-        </div>
+      <ScrollArea className="h-[500px] rounded-md border p-4 bg-gray-50">
+        <div
+          className="post-content prose prose-estate max-w-none text-left leading-relaxed"
+          style={{ textAlign: 'left' }}
+          dangerouslySetInnerHTML={{
+            __html: getContentWithImages(),
+          }}
+        />
       </ScrollArea>
 
       {/* Social share buttons (bottom) */}
