@@ -7,16 +7,16 @@ import {
 
 const updates = [
   {
-    title: "Market Update: Igbogun/Ebute-Okun Prices Rise",
-    img: "/lovable-uploads/d6f71783-c6ac-4ff8-885e-f4290eba3780.png",
+    title: "Market Update: Epe/Imota, Ikorodu Prices Rise",
+    img: "/lovable-uploads/f79aaed2-c246-4c4d-8b88-8c601683c0d1.png",
     details:
-      "Our Igbogun and Ebute-Okun sites have seen price appreciation by 15% since Q4 2024, making now the perfect time for new investors to secure their plots.",
+      "Our Epe and Imota, Ikorodu properties in Lagos State have seen price appreciation by 15% since Q4 2024, making now the perfect time for new investors to secure their plots.",
   },
   {
     title: "High Demand in New Estates",
     img: "/lovable-uploads/Precious.png",
     details:
-      "Buyer turnout for the new phase launch of Precious Gardens Estate exceeded expectations – immediate allocation ongoing! Book a site visit today.",
+      "Buyer turnout for the new phase launch of Precious Biz Hub exceeded expectations – immediate allocation ongoing! Book a site visit today.",
   },
   {
     title: "Plot Allocation for Precious Garden Estate",
