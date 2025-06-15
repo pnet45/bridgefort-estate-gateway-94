@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEcommerce } from '@/contexts/ecommerce';
@@ -21,6 +21,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [profileCompleted, setProfileCompleted] = useState<boolean | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  
   const [customerInfo, setCustomerInfo] = useState<Customer>({
     firstName: '',
     lastName: '',
@@ -44,6 +47,35 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
     monthlyPayment: number;
     payAmount: number;
   } | null>(null);
+
+  // Check if user has completed profile
+  useEffect(() => {
+    const checkProfileCompletion = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('profile_completed')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) {
+          console.error('Error checking profile completion:', error);
+          setProfileCompleted(false);
+        } else {
+          setProfileCompleted(data?.profile_completed || false);
+        }
+      } catch (error) {
+        console.error('Error checking profile completion:', error);
+        setProfileCompleted(false);
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+
+    checkProfileCompletion();
+  }, [user]);
 
   React.useEffect(() => {
     if (!user) {
@@ -217,7 +249,70 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
 
   if (!user) return null;
 
-  // Main full-page checkout layout
+  // Show loading state while checking profile
+  if (loadingProfile) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-estate-blue mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking profile status...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show profile completion requirement if not completed
+  if (profileCompleted === false) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="flex items-center gap-3 p-4 border-b bg-white">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={onBack ? onBack : () => history.back()}
+            aria-label="Back to Cart"
+          >
+            <ArrowLeft size={20} />
+            Back to Cart
+          </Button>
+          <h2 className="text-lg font-semibold text-estate-blue ml-3">Profile Required</h2>
+        </div>
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="max-w-md mx-auto text-center p-6">
+            <div className="mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Profile Completion Required</h3>
+              <p className="text-gray-600 mb-6">
+                To proceed with your purchase, you must first complete your profile and KYC information. 
+                This is required for all property transactions.
+              </p>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => navigate('/profile')}
+                  className="w-full bg-estate-blue hover:bg-estate-darkBlue text-white"
+                >
+                  Complete Profile Now
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={onBack ? onBack : () => navigate('/properties')}
+                  className="w-full"
+                >
+                  Continue Shopping
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Main full-page checkout layout (only shows if profile is completed)
   return (
     <div className="min-h-screen bg-white">
       <div className="flex items-center gap-3 p-4 border-b bg-white">
