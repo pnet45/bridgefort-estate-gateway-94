@@ -1,24 +1,17 @@
-
 import React from 'react';
-
 interface Buy2SellIntroProps {
   isLoaded: boolean;
 }
-
-const Buy2SellIntro = ({ isLoaded }: Buy2SellIntroProps) => {
-  return (
-    <section className="section-padding bg-white">
+const Buy2SellIntro = ({
+  isLoaded
+}: Buy2SellIntroProps) => {
+  return <section className="section-padding bg-white">
       <div className="container-custom">
         <div className={`text-center max-w-4xl mx-auto transition-all duration-1000 ${isLoaded ? 'animate-fade-in' : 'opacity-0'}`}>
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-estate-blue">What is Buy to Sell?</h2>
           <div className="w-20 h-1 bg-estate-red mx-auto mb-8"></div>
           <p className="text-lg text-gray-900 mb-8 leading-relaxed">
-            <a className="text-gray-900">
-              Buy to Sell is PWAN Bridgefort's innovative investment program that guarantees your returns. 
-              When you purchase land through our Buy to Sell program, we commit to buying it back from you 
-              at a predetermined higher price within 24 months. This gives you the security of guaranteed 
-              returns while benefiting from real estate appreciation.
-            </a>
+            <a className="text-gray-900">Buy to Sell is PWAN Bridgefort's innovative land banking program that guarantees your returns. When you purchase land through our Buy to Sell program, we commit to buying it back from you at a predetermined higher price within 12 months. This gives you the security of guaranteed returns while benefiting from real estate appreciation.</a>
           </p>
           <div className="grid md:grid-cols-3 gap-8 mt-12">
             <div className="text-center">
@@ -45,8 +38,6 @@ const Buy2SellIntro = ({ isLoaded }: Buy2SellIntroProps) => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Buy2SellIntro;
