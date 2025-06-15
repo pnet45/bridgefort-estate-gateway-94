@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import KYCUploadField from './KYCUploadField';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ProfileForm = () => {
   const { user } = useAuth();
@@ -21,6 +21,8 @@ const ProfileForm = () => {
   const [activeTab, setActiveTab] = useState('personal');
   const [termsAccepted, setTermsAccepted] = useState(false);
   
+  const [kycDocs, setKycDocs] = useState<{[key: string]: { url: string; name: string; type: string }}>({});
+
   const [formData, setFormData] = useState({
     // Personal Information
     dateOfBirth: '',
@@ -48,17 +50,6 @@ const ProfileForm = () => {
     nextOfKinEmail: ''
   });
 
-  const [kycDocs, setKycDocs] = useState<{[key: string]: { url: string; name: string; type: string }}>({});
-  // New step flow config
-  const steps = [
-    { key: "personal", label: "Personal Info" },
-    { key: "employment", label: "Employment" },
-    { key: "kyc", label: "KYC Documents" },
-    { key: "aml", label: "Compliance & AML" },
-    { key: "review", label: "Review & Submit" },
-  ];
-
-  // Add new form fields for KYC/Compliance
   const [amlData, setAmlData] = useState({
     idType: '',
     idNumber: '',
@@ -75,13 +66,36 @@ const ProfileForm = () => {
     amlNotes: '',
   });
 
-  // Simple multi-step validation (crude for brevity)
+  const steps = [
+    { key: "personal", label: "Personal Info" },
+    { key: "employment", label: "Employment" },
+    { key: "kyc", label: "KYC Documents" },
+    { key: "aml", label: "Compliance & AML" },
+    { key: "review", label: "Review & Submit" },
+  ];
+
   const canProceed = {
     personal: !!formData.dateOfBirth && !!formData.gender && !!formData.phoneNumber,
     employment: true,
     kyc: ["passport", "national_id", "utility"].every(doc => !!kycDocs[doc]?.url),
     aml: !!amlData.idType && !!amlData.idNumber,
     review: true,
+  };
+
+  const getCurrentStepIndex = () => steps.findIndex(step => step.key === activeTab);
+  
+  const goToNextStep = () => {
+    const currentIndex = getCurrentStepIndex();
+    if (currentIndex < steps.length - 1) {
+      setActiveTab(steps[currentIndex + 1].key);
+    }
+  };
+  
+  const goToPreviousStep = () => {
+    const currentIndex = getCurrentStepIndex();
+    if (currentIndex > 0) {
+      setActiveTab(steps[currentIndex - 1].key);
+    }
   };
 
   const firstInvalidStep = steps.find(step => !canProceed[step.key as keyof typeof canProceed])?.key;
@@ -171,6 +185,48 @@ const ProfileForm = () => {
 
   const languages = ['English', 'Yoruba', 'Igbo', 'Efik', 'Hausa', 'French'];
 
+  const NavigationButtons = ({ stepKey }: { stepKey: string }) => {
+    const currentIndex = getCurrentStepIndex();
+    const isFirstStep = currentIndex === 0;
+    const isLastStep = currentIndex === steps.length - 1;
+    const canProceedFromCurrent = canProceed[stepKey as keyof typeof canProceed];
+
+    return (
+      <div className="flex justify-between mt-6 pt-6 border-t">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={goToPreviousStep}
+          disabled={isFirstStep}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft size={16} />
+          Previous
+        </Button>
+        
+        {!isLastStep ? (
+          <Button
+            type="button"
+            onClick={goToNextStep}
+            disabled={!canProceedFromCurrent}
+            className="flex items-center gap-2 bg-estate-blue hover:bg-estate-darkBlue"
+          >
+            Next
+            <ChevronRight size={16} />
+          </Button>
+        ) : (
+          <Button 
+            onClick={handleSubmit}
+            disabled={loading || !termsAccepted}
+            className="bg-estate-blue hover:bg-estate-darkBlue"
+          >
+            {loading ? 'Submitting...' : 'Submit Profile & KYC'}
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <Card>
@@ -194,7 +250,6 @@ const ProfileForm = () => {
               ))}
             </TabsList>
 
-            {/* Step 1: Personal Info */}
             <TabsContent value="personal" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -329,9 +384,9 @@ const ProfileForm = () => {
                   />
                 </div>
               </div>
+              <NavigationButtons stepKey="personal" />
             </TabsContent>
 
-            {/* Step 2: Employment */}
             <TabsContent value="employment" className="space-y-6">
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-2">
@@ -404,9 +459,9 @@ const ProfileForm = () => {
                   />
                 </div>
               </div>
+              <NavigationButtons stepKey="employment" />
             </TabsContent>
 
-            {/* Step 3: KYC Documents */}
             <TabsContent value="kyc" className="space-y-6">
               <div className="space-y-2">
                 <KYCUploadField
@@ -442,9 +497,9 @@ const ProfileForm = () => {
                 <Label htmlFor="idExpiry">ID Expiry Date</Label>
                 <Input type="date" id="idExpiry" value={amlData.idExpiry} onChange={e => handleAmlInput("idExpiry", e.target.value)} />
               </div>
+              <NavigationButtons stepKey="kyc" />
             </TabsContent>
 
-            {/* Step 4: Compliance & AML */}
             <TabsContent value="aml" className="space-y-6">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Are you a foreign national?</label>
@@ -471,9 +526,9 @@ const ProfileForm = () => {
                 <Label htmlFor="amlNotes">AML Remarks/Notes</Label>
                 <Input id="amlNotes" value={amlData.amlNotes} onChange={e => handleAmlInput("amlNotes", e.target.value)} placeholder="Risk notes or compliance comments" />
               </div>
+              <NavigationButtons stepKey="aml" />
             </TabsContent>
 
-            {/* Step 5: Review & Submit */}
             <TabsContent value="review" className="space-y-6">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Review Your Information</h3>
@@ -495,13 +550,7 @@ const ProfileForm = () => {
                   </Label>
                 </div>
                 
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={loading || !termsAccepted}
-                  className="w-full bg-estate-blue hover:bg-estate-darkBlue"
-                >
-                  {loading ? 'Submitting...' : 'Submit Profile & KYC'}
-                </Button>
+                <NavigationButtons stepKey="review" />
               </div>
             </TabsContent>
           </Tabs>
@@ -512,4 +561,3 @@ const ProfileForm = () => {
 };
 
 export default ProfileForm;
-
