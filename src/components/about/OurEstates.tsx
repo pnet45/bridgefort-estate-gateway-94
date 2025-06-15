@@ -42,7 +42,7 @@ const OurEstates = () => {
           </div>
         </div>
         
-        <div className="text-center mt-10 bg-opacity-10 p-8 rounded-lg bg-gray-950">
+        <div className="text-center mt-10 bg-opacity-6 p-8 rounded-lg bg-gray-950">
           <h3 className="text-2xl font-bold mb-4 text-estate-blue">Join the PWAN Bridgefort Family Today</h3>
           <p className="mb-6 max-w-3xl mx-auto text-zinc-50">
             At PWAN Bridgefort, we're more than a real estate company; we're a bridge to your dreams. Let's help you turn your aspirations into reality, one property at a time.
