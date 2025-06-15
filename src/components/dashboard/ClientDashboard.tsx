@@ -1,25 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Home, 
-  FileText, 
-  Eye, 
-  CreditCard, 
-  Calendar,
-  User,
-  Building,
-  ShoppingCart
-} from 'lucide-react';
+import { Home, FileText, Eye, CreditCard, Calendar, User, Building, ShoppingCart } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import AccountInformation from './AccountInformation';
-import InspectionBookingForm from './InspectionBookingForm';
 import BlogPostsTab from './BlogPostsTab';
-import SavedCartItems from './SavedCartItems';
 import MyPaymentsSection from "./MyPaymentsSection";
 import DocumentationTab from './DocumentationTab';
+
+// Tabs
+import OverviewTab from './tabs/OverviewTab';
+import PropertiesTab from './tabs/PropertiesTab';
+import InspectionsTab from './tabs/InspectionsTab';
+import OrdersTab from './tabs/OrdersTab';
 
 const ClientDashboard = () => {
   const { user, userRole } = useAuth();
@@ -196,143 +190,26 @@ const ClientDashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SavedCartItems />
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar size={20} />
-                  Recent Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {inspections.slice(0, 3).map((inspection: any) => (
-                    <div key={inspection.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="font-medium text-sm">{inspection.estate_name}</p>
-                        <p className="text-xs text-gray-600">
-                          {new Date(inspection.inspection_date).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Badge variant={inspection.status === 'confirmed' ? 'default' : 'secondary'}>
-                        {inspection.status}
-                      </Badge>
-                    </div>
-                  ))}
-                  
-                  {inspections.length === 0 && (
-                    <p className="text-gray-600 text-center py-4">No recent activity</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <OverviewTab inspections={inspections} fetchUserData={fetchUserData} />
         </TabsContent>
-
         <TabsContent value="properties">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building size={20} />
-                My Properties
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">No properties found. Start browsing our available properties to make your first purchase.</p>
-            </CardContent>
-          </Card>
+          <PropertiesTab />
         </TabsContent>
-
         <TabsContent value="inspections">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <InspectionBookingForm onBookingCreated={fetchUserData} />
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>My Inspection Bookings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {inspections.map((inspection: any) => (
-                    <div key={inspection.id} className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold">{inspection.estate_name}</h4>
-                        <Badge variant={inspection.status === 'confirmed' ? 'default' : 'secondary'}>
-                          {inspection.status}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-1">
-                        Date: {new Date(inspection.inspection_date).toLocaleDateString()}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-1">
-                        Time: {inspection.inspection_time}
-                      </p>
-                      {inspection.message && (
-                        <p className="text-sm text-gray-600">
-                          Message: {inspection.message}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                  
-                  {inspections.length === 0 && (
-                    <p className="text-gray-600">No inspection bookings found.</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <InspectionsTab inspections={inspections} fetchUserData={fetchUserData} />
         </TabsContent>
-
         <TabsContent value="orders">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard size={20} />
-                My Orders
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {orders.map((order: any) => (
-                  <div key={order.id} className="p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold">Order #{order.id.slice(0, 8)}</h4>
-                      <Badge variant={order.payment_status === 'completed' ? 'default' : 'secondary'}>
-                        {order.payment_status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-1">
-                      Total: ₦{order.total_amount?.toLocaleString()}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Date: {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))}
-                
-                {orders.length === 0 && (
-                  <p className="text-gray-600">No orders found.</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <OrdersTab orders={orders} />
         </TabsContent>
-
         <TabsContent value="payments">
           <MyPaymentsSection />
         </TabsContent>
-
         <TabsContent value="documentation">
           <DocumentationTab />
         </TabsContent>
-
         <TabsContent value="account">
           <AccountInformation />
         </TabsContent>
-
         {userRole === 'admin' && (
           <TabsContent value="blog">
             <BlogPostsTab 
