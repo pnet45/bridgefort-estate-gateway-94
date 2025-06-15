@@ -5,7 +5,7 @@ const announcementItems = [
   {
     title: "Join Our Team: We're Hiring Marketing & Sales Executives",
     text: "We are recruiting goal-driven and passionate Marketing and Sales Executives for immediate employment (remuneration is very attractive: basic salary and commissions).",
-    img: "/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png",
+    img: "/lovable-uploads/e36d5fd8-2846-41e4-a03b-16f1a93f04df.png",
     cta: { label: "Apply Now", url: "/career" }
   },
   {
