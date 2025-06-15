@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +12,7 @@ import PhoneContactBar from '@/components/PhoneContactBar';
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<any>(null);
+  const [authorProfile, setAuthorProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,24 +20,43 @@ const BlogPost = () => {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        
+
+        // 1. Fetch the post itself (NO join)
         const { data, error } = await supabase
           .from('posts')
-          .select('*, profiles:author_id(*)')
+          .select('*')
           .eq('id', id)
           .eq('published', true)
-          .single();
-        
+          .maybeSingle();
+
         if (error) throw error;
-        
+
         if (!data) {
           setError('Post not found or not published');
+          setPost(null);
         } else {
           setPost(data);
+          setError(null);
+          // 2. Optionally fetch author profile if author_id exists
+          if (data.author_id) {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('id', data.author_id)
+              .maybeSingle();
+            if (!profileError && profile) {
+              setAuthorProfile(profile);
+            } else {
+              setAuthorProfile(null);
+            }
+          } else {
+            setAuthorProfile(null);
+          }
         }
       } catch (error) {
         console.error('Error fetching post:', error);
         setError('Failed to load the post');
+        setPost(null);
       } finally {
         setLoading(false);
       }
@@ -46,11 +67,17 @@ const BlogPost = () => {
     }
   }, [id]);
 
+  // Pass author profile to BlogDetail as "profiles"
+  let mergedPost = post;
+  if (post && authorProfile) {
+    mergedPost = { ...post, profiles: authorProfile };
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <PhoneContactBar />
-      
+
       <main className="flex-grow pt-28 pb-12">
         {loading ? (
           <div className="flex justify-center items-center py-20">
@@ -63,17 +90,18 @@ const BlogPost = () => {
               <p className="text-red-700">{error}</p>
             </div>
           </div>
-        ) : post ? (
+        ) : mergedPost ? (
           <>
-            <BlogDetail post={post} />
+            <BlogDetail post={mergedPost} />
             <BlogNewsletter />
           </>
         ) : null}
       </main>
-      
+
       <Footer />
     </div>
   );
 };
 
 export default BlogPost;
+
