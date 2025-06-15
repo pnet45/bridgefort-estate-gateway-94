@@ -1,3 +1,4 @@
+
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PropertySearch from '../components/PropertySearch';
@@ -16,6 +17,7 @@ import { PropertyProvider } from '../contexts/property';
 import MondayMotivationHero from '../components/home/MondayMotivationHero';
 
 const Home = () => {
+  // Wrap all property-dependent sections with the provider for shared data (for search, FeaturedProperties, etc)
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -23,18 +25,17 @@ const Home = () => {
       {/* Hero Section with Static Image */}
       <HomeHeroImage />
 
-      {/* Property Search */}
+      {/* Property Provider wraps both search and featured! */}
       <PropertyProvider>
         <div className="container-custom">
           <PropertySearch />
         </div>
+        {/* Featured Properties uses context data */}
+        <FeaturedProperties />
       </PropertyProvider>
       
       {/* Mission Statement */}
       <MissionStatement />
-      
-      {/* Featured Properties */}
-      <FeaturedProperties />
       
       {/* Investment Services */}
       <InvestmentServices />
