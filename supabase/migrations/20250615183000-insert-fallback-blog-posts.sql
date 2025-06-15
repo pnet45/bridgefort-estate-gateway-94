@@ -1,5 +1,5 @@
 
--- Insert fallback blog/news posts with proper UUID ids for the posts table
+-- Insert fallback blog/news posts with correct UUID author_id references
 
 insert into public.posts (
   id,
@@ -27,7 +27,7 @@ values
   <h2>How to Attend</h2>
   <p>Registration is now open! Don’t miss your seat at the 2025 Success Summit. Whether you’re an agent, an investor, or simply curious about real estate, this event will give you the latest strategies to grow and succeed in the dynamic Nigerian market.</p>',
   'Join us for an unforgettable experience at the MAY 2025 SUCCESS SUMMIT — LIVE in Port Harcourt with industry leaders and experts.',
-  (select id from public.profiles where first_name = 'Dalvin' and last_name = 'Silva' limit 1),
+  '33cac472-fcdb-4a8c-bafc-172dffb52e3a',
   '/lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png',
   'Training Events',
   true,
@@ -47,7 +47,7 @@ values
   </ul>
   <p>Whether you want to buy, invest, or just learn, Estate Inspection Day is perfect for you and your family. RSVP to reserve your slots!</p>',
   'Explore our newest estates with our expert team. See firsthand the investment opportunities awaiting you.',
-  (select id from public.profiles where first_name = 'Precious' and last_name = 'Silva' limit 1),
+  '14209a45-5e6e-40df-9b9d-dda4e2618b2d',
   '/lovable-uploads/8038c999-40e2-49bf-afec-2cb0b5bc2c14.png',
   'Estate News',
   true,
@@ -67,7 +67,7 @@ values
   </ul>
   <p>You will leave with actionable skills, a copy of our exclusive sales strategy eBook, and a network of motivated realtors ready to collaborate! Register early as seats fill up quickly.</p>',
   'Learn cutting-edge sales techniques from our top performers in this intensive masterclass designed for both beginners and professionals.',
-  (select id from public.profiles where first_name = 'Gideon' and last_name = 'Vincent' limit 1),
+  '250f0088-fc4c-4e81-820f-a14b15c59883',
   '/lovable-uploads/796b8bc3-c103-4ea9-bc00-f5ccc19ab812.png',
   'Training Events',
   true,
