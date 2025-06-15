@@ -2,7 +2,7 @@
 import React from 'react';
 
 // New WhatsApp logo uploaded as: /lovable-uploads/985da183-5e59-4f48-9f0f-35b5e841d5dd.png
-const imgSrc = '/lovable-uploads/985da183-5e59-4f48-9f0f-35b5e841d5dd.png';
+const imgSrc = '/lovable-uploads/WhatsApp2.png';
 
 const WhatsAppChat = () => {
   const whatsappNumber = '+2348070710688';
