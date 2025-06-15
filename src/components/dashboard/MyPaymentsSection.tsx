@@ -15,27 +15,41 @@ const PLAN_LABELS: Record<string, string> = {
 const MyPaymentsSection: React.FC = () => {
   const { user } = useAuth();
   const [payments, setPayments] = useState<any[]>([]);
+  const [docPayments, setDocPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      supabase
-        .from("payments")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .then(({ data }) => {
-          setPayments(data || []);
+    let cancelled = false;
+    async function fetchPayments() {
+      if (user) {
+        const [{ data: normal, error: err1 }, { data: docs, error: err2 }] = await Promise.all([
+          supabase
+            .from("payments")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("estate_documentation_payments")
+            .select("*, estate:estate_id(name, location)")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+        ]);
+        if (!cancelled) {
+          setPayments(normal || []);
+          setDocPayments(docs || []);
           setLoading(false);
-        });
+        }
+      }
     }
+    fetchPayments();
+    return () => { cancelled = true; };
   }, [user]);
 
   if (loading) {
     return <div>Loading My Payments...</div>;
   }
 
-  if (!payments.length) {
+  if (!payments.length && !docPayments.length) {
     return <Card>
       <CardHeader><CardTitle>My Payments</CardTitle></CardHeader>
       <CardContent>
@@ -51,6 +65,37 @@ const MyPaymentsSection: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {/* Estate Documentation Payments */}
+          {docPayments.length > 0 && (
+            <>
+              <div className="font-bold pb-2">Documentation Payments</div>
+              {docPayments.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="p-4 border rounded-lg bg-blue-50 flex flex-col md:flex-row md:items-center justify-between gap-3"
+                >
+                  <div>
+                    <div className="font-semibold text-estate-blue">
+                      Estate: {doc.estate?.name || doc.estate_id}
+                    </div>
+                    <div className="text-xs text-gray-700">{doc.estate?.location}</div>
+                  </div>
+                  <div>
+                    <div className="font-bold">
+                      Documentation Fee: ₦{Number(doc.amount).toLocaleString()}
+                    </div>
+                    <div>
+                      <Badge variant={doc.status === "completed" ? "default" : "secondary"}>
+                        {doc.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Regular Estate Payments */}
           {payments.map((pm) => (
             <div
               key={pm.id}

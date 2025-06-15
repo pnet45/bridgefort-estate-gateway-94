@@ -19,6 +19,7 @@ import InspectionBookingForm from './InspectionBookingForm';
 import BlogPostsTab from './BlogPostsTab';
 import SavedCartItems from './SavedCartItems';
 import MyPaymentsSection from "./MyPaymentsSection";
+import DocumentationTab from './DocumentationTab';
 
 const ClientDashboard = () => {
   const { user, userRole } = useAuth();
@@ -189,6 +190,7 @@ const ClientDashboard = () => {
           <TabsTrigger value="inspections">Inspections</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="payments">My Payments</TabsTrigger>
+          <TabsTrigger value="documentation">Documentation</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
           {userRole === 'admin' && <TabsTrigger value="blog">Blog</TabsTrigger>}
         </TabsList>
@@ -321,6 +323,10 @@ const ClientDashboard = () => {
 
         <TabsContent value="payments">
           <MyPaymentsSection />
+        </TabsContent>
+
+        <TabsContent value="documentation">
+          <DocumentationTab />
         </TabsContent>
 
         <TabsContent value="account">

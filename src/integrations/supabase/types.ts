@@ -279,6 +279,36 @@ export type Database = {
         }
         Relationships: []
       }
+      estate_documentation_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          estate_id: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          estate_id: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          estate_id?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       hidden_properties: {
         Row: {
           created_at: string | null

@@ -1,7 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CartItem, Plot, Customer, PaymentInfo, Order, EcommerceContextType } from './types';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from "@/integrations/supabase/client";
 
 const EcommerceContext = createContext<EcommerceContextType | undefined>(undefined);
 
@@ -96,6 +96,21 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const checkout = async (customerInfo: Customer, paymentInfo: PaymentInfo): Promise<Order> => {
     // Simulate payment processing
     await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // --- Add: Detect documentation item(s) and record to DB ---
+    const docsInCart = cart.filter(item => item.plot.id.startsWith("doc-"));
+    if (docsInCart.length > 0 && customerInfo.email) {
+      for (const docItem of docsInCart) {
+        const estateId = docItem.plot.id.replace("doc-", "");
+        // Record documentation payment intent with status pending
+        await supabase.from("estate_documentation_payments").insert({
+          user_id: null, // supabase client will use authenticated user
+          estate_id: estateId,
+          amount: docItem.plot.pricePerPlot,
+          status: "pending"
+        });
+      }
+    }
 
     const order: Order = {
       id: `ORDER-${Date.now()}`,
