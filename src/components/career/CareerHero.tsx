@@ -7,11 +7,11 @@ const CareerHero = () => {
     }}>
         <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center">
           <div className="container-custom text-white">
-            <div className="max-w-3xl my-0 rounded-none py-[12px]">
+            <div className="max-w-3xl rounded-none mx-0 px-0 py-px my-px">
               <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white animate-slide-in-left">
                 Build Your Career With Us
               </h1>
-              <p className="text-xl mb-8 animate-fade-in">
+              <p className="text-xl mb-8 animate-fade-in py-[16px] my-[45px]">
                 Join Nigeria's leading real estate company and be part of a team that's 
                 transforming the property investment landscape across the country.
               </p>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { TrendingUp, Users, Award, Heart, BarChart, Briefcase } from 'lucide-react';
 const WhyJoinUs = () => {
-  return <section className="py-16 bg-white">
+  return <section className="bg-white py-[27px]">
       <div className="container-custom">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Why Join PWAN Bridgefort</h2>
