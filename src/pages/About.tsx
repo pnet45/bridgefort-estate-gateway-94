@@ -16,7 +16,7 @@ const About = () => {
       <Navbar />
       <AboutHero />
       
-      <div className="py-8 bg-estate-blue bg-opacity-5">
+      <div className="py-8 bg-estate-blue bg-opacity-5 rounded-3xl my-[21px]">
         <div className="container-custom">
           <div className="text-center text-zinc-50">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">PWAN Bridgefort: Redefining Property Investment with Integrity, Expertise, and Lasting Value</h2>
