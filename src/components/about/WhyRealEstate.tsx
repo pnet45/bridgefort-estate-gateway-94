@@ -1,42 +1,59 @@
+
 import React from 'react';
 const WhyRealEstate = () => {
-  return <section className="section-padding bg-gray-50">
+  return (
+    <section className="section-padding bg-gray-50">
       <div className="container-custom">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
-            <h2 className="text-3xl font-bold mb-6 text-estate-blue">Unlock the Future with PWAN Bridgefort Estates & Investment Ltd</h2>
+            <h2 className="text-3xl font-bold mb-6 text-estate-blue">
+              Unlock the Future with PWAN Bridgefort Estates & Investment Ltd
+            </h2>
             <p className="text-gray-700 mb-6">
               Did you know that over 90% of the world's millionaires have built wealth through real estate? In Nigeria, real estate is not just a wealth creation tool; it's a hedge against inflation, a symbol of generational wealth, and a cornerstone of economic growth. With Nigeria's urban population set to double by 2050, the demand for quality housing and strategically located properties has never been higher.
             </p>
             <p className="text-gray-700 mb-6">
               At PWAN Bridgefort Estates & Investment Ltd, we're not just selling properties—we're building legacies. We provide secure, affordable, and strategically located real estate solutions designed to help you achieve financial freedom and secure your future.
             </p>
-            
+
             <h3 className="text-2xl font-bold mb-4">Why Real Estate, Why Now?</h3>
             <ul className="space-y-3 mb-6">
               <li className="flex items-start">
                 <span className="text-estate-blue mr-2 font-bold">•</span>
-                <span className="text-gray-700"><strong>Unprecedented Growth:</strong> Real estate in Nigeria has consistently outperformed most investment classes, yielding high returns even during economic downturns.</span>
+                <span className="text-gray-700">
+                  <strong>Unprecedented Growth:</strong> Real estate in Nigeria has consistently outperformed most investment classes, yielding high returns even during economic downturns.
+                </span>
               </li>
               <li className="flex items-start">
                 <span className="text-estate-blue mr-2 font-bold">•</span>
-                <span className="text-gray-700"><strong>Safety and Stability:</strong> Unlike volatile markets, land and property are tangible assets that appreciate over time.</span>
+                <span className="text-gray-700">
+                  <strong>Safety and Stability:</strong> Unlike volatile markets, land and property are tangible assets that appreciate over time.
+                </span>
               </li>
               <li className="flex items-start">
                 <span className="text-estate-blue mr-2 font-bold">•</span>
-                <span className="text-gray-700"><strong>Demand Surge:</strong> Urbanization and population growth mean real estate will remain a hotcake in both the short and long term.</span>
+                <span className="text-gray-700">
+                  <strong>Demand Surge:</strong> Urbanization and population growth mean real estate will remain a hotcake in both the short and long term.
+                </span>
               </li>
             </ul>
+            <img
+              src="/lovable-uploads/4043b415-520f-4c0e-93af-e5de73770c7d.png"
+              alt="Bridgefort Luxury Apartments Promo"
+              className="w-full max-w-lg rounded-lg shadow-lg mx-auto mb-6 block"
+            />
           </div>
-          
           <div>
-            <img alt="Real Estate Investment" className="w-full h-auto rounded-lg shadow-lg mb-8 hover:scale-[1.02] transition-transform duration-300 object-scale-down" src="/lovable-uploads/0894eeae-21d6-4870-ada2-1d871b045dee.jpg" />
-            
+            <img
+              alt="Real Estate Investment"
+              className="w-full h-auto rounded-lg shadow-lg mb-8 hover:scale-[1.02] transition-transform duration-300 object-scale-down"
+              src="/lovable-uploads/0894eeae-21d6-4870-ada2-1d871b045dee.jpg"
+            />
             <h3 className="text-2xl font-bold mb-4">Why Choose PWAN Bridgefort?</h3>
             <p className="text-gray-700 mb-6">
               At PWAN Bridgefort, we stand out because of our unwavering commitment to excellence, transparency, and customer satisfaction. With estates strategically located in high-demand areas, we ensure our clients get maximum returns on investment (ROI) while enjoying the peace of mind that comes with secure land ownership.
             </p>
-            
+
             <h3 className="text-2xl font-bold mb-4">Our Unique Offerings:</h3>
             <div className="space-y-4">
               <div>
@@ -67,6 +84,7 @@ const WhyRealEstate = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
 export default WhyRealEstate;
