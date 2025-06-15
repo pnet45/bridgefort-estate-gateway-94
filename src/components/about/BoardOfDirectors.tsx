@@ -26,7 +26,7 @@ const boardOfDirectors = [{
   imageUrl: '/lovable-uploads/Precious.png'
 }];
 const BoardOfDirectors = () => {
-  return <section className="section-padding bg-opacity-5 bg-[#070f5c]/[0.54]">
+  return <section className="section-padding bg-opacity-5 bg-[#45497d]/[0.54]">
       <div className="container-custom">
         <div className="text-center mb-10 bg-white rounded-3xl">
           <h2 className="text-3xl font-bold mb-4 text-estate-blue">MEET OUR BOARD OF DIRECTORS</h2>
