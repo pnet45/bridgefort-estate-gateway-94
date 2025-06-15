@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, Home, TrendingUp, Award, Share } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -52,7 +51,8 @@ const categoryIcons = {
 
 // Share function that shares only the article URL
 const shareArticle = (articleId: string, title: string) => {
-  const articleUrl = `${window.location.origin}/blog/real-estate/${articleId}`;
+  // FIX: Route should be /blog/{id}, not /blog/real-estate/{id}
+  const articleUrl = `${window.location.origin}/blog/${articleId}`;
   
   if (navigator.share) {
     navigator.share({
@@ -115,8 +115,9 @@ const RealEstateContent = () => {
                     </div>
                     
                     <div className="flex justify-between items-center">
+                      {/* FIX: Route should be /blog/{id} */}
                       <Link 
-                        to={`/blog/real-estate/${post.id}`} 
+                        to={`/blog/${post.id}`} 
                         className="text-estate-blue font-medium hover:underline inline-flex items-center"
                       >
                         Read Full Article
