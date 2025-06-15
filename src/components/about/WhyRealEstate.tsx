@@ -1,7 +1,6 @@
 import React from 'react';
 const WhyRealEstate = () => {
-  return (
-    <section className="section-padding bg-gray-50">
+  return <section className="section-padding bg-gray-50 my-0">
       <div className="container-custom">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
@@ -36,19 +35,12 @@ const WhyRealEstate = () => {
                 </span>
               </li>
             </ul>
-            <img
-              src="/lovable-uploads/4043b415-520f-4c0e-93af-e5de73770c7d.png"
-              alt="Bridgefort Luxury Apartments Promo"
-              className="w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto rounded-lg shadow-lg mb-6 animate-fade-in hover:scale-105 transition-transform duration-300 block"
-              style={{ objectFit: 'cover' }}
-            />
+            <img src="/lovable-uploads/4043b415-520f-4c0e-93af-e5de73770c7d.png" alt="Bridgefort Luxury Apartments Promo" className="w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto rounded-lg shadow-lg mb-6 animate-fade-in hover:scale-105 transition-transform duration-300 block" style={{
+            objectFit: 'cover'
+          }} />
           </div>
           <div>
-            <img
-              alt="Real Estate Investment"
-              className="w-full h-auto rounded-lg shadow-lg mb-8 hover:scale-[1.02] transition-transform duration-300 object-scale-down"
-              src="/lovable-uploads/0894eeae-21d6-4870-ada2-1d871b045dee.jpg"
-            />
+            <img alt="Real Estate Investment" className="w-full h-auto rounded-lg shadow-lg mb-8 hover:scale-[1.02] transition-transform duration-300 object-scale-down" src="/lovable-uploads/0894eeae-21d6-4870-ada2-1d871b045dee.jpg" />
             <h3 className="text-2xl font-bold mb-4">Why Choose PWAN Bridgefort?</h3>
             <p className="text-gray-700 mb-6">
               At PWAN Bridgefort, we stand out because of our unwavering commitment to excellence, transparency, and customer satisfaction. With estates strategically located in high-demand areas, we ensure our clients get maximum returns on investment (ROI) while enjoying the peace of mind that comes with secure land ownership.
@@ -84,7 +76,6 @@ const WhyRealEstate = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
 export default WhyRealEstate;

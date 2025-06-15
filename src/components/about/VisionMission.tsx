@@ -1,12 +1,9 @@
-
 import React from 'react';
-
 const VisionMission = () => {
-  return (
-    <section className="section-padding bg-gray-50">
+  return <section className="section-padding bg-gray-50">
       <div className="container-custom">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <div className="bg-white p-8 rounded-lg shadow-lg">
+          <div className="p-8 rounded-lg shadow-lg bg-rose-100">
             <h2 className="text-2xl font-bold mb-4 text-estate-blue">CLEAR VISION</h2>
             <p className="text-lg italic font-medium mb-4">
               "To be a pioneering force in African real estate—bridging people to prosperity, one property at a time."
@@ -16,7 +13,7 @@ const VisionMission = () => {
             </p>
           </div>
           
-          <div className="bg-white p-8 rounded-lg shadow-lg">
+          <div className="p-8 rounded-lg shadow-lg bg-violet-100">
             <h2 className="text-2xl font-bold mb-4 text-estate-blue">GUIDING MISSION</h2>
             <p className="text-lg italic font-medium mb-4">
               "To simplify home ownership, strengthen people, and serve with purpose—while redefining what is possible in real estate across Africa and the world at large."
@@ -27,8 +24,6 @@ const VisionMission = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default VisionMission;

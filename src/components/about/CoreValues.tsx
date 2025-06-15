@@ -1,6 +1,4 @@
-
 import React from 'react';
-
 const coreValues = [{
   letter: 'P',
   value: 'Purpose-Driven',
@@ -58,10 +56,8 @@ const coreValues = [{
   value: 'Team Spirit',
   description: 'We are one body, many talents. Collaboration is our culture. We win together, fail together, and rise together. Unity is our greatest strength.'
 }];
-
 const CoreValues = () => {
-  return (
-    <section className="section-padding">
+  return <section className="section-padding my-0">
       <div className="container-custom">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold mb-4">OUR CORE VALUES</h2>
@@ -71,19 +67,15 @@ const CoreValues = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {coreValues.map((value, index) => (
-            <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+          {coreValues.map((value, index) => <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
               <div className="flex items-center mb-4">
                 <span className="text-2xl font-bold text-estate-blue mr-2">{value.letter}</span>
                 <h3 className="text-xl font-semibold">– {value.value}</h3>
               </div>
               <p className="text-gray-700">{value.description}</p>
-            </div>
-          ))}
+            </div>)}
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default CoreValues;
