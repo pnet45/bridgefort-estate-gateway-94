@@ -1,19 +1,24 @@
+
 import React, { useEffect, useState } from "react";
 
 // Using two uploaded images
-const motivationData = [{
-  id: "motivation1",
-  title: "New Week, Fresh Listings, Fresh Leads",
-  text: "Lagos never sleeps, and neither do we. Let's turn site visits into signed deals. Stay sharp, stay selling.",
-  author: "Dalvin Silva",
-  image: "/lovable-uploads/774f5bb1-3f2f-4c91-9149-9c6facac4756.png"
-}, {
-  id: "motivation2",
-  title: "Rise and Grind: Real Estate Waits for No One",
-  text: "It’s Monday – let’s show up and close strong. In real estate, consistent action and persistent follow-up are the keys to success.",
-  author: "Dalvin Silva",
-  image: "/lovable-uploads/f01a111e-6d07-4fa5-9b33-b646f096419a.png"
-}];
+const motivationData = [
+  {
+    id: "motivation1",
+    title: "New Week, Fresh Listings, Fresh Leads",
+    text: "Lagos never sleeps, and neither do we. Let's turn site visits into signed deals. Stay sharp, stay selling.",
+    author: "Dalvin Silva",
+    image: "/lovable-uploads/774f5bb1-3f2f-4c91-9149-9c6facac4756.png"
+  },
+  {
+    id: "motivation2",
+    title: "Rise and Grind: Real Estate Waits for No One",
+    text: "It’s Monday – let’s show up and close strong. In real estate, consistent action and persistent follow-up are the keys to success.",
+    author: "Dalvin Silva",
+    image: "/lovable-uploads/rise-and-grind-real-estae-waits-for-no-1.png" // <--- UPDATED per request
+  }
+];
+
 const preloadImages = (srcs: string[], onComplete: () => void) => {
   let loaded = 0;
   srcs.forEach(src => {
@@ -30,6 +35,7 @@ const preloadImages = (srcs: string[], onComplete: () => void) => {
     img.src = src;
   });
 };
+
 const MondayMotivationHero = () => {
   const [current, setCurrent] = useState(0);
   const [loadingImages, setLoadingImages] = useState(true);
@@ -43,51 +49,98 @@ const MondayMotivationHero = () => {
     }, 5000);
     return () => clearInterval(timer);
   }, []);
-  const {
-    title,
-    text,
-    author,
-    image
-  } = motivationData[current];
+  const { title, text, author, image } = motivationData[current];
+
   if (loadingImages) {
-    return <section className="relative w-full h-[32vh] md:h-[45vh] lg:h-[50vh] mb-8 bg-gray-200 flex items-center justify-center">
+    return (
+      <section className="relative w-full h-[32vh] md:h-[45vh] lg:h-[50vh] mb-8 bg-gray-200 flex items-center justify-center">
         <div className="text-estate-blue font-bold text-xl animate-pulse-glow">Loading inspiration...</div>
-      </section>;
+      </section>
+    );
   }
 
-  // Accessibility: alt text from title
-  return <section className="relative w-full h-[32vh] md:h-[45vh] lg:h-[50vh] mb-8 animate-fade-in">
-      <div className="h-full w-full bg-cover bg-center transition-all duration-1000 ease-in-out relative" style={{
-      backgroundImage: `url(${image})`,
-      backgroundColor: "#142447" // fallback blue
-    }}>
-        {/* Optional hidden img to check they’re visible if debugging */}
-        <img src={image} alt={title} className="absolute pointer-events-none opacity-0" aria-hidden="true" width={2} height={2} />
+  /**
+   * For the "Rise and Grind" card, we'll make a split layout:
+   *  - On desktop: Text (left), Image (right)
+   *  - On mobile: Stack text above image
+   */
+  const isRiseAndGrind = title.startsWith("Rise and Grind");
+  if (isRiseAndGrind) {
+    return (
+      <section className="relative w-full h-auto min-h-[32vh] md:min-h-[45vh] lg:min-h-[50vh] mb-8 animate-fade-in">
+        <div className="container-custom px-2 md:px-6 py-6 md:py-10 flex flex-col md:flex-row items-center bg-gradient-to-l from-estate-blue/80 to-estate-blue/60 rounded-xl shadow-lg">
+          {/* Text (left) */}
+          <div className="w-full md:w-2/3 lg:w-1/2 flex flex-col justify-center items-start text-white py-4 pr-0 md:pr-8">
+            <h2 className="text-2xl md:text-4xl font-bold mb-2 animate-fade-in text-left">{title}</h2>
+            <p className="text-lg md:text-2xl mb-4 animate-fade-in text-left" style={{ animationDelay: '200ms' }}>{text}</p>
+            <p className="font-semibold text-estate-blue bg-white/80 rounded px-3 py-1 inline-block animate-fade-in" style={{ animationDelay: '400ms' }}>
+              By {author} <span className="text-xs ml-1">Monday Motivation</span>
+            </p>
+          </div>
+          {/* Image (right) */}
+          <div className="w-full md:w-1/3 lg:w-1/2 flex justify-center md:justify-end py-4">
+            <img
+              src={image}
+              alt={title}
+              className="rounded-lg shadow-lg max-h-[260px] md:max-h-[320px] object-contain bg-white/80"
+              style={{ minWidth: "180px", maxWidth: "100%", width: "320px" }}
+            />
+          </div>
+        </div>
+        {/* Badge */}
+        <div className="absolute top-3 right-3 text-white px-4 py-1 rounded-full shadow font-semibold text-sm animate-scale-in bg-cyan-500 z-10">
+          Monday Motivation
+        </div>
+        {/* Slide indicators */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
+          {motivationData.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrent(idx)}
+              className={`mx-1 h-2 w-8 rounded-full ${current === idx ? "bg-estate-blue" : "bg-white/60"} transition-colors`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
+  // Default layout (background image hero)
+  return (
+    <section className="relative w-full h-[32vh] md:h-[45vh] lg:h-[50vh] mb-8 animate-fade-in">
+      <div className="h-full w-full bg-cover bg-center transition-all duration-1000 ease-in-out relative" style={{
+        backgroundImage: `url(${image})`,
+        backgroundColor: "#142447"
+      }}>
+        <img src={image} alt={title} className="absolute pointer-events-none opacity-0" aria-hidden="true" width={2} height={2} />
         <div className="absolute inset-0 bg-gradient-to-r from-black/75 to-black/25 flex items-center rounded-bl-xl rounded-2xl my-0 py-[12px] bg-cyan-700">
           <div className="container-custom px-4 text-white">
             <div className="max-w-2xl">
               <h2 className="text-2xl md:text-4xl font-bold mb-2 animate-fade-in">{title}</h2>
-              <p className="text-lg md:text-2xl mb-4 animate-fade-in" style={{
-              animationDelay: '200ms'
-            }}>{text}</p>
-              <p className="font-semibold text-estate-blue bg-white/70 rounded px-3 py-1 inline-block animate-fade-in" style={{
-              animationDelay: '400ms'
-            }}>
+              <p className="text-lg md:text-2xl mb-4 animate-fade-in" style={{ animationDelay: '200ms' }}>{text}</p>
+              <p className="font-semibold text-estate-blue bg-white/70 rounded px-3 py-1 inline-block animate-fade-in" style={{ animationDelay: '400ms' }}>
                 By {author} <span className="text-xs ml-1">Monday Motivation</span>
               </p>
             </div>
           </div>
         </div>
-        {/* Badge as a feature tag */}
         <div className="absolute top-3 right-3 text-white px-4 py-1 rounded-full shadow font-semibold text-sm animate-scale-in bg-cyan-500">
           Monday Motivation
         </div>
-        {/* Slide indicators */}
         <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-          {motivationData.map((_, idx) => <button key={idx} onClick={() => setCurrent(idx)} className={`mx-1 h-2 w-8 rounded-full ${current === idx ? "bg-estate-blue" : "bg-white/60"} transition-colors`} aria-label={`Go to slide ${idx + 1}`} />)}
+          {motivationData.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrent(idx)}
+              className={`mx-1 h-2 w-8 rounded-full ${current === idx ? "bg-estate-blue" : "bg-white/60"} transition-colors`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default MondayMotivationHero;
