@@ -1,8 +1,5 @@
 
--- Insert fallback blog/news posts to match those from fallbackBlogPosts.ts
-
--- Use the IDs "1", "2", "3" (strings). We'll use gen_random_uuid() and update fallback data if you want IDs to match.
--- Here, we'll insert 3 posts similar to the fallback ones, with rich content.
+-- Insert fallback blog/news posts with proper UUID ids for the posts table
 
 insert into public.posts (
   id,
@@ -17,7 +14,7 @@ insert into public.posts (
 )
 values
 (
-  '1',
+  'e96b32e6-88d0-4155-8c87-cbe499a239d3',
   'Success Summit 2025 - Gearing Up for the Next Real Estate Revolution',
   '<p>The annual Success Summit returns in May 2025, bigger than ever and live in Port Harcourt! Join top industry leaders, motivational speakers, and real estate professionals in an immersive event designed to inspire and equip you for the next wave of property opportunities in Nigeria.</p>
   <h2>Summit Highlights</h2>
@@ -38,7 +35,7 @@ values
 ),
 
 (
-  '2',
+  '8038c999-40e2-49bf-afec-2cb0b5bc2c14',
   'Estate Inspection Day - Exploring Our Newest Developments',
   '<p>Get an exclusive opportunity to tour our latest estate projects! From green, secure neighborhoods to luxury waterfront apartments, our Inspection Day will help you explore property options that match your ambition and budget.</p>
   <h2>What You’ll See</h2>
@@ -58,7 +55,7 @@ values
 ),
 
 (
-  '3',
+  '796b8bc3-c103-4ea9-bc00-f5ccc19ab812',
   'Masterclass: Real Estate Sales Strategies for 2025',
   '<p>This powerful masterclass reveals proven sales techniques from top performers in our network, aimed at both new and seasoned professionals. In 2025, the property market is more competitive—gain the edge with expert-backed strategies designed for today’s buyer and investor psyche.</p>
   <h2>Topics Include</h2>
