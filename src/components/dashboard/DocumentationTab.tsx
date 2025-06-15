@@ -40,10 +40,11 @@ const DocumentationTab: React.FC = () => {
     addToCart(
       {
         id: `doc-${estate.id}`,
+        propertyId: estate.id, // <--- Add this field for Plot interface
         propertyName: `${estate.name} Documentation`,
         location: estate.location,
-        plotNumber: 0, // fixed: provide a number value
-        size: 0,       // fixed: provide a number value
+        plotNumber: 0,
+        size: 0,
         imageUrl: "/placeholder.svg",
         pricePerPlot: DOCUMENTATION_PRICE,
         propertyType: "Documentation",
