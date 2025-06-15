@@ -1,33 +1,21 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { FileUpload } from './FileUpload';
 
-const positions = [
-  'Real Estate Agent',
-  'Sales Executive',
-  'Property Consultant',
-  'Marketing Executive',
-  'Customer Service Representative',
-  'Admin Officer',
-  'Accountant',
-  'Legal Officer',
-  'IT Support',
-  'Human Resources',
-  'Other'
-];
+import PersonalInfoFields from "./PersonalInfoFields";
+import JobDetailFields from "./JobDetailFields";
+import AddressFields from "./AddressFields";
+import CoverLetterField from "./CoverLetterField";
+import ResumeUploadField from "./ResumeUploadField";
 
 // Add prop to accept defaultPosition
 interface CareerFormProps {
   defaultPosition?: string;
 }
-// Accept the prop
+
 const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -45,16 +33,12 @@ const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
     resume_url: ''
   });
 
-  // If defaultPosition changes, synchronize the value
-  React.useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      position: defaultPosition || '',
-    }));
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, position: defaultPosition || '' }));
   }, [defaultPosition]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value
     }));
@@ -76,12 +60,11 @@ const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
         description: "Thank you for your interest. We'll review your application and get back to you soon."
       });
 
-      // Reset form
       setFormData({
+        position: defaultPosition || '',
         full_name: '',
         email: '',
         phone: '',
-        position: '',
         experience: '',
         address: '',
         state: '',
@@ -104,13 +87,6 @@ const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
     }
   };
 
-  const handleFileUpload = (url: string) => {
-    setFormData(prev => ({
-      ...prev,
-      resume_url: url
-    }));
-  };
-
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
@@ -121,170 +97,34 @@ const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="full_name" className="text-gray-900">Full Name *</Label>
-              <Input
-                id="full_name"
-                value={formData.full_name}
-                onChange={(e) => handleInputChange('full_name', e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-900">Email Address *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-gray-900">Phone Number *</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="position" className="text-gray-900">Position Applied For *</Label>
-              <Select value={formData.position} onValueChange={(value) => handleInputChange('position', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select position" />
-                </SelectTrigger>
-                <SelectContent>
-                  {positions.map((position) => (
-                    <SelectItem key={position} value={position}>
-                      {position}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="gender" className="text-gray-900">Gender</Label>
-              <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date_of_birth" className="text-gray-900">Date of Birth</Label>
-              <Input
-                id="date_of_birth"
-                type="date"
-                value={formData.date_of_birth}
-                onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="experience" className="text-gray-900">Years of Experience</Label>
-              <Input
-                id="experience"
-                value={formData.experience}
-                onChange={(e) => handleInputChange('experience', e.target.value)}
-                placeholder="e.g., 2 years"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="address" className="text-gray-900">Address</Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={(e) => handleInputChange('address', e.target.value)}
-              placeholder="Your full address"
-            />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="state" className="text-gray-900">State</Label>
-              <Input
-                id="state"
-                value={formData.state}
-                onChange={(e) => handleInputChange('state', e.target.value)}
-                placeholder="Your state"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="local_government" className="text-gray-900">Local Government</Label>
-              <Input
-                id="local_government"
-                value={formData.local_government}
-                onChange={(e) => handleInputChange('local_government', e.target.value)}
-                placeholder="Your LGA"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="cover_letter" className="text-gray-900">Cover Letter</Label>
-            <Textarea
-              id="cover_letter"
-              value={formData.cover_letter}
-              onChange={(e) => handleInputChange('cover_letter', e.target.value)}
-              rows={4}
-              placeholder="Tell us why you're interested in this position and what makes you a great fit..."
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-gray-900">Resume/CV</Label>
-            <FileUpload
-              label="Upload Resume"
-              onFileSelect={(file: File | null) => {
-                if (file) {
-                  // Upload the file to Supabase storage
-                  supabase.storage
-                    .from('resumes')
-                    .upload(`${formData.full_name}-${file.name}`, file, {
-                      cacheControl: '3600',
-                      upsert: false
-                    })
-                    .then(({ data, error }) => {
-                      if (error) {
-                        console.error('Error uploading file:', error);
-                        toast({
-                          title: "Upload failed",
-                          description: "There was an error uploading your resume. Please try again.",
-                          variant: "destructive"
-                        });
-                      } else if (data) {
-                        console.log('File uploaded successfully:', data);
-                        const resumeURL = `https://xyvspvtdaacqfmfocvhw.supabase.co/storage/v1/object/public/resumes/${data.path}`;
-                        handleFileUpload(resumeURL);
-                        toast({
-                          title: "Resume uploaded successfully!",
-                          description: "Your resume has been uploaded."
-                        });
-                      }
-                    });
-                } else {
-                  handleFileUpload('');
-                }
-              }}
-              file={formData.resume_url ? new File([], formData.resume_url.split('/').pop() || 'resume') : null}
-            />
-          </div>
+          <PersonalInfoFields
+            fullName={formData.full_name}
+            email={formData.email}
+            phone={formData.phone}
+            onChange={handleInputChange}
+          />
+          <JobDetailFields
+            position={formData.position}
+            gender={formData.gender}
+            dateOfBirth={formData.date_of_birth}
+            experience={formData.experience}
+            onChange={handleInputChange}
+          />
+          <AddressFields
+            address={formData.address}
+            state={formData.state}
+            localGovernment={formData.local_government}
+            onChange={handleInputChange}
+          />
+          <CoverLetterField
+            value={formData.cover_letter}
+            onChange={(v) => handleInputChange('cover_letter', v)}
+          />
+          <ResumeUploadField
+            fullName={formData.full_name}
+            resumeUrl={formData.resume_url}
+            onFileChange={(url: string) => handleInputChange('resume_url', url)}
+          />
 
           <Button 
             type="submit" 
