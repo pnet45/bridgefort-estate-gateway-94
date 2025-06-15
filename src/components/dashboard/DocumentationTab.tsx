@@ -38,7 +38,6 @@ const DocumentationTab: React.FC = () => {
   }, []);
 
   const handleAddDocumentationToCart = (estate: EstateLite) => {
-    // Add a pseudo product for documentation to cart (id is unique per estate)
     addToCart(
       {
         id: `doc-${estate.id}`,
@@ -46,7 +45,7 @@ const DocumentationTab: React.FC = () => {
         location: estate.location,
         plotNumber: "-", // not relevant
         size: "-", // not relevant
-        imageUrl: "/placeholder.svg", // doc placeholder, could use estate media if available
+        imageUrl: "/placeholder.svg",
         pricePerPlot: DOCUMENTATION_PRICE,
         propertyType: "Documentation",
       },
@@ -72,27 +71,35 @@ const DocumentationTab: React.FC = () => {
           )}
           {!loading && estates.length > 0 && (
             <div className="space-y-4">
-              {estates.map((estate) => (
-                <div key={estate.id} className="flex items-center justify-between border-b pb-3">
-                  <div>
-                    <div className="font-semibold">{estate.name}</div>
-                    <div className="text-sm text-gray-600">{estate.location}</div>
+              {estates.map((estate) => {
+                // Ensure estate.id is a string for comparison
+                const docPlotId = `doc-${String(estate.id)}`;
+                const isAdded =
+                  cart?.find(
+                    (item) => String(item.plot.id) === docPlotId
+                  ) !== undefined;
+                return (
+                  <div key={estate.id} className="flex items-center justify-between border-b pb-3">
+                    <div>
+                      <div className="font-semibold">{estate.name}</div>
+                      <div className="text-sm text-gray-600">{estate.location}</div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-estate-blue">
+                        ₦{DOCUMENTATION_PRICE.toLocaleString()}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled={isAdded}
+                        onClick={() => handleAddDocumentationToCart(estate)}
+                      >
+                        {isAdded ? "Added" : "Add to Cart"}
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-estate-blue">
-                      ₦{DOCUMENTATION_PRICE.toLocaleString()}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      disabled={Boolean(cart?.find((item) => item.plot.id === `doc-${estate.id}`))}
-                      onClick={() => handleAddDocumentationToCart(estate)}
-                    >
-                      {cart?.find((item) => item.plot.id === `doc-${estate.id}`) ? "Added" : "Add to Cart"}
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
@@ -102,3 +109,4 @@ const DocumentationTab: React.FC = () => {
 };
 
 export default DocumentationTab;
+
