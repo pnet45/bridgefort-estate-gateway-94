@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,13 +23,18 @@ const positions = [
   'Other'
 ];
 
-const CareerForm = () => {
+// Add prop to accept defaultPosition
+interface CareerFormProps {
+  defaultPosition?: string;
+}
+// Accept the prop
+const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
+    position: defaultPosition || '',
     full_name: '',
     email: '',
     phone: '',
-    position: '',
     experience: '',
     address: '',
     state: '',
@@ -40,6 +44,14 @@ const CareerForm = () => {
     cover_letter: '',
     resume_url: ''
   });
+
+  // If defaultPosition changes, synchronize the value
+  React.useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      position: defaultPosition || '',
+    }));
+  }, [defaultPosition]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({

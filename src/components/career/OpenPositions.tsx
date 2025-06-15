@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,11 @@ interface Position {
   requirements: string[];
 }
 
-const OpenPositions = () => {
+interface OpenPositionsProps {
+  onApply?: (position?: string) => void;
+}
+
+const OpenPositions: React.FC<OpenPositionsProps> = ({ onApply }) => {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   
   const positions: Position[] = [
@@ -113,9 +116,16 @@ const OpenPositions = () => {
   const scrollToApplicationForm = () => {
     document.getElementById('application-form')?.scrollIntoView({ behavior: 'smooth' });
   };
-  
+
+  // The apply callback can be undefined (fallback is no-op)
+  const handleApply = (position: string) => {
+    if (onApply) {
+      onApply(position);
+    }
+  };
+
   return (
-    <section className="bg-gray-50 py-16">
+    <section className="bg-gray-50 py-16" id="positions">
       <div className="container-custom">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Open Positions</h2>
@@ -178,7 +188,8 @@ const OpenPositions = () => {
                     
                     <div className="mt-6">
                       <Button 
-                        onClick={scrollToApplicationForm}
+                        type="button"
+                        onClick={() => handleApply(position.title)}
                         className="bg-estate-blue hover:bg-estate-darkBlue flex items-center"
                       >
                         <Briefcase size={16} className="mr-2" />
