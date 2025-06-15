@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth';
@@ -16,6 +17,7 @@ import Properties from '@/pages/Properties';
 import Services from '@/pages/Services';
 import Training from '@/pages/Training';
 import Career from '@/pages/Career';
+import CareerApplication from '@/pages/CareerApplication';
 import Contact from '@/pages/Contact';
 import Blog from '@/pages/Blog';
 import BlogPost from '@/pages/BlogPost';
@@ -54,6 +56,7 @@ function App() {
                 <Route path="/services" element={<Services />} />
                 <Route path="/training" element={<Training />} />
                 <Route path="/career" element={<Career />} />
+                <Route path="/career/apply" element={<CareerApplication />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:id" element={<BlogPost />} />
