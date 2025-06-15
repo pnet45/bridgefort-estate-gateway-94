@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -101,7 +100,7 @@ const PropertySearch = () => {
               <option value="">Any Location</option>
               <option value="lagos">Lagos</option>
               <option value="abuja">Abuja</option>
-              <option value="port-harcourt">Port Harcourt</option>
+              <option value="Port Harcourt">Port Harcourt</option>
               <option value="ibadan">Ibadan</option>
               <option value="imo">Imo State</option>
               <option value="abia">Abia State</option>

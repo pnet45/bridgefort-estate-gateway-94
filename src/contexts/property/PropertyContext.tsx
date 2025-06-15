@@ -1,9 +1,9 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Property, Filters, PropertyContextType } from './types';
 import { applyFilters, applyCustomFilters } from './propertyUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
+import { useLocation } from 'react-router-dom'; // Add this import
 
 const PropertyContext = createContext<PropertyContextType | undefined>(undefined);
 
@@ -22,6 +22,9 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     minPrice: '',
     maxPrice: ''
   });
+
+  // Add location hook for url search param sync
+  const location = useLocation();
 
   // Function to toggle filters visibility
   const toggleFilters = () => setShowFilters(!showFilters);
@@ -174,6 +177,31 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const refreshProperties = async () => {
     await fetchProperties();
   };
+
+  // --------- NEW EFFECT: Sync state with URL on navigation
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+
+    const urlQuery = searchParams.get("q") || "";
+    const urlLocation = searchParams.get("location") || "";
+    const urlType = searchParams.get("type") || "";
+    const urlPriceRange = searchParams.get("priceRange") || "";
+
+    // Only update context if changed (avoid looping with search param set by context)
+    setSearchQuery(urlQuery);
+
+    const filtersFromUrl: Filters = {
+      category: 'all',
+      type: urlType || 'all',
+      minPrice: urlPriceRange ? urlPriceRange.split('-')[0] : '',
+      maxPrice: urlPriceRange
+        ? (urlPriceRange.split('-')[1]?.replace('+', '') || '')
+        : '',
+    };
+    setFilters(filtersFromUrl);
+    // Note: add more param sync as needed
+  // eslint-disable-next-line
+  }, [location.search]);
 
   return (
     <PropertyContext.Provider
