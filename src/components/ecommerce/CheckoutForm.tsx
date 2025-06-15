@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,11 @@ import CustomerInfoForm from './CustomerInfoForm';
 import PaymentPlanSelector from './PaymentPlanSelector';
 import { calculatePaymentPlan, PaymentPlanType } from "@/utils/paymentPlan";
 
-const CheckoutForm: React.FC = () => {
+interface CheckoutFormProps {
+  onBack?: () => void;
+}
+
+const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   const { cart, getTotalAmount, clearCart } = useEcommerce();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -117,7 +122,9 @@ const CheckoutForm: React.FC = () => {
       const { data: paymentInitData, error: paymentInitError } = await supabase.functions.invoke('paystack-initialize', {
         body: {
           email: customerInfo.email,
-          amount: selectedPlan.type === 'outright' ? totalAmount : Math.ceil(totalAmount / selectedPlan.months),
+          amount: selectedPlan.type === 'outright' ?
+            totalAmount :
+            Math.ceil(totalAmount / selectedPlan.months),
           reference,
           user_id: user?.id,
           metadata: {
@@ -177,14 +184,17 @@ const CheckoutForm: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="flex items-center gap-3 p-4 border-b bg-white">
-        <button
-          className="rounded-md px-2 py-1 hover:bg-gray-100"
-          onClick={() => navigate(-1)}
-          aria-label="Go Back"
+        {/* "Back to cart" button */}
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={onBack ? onBack : () => history.back()}
+          aria-label="Back to Cart"
         >
           <ArrowLeft size={20} />
-        </button>
-        <h2 className="text-lg font-semibold text-estate-blue">Checkout</h2>
+          Back to Cart
+        </Button>
+        <h2 className="text-lg font-semibold text-estate-blue ml-3">Checkout</h2>
       </div>
       <div className="flex flex-col md:flex-row w-full h-full">
         <OrderSummary cart={cart} getTotalAmount={getTotalAmount} />
@@ -214,7 +224,7 @@ const CheckoutForm: React.FC = () => {
             customerInfo={customerInfo}
             setCustomerInfo={setCustomerInfo}
             isProcessing={isProcessing}
-            onPay={() => handlePaystackPayment()}
+            onPay={handlePaystackPayment}
           />
         </div>
       </div>

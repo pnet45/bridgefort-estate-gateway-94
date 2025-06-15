@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,37 +6,23 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  LayoutDashboard, 
-  Home, 
-  FileText, 
-  Eye, 
-  CreditCard, 
-  Calendar,
-  Trash2,
-  Plus,
   Minus,
-  ChevronLeft
+  Plus,
+  Trash2,
+  ChevronLeft,
 } from 'lucide-react';
 import { useEcommerce } from '@/contexts/ecommerce';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
 import CheckoutForm from './CheckoutForm';
+import CartSidebarMenu from './CartSidebarMenu';
+import CartPlaceholderContent from './CartPlaceholderContent';
 
 const CartPage = () => {
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, getTotalAmount, getTotalItems } = useEcommerce();
   const [activeTab, setActiveTab] = useState('cart');
   const [showCheckout, setShowCheckout] = useState(false);
-
-  const menuItems = [
-    { id: 'cart', label: 'Shopping Cart', icon: Home },
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'properties', label: 'My Properties', icon: Home },
-    { id: 'documents', label: 'My Documents', icon: FileText },
-    { id: 'inspections', label: 'Property Inspections', icon: Eye },
-    { id: 'payments', label: 'My Payments', icon: CreditCard },
-    { id: 'installments', label: 'My Installments', icon: Calendar },
-  ];
 
   const handleQuantityUpdate = (plotId: string, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -185,20 +172,20 @@ const CartPage = () => {
     </div>
   );
 
-  const renderPlaceholderContent = (title: string) => (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-estate-blue">{title}</h1>
-      <Card className="bg-white">
-        <CardContent className="text-center py-12">
-          <h3 className="text-xl font-semibold mb-2">Coming Soon</h3>
-          <p className="text-gray-600">This feature is under development</p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  // For placeholder content in sidebar tabs
+  const renderTabContent = () => {
+    if (activeTab === "cart") return renderCartContent();
+    if (activeTab === "dashboard") return <CartPlaceholderContent title="Dashboard" />;
+    if (activeTab === "properties") return <CartPlaceholderContent title="My Properties" />;
+    if (activeTab === "documents") return <CartPlaceholderContent title="My Documents" />;
+    if (activeTab === "inspections") return <CartPlaceholderContent title="Property Inspections" />;
+    if (activeTab === "payments") return <CartPlaceholderContent title="My Payments" />;
+    if (activeTab === "installments") return <CartPlaceholderContent title="My Installments" />;
+    return null;
+  };
 
   if (showCheckout) {
-    return <CheckoutForm />;
+    return <CheckoutForm onBack={() => setShowCheckout(false)} />;
   }
 
   return (
@@ -209,41 +196,11 @@ const CartPage = () => {
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Sidebar */}
             <div className="lg:w-64">
-              <Card className="sticky top-24 bg-white">
-                <CardHeader>
-                  <CardTitle className="text-lg text-estate-blue">Account Menu</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <nav className="space-y-1">
-                    {menuItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => setActiveTab(item.id)}
-                          className={`w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-100 transition-colors ${
-                            activeTab === item.id ? 'bg-estate-blue text-white hover:bg-estate-darkBlue' : 'text-gray-700'
-                          }`}
-                        >
-                          <Icon size={18} />
-                          <span>{item.label}</span>
-                        </button>
-                      );
-                    })}
-                  </nav>
-                </CardContent>
-              </Card>
+              <CartSidebarMenu activeTab={activeTab} setActiveTab={setActiveTab} />
             </div>
-
             {/* Main Content */}
             <div className="flex-1">
-              {activeTab === 'cart' && renderCartContent()}
-              {activeTab === 'dashboard' && renderPlaceholderContent('Dashboard')}
-              {activeTab === 'properties' && renderPlaceholderContent('My Properties')}
-              {activeTab === 'documents' && renderPlaceholderContent('My Documents')}
-              {activeTab === 'inspections' && renderPlaceholderContent('Property Inspections')}
-              {activeTab === 'payments' && renderPlaceholderContent('My Payments')}
-              {activeTab === 'installments' && renderPlaceholderContent('My Installments')}
+              {renderTabContent()}
             </div>
           </div>
         </div>
