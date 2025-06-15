@@ -15,7 +15,7 @@ const PropertySearch = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Check if at least one search parameter is provided
     if (!location && !propertyType && !priceRange && !searchText) {
       toast({
@@ -25,7 +25,7 @@ const PropertySearch = () => {
       });
       return;
     }
-    
+
     // Build search query for location, name, price, type
     let searchQuery = '';
     if (searchText) {
@@ -33,12 +33,12 @@ const PropertySearch = () => {
     } else if (location) {
       searchQuery = location;
     }
-    
+
     // Set search query for text-based search
     if (searchQuery) {
       setSearchQuery(searchQuery);
     }
-    
+
     // Set filters for dropdowns
     const newFilters = {
       category: 'all',
@@ -46,18 +46,28 @@ const PropertySearch = () => {
       minPrice: '',
       maxPrice: ''
     };
-    
+
     if (priceRange) {
       const [minPrice, maxPrice] = priceRange.split('-');
       newFilters.minPrice = minPrice || '';
       newFilters.maxPrice = maxPrice?.replace('+', '') || '';
     }
-    
+
     setFilters(newFilters);
-    
-    // Navigate to properties page
-    navigate('/properties');
-    
+
+    // Generate url params
+    const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
+    if (location) params.set("location", location);
+    if (propertyType) params.set("type", propertyType);
+    if (priceRange) params.set("priceRange", priceRange);
+
+    // Navigate to properties page WITH search params
+    navigate({
+      pathname: '/properties',
+      search: params.toString()
+    });
+
     toast({
       title: "Search Initiated",
       description: "Redirecting to search results...",
