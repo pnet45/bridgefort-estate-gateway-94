@@ -1,20 +1,12 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Get Supabase URL and anonymous key from environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Lovable note: VITE_* env vars are not supported for production builds.
+// Use the project ref/id and anon key provided below.
+const supabaseUrl = 'https://xyvspvtdaacqfmfocvhw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5dnNwdnRkYWFjcWZtZm9jdmh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NDQ0MTIsImV4cCI6MjA2MzAyMDQxMn0.BP9KKHlIEbNntxX0DOTzidU-kNzSTBI2tz7SbbXHmMw';
 
-// Check if the required values are present
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase URL or key in environment variables. Make sure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
-}
-
-// Create the Supabase client with fallback values for development
-export const supabase = createClient(
-  supabaseUrl || 'https://xyvspvtdaacqfmfocvhw.supabase.co',
-  supabaseKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5dnNwdnRkYWFjcWZtZm9jdmh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NDQ0MTIsImV4cCI6MjA2MzAyMDQxMn0.BP9KKHlIEbNntxX0DOTzidU-kNzSTBI2tz7SbbXHmMw'
-);
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Types for database tables to fix TypeScript errors
 export type Tables = {
