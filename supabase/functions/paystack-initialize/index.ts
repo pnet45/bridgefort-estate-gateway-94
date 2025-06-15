@@ -9,16 +9,33 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
+    console.log('CORS preflight request received');
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     const { email, amount, metadata, reference, user_id } = await req.json();
+    console.log('Incoming request:', { email, amount, metadata, reference, user_id });
 
     const PAYSTACK_SECRET_KEY = Deno.env.get('PAYSTACK_SECRET_KEY');
     if (!PAYSTACK_SECRET_KEY) {
-      throw new Error('Paystack secret key not configured');
+      console.error('PAYSTACK_SECRET_KEY is NOT set in environment variables!');
+      return new Response(
+        JSON.stringify({ error: 'Paystack secret key not configured' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      );
     }
+    console.log('PAYSTACK_SECRET_KEY is present');
+
+    const callbackUrl = `${req.headers.get('origin') || 'http://localhost:3000'}/payment-success`;
+
+    // Show config to see what is sent to Paystack
+    console.log('Sending request to Paystack:', {
+      email, amount: amount * 100, reference, metadata, callback_url: callbackUrl
+    });
 
     const response = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
@@ -32,11 +49,13 @@ serve(async (req) => {
         currency: 'NGN',
         reference,
         metadata,
-        callback_url: `${req.headers.get('origin')}/payment-success`,
+        callback_url: callbackUrl,
       }),
     });
 
+    console.log('Paystack API status:', response.status);
     const paystackData = await response.json();
+    console.log('Paystack API response data:', paystackData);
 
     // Insert a payment record into payments table (new schema)
     if (paystackData.status && paystackData.data?.reference) {
@@ -46,13 +65,14 @@ serve(async (req) => {
       );
 
       // Insert payment with user_id
-      await supabase.from('payments').insert([{
+      const paymentInsertResult = await supabase.from('payments').insert([{
         order_id: metadata?.custom_fields?.find(cf => cf.variable_name === 'order_id')?.value,
         paystack_reference: paystackData.data.reference,
         status: 'pending',
         amount: amount,
         user_id: user_id,
       }]);
+      console.log('Inserted payment to supabase:', paymentInsertResult);
     }
 
     return new Response(
@@ -64,6 +84,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
+    console.error('Edge function error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

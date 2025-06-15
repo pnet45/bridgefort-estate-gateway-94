@@ -52,6 +52,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   };
 
   const handlePaystackPayment = async () => {
+    console.log("[Checkout] handlePaystackPayment triggered.");
     if (!validateStep1()) {
       toast({
         title: "Error",
@@ -73,6 +74,10 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
     try {
       const totalAmount = selectedPlan.total;
       const reference = `PWAN_${Date.now()}_${user?.id}`;
+      console.log("[Checkout] Reference:", reference);
+      console.log("[Checkout] Selected Plan:", selectedPlan);
+      console.log("[Checkout] Cart Items:", cart);
+
       // Insert payment plan agreement
       const { data: paymentAgreement, error: paymentAgreementError } = await supabase
         .from('payments')
@@ -91,6 +96,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         })
         .select()
         .single();
+
+      console.log("[Checkout] Payment Agreement Result:", { paymentAgreement, paymentAgreementError });
 
       if (paymentAgreementError) throw new Error("Failed to create payment plan");
 
@@ -114,11 +121,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         .select()
         .single();
 
+      console.log("[Checkout] Order Creation Result:", { orderData, orderError });
+
       if (orderError) {
         throw new Error('Failed to create order');
       }
 
       // Initialize Paystack payment using the edge function
+      console.log("[Checkout] Calling paystack-initialize...");
       const { data: paymentInitData, error: paymentInitError } = await supabase.functions.invoke('paystack-initialize', {
         body: {
           email: customerInfo.email,
@@ -151,23 +161,27 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         }
       });
 
-      console.log("Paystack response:", paymentInitData, paymentInitError);
+      console.log("[Checkout] Paystack-initialize Edge invoke result:", { paymentInitData, paymentInitError });
 
       if (paymentInitError || !paymentInitData) throw new Error('Failed to initialize payment');
       if (typeof paymentInitData === "object" && paymentInitData.error) {
         throw new Error(paymentInitData.error);
       }
       if (paymentInitData.status && paymentInitData.data && paymentInitData.data.authorization_url) {
+        console.log("[Checkout] Redirecting to Paystack (status/data/authorization_url)...");
         window.location.href = paymentInitData.data.authorization_url;
       } else if (paymentInitData.data && paymentInitData.data.authorization_url) {
+        console.log("[Checkout] Redirecting to Paystack (data/authorization_url)...");
         window.location.href = paymentInitData.data.authorization_url;
       } else if (paymentInitData.authorization_url) {
+        console.log("[Checkout] Redirecting to Paystack (authorization_url)...");
         window.location.href = paymentInitData.authorization_url;
       } else {
+        console.error('[Checkout] No authorization URL found in response', paymentInitData);
         throw new Error(paymentInitData.message || 'Failed to initialize payment');
       }
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error('[Checkout] Payment error:', error);
       toast({
         title: "Payment Error",
         description: error instanceof Error ? error.message : "Failed to process payment. Please try again.",

@@ -796,7 +796,7 @@ export type Database = {
         Returns: undefined
       }
       get_user_profile: {
-        Args: { user_id: number }
+        Args: Record<PropertyKey, never> | { user_id: number }
         Returns: {
           id: number
           first_name: string
@@ -805,7 +805,7 @@ export type Database = {
         }[]
       }
       has_role: {
-        Args: { _user_id: string; _role: string }
+        Args: { _user_id: string; _role: string } | { role_name: string }
         Returns: boolean
       }
       list_all_users: {
