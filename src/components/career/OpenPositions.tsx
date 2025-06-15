@@ -1,7 +1,4 @@
-
-// Refactored: Uses PositionCard and data in positionsData.ts
-
-import React, { useState } from 'react';
+import React from 'react';
 import positions from './positionsData';
 import PositionCard from './PositionCard';
 
@@ -10,13 +7,12 @@ interface OpenPositionsProps {
 }
 
 const OpenPositions: React.FC<OpenPositionsProps> = ({ onApply }) => {
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [expandedIndex, setExpandedIndex] = React.useState<number | null>(null);
 
   const toggleExpanded = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
-  // The apply callback can be undefined (fallback is no-op)
   const handleApply = (position: string) => {
     if (onApply) {
       onApply(position);
