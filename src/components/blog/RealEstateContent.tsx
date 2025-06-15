@@ -1,57 +1,52 @@
+
 import React from 'react';
 import { Calendar, Home, TrendingUp, Award, Share } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+// Use the real UUIDs from your fallback migration for IDs!
 const realEstateContent = [
   {
-    id: 're1',
-    title: 'Bridgefort County: The Future of Lagos Waterfront Living',
-    excerpt: 'Discover the unique features of our premium lagoon front estate offering unparalleled luxury, security, and investment potential just minutes from Lagos business centers.',
-    image: "/lovable-uploads/Bridgefort County - Ikota .jpg",
-    date: 'May 3, 2025',
-    author: 'Precious Silva',
-    category: 'Property Spotlight'
-  },
-  {
-    id: 're2',
-    title: 'Real Estate Market Trends: Q2 2025 Analysis',
-    excerpt: "Our quarterly market analysis explores emerging trends, price forecasts, and investment opportunities in key Nigerian real estate markets.",
-    image: "/lovable-uploads/d6f71783-c6ac-4ff8-885e-f4290eba3780.png",
-    date: 'April 25, 2025',
+    id: 'e96b32e6-88d0-4155-8c87-cbe499a239d3',
+    title: 'Success Summit 2025 - Gearing Up for the Next Real Estate Revolution',
+    excerpt: 'Join us for an unforgettable experience at the MAY 2025 SUCCESS SUMMIT — LIVE in Port Harcourt with industry leaders and experts.',
+    image: "/lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png",
+    date: 'May 1, 2025',
     author: 'Dr. Dalvin Silva',
-    category: 'Market Analysis'
+    category: 'Training Events'
   },
   {
-    id: 're3',
-    title: "Fortress Hills: Sustainable Community Development",
-    excerpt: "How our newest development is incorporating green technologies, community spaces, and sustainable practices to create a model for future Nigerian estates.",
-    image: "/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png",
-    date: "April 18, 2025",
-    author: "Dr. Dalvin Silva",
-    category: "Development News"
+    id: '8038c999-40e2-49bf-afec-2cb0b5bc2c14',
+    title: 'Estate Inspection Day - Exploring Our Newest Developments',
+    excerpt: 'Explore our newest estates with our expert team. See firsthand the investment opportunities awaiting you.',
+    image: "/lovable-uploads/8038c999-40e2-49bf-afec-2cb0b5bc2c14.png",
+    date: 'April 22, 2025',
+    author: 'Precious Silva',
+    category: 'Estate News'
   },
   {
-    id: 're4',
-    title: 'Investment Strategies: Land Banking for Future Gains',
-    excerpt: "Learn how strategic land banking can create long-term wealth and provide substantial returns in emerging Nigerian property corridors.",
-    image: "/lovable-uploads/Precious Gardens Estate.jpg",
-    date: "April 11, 2025",
-    author: "Gideon Vincent",
-    category: "Investment Tips"
+    id: '796b8bc3-c103-4ea9-bc00-f5ccc19ab812',
+    title: 'Masterclass: Real Estate Sales Strategies for 2025',
+    excerpt: 'Learn cutting-edge sales techniques from our top performers in this intensive masterclass designed for both beginners and professionals.',
+    image: "/lovable-uploads/796b8bc3-c103-4ea9-bc00-f5ccc19ab812.png",
+    date: "April 15, 2025",
+    author: 'Gideon Vincent',
+    category: "Training Events"
   }
 ];
 
 const categoryIcons = {
-  'Property Spotlight': <Home size={16} />,
+  'Training Events': <Award size={16} />,
+  'Estate News': <Home size={16} />,
   'Market Analysis': <TrendingUp size={16} />,
+  'Property Spotlight': <Home size={16} />,
   'Development News': <Home size={16} />,
   'Investment Tips': <Award size={16} />
 };
 
 // Share function that shares only the article URL
 const shareArticle = (articleId: string, title: string) => {
-  // FIX: Route should be /blog/{id}, not /blog/real-estate/{id}
+  // Route should be /blog/{id}
   const articleUrl = `${window.location.origin}/blog/${articleId}`;
   
   if (navigator.share) {
@@ -61,7 +56,6 @@ const shareArticle = (articleId: string, title: string) => {
     })
     .catch((error) => console.log('Error sharing:', error));
   } else {
-    // Fallback for browsers that don't support the Web Share API
     navigator.clipboard.writeText(articleUrl)
       .then(() => {
         alert('Article link copied to clipboard!');
@@ -115,7 +109,7 @@ const RealEstateContent = () => {
                     </div>
                     
                     <div className="flex justify-between items-center">
-                      {/* FIX: Route should be /blog/{id} */}
+                      {/* Route should be /blog/{id} */}
                       <Link 
                         to={`/blog/${post.id}`} 
                         className="text-estate-blue font-medium hover:underline inline-flex items-center"
