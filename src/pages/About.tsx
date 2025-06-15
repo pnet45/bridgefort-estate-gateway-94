@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -12,17 +11,15 @@ import TeamPhoto from '../components/about/TeamPhoto';
 import ManagementTeam from '../components/about/ManagementTeam';
 import BoardOfDirectors from '../components/about/BoardOfDirectors';
 import CallToAction from '../components/about/CallToAction';
-
 const About = () => {
-  return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
+  return <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
       <Navbar />
       <AboutHero />
       
       <div className="py-8 bg-estate-blue bg-opacity-5">
         <div className="container-custom">
           <div className="text-center text-zinc-50">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">About PWAN Bridgefort</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">PWAN Bridgefort Redefining Property Investment with Integrity, Expertise, and Lasting Value</h2>
             <div className="w-20 h-1 bg-estate-red mx-auto mb-6"></div>
             <p className="text-lg text-white max-w-3xl mx-auto">
               PWAN Bridgefort is one of Nigeria's leading real estate investment companies, 
@@ -43,8 +40,6 @@ const About = () => {
       <CallToAction />
       <Footer />
       <WhatsAppChat />
-    </div>
-  );
+    </div>;
 };
-
 export default About;
