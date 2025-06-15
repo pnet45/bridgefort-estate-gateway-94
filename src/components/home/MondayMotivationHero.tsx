@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 
 // Updated images as per user requests
@@ -39,16 +38,27 @@ const preloadImages = (srcs: string[], onComplete: () => void) => {
 const MondayMotivationHero = () => {
   const [current, setCurrent] = useState(0);
   const [loadingImages, setLoadingImages] = useState(true);
+  const [fade, setFade] = useState(true);
+
   useEffect(() => {
     const imagePaths = motivationData.map((d) => d.image);
     preloadImages(imagePaths, () => setLoadingImages(false));
   }, []);
+
+  // Fade dissolve effect on slide change
+  useEffect(() => {
+    setFade(false); // trigger fade out
+    const to = setTimeout(() => setFade(true), 150); // after fade out, fade in
+    return () => clearTimeout(to);
+  }, [current]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % motivationData.length);
-    }, 5000);
+    }, 10000); // 10 seconds
     return () => clearInterval(timer);
   }, []);
+
   const { title, text, author, image } = motivationData[current];
 
   if (loadingImages) {
@@ -66,7 +76,7 @@ const MondayMotivationHero = () => {
   if (isRiseAndGrind) {
     return (
       <section className="relative w-full h-auto min-h-[32vh] md:min-h-[45vh] lg:min-h-[50vh] mb-8 animate-fade-in">
-        <div className="container-custom px-2 md:px-6 py-6 md:py-10 flex flex-col md:flex-row items-center bg-gradient-to-l from-estate-blue/80 to-estate-blue/60 rounded-xl shadow-lg">
+        <div className={`container-custom px-2 md:px-6 py-6 md:py-10 flex flex-col md:flex-row items-center bg-gradient-to-l from-estate-blue/80 to-estate-blue/60 rounded-xl shadow-lg transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"}`}>
           {/* Text (left) */}
           <div className="w-full md:w-2/3 lg:w-1/2 flex flex-col justify-center items-start text-white py-4 pr-0 md:pr-8">
             <h2 className="text-2xl md:text-4xl font-bold mb-2 animate-fade-in text-left">
@@ -121,7 +131,7 @@ const MondayMotivationHero = () => {
   if (isNewWeek) {
     return (
       <section className="relative w-full h-auto min-h-[32vh] md:min-h-[45vh] lg:min-h-[50vh] mb-8 animate-fade-in">
-        <div className="container-custom px-2 md:px-6 py-6 md:py-10 flex flex-col md:flex-row items-center bg-gradient-to-r from-estate-blue/80 to-estate-blue/60 rounded-xl shadow-lg">
+        <div className={`container-custom px-2 md:px-6 py-6 md:py-10 flex flex-col md:flex-row items-center bg-gradient-to-r from-estate-blue/80 to-estate-blue/60 rounded-xl shadow-lg transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"}`}>
           {/* Image (left) */}
           <div className="w-full md:w-1/3 lg:w-1/2 flex justify-center md:justify-start py-4">
             <img
@@ -173,7 +183,7 @@ const MondayMotivationHero = () => {
   return (
     <section className="relative w-full h-[32vh] md:h-[45vh] lg:h-[50vh] mb-8 animate-fade-in">
       <div
-        className="h-full w-full bg-cover bg-center transition-all duration-1000 ease-in-out relative"
+        className={`h-full w-full bg-cover bg-center transition-all duration-1000 ease-in-out relative transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"}`}
         style={{
           backgroundImage: `url(${image})`,
           backgroundColor: "#142447",
