@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +18,7 @@ import AccountInformation from './AccountInformation';
 import InspectionBookingForm from './InspectionBookingForm';
 import BlogPostsTab from './BlogPostsTab';
 import SavedCartItems from './SavedCartItems';
+import MyPaymentsSection from "./MyPaymentsSection";
 
 const ClientDashboard = () => {
   const { user, userRole } = useAuth();
@@ -188,6 +188,7 @@ const ClientDashboard = () => {
           <TabsTrigger value="properties">Properties</TabsTrigger>
           <TabsTrigger value="inspections">Inspections</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="payments">My Payments</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
           {userRole === 'admin' && <TabsTrigger value="blog">Blog</TabsTrigger>}
         </TabsList>
@@ -316,6 +317,10 @@ const ClientDashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="payments">
+          <MyPaymentsSection />
         </TabsContent>
 
         <TabsContent value="account">

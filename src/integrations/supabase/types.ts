@@ -384,6 +384,95 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_transactions: {
+        Row: {
+          amount: number
+          channel: string | null
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          channel?: string | null
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          channel?: string | null
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount_paid: number
+          balance: number
+          created_at: string
+          id: string
+          interest_amount: number
+          interest_percent: number
+          months: number
+          plan_type: string
+          principal_amount: number
+          property_id: string
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_paid?: number
+          balance: number
+          created_at?: string
+          id?: string
+          interest_amount: number
+          interest_percent: number
+          months: number
+          plan_type: string
+          principal_amount: number
+          property_id: string
+          status?: string
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          balance?: number
+          created_at?: string
+          id?: string
+          interest_amount?: number
+          interest_percent?: number
+          months?: number
+          plan_type?: string
+          principal_amount?: number
+          property_id?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author_id: string
