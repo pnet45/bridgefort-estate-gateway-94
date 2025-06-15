@@ -36,7 +36,7 @@ const InvestmentPackages = () => {
           {investmentPackages.map((pkg, index) => <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition duration-300">
               <div className="p-6">
                 <div className="bg-estate-blue bg-opacity-10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-6">
-                  <pkg.icon size={28} className="text-red " />
+                  <pkg.icon size={28} className="text-white" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-3">{pkg.title}</h3>
                 <p className="text-gray-600 mb-6">{pkg.description}</p>
