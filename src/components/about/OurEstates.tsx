@@ -1,14 +1,7 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-
-// Utility styles for white text outline (for modern browsers)
-// Add tailwind 'drop-shadow-[...]' for best consistency across browsers
-const outlineStyle = "text-white drop-shadow-[0_2px_6px_rgba(255,255,255,0.7)]";
-
 const OurEstates = () => {
-  return (
-    <section className="section-padding bg-gradient-to-r from-blue-50 to-purple-50">
+  return <section className="section-padding bg-gradient-to-r from-blue-50 to-purple-50">
       <div className="container-custom">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold mb-4 text-estate-blue">Our Estates: A World of Opportunity</h2>
@@ -50,22 +43,17 @@ const OurEstates = () => {
         </div>
         
         <div className="text-center mt-10 bg-opacity-6 p-8 rounded-lg bg-gray-950">
-          {/* Updated heading with estate-blue background and white outlined text */}
-          <h3
-            className={`text-2xl font-bold mb-4 px-4 py-2 rounded-xl bg-estate-blue ${outlineStyle} shadow-md inline-block`}
-          >
-            Join the PWAN Bridgefort Family Today
-          </h3>
+          <h3 className="text-2xl font-bold mb-4 text-estate-blue">Join the PWAN Bridgefort Family Today</h3>
           <p className="mb-6 max-w-3xl mx-auto text-zinc-50">
             At PWAN Bridgefort, we're more than a real estate company; we're a bridge to your dreams. Let's help you turn your aspirations into reality, one property at a time.
           </p>
           <p className="text-lg font-medium text-estate-red mb-6">Invest now, because tomorrow begins today.</p>
-          <Link to="/contact" className="btn-cta py-3 px-8 text-lg">
+          
+          <Link to="/contact" className="btn-cta py-3 px-8 text-lg bg-indigo-900">
             Contact Us Today
           </Link>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
 export default OurEstates;
