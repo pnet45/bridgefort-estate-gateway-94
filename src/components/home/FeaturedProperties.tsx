@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
@@ -7,7 +8,7 @@ import { usePropertyContext } from '@/contexts/property';
 const FeaturedProperties = () => {
   const { filteredProperties, loading } = usePropertyContext();
 
-  // Select the top 3 properties to feature
+  // Select the top 3 properties to feature (you can enhance this logic as needed)
   const featured = filteredProperties.slice(0, 3);
 
   return (
@@ -29,10 +30,7 @@ const FeaturedProperties = () => {
                 className="animate-fade-in focus-box-in"
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
-                <PropertyCard 
-                propertyName={property.name || property.title}
-                plotNumber={property.plotNumber || 0}
-                size={property.size || property.sqm} id={''} location={''} imageUrl={''} pricePerPlot={0} propertyType={''}/>
+                <PropertyCard {...property} />
               </div>
             ))}
           </div>

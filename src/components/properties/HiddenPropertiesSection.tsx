@@ -6,7 +6,6 @@ import PropertyCard from '../PropertyCard';
 import { Button } from '@/components/ui/button';
 
 interface Property {
-  plotNumber: number;
   id: string;
   title: string;
   location: string;
@@ -43,9 +42,10 @@ const HiddenPropertiesSection = ({ hiddenProperties, user, onUnhideProperty }: H
           >
             <div className="opacity-50">
               <PropertyCard 
-                propertyName={property.name || property.title}
-                plotNumber={property.plotNumber || 0}
-                size={property.size || property.sqm} id={''} location={''} imageUrl={''} pricePerPlot={0} propertyType={''}/>
+                {...property} 
+                totalPlots={property.totalPlots || 100}
+                availablePlots={property.availablePlots || 50}
+                pricePerPlot={property.pricePerPlot || 1000000}
               />
             </div>
             
