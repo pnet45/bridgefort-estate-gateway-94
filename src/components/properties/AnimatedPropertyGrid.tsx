@@ -61,9 +61,7 @@ const AnimatedPropertyGrid = ({ properties }: AnimatedPropertyGridProps) => {
             animationDelay: `${index * 200}ms`
           }}
         >
-          <PropertyCard propertyName={property.name} // map 'name' to 'propertyName'
-          plotNumber={property.plotNumber ?? 0} // provide dummy/default if missing
-          size={property.size} />
+          <PropertyCard {...property} />
         </div>
       ))}
     </div>

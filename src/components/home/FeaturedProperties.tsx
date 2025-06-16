@@ -30,9 +30,7 @@ const FeaturedProperties = () => {
                 className="animate-fade-in focus-box-in"
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
-                <PropertyCard propertyName={property.name} // map 'name' to 'propertyName'
-                plotNumber={property.plotNumber ?? 0} // provide dummy/default if missing
-                size={property.size} />
+                <PropertyCard {...property} />
               </div>
             ))}
           </div>
