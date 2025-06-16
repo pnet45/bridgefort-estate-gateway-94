@@ -42,7 +42,9 @@ const HiddenPropertiesSection = ({ hiddenProperties, user, onUnhideProperty }: H
           >
             <div className="opacity-50">
               <PropertyCard 
-                {...property} 
+                propertyName={property.name} // map 'name' to 'propertyName'
+                plotNumber={property.plotNumber ?? 0} // provide dummy/default if missing
+                size={property.size} 
                 totalPlots={property.totalPlots || 100}
                 availablePlots={property.availablePlots || 50}
                 pricePerPlot={property.pricePerPlot || 1000000}
