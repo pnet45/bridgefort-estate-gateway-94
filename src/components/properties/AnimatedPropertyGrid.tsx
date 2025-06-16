@@ -3,6 +3,9 @@ import React, { useEffect, useState } from 'react';
 import PropertyCard from '../PropertyCard';
 
 interface Property {
+  name: string;
+  plotNumber: number;
+  size: number;
   id: string;
   title: string;
   location: string;
@@ -61,7 +64,9 @@ const AnimatedPropertyGrid = ({ properties }: AnimatedPropertyGridProps) => {
             animationDelay: `${index * 200}ms`
           }}
         >
-          <PropertyCard {...property} />
+          <PropertyCard propertyName={property.name || property.title}
+                plotNumber={property.plotNumber || 0}
+                size={property.size || property.sqm} id={''} location={''} imageUrl={''} pricePerPlot={0} propertyType={''}/>
         </div>
       ))}
     </div>

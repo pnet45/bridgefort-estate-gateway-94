@@ -1,5 +1,6 @@
 
 export interface Property {
+  plotNumber: number;
   id: string;
   name: string;
   location: string;
