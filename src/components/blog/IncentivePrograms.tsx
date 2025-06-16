@@ -5,12 +5,12 @@ const incentives = [
   {
     name: "2025 Overseas Travel Reward",
     image: "/lovable-uploads/Incentives travel.jpg",
-    detail: "Close three sales above ₦10M each before Dec 2025 and win an all-expense-paid trip to Dubai or Europe!"
+    detail: "Close cumulative sales of ₦100M and above before the end of July 2025 and win an all-expense-paid trip to Dubai or Europe!"
   },
   {
     name: "Luxury Car for Top Performers",
     image: "/lovable-uploads/Incentives car.jpg",
-    detail: "This year's best overall agent receives a brand-new car. Check requirements in your dashboard."
+    detail: "This year's best overall PBO receives a brand-new car, after making a cumulative sales of ₦500m. Check requirements in your dashboard or visit our office for more information."
   }
 ];
 

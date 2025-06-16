@@ -8,18 +8,19 @@ const HomeHeroImage = () => {
   const heroImages = [
     '/lovable-uploads/Homeslider2.png',
     '/lovable-uploads/Homeslider.png',
+    '/lovable-uploads/PropertyHero.png',
     '/lovable-uploads/Homeslider3.png',
     '/lovable-uploads/Homeslider4.png'
   ];
   
-  const heroTitle = "PWAN Bridgefort. ...Rebuilding the Future!";
+  const heroTitle = "PWAN BRIDGEFORT ...Rebuilding the Future!";
   const heroSubtitle = "At PWAN Bridgefort, we're not just selling properties—we're building legacies.";
 
-  // Auto-slide every 5 seconds
+  // Auto-slide every 8 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prevSlide) => (prevSlide + 1) % heroImages.length);
-    }, 5000);
+    }, 8000);
     
     return () => clearInterval(interval);
   }, [heroImages.length]);
