@@ -4,12 +4,12 @@ import React from "react";
 const stories = [
   {
     title: "Success Summit 2025: Transforming Real Estate Careers",
-    img: "/lovable-uploads/d6f71783-c6ac-4ff8-8854-f4290eba3780.png",
+    img: "/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png",
     summary: "Hundreds of agents gathered for an unforgettable training session – with many securing new partnerships and hitting new sales milestones right at the Summit!",
   },
   {
     title: "Sales Leaders Honored",
-    img: "/lovable-uploads/Emeka.jpg",
+    img: "/lovable-uploads/GV.png",
     summary: "Our top sales performers for Q1 2025 received recognition and reward packages, including vehicles and all-expenses-paid trips.",
   }
 ];
