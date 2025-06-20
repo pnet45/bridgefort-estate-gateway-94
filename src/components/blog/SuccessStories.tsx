@@ -4,8 +4,8 @@ import React from "react";
 const stories = [
   {
     title: "Success Summit 2025: Transforming Real Estate Careers",
-    img: "/lovable-uploads/ba3b8490-e83f-477b-b729-b617da515b2c.png",
-    summary: "Hundreds of agents gathered for an unforgettable training session – with many securing new partnerships and hitting new sales milestones right at the Summit!",
+    img: "/lovable-uploads/Summit1.jpg",
+    summary: "Hundreds of PBOs gathered for an unforgettable training session – with many securing new partnerships and hitting new sales milestones right at the Summit!",
   },
   {
     title: "Sales Leaders Honored",
