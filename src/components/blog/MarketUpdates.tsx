@@ -7,10 +7,10 @@ import {
 
 const updates = [
   {
-    title: "Market Update: Igbogun/Ebute-Okun Prices Rise",
-    img: "/lovable-uploads/d6f71783-c6ac-4ff8-885e-f4290eba3780.png",
+    title: "Market Update: Ode Omi Prices Rise",
+    img: "/lovable-uploads/The Ambassadors.jpg",
     details:
-      "Our Igbogun and Ebute-Okun sites have seen price appreciation by 15% since Q4 2024, making now the perfect time for new investors to secure their plots.",
+      "Our Ode Omi via Ibeju Lekki properties have seen price appreciation by 15% since Q4 2024, making now the perfect time for new investors to secure their plots.",
   },
   {
     title: "High Demand in New Estates",
