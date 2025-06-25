@@ -60,28 +60,31 @@ const PropertyDetailsDialog = ({
       case "Afaoma Castle Estate":
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
       case "Akuchi Luxury Estate":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+        return `/lovable-uploads/SUB. FORM - AKUCHI LUX ESTATE, IFITE, AWKA.pdf`;
       case "Fountain Springs Estate":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+        return `/lovable-uploads/SUB. FORM - FOUNTAIN SPRINGS.pdf`;
       case "Greenfield County":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+        return `/lovable-uploads/GREENFIELDS FARMLAND ESTATE AGBARA .pdf`;
       case "Hampton Ville Estate":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+        return `/lovable-uploads/SUBSCRIPTION FORM - HAMPTON VILLE PHASE 1 & 2.pdf`;
       case "Olanma Gardens":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
-      case "Precious Gardens Estate":
+        return `/lovable-uploads/SUB. FORM OLANMA GARDENS ESTATES OWERRI.pdf`;
+      case "Ambassadors Estate":
+        return `/lovable-uploads/SUB. FORM - AMBASSADORS ESTATE ODE-OMI.pdf`
       case "Precious Garden Estate":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+        return `/lovable-uploads/SUB. FORM - PRECIOUS GARDENS SCHEME 2.pdf`;
       case "The Big League County":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+        return `/lovable-uploads/SUBSCRIPTION FORM-THE BIG LEAGUE ESTATE SERIES, DELTA STATE.pdf`;
       case "The Big League Smart City":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+        return `/lovable-uploads/SUB. FORM - THE BIG LEAGUE SMART CITY -PH.pdf`;
       case "The Big League Paradise":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+        return `/lovable-uploads/SUBSCRIPTION FORM-THE BIG LEAGUE ESTATE SERIES, DELTA STATE.pdf`;
       case "The Big League Heaven":
-        return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+        return `/lovable-uploads/SUBSCRIPTION FORM-THE BIG LEAGUE ESTATE SERIES, DELTA STATE.pdf`;
       case "Bridgefort County - Lagoon Front Estate":
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
+      case "Bridgefort Biz Hub - Commercial Estate":
+        return `/lovable-uploads/SUB. FORM - BRIDGEFORT BIZ HUB - COMMERCIAL.pdf`;
       default:
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
     }
@@ -102,7 +105,8 @@ const PropertyDetailsDialog = ({
         return ["/lovable-uploads/5f92d89a-e9fc-4c84-a49d-72cb376b8510.png"];
       case "Olanma Gardens":
         return ["/lovable-uploads/7da9692b-7a71-4551-9b99-db869f5f0ff7.png"];
-      case "Precious Gardens Estate":
+      case "Ambassadors Estate":
+        return ["/lovable-uploads/The Ambassadors.jpg"];
       case "Precious Garden Estate":
         return ["/lovable-uploads/5c033a2a-1e10-49b7-b7de-5b56e384b9d5.png"];
       case "The Big League County":
