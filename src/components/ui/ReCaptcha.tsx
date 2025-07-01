@@ -10,8 +10,8 @@ interface ReCaptchaProps {
 
 const ReCaptcha = forwardRef<ReCAPTCHA, ReCaptchaProps>(
   ({ onChange, onExpired, onError }, ref) => {
-    // You'll need to set this site key in your environment variables
-    const siteKey = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // This is a test key, replace with your actual key
+    // Using your provided site key
+    const siteKey = '6LeLDXQrAAAAAKbX9MLM61Hm67v_S5-ApMJS_chJ';
 
     return (
       <ReCAPTCHA
