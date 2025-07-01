@@ -9,6 +9,7 @@ import TrainingContent from '../components/training/TrainingContent';
 import UpcomingEvents from '../components/training/UpcomingEvents';
 import TrainingCTA from '../components/training/TrainingCTA';
 import FeaturedTraining from '../components/training/FeaturedTraining';
+import CenterTrainingSection from '../components/training/CenterTrainingSection';
 import { Toaster } from "@/components/ui/toaster";
 import FeaturedEventsCarousel from '../components/training/FeaturedEventsCarousel';
 import SuccessSummit from '../components/training/SuccessSummit';
@@ -29,6 +30,9 @@ const Training = () => {
 
       {/* Featured Training */}
       <FeaturedTraining />
+
+      {/* Center Training Section */}
+      <CenterTrainingSection />
 
       {/* Training Categories */}
       <TrainingCategories />

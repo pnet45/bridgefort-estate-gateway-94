@@ -96,6 +96,48 @@ export type Database = {
         }
         Relationships: []
       }
+      centertraining: {
+        Row: {
+          address: string
+          center_leader_name: string
+          center_name: string
+          created_at: string
+          expected_attendance: number
+          id: string
+          phone_number: string
+          training_date: string
+          training_time: string
+          updated_at: string
+          venue_capacity: number
+        }
+        Insert: {
+          address: string
+          center_leader_name: string
+          center_name: string
+          created_at?: string
+          expected_attendance: number
+          id?: string
+          phone_number: string
+          training_date: string
+          training_time: string
+          updated_at?: string
+          venue_capacity: number
+        }
+        Update: {
+          address?: string
+          center_leader_name?: string
+          center_name?: string
+          created_at?: string
+          expected_attendance?: number
+          id?: string
+          phone_number?: string
+          training_date?: string
+          training_time?: string
+          updated_at?: string
+          venue_capacity?: number
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string | null
@@ -768,6 +810,9 @@ export type Database = {
           name: string
           need_reminder: boolean | null
           phone: string
+          referrer_email: string | null
+          referrer_name: string | null
+          referrer_phone: string | null
           registered_at: string | null
           state: string | null
         }
@@ -787,6 +832,9 @@ export type Database = {
           name: string
           need_reminder?: boolean | null
           phone: string
+          referrer_email?: string | null
+          referrer_name?: string | null
+          referrer_phone?: string | null
           registered_at?: string | null
           state?: string | null
         }
@@ -806,6 +854,9 @@ export type Database = {
           name?: string
           need_reminder?: boolean | null
           phone?: string
+          referrer_email?: string | null
+          referrer_name?: string | null
+          referrer_phone?: string | null
           registered_at?: string | null
           state?: string | null
         }

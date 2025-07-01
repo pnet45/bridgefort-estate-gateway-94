@@ -24,7 +24,7 @@ const TrainingRegistrationForm = ({ open, onClose, eventTitle, eventDate }: Trai
       email: '',
       phone: '',
       gender: '',
-      isPBO: 'No',
+      isPBO: '',
       country: 'Nigeria',
       state: '',
       localGovernment: '',
@@ -35,6 +35,9 @@ const TrainingRegistrationForm = ({ open, onClose, eventTitle, eventDate }: Trai
       needReminder: false,
       eventTitle: eventTitle,
       eventDate: eventDate,
+      referrerName: '',
+      referrerPhone: '',
+      referrerEmail: '',
     }
   });
 
@@ -60,7 +63,10 @@ const TrainingRegistrationForm = ({ open, onClose, eventTitle, eventDate }: Trai
             invitee_phone: data.inviteePhone,
             need_reminder: data.needReminder,
             event_title: eventTitle,
-            event_date: eventDate
+            event_date: eventDate,
+            referrer_name: data.referrerName,
+            referrer_phone: data.referrerPhone,
+            referrer_email: data.referrerEmail,
           }
         ]);
       

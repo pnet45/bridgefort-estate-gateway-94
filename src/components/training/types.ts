@@ -17,6 +17,18 @@ export const trainingFormSchema = z.object({
   eventTitle: z.string().optional(),
   eventDate: z.string().optional(),
   isPBO: z.string().min(1, { message: "Please select whether you are a PBO" }),
+  referrerName: z.string().optional(),
+  referrerPhone: z.string().optional(),
+  referrerEmail: z.string().optional(),
+}).refine((data) => {
+  // If not a PBO, referrer information is required
+  if (data.isPBO === 'No') {
+    return data.referrerName && data.referrerPhone && data.referrerEmail;
+  }
+  return true;
+}, {
+  message: "Referrer information is required when you are not a PBO",
+  path: ["referrerName"],
 });
 
 export type TrainingFormValues = z.infer<typeof trainingFormSchema>;
