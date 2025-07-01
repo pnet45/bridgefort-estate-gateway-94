@@ -15,37 +15,14 @@ export interface UserProfile {
 export interface AuthContextType {
   user: User | null;
   session: Session | null;
+  profile: UserProfile | null;
   userRole: string | null;
   loading: boolean;
+  isLoading: boolean; // Add alias for compatibility
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any; data?: any }>;
   signOut: () => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   updatePassword: (password: string) => Promise<{ error: any }>;
-}
-
-export interface AuthContextProps {
-  user: User | null;
-  session: Session | null;
-  profile: UserProfile | null;
-  userRole: string | null;
-  isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<{
-    error: Error | null;
-    data: any;
-  }>;
-  signInWithGoogle: () => Promise<{
-    error: Error | null;
-    data: any;
-  }>;
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{
-    error: Error | null;
-    data: any;
-  }>;
-  resetPassword: (email: string) => Promise<{
-    error: Error | null;
-    data: any;
-  }>;
-  signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
