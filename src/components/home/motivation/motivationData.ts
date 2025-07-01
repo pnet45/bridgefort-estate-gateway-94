@@ -1,17 +1,21 @@
 
 export const motivationData = [
   {
-    id: "motivation1",
-    title: "New Week, Fresh Listings, Fresh Leads",
-    text: "Lagos never sleeps, and neither do we. Let's turn site visits into signed deals. Stay sharp, stay selling.",
-    author: "Dalvin Silva",
-    image: "/lovable-uploads/Happy new week.png",
+    title: "Monday Motivation: Your Dream Home Awaits!",
+    text: "Every Monday is a fresh start to make your property dreams come true. At PWAN Bridgefort, we believe that success starts with taking the first step. Whether you're looking to invest, buy your first home, or expand your portfolio - today is the perfect day to begin your journey to property ownership!",
+    author: "PWAN Bridgefort Team",
+    image: "/lovable-uploads/Happy new week.png"
   },
   {
-    id: "motivation2",
-    title: "Rise and Grind: Real Estate Waits for No One",
-    text: "It's Monday – let's show up and close strong. In real estate, consistent action and persistent follow-up are the keys to success.",
-    author: "Dalvin Silva",
-    image: "/lovable-uploads/rise-and-grind-real-estae-waits-for-no-1.png",
+    title: "Rise and Grind: Real Estate Waits for No One!",
+    text: "Success in real estate isn't just about timing the market - it's about making the time to invest in your future. Every property deal that passes by is an opportunity that may never return. Don't let hesitation cost you your financial freedom. The perfect plot is waiting for the perfect investor - and that's YOU!",
+    author: "PWAN Investment Team", 
+    image: "/lovable-uploads/rise-and-grind-real-estae-waits-for-no-1.png"
   },
+  {
+    title: "New Week, Fresh Listings, Fresh Leads",
+    text: "The hustle never stops at PWAN Bridgefort! This week brings new opportunities, new properties, and new chances to secure your financial future. Our fresh listings are ready for serious investors who understand that wealth is built one smart decision at a time.",
+    author: "PWAN Bridgefort Sales Team",
+    image: "/lovable-uploads/Happy new week.png"
+  }
 ];

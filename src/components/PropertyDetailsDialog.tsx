@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Download, MapPin, ShoppingCart } from 'lucide-react';
 import { Button } from './ui/button';
 import { AspectRatio } from './ui/aspect-ratio';
 import { ScrollArea } from './ui/scroll-area';
 import { Dialog, DialogContent } from "./ui/dialog";
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useEcommerce } from '@/contexts/ecommerce';
+import { useAuth } from '@/contexts/auth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { Plot } from '@/contexts/ecommerce/types';
+
 interface PropertyDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -21,15 +25,41 @@ interface PropertyDetailsDialogProps {
     propertyType: string;
   };
 }
+
 const PropertyDetailsDialog = ({
   isOpen,
   onClose,
   property
 }: PropertyDetailsDialogProps) => {
   const isMobile = useIsMobile();
-  const {
-    addToCart
-  } = useEcommerce();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { addToCart } = useEcommerce();
+  const [profileCompleted, setProfileCompleted] = useState(false);
+
+  // Check profile completion status
+  useEffect(() => {
+    if (user) {
+      checkProfileCompletion();
+    }
+  }, [user]);
+
+  const checkProfileCompletion = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('profile_completed')
+        .eq('id', user.id)
+        .single();
+      
+      if (!error && data) {
+        setProfileCompleted(data.profile_completed || false);
+      }
+    } catch (error) {
+      console.error('Error checking profile completion:', error);
+    }
+  };
+
   const handleDownload = () => {
     const pdfUrl = getPropertyPDF(property.title);
     const link = document.createElement('a');
@@ -39,7 +69,28 @@ const PropertyDetailsDialog = ({
     link.click();
     document.body.removeChild(link);
   };
+
   const handleAddToCart = () => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to add properties to cart.",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
+    if (!profileCompleted) {
+      toast({
+        title: "Profile Incomplete",
+        description: "Please complete your profile before purchasing properties.",
+        variant: "destructive"
+      });
+      navigate('/profile');
+      return;
+    }
+
     const plot: Plot = {
       id: `${property.id}-plot-1`,
       propertyId: property.id,
@@ -53,6 +104,7 @@ const PropertyDetailsDialog = ({
     };
     addToCart(plot, 1);
   };
+
   const getPropertyPDF = (propertyTitle: string) => {
     switch (propertyTitle) {
       case "Fortress Hills Estate":
@@ -89,6 +141,7 @@ const PropertyDetailsDialog = ({
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
     }
   };
+
   const getPropertyImages = (propertyTitle: string) => {
     switch (propertyTitle) {
       case "Afaoma Castle Estate":
@@ -123,7 +176,9 @@ const PropertyDetailsDialog = ({
         return [property.imageUrl];
     }
   };
+
   const propertyImages = getPropertyImages(property.title);
+
   return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`p-0 gap-0 ${isMobile ? 'max-w-[95vw]' : 'max-w-6xl'}`}>
         <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} h-[85vh]`}>
@@ -205,4 +260,5 @@ const PropertyDetailsDialog = ({
       </DialogContent>
     </Dialog>;
 };
+
 export default PropertyDetailsDialog;

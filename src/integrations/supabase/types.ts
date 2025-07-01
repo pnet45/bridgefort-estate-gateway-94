@@ -168,6 +168,30 @@ export type Database = {
         }
         Relationships: []
       }
+      documentation_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
       estate: {
         Row: {
           actual_price: number | null
@@ -283,8 +307,10 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          documentation_type_id: string | null
           estate_id: string
           id: string
+          is_bundle: boolean | null
           status: string
           updated_at: string
           user_id: string | null
@@ -292,8 +318,10 @@ export type Database = {
         Insert: {
           amount?: number
           created_at?: string
+          documentation_type_id?: string | null
           estate_id: string
           id?: string
+          is_bundle?: boolean | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -301,13 +329,23 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          documentation_type_id?: string | null
           estate_id?: string
           id?: string
+          is_bundle?: boolean | null
           status?: string
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "estate_documentation_payments_documentation_type_id_fkey"
+            columns: ["documentation_type_id"]
+            isOneToOne: false
+            referencedRelation: "documentation_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hidden_properties: {
         Row: {
