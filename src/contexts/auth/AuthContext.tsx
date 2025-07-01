@@ -44,8 +44,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             fetchProfile(session.user.id);
           }, 0);
           
-          // Send welcome email for new signups
-          if (event === 'SIGNED_UP') {
+          // Send welcome email for new signups - using proper event comparison
+          if (event === 'SIGNED_UP' as AuthChangeEvent) {
             setTimeout(() => {
               sendWelcomeEmail(session.user);
             }, 0);
