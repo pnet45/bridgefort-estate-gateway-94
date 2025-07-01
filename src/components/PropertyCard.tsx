@@ -119,7 +119,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             </div>
             <div className="flex items-center">
               <Users size={16} className="mr-2 text-estate-blue" />
-              <span>{availablePlots} plots</span>
+              <span>{availablePlots} Plots Available</span>
             </div>
           </div>
           {/* Price */}
