@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import OrderSummary from './OrderSummary';
 import CustomerInfoForm from './CustomerInfoForm';
 import PaymentPlanSelector from './PaymentPlanSelector';
-import { calculatePaymentPlan, PaymentPlanType } from "@/utils/paymentPlan";
+import { calculatePaymentBreakdown, PaymentPlanType } from "@/utils/paymentPlan";
 
 interface CheckoutFormProps {
   onBack?: () => void;
@@ -92,7 +93,19 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       console.log("[Checkout] Selected Plan:", selectedPlan);
       console.log("[Checkout] Cart Items:", cart);
 
-      // Insert payment plan agreement (if not already exists? For now, always create for this cart)
+      // Check if this is a documentation purchase
+      const isDocumentationPurchase = cart.some(item => 
+        item.plot.propertyType === 'Documentation'
+      );
+
+      // Calculate payment breakdown with documentation flag
+      const paymentBreakdown = calculatePaymentBreakdown(
+        selectedPlan.principal,
+        selectedPlan.type,
+        isDocumentationPurchase
+      );
+
+      // Insert payment plan agreement
       const { data: paymentAgreement, error: paymentAgreementError } = await supabase
         .from('payments')
         .insert({
@@ -100,12 +113,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
           property_id: cart[0]?.plot?.id,
           plan_type: selectedPlan.type,
           months: selectedPlan.months,
-          principal_amount: selectedPlan.principal,
-          interest_percent: selectedPlan.interestRate * 100,
-          interest_amount: selectedPlan.interest,
-          total_amount: selectedPlan.total,
+          principal_amount: paymentBreakdown.principalAmount,
+          interest_percent: paymentBreakdown.interestAmount > 0 ? selectedPlan.interestRate * 100 : 0,
+          interest_amount: paymentBreakdown.interestAmount,
+          total_amount: paymentBreakdown.totalAmount,
           amount_paid: 0,
-          balance: selectedPlan.total,
+          balance: paymentBreakdown.totalAmount,
           status: 'pending'
         })
         .select()
@@ -115,14 +128,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
 
       if (paymentAgreementError) throw new Error("Failed to create payment plan");
 
-      // Insert order (unchanged)
+      // Insert order
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user?.id,
           customer_email: customerInfo.email,
           customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
-          total_amount: selectedPlan.total,
+          total_amount: paymentBreakdown.totalAmount,
           payment_reference: reference,
           payment_status: 'pending',
           items: cart.map(item => ({
@@ -147,7 +160,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       const { data: paymentInitData, error: paymentInitError } = await supabase.functions.invoke('paystack-initialize', {
         body: {
           email: customerInfo.email,
-          amount: payAmount, // <<== user can select to pay for N months!
+          amount: payAmount,
           reference,
           user_id: user?.id,
           metadata: {
@@ -198,10 +211,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         console.error('[Checkout] No authorization URL found in response', paymentInitData);
         throw new Error(paymentInitData.message || 'Failed to initialize payment');
       }
-
-      // The rest: Post-payment, handle hooks/webhooks or success redirect with reference.
-      // Ideally, in PaymentSuccess page, update `payments` entry: add amount_paid, subtract balance,
-      // and insert `payment_transactions` entry.
 
     } catch (error) {
       console.error('[Checkout] Payment error:', error);

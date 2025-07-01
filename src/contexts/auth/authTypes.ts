@@ -12,6 +12,18 @@ export interface UserProfile {
   address?: string;
 }
 
+export interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  userRole: string | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any }>;
+  signOut: () => Promise<{ error: any }>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
+  updatePassword: (password: string) => Promise<{ error: any }>;
+}
+
 export interface AuthContextProps {
   user: User | null;
   session: Session | null;

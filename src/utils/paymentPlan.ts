@@ -7,6 +7,8 @@ export interface PaymentPlan {
   description: string;
 }
 
+export type PaymentPlanType = 'outright' | '1-3' | '4-6' | '7-12';
+
 export const paymentPlans: PaymentPlan[] = [
   {
     id: 'outright',
@@ -37,6 +39,24 @@ export const paymentPlans: PaymentPlan[] = [
     description: '15% additional charge spread over 12 months'
   }
 ];
+
+export const calculatePaymentPlan = (baseAmount: number, months: number) => {
+  const plan = paymentPlans.find(p => p.months === months);
+  if (!plan) {
+    throw new Error('Invalid payment plan');
+  }
+
+  const interestAmount = baseAmount * plan.interestRate;
+  const totalAmount = baseAmount + interestAmount;
+
+  return {
+    principal: baseAmount,
+    interest: interestAmount,
+    total: totalAmount,
+    interestRate: plan.interestRate,
+    months: plan.months
+  };
+};
 
 export const calculatePaymentBreakdown = (
   principalAmount: number,

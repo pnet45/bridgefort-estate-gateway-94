@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { calculatePaymentPlan, PaymentPlanType } from "@/utils/paymentPlan";
+import { calculatePaymentBreakdown, PaymentPlanType } from "@/utils/paymentPlan";
 
 interface PaymentPlanSelectorProps {
   baseAmount: number;
@@ -20,8 +21,8 @@ interface PaymentPlanSelectorProps {
 const plans: { label: string; months: number; type: PaymentPlanType }[] = [
   { label: "Outright (One-off)", months: 1, type: "outright" },
   { label: "1-3 Months (5% extra)", months: 3, type: "1-3" },
-  { label: "4-6 Months (12.5% extra)", months: 6, type: "4-6" },
-  { label: "7-12 Months (25% extra)", months: 12, type: "7-12" },
+  { label: "4-6 Months (10% extra)", months: 6, type: "4-6" },
+  { label: "7-12 Months (15% extra)", months: 12, type: "7-12" },
 ];
 
 const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
@@ -48,17 +49,17 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
     setPlanType(plan.type);
     setPlanMonths(plan.months);
     setMonthsToPay(1);
-    const result = calculatePaymentPlan(baseAmount, plan.months);
+    const result = calculatePaymentBreakdown(baseAmount, plan.type);
     onPlanSelect({
       months: plan.months,
       type: plan.type,
-      total: result.total,
-      principal: result.principal,
-      interest: result.interest,
-      interestRate: result.interestRate,
+      total: result.totalAmount,
+      principal: result.principalAmount,
+      interest: result.interestAmount,
+      interestRate: result.interestAmount / result.principalAmount,
       monthsToPay: 1,
-      monthlyPayment: Math.ceil(result.total / plan.months),
-      payAmount: Math.ceil(result.total / plan.months), // Initial selection
+      monthlyPayment: Math.ceil(result.totalAmount / plan.months),
+      payAmount: Math.ceil(result.totalAmount / plan.months), // Initial selection
     });
   };
 
@@ -67,17 +68,17 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
     const value = Number(e.target.value);
     setMonthsToPay(value);
     if (planType && planMonths && planType !== "outright") {
-      const result = calculatePaymentPlan(baseAmount, planMonths);
+      const result = calculatePaymentBreakdown(baseAmount, planType);
       onPlanSelect({
         months: planMonths,
         type: planType,
-        total: result.total,
-        principal: result.principal,
-        interest: result.interest,
-        interestRate: result.interestRate,
+        total: result.totalAmount,
+        principal: result.principalAmount,
+        interest: result.interestAmount,
+        interestRate: result.interestAmount / result.principalAmount,
         monthsToPay: value,
-        monthlyPayment: Math.ceil(result.total / planMonths),
-        payAmount: Math.ceil(result.total / planMonths) * value,
+        monthlyPayment: Math.ceil(result.totalAmount / planMonths),
+        payAmount: Math.ceil(result.totalAmount / planMonths) * value,
       });
     }
   };
@@ -85,9 +86,9 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
   // Calculate monthly payment and pay amount for current plan
   const currentPlan =
     planType && planMonths
-      ? calculatePaymentPlan(baseAmount, planMonths)
+      ? calculatePaymentBreakdown(baseAmount, planType)
       : null;
-  const monthlyPayment = currentPlan ? Math.ceil(currentPlan.total / planMonths) : 0;
+  const monthlyPayment = currentPlan ? Math.ceil(currentPlan.totalAmount / planMonths) : 0;
   const payAmount = monthlyPayment * monthsToPay;
 
   return (
@@ -95,7 +96,7 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
       <h4 className="font-semibold mb-2">Select Payment Plan</h4>
       <div className="space-y-2">
         {plans.map((plan) => {
-          const result = calculatePaymentPlan(baseAmount, plan.months);
+          const result = calculatePaymentBreakdown(baseAmount, plan.type);
           const isActive = selected?.type === plan.type;
           return (
             <button
@@ -108,11 +109,11 @@ const PaymentPlanSelector: React.FC<PaymentPlanSelectorProps> = ({
             >
               <div className="flex justify-between items-center">
                 <span>{plan.label}</span>
-                <span>₦{result.total.toLocaleString()}</span>
+                <span>₦{result.totalAmount.toLocaleString()}</span>
               </div>
               {plan.type !== "outright" && (
                 <div className="text-xs text-blue-600">
-                  ₦{Math.ceil(result.total / plan.months).toLocaleString()} per month × {plan.months} months
+                  ₦{Math.ceil(result.totalAmount / plan.months).toLocaleString()} per month × {plan.months} months
                 </div>
               )}
               <div className="text-xs text-gray-500">
