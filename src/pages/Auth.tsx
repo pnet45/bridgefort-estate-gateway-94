@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
+import ReCaptcha from '@/components/ui/ReCaptcha';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,6 +18,8 @@ const Auth = () => {
   const [lastName, setLastName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<any>(null);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
@@ -26,12 +30,55 @@ const Auth = () => {
     setFirstName('');
     setLastName('');
     setConfirmPassword('');
+    setRecaptchaToken(null);
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+  };
+
+  const verifyRecaptcha = async (token: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-recaptcha', {
+        body: { token }
+      });
+      
+      if (error) throw error;
+      return data.success;
+    } catch (error) {
+      console.error('reCAPTCHA verification error:', error);
+      return false;
+    }
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!recaptchaToken) {
+      toast({
+        title: "reCAPTCHA Required",
+        description: "Please complete the reCAPTCHA verification",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
+      // Verify reCAPTCHA first
+      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+      if (!isRecaptchaValid) {
+        toast({
+          title: "reCAPTCHA Failed",
+          description: "Please complete the reCAPTCHA verification again",
+          variant: "destructive"
+        });
+        setRecaptchaToken(null);
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
+        return;
+      }
+
       const { error } = await signIn(email, password);
       if (error) {
         toast({
@@ -39,6 +86,11 @@ const Auth = () => {
           description: error.message,
           variant: "destructive"
         });
+        // Reset reCAPTCHA on error
+        setRecaptchaToken(null);
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
       } else {
         toast({
           title: "Login successful",
@@ -52,6 +104,11 @@ const Auth = () => {
         description: "An unexpected error occurred",
         variant: "destructive"
       });
+      // Reset reCAPTCHA on error
+      setRecaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
     } finally {
       setLoading(false);
     }
@@ -59,6 +116,7 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (password !== confirmPassword) {
       toast({
         title: "Password mismatch",
@@ -67,8 +125,32 @@ const Auth = () => {
       return;
     }
 
+    if (!recaptchaToken) {
+      toast({
+        title: "reCAPTCHA Required",
+        description: "Please complete the reCAPTCHA verification",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
+      // Verify reCAPTCHA first
+      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+      if (!isRecaptchaValid) {
+        toast({
+          title: "reCAPTCHA Failed",
+          description: "Please complete the reCAPTCHA verification again",
+          variant: "destructive"
+        });
+        setRecaptchaToken(null);
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
+        return;
+      }
+
       const { data, error } = await signUp(email, password, firstName, lastName);
       if (error) throw error;
       
@@ -93,6 +175,11 @@ const Auth = () => {
           description: error.message,
           variant: "destructive"
         });
+      }
+      // Reset reCAPTCHA on error
+      setRecaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
       }
     } finally {
       setLoading(false);
@@ -183,7 +270,22 @@ const Auth = () => {
                 />
               </div>
             )}
-            <Button type="submit" disabled={loading} className="w-full bg-estate-blue hover:bg-estate-darkBlue">
+            
+            {/* reCAPTCHA */}
+            <div className="flex justify-center">
+              <ReCaptcha
+                ref={recaptchaRef}
+                onChange={(token) => setRecaptchaToken(token)}
+                onExpired={() => setRecaptchaToken(null)}
+                onError={() => setRecaptchaToken(null)}
+              />
+            </div>
+
+            <Button 
+              type="submit" 
+              disabled={loading || !recaptchaToken} 
+              className="w-full bg-estate-blue hover:bg-estate-darkBlue"
+            >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </Button>
           </form>

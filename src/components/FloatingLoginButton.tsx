@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
 import { toast } from "@/hooks/use-toast";
+import ReCaptcha from "@/components/ui/ReCaptcha";
+import { supabase } from "@/integrations/supabase/client";
 
 // Floating login button at bottom left, shows Quick Login panel on click
 const FloatingLoginButton = () => {
@@ -16,7 +18,9 @@ const FloatingLoginButton = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const recaptchaRef = useRef<any>(null);
 
   // Close on outside click
   useEffect(() => {
@@ -42,11 +46,50 @@ const FloatingLoginButton = () => {
     }
   }, [showPanel]);
 
+  const verifyRecaptcha = async (token: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-recaptcha', {
+        body: { token }
+      });
+      
+      if (error) throw error;
+      return data.success;
+    } catch (error) {
+      console.error('reCAPTCHA verification error:', error);
+      return false;
+    }
+  };
+
   const handleQuickLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
+    
+    if (!recaptchaToken) {
+      toast({
+        title: "reCAPTCHA Required",
+        description: "Please complete the reCAPTCHA verification",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
+      // Verify reCAPTCHA first
+      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+      if (!isRecaptchaValid) {
+        toast({
+          title: "reCAPTCHA Failed",
+          description: "Please complete the reCAPTCHA verification again",
+          variant: "destructive",
+        });
+        setRecaptchaToken(null);
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
+        return;
+      }
+
       const { error } = await signIn(email, password);
       if (error) {
         toast({
@@ -54,6 +97,11 @@ const FloatingLoginButton = () => {
           description: error.message,
           variant: "destructive",
         });
+        // Reset reCAPTCHA on error
+        setRecaptchaToken(null);
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
       } else {
         toast({
           title: "Login successful",
@@ -68,6 +116,11 @@ const FloatingLoginButton = () => {
         description: "An unexpected error occurred",
         variant: "destructive",
       });
+      // Reset reCAPTCHA on error
+      setRecaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
     } finally {
       setLoading(false);
     }
@@ -122,11 +175,22 @@ const FloatingLoginButton = () => {
                 required
               />
             </div>
+            
+            {/* reCAPTCHA */}
+            <div className="flex justify-center">
+              <ReCaptcha
+                ref={recaptchaRef}
+                onChange={(token) => setRecaptchaToken(token)}
+                onExpired={() => setRecaptchaToken(null)}
+                onError={() => setRecaptchaToken(null)}
+              />
+            </div>
+
             <div className="flex gap-2">
               <Button
                 type="submit"
                 size="sm"
-                disabled={loading || !email || !password}
+                disabled={loading || !email || !password || !recaptchaToken}
                 className="bg-estate-blue hover:bg-estate-darkBlue flex-1"
               >
                 <LogIn size={16} className="mr-1" />

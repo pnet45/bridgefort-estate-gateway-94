@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import KYCUploadField from './KYCUploadField';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import ReCaptcha from '@/components/ui/ReCaptcha';
 
 const ProfileForm = () => {
   const { user } = useAuth();
@@ -20,6 +21,8 @@ const ProfileForm = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<any>(null);
   
   const [kycDocs, setKycDocs] = useState<{[key: string]: { url: string; name: string; type: string }}>({});
 
@@ -117,10 +120,48 @@ const ProfileForm = () => {
     }));
   };
 
+  const verifyRecaptcha = async (token: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-recaptcha', {
+        body: { token }
+      });
+      
+      if (error) throw error;
+      return data.success;
+    } catch (error) {
+      console.error('reCAPTCHA verification error:', error);
+      return false;
+    }
+  };
+
   const handleSubmit = async () => {
     if (!user) return;
+    
+    if (!recaptchaToken) {
+      toast({
+        title: "reCAPTCHA Required",
+        description: "Please complete the reCAPTCHA verification",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setLoading(true);
     try {
+      // Verify reCAPTCHA first
+      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+      if (!isRecaptchaValid) {
+        toast({
+          title: "reCAPTCHA Failed",
+          description: "Please complete the reCAPTCHA verification again",
+          variant: "destructive"
+        });
+        setRecaptchaToken(null);
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
+        return;
+      }
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -217,7 +258,7 @@ const ProfileForm = () => {
         ) : (
           <Button 
             onClick={handleSubmit}
-            disabled={loading || !termsAccepted}
+            disabled={loading || !termsAccepted || !recaptchaToken}
             className="bg-estate-blue hover:bg-estate-darkBlue"
           >
             {loading ? 'Submitting...' : 'Submit Profile & KYC'}
@@ -548,6 +589,16 @@ const ProfileForm = () => {
                   <Label htmlFor="terms" className="text-sm">
                     I accept the terms and conditions *
                   </Label>
+                </div>
+
+                {/* reCAPTCHA */}
+                <div className="flex justify-center">
+                  <ReCaptcha
+                    ref={recaptchaRef}
+                    onChange={(token) => setRecaptchaToken(token)}
+                    onExpired={() => setRecaptchaToken(null)}
+                    onError={() => setRecaptchaToken(null)}
+                  />
                 </div>
                 
                 <NavigationButtons stepKey="review" />
