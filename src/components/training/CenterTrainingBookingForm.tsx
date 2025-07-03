@@ -158,7 +158,7 @@ const CenterTrainingBookingForm = ({ open, onClose }: CenterTrainingBookingFormP
               name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>emailr</FormLabel>
+                  <FormLabel>Email Address</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter your center or your email address" {...field} />
                   </FormControl>
