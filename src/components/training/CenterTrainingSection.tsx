@@ -37,9 +37,9 @@ const CenterTrainingSection = () => {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <Calendar className="text-estate-brown mt-1" size={20} />
+                <Calendar className="text-estate-red mt-1" size={20} />
                 <div>
-                  <h4 className="text-left text-estate-red font-semibold">Flexible Scheduling</h4>
+                  <h4 className="text-left text-estate-brown font-semibold">Flexible Scheduling</h4>
                   <p className="text-left text-gray-600">Choose dates and times that work best for your center's schedule.</p>
                 </div>
               </div>
