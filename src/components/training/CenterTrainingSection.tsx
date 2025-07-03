@@ -25,21 +25,21 @@ const CenterTrainingSection = () => {
               <div className="flex items-start gap-3">
                 <Users className="text-estate-red mt-1" size={20} />
                 <div>
-                  <h4 className="text-left text-Green-600 font-semibold">Customized Group Training</h4>
+                  <h4 className="text-left text-estate-red font-semibold">Customized Group Training</h4>
                   <p className="text-left text-gray-600">Tailored training programs designed for your team's specific needs and goals.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="text-estate-red mt-1" size={20} />
                 <div>
-                  <h4 className="text-left text-red font-semibold">On-Location Training</h4>
+                  <h4 className="text-left text-estate-red font-semibold">On-Location Training</h4>
                   <p className="text-left text-gray-600">Professional trainers come to your center, making it convenient for your team.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Calendar className="text-estate-red mt-1" size={20} />
                 <div>
-                  <h4 className="text-left text-red font-semibold">Flexible Scheduling</h4>
+                  <h4 className="text-left text-estate-red font-semibold">Flexible Scheduling</h4>
                   <p className="text-left text-gray-600">Choose dates and times that work best for your center's schedule.</p>
                 </div>
               </div>
