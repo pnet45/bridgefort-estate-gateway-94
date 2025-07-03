@@ -11,7 +11,7 @@ const CenterTrainingSection = () => {
   return (
     <section className="py-16 bg-white">
       <div className="container-custom">
-        <div className="text-center mb-12">
+        <div className="text-right mb-12">
           <h2 className="text-3xl font-bold text-estate-blue mb-4">Center Training Programs</h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
             Bring professional real estate training directly to your center. Perfect for organizations looking to train multiple team members.
