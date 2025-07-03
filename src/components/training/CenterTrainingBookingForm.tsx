@@ -16,6 +16,7 @@ const centerTrainingSchema = z.object({
   centerLeaderName: z.string().min(2, "Center leader name is required"),
   address: z.string().min(5, "Address is required"),
   phoneNumber: z.string().min(10, "Valid phone number is required"),
+  email: z.string().min(12, "Valid email is required"),
   venueCapacity: z.number().min(1, "Venue capacity must be at least 1"),
   expectedAttendance: z.number().min(1, "Expected attendance must be at least 1"),
   trainingDate: z.string().min(1, "Training date is required"),
@@ -39,6 +40,7 @@ const CenterTrainingBookingForm = ({ open, onClose }: CenterTrainingBookingFormP
       centerLeaderName: '',
       address: '',
       phoneNumber: '',
+      email: '',
       venueCapacity: 0,
       expectedAttendance: 0,
       trainingDate: '',
@@ -57,6 +59,7 @@ const CenterTrainingBookingForm = ({ open, onClose }: CenterTrainingBookingFormP
           center_leader_name: data.centerLeaderName,
           address: data.address,
           phone_number: data.phoneNumber,
+          email: data.email,
           venue_capacity: data.venueCapacity,
           expected_attendance: data.expectedAttendance,
           training_date: data.trainingDate,
@@ -75,7 +78,7 @@ const CenterTrainingBookingForm = ({ open, onClose }: CenterTrainingBookingFormP
     } catch (error: any) {
       toast({
         title: "Booking failed",
-        description: "There was a problem submitting your booking. Please try again.",
+        description: "There was a problem submitting your booking. Please login and try again.",
         variant: "destructive",
       });
       console.error('Error submitting center training booking:', error);
@@ -144,6 +147,20 @@ const CenterTrainingBookingForm = ({ open, onClose }: CenterTrainingBookingFormP
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter phone number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phoneNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>emailr</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your center or your email address" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
