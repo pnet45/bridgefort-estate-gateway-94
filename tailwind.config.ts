@@ -17,6 +17,7 @@ export default {
           blue: '#2B2D7D',     // Primary navy blue
           darkBlue: '#1B1464',  // Dark blue
           red: '#E31E24',      // Brand red
+          brown: '#7d2c04',   //Brown
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
