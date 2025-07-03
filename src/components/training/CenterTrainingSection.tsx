@@ -25,7 +25,7 @@ const CenterTrainingSection = () => {
               <div className="flex items-start gap-3">
                 <Users className="text-estate-red mt-1" size={20} />
                 <div>
-                  <h4 className="text-left text-red font-semibold">Customized Group Training</h4>
+                  <h4 className="text-left text-gray-600 font-semibold">Customized Group Training</h4>
                   <p className="text-left text-gray-600">Tailored training programs designed for your team's specific needs and goals.</p>
                 </div>
               </div>
