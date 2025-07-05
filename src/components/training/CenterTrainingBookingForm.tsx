@@ -156,7 +156,7 @@ const CenterTrainingBookingForm = ({ open, onClose }: CenterTrainingBookingFormP
 
             <FormField
               control={form.control}
-              name="phoneNumber"
+              name="email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email Address</FormLabel>

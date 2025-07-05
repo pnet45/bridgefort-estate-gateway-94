@@ -23,8 +23,8 @@ const Buy2Sell = () => {
     setIsLoaded(true);
   }, []);
 
-  // Updated title to match "Buy to Sell"
-  document.title = "Buy to Sell | PWAN Bridgefort";
+  // Updated title to match "Buy and Resell"
+  document.title = "Buy and Resell | PWAN Bridgefort";
 
   const backgroundImage = 'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80';
 

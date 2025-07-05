@@ -83,8 +83,12 @@ const CenterTrainingSection = () => {
                   <p className="text-gray-700">
                     Comprehensive introduction to real estate principles, market analysis, and investment strategies.
                   </p>
-                  <Button variant="outline" className="w-full border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white">
-                    Learn More
+                  <Button 
+                    onClick={() => setIsBookingOpen(true)}
+                    variant="outline" 
+                    className="w-full border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white"
+                  >
+                    Register for Training
                   </Button>
                 </div>
               </CardContent>
@@ -107,8 +111,12 @@ const CenterTrainingSection = () => {
                   <p className="text-gray-700">
                     Advanced sales techniques, client relationship management, and closing strategies for real estate professionals.
                   </p>
-                  <Button variant="outline" className="w-full border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white">
-                    Learn More
+                  <Button 
+                    onClick={() => setIsBookingOpen(true)}
+                    variant="outline" 
+                    className="w-full border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white"
+                  >
+                    Register for Training
                   </Button>
                 </div>
               </CardContent>
@@ -131,8 +139,12 @@ const CenterTrainingSection = () => {
                   <p className="text-gray-700">
                     In-depth training on property investment, portfolio management, and wealth building through real estate.
                   </p>
-                  <Button variant="outline" className="w-full border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white">
-                    Learn More
+                  <Button 
+                    onClick={() => setIsBookingOpen(true)}
+                    variant="outline" 
+                    className="w-full border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white"
+                  >
+                    Register for Training
                   </Button>
                 </div>
               </CardContent>

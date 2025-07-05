@@ -102,6 +102,7 @@ export type Database = {
           center_leader_name: string
           center_name: string
           created_at: string
+          email: string
           expected_attendance: number
           id: string
           phone_number: string
@@ -115,6 +116,7 @@ export type Database = {
           center_leader_name: string
           center_name: string
           created_at?: string
+          email: string
           expected_attendance: number
           id?: string
           phone_number: string
@@ -128,6 +130,7 @@ export type Database = {
           center_leader_name?: string
           center_name?: string
           created_at?: string
+          email?: string
           expected_attendance?: number
           id?: string
           phone_number?: string

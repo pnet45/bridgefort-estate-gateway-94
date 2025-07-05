@@ -1,7 +1,17 @@
 
 import { BlogPost } from "@/types/blog";
+import { salesStrategyBlogPost } from "./salesStrategyBlogPost";
 
 export const fallbackPosts: BlogPost[] = [
+  {
+    id: 'sales-strategy-closing-deals-millions',
+    title: 'MEGA SALES STRATEGY: Closing Deals in Millions - The Game-Changing Event You Can\'t Miss',
+    excerpt: 'Join Dr. Dalvin Silva for exclusive training events that reveal the irrefutable methods of sales masters. Learn strategies that have helped thousands close million-naira deals.',
+    image_path: '/lovable-uploads/8010a8f6-6f7b-4572-a872-da50579b5a14.png',
+    created_at: new Date().toISOString(),
+    category: 'Training & Events',
+    profiles: { first_name: 'Dr. Dalvin', last_name: 'Silva' }
+  },
   {
     id: '1',
     title: 'Success Summit 2025 - Gearing Up for the Next Real Estate Revolution',
