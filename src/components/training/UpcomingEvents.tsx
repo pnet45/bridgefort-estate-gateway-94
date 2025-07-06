@@ -4,12 +4,12 @@ import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import TrainingRegistrationForm from './TrainingRegistrationForm';
 const upcomingEvents = [{
   id: 1,
-  title: "Real Estate Masterclass Lagos",
-  date: "June 15, 2025",
-  time: "10:00 AM - 4:00 PM",
-  location: "PWAN Bridgefort Head Office, Lekki-Ajah, Lagos",
-  image: "/lovable-uploads/180e436c-ef89-4ab0-a2d1-e6271847b3e9.png",
-  capacity: "Limited to 30 participants",
+  title: "TRANSFORMATIONAL MASTERCLASS WITH DALVIN SILVA",
+  date: "29 August 2025",
+  time: "08:00am - 05:00pm",
+  location: "PWAN Amazon Center Golden Destiny Hotel, 7 & 8 B/Stop, Airport Road by Tetrazinni, Ajao Estate, Isolo, Lagos",
+  image: "/lovable-uploads/Dalvin-Silva-PhD.jpg",
+  capacity: "Limited to 50 participants",
   category: "Masterclass",
   featured: true
 }, {
@@ -18,7 +18,7 @@ const upcomingEvents = [{
   date: "May 12, 2025",
   time: "10:00 AM Prompt",
   location: "Autograph Event Center, Sanni Abacha Road, Port Harcourt, Rivers State",
-  image: "/lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png",
+  image: "/lovable-uploads/Summit1.jpg",
   capacity: "FREE Admission - Food & Drinks available",
   description: "Get ready for an unforgettable experience at the MAY 2025 SUCCESS SUMMIT — LIVE in Port Harcourt! Featuring Dr. Dalvin Silva, PhD, MD/CEO of PWAN Bridgefort, Dr. Julius Oyedemi, Acting Managing Director of PWAN Group, Dr. Michael Afamefuna Okonkwo, Executive Chairman of PWAN Group, and Jayne O. Onwumere, Founder/President of PWAN Group. Don't miss this life-changing opportunity to connect, learn, and grow with some of the most visionary minds in business and leadership.",
   category: "Summit",
@@ -29,7 +29,7 @@ const upcomingEvents = [{
   date: "June 20, 2025",
   time: "10:00 AM - 3:00 PM",
   location: "PWAN Bridgefort Head Office, Lekki-Ajah, Lagos",
-  image: "/lovable-uploads/22de0a72-5f26-4e48-bf04-b3cb5999d519.png",
+  image: "/lovable-uploads/pbo.png",
   capacity: "Limited to 20 participants",
   category: "Retention",
   featured: false

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Users, Calendar, Clock } from 'lucide-react';
 import CenterTrainingBookingForm from './CenterTrainingBookingForm';
+import TrainingImageCarousel from './TrainingImageCarousel';
 
 const CenterTrainingSection = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -53,10 +54,14 @@ const CenterTrainingSection = () => {
           </div>
 
           <div className="relative">
-            <img 
-              src="/lovable-uploads/pbo1.jpg" 
-              alt="Center Training" 
-              className="rounded-lg shadow-lg w-full h-80 object-cover"
+            <TrainingImageCarousel 
+              images={[
+                "/lovable-uploads/pbo1.jpg",
+                "/lovable-uploads/pbo.png",
+                "/lovable-uploads/Dalvin-Silva-PhD.jpg",
+                "/lovable-uploads/Happy new week.png"
+              ]}
+              className="rounded-lg shadow-lg w-full h-80"
             />
             <div className="absolute inset-0 bg-estate-blue bg-opacity-20 rounded-lg"></div>
           </div>
