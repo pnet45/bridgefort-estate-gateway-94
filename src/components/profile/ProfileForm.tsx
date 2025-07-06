@@ -224,7 +224,7 @@ const ProfileForm = () => {
     }
   };
 
-  const languages = ['English', 'Yoruba', 'Igbo', 'Efik', 'Hausa', 'French'];
+  const languages = ['English', 'Yoruba', 'Igbo', 'Efik', 'Hausa','Pidgin', 'French'];
 
   const NavigationButtons = ({ stepKey }: { stepKey: string }) => {
     const currentIndex = getCurrentStepIndex();
