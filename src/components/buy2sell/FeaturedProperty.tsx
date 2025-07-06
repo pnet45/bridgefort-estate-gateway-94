@@ -30,7 +30,7 @@ const FeaturedProperty: React.FC<FeaturedPropertyProps> = ({ isLoaded }) => {
           <div className="p-8 bg-estate-blue text-white">
             <h3 className="text-2xl font-bold mb-4">FLOURISH LUXURY VILLAS</h3>
             <p className="mb-6">
-              Our premium development offering exceptional returns on investment. Whether you choose Buy2Sell or Buy2Keep, you're guaranteed excellent value.
+              Our premium development offering exceptional returns on investment. Whether you choose Buy and Resell or Buy2Keep, you're guaranteed excellent value.
             </p>
             
             <div className="space-y-4 mb-6">

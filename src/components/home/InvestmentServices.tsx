@@ -13,7 +13,7 @@ const services = [{
   link: '/services'
 }, {
   icon: <Wallet size={28} />,
-  title: 'Buy2Sell Program',
+  title: 'Buy and Resell Program',
   description: 'Our guaranteed investment program where we resell your property within 12 months with up to 30% profit.',
   link: '/buy2sell',
   isCallToAction: true

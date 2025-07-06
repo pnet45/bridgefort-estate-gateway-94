@@ -48,7 +48,7 @@ const FAQ: React.FC = () => {
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
         <p className="text-gray-600 max-w-2xl mx-auto">
-          Find answers to the most common questions about our Buy2Sell program.
+          Find answers to the most common questions about our Buy and Resell program.
         </p>
       </div>
 

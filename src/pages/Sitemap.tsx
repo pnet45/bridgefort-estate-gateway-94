@@ -12,7 +12,7 @@ const sitemapData = [
       { name: 'About Us', path: '/about' },
       { name: 'Properties', path: '/properties' },
       { name: 'Services', path: '/services' },
-      { name: 'Buy2Sell Program', path: '/buy2sell' },
+      { name: 'Buy and Resell Program', path: '/buy2sell' },
       { name: 'Land Banking & Trading', path: '/services#landbanking' },
       { name: 'Training & Seminars', path: '/training' },
       { name: 'Career', path: '/career' },
@@ -25,7 +25,7 @@ const sitemapData = [
       { name: 'Residential Estates', path: '/properties#residential' },
       { name: 'Commercial Plots', path: '/properties#commercial' },
       { name: 'Luxury Villas', path: '/properties#luxury' },
-      { name: 'Buy2Sell Investment', path: '/buy2sell' },
+      { name: 'Buy and Resell Investment', path: '/buy2sell' },
     ]
   },
   {

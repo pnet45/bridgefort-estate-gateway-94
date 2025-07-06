@@ -13,7 +13,7 @@ const ROITable: React.FC<ROITableProps> = ({ isLoaded }) => {
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold mb-4">Projected Returns</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Our Buy2Sell program offers guaranteed returns on your investment. Here's what you can expect based on investment period.
+            Our Buy and Resell program offers guaranteed returns on your investment. Here's what you can expect based on investment period.
           </p>
         </div>
 

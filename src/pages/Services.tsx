@@ -10,7 +10,7 @@ import InvestmentGuide from '../components/services/InvestmentGuide';
 import FAQSection from '../components/services/FAQSection';
 import ServicesCTA from '../components/services/ServicesCTA';
 import AdditionalServices from '../components/services/AdditionalServices';
-import Buy2SellFeature from '../components/services/Buy2SellFeature';
+import BuyAndResellFeature from '../components/services/Buy2SellFeature';
 
 const Services = () => {
   return (
@@ -26,9 +26,9 @@ const Services = () => {
       {/* Additional Services */}
       <AdditionalServices />
 
-      {/* Buy2Sell Feature */}
+      {/* Buy and Resell Feature */}
       <div className="container-custom section-padding">
-        <Buy2SellFeature />
+        <BuyAndResellFeature />
       </div>
 
       {/* ROI Calculator */}

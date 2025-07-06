@@ -26,7 +26,7 @@ const TermsOfService = () => {
               <h2 className="text-2xl font-bold mb-4">2. Services Provided</h2>
               <ul className="list-disc pl-6 mb-4 space-y-1">
                 <li>Digital sale of residential and commercial property and land in Nigeria</li>
-                <li>Land banking, land trading, and Buy2Sell investment programs</li>
+                <li>Land banking, land trading, and Buy and Resell investment programs</li>
                 <li>End-to-end e-commerce cart, checkout and payment via trusted gateways</li>
                 <li>Property management and development</li>
                 <li>Training, education, and seminars on real estate investment</li>

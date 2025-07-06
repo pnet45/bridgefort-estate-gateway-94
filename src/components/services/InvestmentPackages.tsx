@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle, Home, Building, Wallet } from 'lucide-react';
-import Buy2SellFeature from './Buy2SellFeature';
+import BuyAndResellFeature from './Buy2SellFeature';
 const InvestmentPackages = () => {
   const investmentPackages = [{
     title: 'Luxury Homes',
@@ -29,8 +29,8 @@ const InvestmentPackages = () => {
           <p className="text-gray-600 max-w-2xl mx-auto">Choose from our carefully curated investment packages, designed to meet different financial goals and risk profiles.</p>
         </div>
 
-        {/* Buy2Sell Feature */}
-        <Buy2SellFeature />
+        {/* Buy and Resell Feature */}
+        <BuyAndResellFeature />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {investmentPackages.map((pkg, index) => <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition duration-300">

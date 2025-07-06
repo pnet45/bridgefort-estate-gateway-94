@@ -5,7 +5,7 @@ const partnerLogos = [{
   name: 'Adept Lessor Ltd',
   imageUrl: '/lovable-uploads/Adept-lessor.png'
 }, {
-  name: 'Buy2Sell',
+  name: 'Buy and Resell',
   imageUrl: '/lovable-uploads/BuytoSell.jpg'
 }, {
   name: 'Folkland PDC',

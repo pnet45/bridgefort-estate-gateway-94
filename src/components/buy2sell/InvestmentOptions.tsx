@@ -11,7 +11,7 @@ const InvestmentOptions: React.FC = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Our Investment Options</h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
-            With Buy2Sell, you can purchase property in our carefully chosen estates, and we guarantee to facilitate a resale of your property within 6-12 months, aiming for profits as high as 30%.
+            With Buy and Resell, you can purchase property in our carefully chosen estates, and we guarantee to facilitate a resale of your property within 6-12 months, aiming for profits as high as 30%.
           </p>
         </div>
 
