@@ -99,7 +99,7 @@ const TrainingRegistrationForm = ({ open, onClose, eventTitle, eventDate }: Trai
             {eventTitle ? `Register for ${eventTitle}` : 'Training Registration'}
           </DialogTitle>
         </DialogHeader>
-        <ScrollArea className="h-[60vh] md:h-[70vh] pr-4">
+        <ScrollArea className="h-[60vh] md:h-[70vh] pr-4" style={{ scrollbarWidth: 'thin' }}>
           <div className="px-1">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pb-4">

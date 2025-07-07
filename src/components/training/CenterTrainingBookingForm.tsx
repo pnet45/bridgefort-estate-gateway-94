@@ -90,7 +90,7 @@ const CenterTrainingBookingForm = ({ open, onClose }: CenterTrainingBookingFormP
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-estate-blue">
             Book Center Training

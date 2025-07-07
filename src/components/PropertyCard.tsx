@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEcommerce } from '@/contexts/ecommerce';
 import { toast } from '@/hooks/use-toast';
-import PropertyDetailsDialog from './PropertyDetailsDialog';
+import PropertyDetailsDialogFullscreen from './PropertyDetailsDialogFullscreen';
 
 interface PropertyCardProps {
   id: string;
@@ -174,7 +174,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           </div>
         )}
       </div>
-      <PropertyDetailsDialog
+      <PropertyDetailsDialogFullscreen
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
         property={{

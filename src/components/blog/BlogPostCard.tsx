@@ -8,9 +8,10 @@ import { shareArticle } from "@/utils/blogUtils";
 
 interface BlogPostCardProps {
   post: BlogPost;
+  onReadMore?: (articleId: string) => void;
 }
 
-const BlogPostCard: React.FC<BlogPostCardProps> = ({ post }) => (
+const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onReadMore }) => (
   <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300">
     <div className="relative h-56 overflow-hidden">
       <img
@@ -38,15 +39,27 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({ post }) => (
         {post.excerpt}
       </p>
       <div className="flex justify-between items-center">
-        <Link
-          to={`/blog/${post.id}`}
-          className="text-estate-blue font-medium hover:underline inline-flex items-center"
-        >
-          Read More
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-          </svg>
-        </Link>
+        {onReadMore ? (
+          <button
+            onClick={() => onReadMore(post.id)}
+            className="text-estate-blue font-medium hover:underline inline-flex items-center"
+          >
+            Read More
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+        ) : (
+          <Link
+            to={`/blog/${post.id}`}
+            className="text-estate-blue font-medium hover:underline inline-flex items-center"
+          >
+            Read More
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </Link>
+        )}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
