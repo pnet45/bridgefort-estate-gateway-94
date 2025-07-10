@@ -29,7 +29,7 @@ const Partners = () => {
         
         <div className="flex flex-wrap justify-center items-center gap-8 max-w-4xl mx-auto">
           {partnerLogos.map((partner, index) => <div key={index} className="w-40 h-24 relative">
-              <img src={partner.imageUrl} alt={partner.name} className="w-full h-full object-contain transition duration-300 filter grayscale hover:grayscale-0" />
+              <img src={partner.imageUrl} alt={partner.name} className="w-full h-full object-contain transition duration-300 hover:scale-105" />
             </div>)}
         </div>
       </div>
