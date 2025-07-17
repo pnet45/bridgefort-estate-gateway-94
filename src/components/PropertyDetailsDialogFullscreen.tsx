@@ -268,7 +268,7 @@ const PropertyDetailsDialogFullscreen = ({
                         <span>info@pwanbridgefort.ng</span>
                       </div>
                       <div className="bg-estate-blue/10 p-3 rounded-lg">
-                        <p className="text-sm text-color-estate-red font-medium">Payment Details:</p>
+                        <p className="text-sm text-estate-red font-medium">Payment Details:</p>
                         <p className="text-sm">Zenith Bank - PWAN Bridgefort Estates & Investment Ltd</p>
                         <p className="text-sm">Account: 1310762860</p>
                       </div>
