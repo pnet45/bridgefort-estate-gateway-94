@@ -154,8 +154,8 @@ const PropertyDetailsDialogFullscreen = ({
         fees: {
           deedOfAssignment: "₦550,000 per plot",
           surveyPlan: "₦550,000 per plot (₦1,000,000 for Corporate Entity)",
-          plotDemarcation: "₦150,000 per plot",
-          plotMaintenance: "₦120,000 per plot (annually)"
+          plotDemarcation: "₦120,000 per plot",
+          plotMaintenance: "₦10,000 per plot (Monthly, ₦120,000 annually to be paid upfront after allocation)"
         },
         specialFeatures: [
           "Corner-piece Plot attracts additional 10% of land cost",
