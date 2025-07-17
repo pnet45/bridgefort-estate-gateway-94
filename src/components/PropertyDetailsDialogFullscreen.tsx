@@ -282,7 +282,7 @@ const PropertyDetailsDialogFullscreen = ({
                     <Tabs defaultValue="overview" className="w-full">
                       <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="pricing">Pricing</TabsTrigger>
+                        <TabsTrigger value="pricing">Documentations</TabsTrigger>
                         <TabsTrigger value="company">Company</TabsTrigger>
                         <TabsTrigger value="terms">Terms</TabsTrigger>
                       </TabsList>
