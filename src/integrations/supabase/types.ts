@@ -245,15 +245,22 @@ export type Database = {
       estate: {
         Row: {
           actual_price: number | null
+          annual_rent: number | null
+          bathrooms: number | null
+          bedrooms: number | null
           created_at: string | null
           description: string | null
           id: string
+          is_for_rent: boolean | null
+          is_for_sale: boolean | null
           location: string | null
           media: string[] | null
+          monthly_rent: number | null
           name: string
           phase: number | null
           prelaunch_price: number | null
           promo_price: number | null
+          property_category: string | null
           scheme: number | null
           size: number | null
           sold_plots: number | null
@@ -264,15 +271,22 @@ export type Database = {
         }
         Insert: {
           actual_price?: number | null
+          annual_rent?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           created_at?: string | null
           description?: string | null
           id?: string
+          is_for_rent?: boolean | null
+          is_for_sale?: boolean | null
           location?: string | null
           media?: string[] | null
+          monthly_rent?: number | null
           name: string
           phase?: number | null
           prelaunch_price?: number | null
           promo_price?: number | null
+          property_category?: string | null
           scheme?: number | null
           size?: number | null
           sold_plots?: number | null
@@ -283,15 +297,22 @@ export type Database = {
         }
         Update: {
           actual_price?: number | null
+          annual_rent?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
           created_at?: string | null
           description?: string | null
           id?: string
+          is_for_rent?: boolean | null
+          is_for_sale?: boolean | null
           location?: string | null
           media?: string[] | null
+          monthly_rent?: number | null
           name?: string
           phase?: number | null
           prelaunch_price?: number | null
           promo_price?: number | null
+          property_category?: string | null
           scheme?: number | null
           size?: number | null
           sold_plots?: number | null
@@ -692,6 +713,7 @@ export type Database = {
           id_number: string | null
           id_type: string | null
           is_foreigner: boolean | null
+          is_pbo: boolean | null
           kyc_docs: Json | null
           languages_spoken: string[] | null
           last_name: string | null
@@ -705,8 +727,10 @@ export type Database = {
           next_of_kin_phone: string | null
           next_of_kin_relationship: string | null
           occupation: string | null
+          pbo_referral_code: string | null
           phone_number: string | null
           profile_completed: boolean | null
+          profile_picture_url: string | null
           residence_permit: string | null
           source_of_income: string | null
           spouse_name: string | null
@@ -734,6 +758,7 @@ export type Database = {
           id_number?: string | null
           id_type?: string | null
           is_foreigner?: boolean | null
+          is_pbo?: boolean | null
           kyc_docs?: Json | null
           languages_spoken?: string[] | null
           last_name?: string | null
@@ -747,8 +772,10 @@ export type Database = {
           next_of_kin_phone?: string | null
           next_of_kin_relationship?: string | null
           occupation?: string | null
+          pbo_referral_code?: string | null
           phone_number?: string | null
           profile_completed?: boolean | null
+          profile_picture_url?: string | null
           residence_permit?: string | null
           source_of_income?: string | null
           spouse_name?: string | null
@@ -776,6 +803,7 @@ export type Database = {
           id_number?: string | null
           id_type?: string | null
           is_foreigner?: boolean | null
+          is_pbo?: boolean | null
           kyc_docs?: Json | null
           languages_spoken?: string[] | null
           last_name?: string | null
@@ -789,8 +817,10 @@ export type Database = {
           next_of_kin_phone?: string | null
           next_of_kin_relationship?: string | null
           occupation?: string | null
+          pbo_referral_code?: string | null
           phone_number?: string | null
           profile_completed?: boolean | null
+          profile_picture_url?: string | null
           residence_permit?: string | null
           source_of_income?: string | null
           spouse_name?: string | null

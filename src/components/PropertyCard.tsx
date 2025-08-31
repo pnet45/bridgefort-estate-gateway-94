@@ -3,8 +3,10 @@ import { MapPin, Users, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEcommerce } from '@/contexts/ecommerce';
+import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
 import PropertyDetailsDialogFullscreen from './PropertyDetailsDialogFullscreen';
+import ProfileCheckDialog from './ecommerce/ProfileCheckDialog';
 
 interface PropertyCardProps {
   id: string;
@@ -34,9 +36,26 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   pricePerPlot = 1000000
 }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [showProfileCheck, setShowProfileCheck] = useState(false);
+  const [profileCheckMessage, setProfileCheckMessage] = useState('');
   const { addToCart } = useEcommerce();
+  const { user, profile } = useAuth();
 
   const handleAddToCart = () => {
+    // Check if user is logged in
+    if (!user) {
+      setProfileCheckMessage("Please log in to add properties to your cart.");
+      setShowProfileCheck(true);
+      return;
+    }
+    
+    // Check if profile is completed
+    if (!profile?.profile_completed) {
+      setProfileCheckMessage("Please complete your profile before adding properties to your cart.");
+      setShowProfileCheck(true);
+      return;
+    }
+
     const plot = {
       id: `${id}-plot-${Date.now()}`,
       propertyId: id,
@@ -50,6 +69,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     };
 
     addToCart(plot, 1);
+    
+    toast({
+      title: "Added to cart",
+      description: `${title} has been added to your cart`,
+    });
   };
 
   const handleCardClick = () => {
@@ -185,6 +209,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           imageUrl,
           propertyType
         }}
+      />
+      
+      <ProfileCheckDialog 
+        isOpen={showProfileCheck}
+        onClose={() => setShowProfileCheck(false)}
+        message={profileCheckMessage}
       />
     </>
   );

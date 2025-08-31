@@ -10,6 +10,18 @@ export interface UserProfile {
   updated_at?: string;
   phone_number?: string;
   address?: string;
+  profile_completed?: boolean;
+  pbo_referral_code?: string;
+  is_pbo?: boolean;
+  date_of_birth?: string;
+  gender?: string;
+  marital_status?: string;
+  occupation?: string;
+  next_of_kin_name?: string;
+  next_of_kin_relationship?: string;
+  next_of_kin_phone?: string;
+  next_of_kin_email?: string;
+  kyc_docs?: any;
 }
 
 export interface AuthContextType {

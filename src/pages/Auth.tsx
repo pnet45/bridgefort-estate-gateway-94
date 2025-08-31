@@ -12,8 +12,10 @@ import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isPBO, setIsPBO] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [pboCode, setPboCode] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -27,6 +29,7 @@ const Auth = () => {
     setIsLogin(!isLogin);
     setEmail('');
     setPassword('');
+    setPboCode('');
     setFirstName('');
     setLastName('');
     setConfirmPassword('');
@@ -79,11 +82,45 @@ const Auth = () => {
         return;
       }
 
-      const { error } = await signIn(email, password);
-      if (error) {
+      // Handle PBO login
+      let signInResult;
+      if (isPBO) {
+        // Validate PBO code before attempting login
+        if (!pboCode.trim()) {
+          toast({
+            title: "PBO Code Required",
+            description: "Please enter your PBO referral code",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        // Check if PBO code exists in database
+        const { data: pboProfile, error: pboError } = await supabase
+          .from('profiles')
+          .select('id, is_pbo')
+          .eq('pbo_referral_code', pboCode.trim())
+          .eq('is_pbo', true)
+          .single();
+          
+        if (pboError || !pboProfile) {
+          toast({
+            title: "Invalid PBO Code",
+            description: "The PBO referral code provided is not valid",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        signInResult = await signIn(email, password);
+      } else {
+        signInResult = await signIn(email, password);
+      }
+      
+      if (signInResult.error) {
         toast({
           title: "Login failed",
-          description: error.message,
+          description: signInResult.error.message,
           variant: "destructive"
         });
         // Reset reCAPTCHA on error
@@ -190,7 +227,7 @@ const Auth = () => {
     <div className="flex flex-col min-h-screen">
       <div className="bg-estate-blue py-4 text-center text-white">
         <h1 className="text-2xl font-bold">
-          {isLogin ? 'Sign In' : 'Create Account'}
+          {isLogin ? (isPBO ? 'PBO Login' : 'Client Login') : 'Create Account'}
         </h1>
       </div>
       
@@ -208,6 +245,26 @@ const Auth = () => {
 
       <div className="container-custom py-12 flex-grow">
         <div className="max-w-md mx-auto">
+          {isLogin && (
+            <div className="mb-6 flex gap-2">
+              <Button
+                type="button"
+                variant={!isPBO ? "default" : "outline"}
+                onClick={() => setIsPBO(false)}
+                className="flex-1"
+              >
+                Client Login
+              </Button>
+              <Button
+                type="button"
+                variant={isPBO ? "default" : "outline"}
+                onClick={() => setIsPBO(true)}
+                className="flex-1"
+              >
+                PBO Login
+              </Button>
+            </div>
+          )}
           <form onSubmit={isLogin ? handleSignIn : handleSignUp} className="space-y-6">
             {!isLogin && (
               <>
@@ -257,6 +314,19 @@ const Auth = () => {
                 required
               />
             </div>
+            {isLogin && isPBO && (
+              <div>
+                <Label htmlFor="pboCode">PBO Referral Code</Label>
+                <Input
+                  type="text"
+                  id="pboCode"
+                  placeholder="Enter your PBO referral code"
+                  value={pboCode}
+                  onChange={(e) => setPboCode(e.target.value)}
+                  required
+                />
+              </div>
+            )}
             {!isLogin && (
               <div>
                 <Label htmlFor="confirmPassword">Confirm Password</Label>

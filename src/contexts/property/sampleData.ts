@@ -1,7 +1,123 @@
 
 import { Property } from './types';
 
+import luxury3BedroomLagos from '@/assets/luxury-3bedroom-lagos.jpg';
+import luxury4BedroomAsaba from '@/assets/luxury-4bedroom-asaba.jpg';
+import luxurySemiDetachedOgun from '@/assets/luxury-semi-detached-ogun.jpg';
+import luxuryTerraceLagos from '@/assets/luxury-terrace-lagos.jpg';
+import luxuryDetachedAsaba from '@/assets/luxury-detached-asaba.jpg';
+import luxuryRentalOgun from '@/assets/luxury-rental-ogun.jpg';
+
 export const sampleProperties: Property[] = [
+  // Luxury Home Sales and Rentals
+  {
+    id: 'luxury-3bedroom-lagos',
+    name: 'Premium 3-Bedroom House Lagos',
+    title: 'Luxury 3-Bedroom House in Victoria Island',
+    location: 'Victoria Island, Lagos',
+    price: '₦45,000,000',
+    imageUrl: luxury3BedroomLagos,
+    propertyType: 'Residential House',
+    size: 250,
+    sqm: 250,
+    totalPlots: 1,
+    availablePlots: 1,
+    pricePerPlot: 45000000,
+    description: 'Stunning 3-bedroom house in the heart of Victoria Island. Features modern finishes, spacious living areas, fitted kitchen, and excellent security. Perfect for both purchase and rental.',
+    features: ['3 Bedrooms', '3 Bathrooms', 'Modern Kitchen', 'Security System', 'Parking Space'],
+    amenities: ['Swimming Pool', 'Gym', 'Garden', '24/7 Security', 'Generator'],
+    paymentPlans: ['Outright Payment', 'Mortgage Available', '12 Months Plan']
+  },
+  {
+    id: 'luxury-4bedroom-asaba',
+    name: 'Elegant 4-Bedroom Duplex Asaba',
+    title: 'Luxurious 4-Bedroom Duplex in GRA Asaba',
+    location: 'GRA, Asaba, Delta State',
+    price: '₦35,000,000',
+    imageUrl: luxury4BedroomAsaba,
+    propertyType: 'Residential House',
+    size: 300,
+    sqm: 300,
+    totalPlots: 1,
+    availablePlots: 1,
+    pricePerPlot: 35000000,
+    description: 'Beautiful 4-bedroom duplex in the prestigious GRA area of Asaba. Boasts contemporary design, master ensuite, family lounge, and ample parking space.',
+    features: ['4 Bedrooms', '4 Bathrooms', 'Family Lounge', 'Master Ensuite', 'Ample Parking'],
+    amenities: ['Quiet Neighborhood', 'Good Road Network', 'Electricity', 'Water Supply'],
+    paymentPlans: ['Outright Payment', 'Mortgage Available', '18 Months Plan']
+  },
+  {
+    id: 'luxury-semi-detached-ogun',
+    name: 'Semi-Detached Duplex Ogun',
+    title: 'Modern Semi-Detached Duplex in Mowe',
+    location: 'Mowe, Ogun State',
+    price: '₦28,000,000',
+    imageUrl: luxurySemiDetachedOgun,
+    propertyType: 'Residential House',
+    size: 280,
+    sqm: 280,
+    totalPlots: 1,
+    availablePlots: 1,
+    pricePerPlot: 28000000,
+    description: 'Exquisite semi-detached duplex in a serene environment in Mowe. Features include spacious bedrooms, modern kitchen, and beautiful compound.',
+    features: ['4 Bedrooms', '3 Bathrooms', 'Modern Kitchen', 'Beautiful Compound', 'Semi-Detached'],
+    amenities: ['Gated Estate', 'Security', 'Good Road', 'Electricity'],
+    paymentPlans: ['Outright Payment', 'Mortgage Available', '12 Months Plan']
+  },
+  {
+    id: 'luxury-terrace-lagos',
+    name: 'Luxury Terrace Houses Lagos',
+    title: 'Premium Terrace Houses in Lekki',
+    location: 'Lekki Phase 1, Lagos',
+    price: '₦32,000,000',
+    imageUrl: luxuryTerraceLagos,
+    propertyType: 'Residential House',
+    size: 220,
+    sqm: 220,
+    totalPlots: 1,
+    availablePlots: 1,
+    pricePerPlot: 32000000,
+    description: 'Sophisticated terrace houses in the exclusive Lekki Phase 1. Contemporary design with top-notch finishes, close to major amenities and business districts.',
+    features: ['3 Bedrooms', '3 Bathrooms', 'Terrace Design', 'Contemporary Finishes', 'Prime Location'],
+    amenities: ['Close to VI', 'Shopping Malls', 'Good Schools', 'Business Districts'],
+    paymentPlans: ['Outright Payment', 'Mortgage Available', '15 Months Plan']
+  },
+  {
+    id: 'luxury-detached-asaba',
+    name: 'Detached Duplex Mansion Asaba',
+    title: 'Magnificent Detached Duplex in Asaba',
+    location: 'Cable Point, Asaba, Delta State',
+    price: '₦55,000,000',
+    imageUrl: luxuryDetachedAsaba,
+    propertyType: 'Residential House',
+    size: 400,
+    sqm: 400,
+    totalPlots: 1,
+    availablePlots: 1,
+    pricePerPlot: 55000000,
+    description: 'Magnificent detached duplex mansion in the upscale Cable Point area. Features include 5 bedrooms, guest rooms, study, swimming pool area, and expansive compound.',
+    features: ['5 Bedrooms', '5 Bathrooms', 'Guest Rooms', 'Study Room', 'Swimming Pool'],
+    amenities: ['Expansive Compound', 'Premium Location', 'Luxury Finishes', 'Privacy'],
+    paymentPlans: ['Outright Payment', 'Mortgage Available', '24 Months Plan']
+  },
+  {
+    id: 'luxury-rental-ogun',
+    name: 'Luxury Rental Apartments Ogun',
+    title: 'Modern 3-Bedroom Apartments for Rent',
+    location: 'Arepo, Ogun State',
+    price: '₦350,000/month',
+    imageUrl: luxuryRentalOgun,
+    propertyType: 'Residential Rental',
+    size: 180,
+    sqm: 180,
+    totalPlots: 20,
+    availablePlots: 15,
+    pricePerPlot: 350000,
+    description: 'Modern 3-bedroom apartments in a well-planned estate in Arepo. Perfect for families seeking quality rental accommodation with excellent facilities.',
+    features: ['3 Bedrooms', '2 Bathrooms', 'Modern Fittings', 'Family Friendly', 'Estate Living'],
+    amenities: ['Estate Facilities', 'Security', 'Parking', 'Good Roads'],
+    paymentPlans: ['Monthly Rent', 'Quarterly Payment', 'Annual Payment']
+  },
   {
     id: 'golden-haven',
     name: 'Golden Haven Estate',
