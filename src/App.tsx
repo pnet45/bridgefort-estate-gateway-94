@@ -24,6 +24,8 @@ import BlogPost from '@/pages/BlogPost';
 import Auth from '@/pages/Auth';
 import AuthCallback from '@/pages/AuthCallback';
 import ResetPassword from '@/pages/ResetPassword';
+import OTPResetPassword from '@/pages/OTPResetPassword';
+import HomesSales from '@/pages/HomesSales';
 import Dashboard from '@/pages/Dashboard';
 import Profile from '@/pages/Profile';
 import Buy2Sell from '@/pages/Buy2Sell';
@@ -53,6 +55,7 @@ function App() {
                 <Route path="/home" element={<Home />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/properties" element={<Properties />} />
+                <Route path="/homes-sales" element={<HomesSales />} />
                 <Route path="/services" element={<Services />} />
                 <Route path="/training" element={<Training />} />
                 <Route path="/career" element={<Career />} />
@@ -63,6 +66,7 @@ function App() {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
+                <Route path="/auth/otp-reset" element={<OTPResetPassword />} />
                 <Route path="/buy2sell" element={<Buy2Sell />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />

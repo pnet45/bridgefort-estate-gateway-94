@@ -371,7 +371,7 @@ const Auth = () => {
           </div>
           {isLogin && (
             <div className="mt-4 text-center">
-              <Link to="/reset-password" className="text-sm text-gray-600 hover:underline">
+              <Link to="/auth/otp-reset" className="text-sm text-gray-600 hover:underline">
                 Forgot Password?
               </Link>
             </div>

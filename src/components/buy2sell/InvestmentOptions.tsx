@@ -9,9 +9,9 @@ const InvestmentOptions: React.FC = () => {
     <section id="investment-options" className="py-16">
       <div className="container-custom">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Our Investment Options</h2>
+          <h2 className="text-3xl font-bold mb-4">Our Land Trading Options</h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
-            With Buy and Resell, you can purchase property in our carefully chosen estates, and we guarantee to facilitate a resale of your property within 6-12 months, aiming for profits as high as 30%.
+            With Buy and Resell, you can purchase property in our carefully chosen estates, and we guarantee to facilitate a resale of your property within 6-12 months, aiming for profit as high as 30%.
           </p>
         </div>
 
@@ -23,12 +23,12 @@ const InvestmentOptions: React.FC = () => {
             </CardHeader>
             <CardContent className="pt-6">
               <p className="text-gray-600 mb-6">
-                Looking to grow your wealth through smart real estate trades? Whether you're buying to hold or selling later for ROI, we've redefined the real estate experience to suit your goals perfectly.
+                Looking to grow your wealth through smart real estate trades? Whether you're buying to hold or selling later for profit, we've redefined the real estate experience to suit your goals perfectly.
               </p>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-estate-blue mr-2 mt-1 flex-shrink-0" />
-                  <span>Flexible investment options starting from ₦500,000</span>
+                  <span>Flexible land trading options starting from ₦500,000</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-estate-blue mr-2 mt-1 flex-shrink-0" />
@@ -50,20 +50,20 @@ const InvestmentOptions: React.FC = () => {
 
           <Card className="overflow-hidden border-estate-red border-t-4 shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="bg-gray-50">
-              <h3 className="text-2xl font-semibold text-estate-red">Corporate Investment (Naira)</h3>
+              <h3 className="text-2xl font-semibold text-estate-red">Corporate Land Trading (Naira)</h3>
             </CardHeader>
             <CardContent className="pt-6">
               <p className="text-gray-600 mb-6">
-                Earn passive income with zero hassle. Invest in our curated estates and let us handle the rest. We'll resell your property in 6 months for up to 12.5% profit, or in 12 months for as high as 30%. Your income is guaranteed from day one.
+                Earn passive income with zero hassle. Land trade in our curated estates and let us handle the rest. We'll resell your property in 6 months for up to 12.5% profit, or in 12 months for as high as 30%. Your profit is guaranteed from day one.
               </p>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-estate-red mr-2 mt-1 flex-shrink-0" />
-                  <span>Corporate investment packages from ₦5,000,000</span>
+                  <span>Corporate land trading packages from ₦5,000,000</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-estate-red mr-2 mt-1 flex-shrink-0" />
-                  <span>12.5% guaranteed returns in 6 months</span>
+                  <span>12.5% guaranteed profit in 6 months</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-estate-red mr-2 mt-1 flex-shrink-0" />
@@ -82,20 +82,20 @@ const InvestmentOptions: React.FC = () => {
           {/* Dollar Investment Options */}
           <Card className="overflow-hidden border-green-600 border-t-4 shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="bg-gray-50">
-              <h3 className="text-2xl font-semibold text-green-600">Individual Investment (Dollar)</h3>
+              <h3 className="text-2xl font-semibold text-green-600">Individual Land Trading (Dollar)</h3>
             </CardHeader>
             <CardContent className="pt-6">
               <p className="text-gray-600 mb-6">
-                Tap into high-yield opportunities with dollar-backed real estate trades. Our innovative model ensures you get premium value whether you're holding or flipping your investment.
+                Tap into high-yield opportunities with dollar-backed real estate trades. Our innovative model ensures you get premium value whether you're holding or flipping your land trading.
               </p>
               <ul className="space-y-3">
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-green-600 mr-2 mt-1 flex-shrink-0" />
-                  <span>Investments starting from $1,000</span>
+                  <span>Land trading starting from $1,000</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-green-600 mr-2 mt-1 flex-shrink-0" />
-                  <span>Dollar-denominated returns</span>
+                  <span>Dollar-denominated profit</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-green-600 mr-2 mt-1 flex-shrink-0" />
@@ -113,11 +113,11 @@ const InvestmentOptions: React.FC = () => {
 
           <Card className="overflow-hidden border-purple-600 border-t-4 shadow-lg hover:shadow-xl transition-shadow">
             <CardHeader className="bg-gray-50">
-              <h3 className="text-2xl font-semibold text-purple-600">Corporate Investment (Dollar)</h3>
+              <h3 className="text-2xl font-semibold text-purple-600">Corporate Land Trading (Dollar)</h3>
             </CardHeader>
             <CardContent className="pt-6">
               <p className="text-gray-600 mb-6">
-                Looking for consistent returns in USD? Partner with us. Buy into our estates and we'll resell your property in 6–12 months, delivering up to 30% profit—all while you relax and watch your capital grow.
+                Looking for consistent profit in USD? Partner with us. Buy into our estates and we'll resell your property in 6–12 months, delivering up to 30% profit—all while you relax and watch your capital grow.
               </p>
               <ul className="space-y-3">
                 <li className="flex items-start">
@@ -126,11 +126,11 @@ const InvestmentOptions: React.FC = () => {
                 </li>
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-purple-600 mr-2 mt-1 flex-shrink-0" />
-                  <span>Up to 30% ROI in USD</span>
+                  <span>Up to 30% profit in USD</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle size={20} className="text-purple-600 mr-2 mt-1 flex-shrink-0" />
-                  <span>Comprehensive investment support</span>
+                  <span>Comprehensive land trading support</span>
                 </li>
               </ul>
             </CardContent>

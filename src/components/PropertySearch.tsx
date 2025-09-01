@@ -120,12 +120,15 @@ const PropertySearch = () => {
               className="input-field w-full text-black focus:text-black"
             >
               <option value="">Any Type</option>
+              <option value="land">Land</option>
+              <option value="home">Homes & Apartments</option>
               <option value="residential">Residential</option>
               <option value="commercial">Commercial</option>
-              <option value="land">Land</option>
               <option value="apartment">Apartment</option>
               <option value="house">House</option>
-              <option value="villa">Villa</option>
+              <option value="terrace">Terrace</option>
+              <option value="detached">Detached</option>
+              <option value="semi-detached">Semi-Detached</option>
             </select>
           </div>
 
