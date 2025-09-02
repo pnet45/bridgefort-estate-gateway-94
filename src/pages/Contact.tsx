@@ -36,8 +36,9 @@ const Contact = () => {
                       <MapPin size={24} className="text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold mb-1">Our Location</h3>
-                      <p className="text-gray-600">Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, VGC bus stop, Lekki-Ajah, Lagos</p>
+                      <h3 className="text-lg font-semibold mb-1">Our Locations</h3>
+                      <p className="text-gray-600 mb-2">Head Office | Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, VGC bus stop, Lekki-Ajah, Lagos</p>
+                      <p className="text-gray-600">Lagos | Suite 6 Gacoun Plaza Opposite K Close, 23 Road, Festac, Lagos</p>
                     </div>
                   </div>
 
@@ -132,6 +133,29 @@ const Contact = () => {
                 <ContactForm />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Career CTA Section */}
+      <section className="py-8 animate-fade-in bg-estate-blue text-white">
+        <div className="container-custom">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold mb-4">Join Our Growing Team</h2>
+            <p className="text-xl mb-6 max-w-3xl mx-auto">
+              Are you passionate about real estate and looking for an opportunity to build a rewarding career? 
+              PWAN Bridgefort is always looking for talented individuals to join our dynamic team of professionals.
+            </p>
+            <p className="text-lg mb-8 max-w-2xl mx-auto">
+              Whether you're an experienced real estate professional or just starting your career, we offer comprehensive training, 
+              competitive packages, and opportunities for growth in a supportive environment.
+            </p>
+            <a 
+              href="/career" 
+              className="inline-block bg-estate-red hover:bg-red-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 hover:scale-105"
+            >
+              Explore Career Opportunities
+            </a>
           </div>
         </div>
       </section>

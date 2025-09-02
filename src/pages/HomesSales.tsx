@@ -7,6 +7,7 @@ import PropertyGrid from '../components/properties/PropertyGrid';
 import { Toaster } from '@/components/ui/toaster';
 import { PropertyProvider } from '../contexts/property';
 import { Home, MapPin, Bed, Bath, DollarSign } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const HomesSales = () => {
   return (
@@ -32,10 +33,18 @@ const HomesSales = () => {
         <section className="section-padding bg-gray-50">
           <div className="container-custom">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Available Homes</h2>
+              <h2 className="text-3xl font-bold mb-4">Available Homes for Sale & Rent</h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Browse our collection of luxury homes, apartments, and rental properties in prime locations.
+                Browse our collection of luxury homes, apartments, and rental properties in prime locations. Find your dream home for purchase or rent.
               </p>
+              <div className="mt-4">
+                <Link 
+                  to="/properties" 
+                  className="text-estate-blue hover:text-estate-darkBlue underline"
+                >
+                  View All Properties →
+                </Link>
+              </div>
             </div>
             
             <PropertyFilters />

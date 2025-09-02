@@ -59,7 +59,9 @@ const CenterTrainingSection = () => {
                 "/lovable-uploads/pbo1.jpg",
                 "/lovable-uploads/pbo.png",
                 "/lovable-uploads/Dalvin-Silva-PhD.jpg",
-                "/lovable-uploads/Happy new week.png"
+                "/lovable-uploads/Happy new week.png",
+                "/lovable-uploads/Summit1.jpg",
+                "/lovable-uploads/rise-and-grind-real-estae-waits-for-no-1.png"
               ]}
               className="rounded-lg shadow-lg w-full h-80"
             />

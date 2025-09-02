@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
 import CheckoutForm from './CheckoutForm';
 import CartSidebarMenu from './CartSidebarMenu';
-import CartPlaceholderContent from './CartPlaceholderContent';
+import CartDashboard from './CartDashboard';
 import MainCartContent from './cart/MainCartContent';
 
 const CartPage = () => {
@@ -14,7 +14,7 @@ const CartPage = () => {
   const [activeTab, setActiveTab] = useState('cart');
   const [showCheckout, setShowCheckout] = useState(false);
 
-  // For placeholder content in sidebar tabs
+  // For content in sidebar tabs
   const renderTabContent = () => {
     if (activeTab === "cart")
       return (
@@ -27,13 +27,9 @@ const CartPage = () => {
           setShowCheckout={setShowCheckout}
         />
       );
-    if (activeTab === "dashboard") return <CartPlaceholderContent title="Dashboard" />;
-    if (activeTab === "properties") return <CartPlaceholderContent title="My Properties" />;
-    if (activeTab === "documents") return <CartPlaceholderContent title="My Documents" />;
-    if (activeTab === "inspections") return <CartPlaceholderContent title="Property Inspections" />;
-    if (activeTab === "payments") return <CartPlaceholderContent title="My Payments" />;
-    if (activeTab === "installments") return <CartPlaceholderContent title="My Installments" />;
-    return null;
+    
+    // Use CartDashboard for all other tabs
+    return <CartDashboard tabType={activeTab} />;
   };
 
   if (showCheckout) {

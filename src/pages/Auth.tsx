@@ -192,6 +192,17 @@ const Auth = () => {
       if (error) throw error;
       
       if (data.user) {
+        // If PBO code is provided, update profile to mark as PBO
+        if (pboCode.trim()) {
+          await supabase
+            .from('profiles')
+            .update({
+              is_pbo: true,
+              pbo_referral_code: pboCode.trim()
+            })
+            .eq('id', data.user.id);
+        }
+        
         toast({
           title: "Registration successful!",
           description: "Please check your email to verify your account."
@@ -328,17 +339,30 @@ const Auth = () => {
               </div>
             )}
             {!isLogin && (
-              <div>
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  type="password"
-                  id="confirmPassword"
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
+              <>
+                <div>
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    type="password"
+                    id="confirmPassword"
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="pboReferralCode">PBO Referral Code (Required for PBO registration)</Label>
+                  <Input
+                    type="text"
+                    id="pboReferralCode"
+                    placeholder="Enter PBO referral code to register as PBO"
+                    value={pboCode}
+                    onChange={(e) => setPboCode(e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Leave blank for Client registration</p>
+                </div>
+              </>
             )}
             
             {/* reCAPTCHA */}

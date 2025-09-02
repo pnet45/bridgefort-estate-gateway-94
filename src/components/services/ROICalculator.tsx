@@ -24,9 +24,9 @@ const ROICalculator = () => {
     if (investmentType === 'land') {
       roiPercentage = investmentPeriod === '1' ? 30 : 60;
     } else if (investmentType === 'residential') {
-      roiPercentage = investmentPeriod === '1' ? 8 : 16;
+      roiPercentage = investmentPeriod === '1' ? 20 : 40;
     } else if (investmentType === 'commercial') {
-      roiPercentage = investmentPeriod === '1' ? 15 : 30;
+      roiPercentage = investmentPeriod === '1' ? 30 : 60;
     }
     
     const roi = (amount * roiPercentage) / 100;
@@ -104,18 +104,18 @@ const ROICalculator = () => {
                   </select>
                 </div>
                 
-                <div>
-                  <label htmlFor="investment-period" className="block text-sm font-medium text-gray-700 mb-1">Investment Period (Years)</label>
-                  <select
-                    id="investment-period"
-                    className="input-field w-full"
-                    value={investmentPeriod}
-                    onChange={(e) => setInvestmentPeriod(e.target.value)}
-                  >
-                    <option value="1">1 Year</option>
-                    <option value="2">2 Years</option>
-                  </select>
-                </div>
+                 <div>
+                   <label htmlFor="investment-period" className="block text-sm font-medium text-gray-700 mb-1">Investment Period (Years)</label>
+                   <select
+                     id="investment-period"
+                     className="input-field w-full"
+                     value={investmentPeriod}
+                     onChange={(e) => setInvestmentPeriod(e.target.value)}
+                   >
+                     <option value="1">1 Year (12 Months)</option>
+                     <option value="2">2 Years (24 Months)</option>
+                   </select>
+                 </div>
                 
                 <button 
                   type="button" 

@@ -13,7 +13,7 @@ const ROITable: React.FC<ROITableProps> = ({ isLoaded }) => {
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold mb-4">Projected Profit</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Our Buy and Resell program offers guaranteed profit on your land trading. Here's what you can expect based on trading period.
+            Our Buy and Resell program offers guaranteed profit on your land trading. Here's what you can expect based on 12 to 24 months trading period.
           </p>
         </div>
 
@@ -24,34 +24,34 @@ const ROITable: React.FC<ROITableProps> = ({ isLoaded }) => {
                 <TableRow>
                   <TableHead>Land Trading Type</TableHead>
                   <TableHead>Currency</TableHead>
-                  <TableHead>6 Months Profit</TableHead>
                   <TableHead>12 Months Profit</TableHead>
+                  <TableHead>24 Months Profit</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <TableRow>
                   <TableCell className="font-semibold">Individual</TableCell>
                   <TableCell>Naira (₦)</TableCell>
-                  <TableCell className="text-estate-blue font-semibold">10%</TableCell>
                   <TableCell className="text-estate-blue font-semibold">25%</TableCell>
+                  <TableCell className="text-estate-blue font-semibold">50%</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-semibold">Corporate</TableCell>
                   <TableCell>Naira (₦)</TableCell>
-                  <TableCell className="text-estate-red font-semibold">12.5%</TableCell>
                   <TableCell className="text-estate-red font-semibold">30%</TableCell>
+                  <TableCell className="text-estate-red font-semibold">60%</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-semibold">Individual</TableCell>
                   <TableCell>USD ($)</TableCell>
-                  <TableCell className="text-green-600 font-semibold">8%</TableCell>
                   <TableCell className="text-green-600 font-semibold">20%</TableCell>
+                  <TableCell className="text-green-600 font-semibold">40%</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-semibold">Corporate</TableCell>
                   <TableCell>USD ($)</TableCell>
-                  <TableCell className="text-purple-600 font-semibold">10%</TableCell>
                   <TableCell className="text-purple-600 font-semibold">30%</TableCell>
+                  <TableCell className="text-purple-600 font-semibold">60%</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

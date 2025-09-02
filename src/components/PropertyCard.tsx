@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Users, Layers } from 'lucide-react';
+import { MapPin, Users, Layers, Bed, Bath, Home, Maximize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEcommerce } from '@/contexts/ecommerce';
@@ -7,39 +7,50 @@ import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
 import PropertyDetailsDialogFullscreen from './PropertyDetailsDialogFullscreen';
 import ProfileCheckDialog from './ecommerce/ProfileCheckDialog';
+import { Property } from '@/contexts/property/types';
 
 interface PropertyCardProps {
-  id: string;
-  title: string;
-  location: string;
-  price: string;
-  imageUrl: string;
-  sqm: number;
-  propertyType: string;
-  phase?: number;
-  totalPlots?: number;
-  availablePlots?: number;
-  pricePerPlot?: number;
+  property: Property;
 }
 
-const PropertyCard: React.FC<PropertyCardProps> = ({
-  id,
-  title,
-  location,
-  price,
-  imageUrl,
-  sqm,
-  propertyType,
-  phase = 1,
-  totalPlots = 100,
-  availablePlots = 50,
-  pricePerPlot = 1000000
-}) => {
+const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [showProfileCheck, setShowProfileCheck] = useState(false);
   const [profileCheckMessage, setProfileCheckMessage] = useState('');
   const { addToCart } = useEcommerce();
   const { user, profile } = useAuth();
+
+  // Get additional info for homes
+  const estate = property as any;
+  const isHome = property.property_category === 'home';
+  
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  const getRentalInfo = () => {
+    if (estate.monthly_rent && estate.annual_rent) {
+      return {
+        monthly: formatPrice(estate.monthly_rent),
+        annual: formatPrice(estate.annual_rent)
+      };
+    }
+    return null;
+  };
+
+  const getBedroomBathInfo = () => {
+    if (estate.bedrooms || estate.bathrooms) {
+      return {
+        bedrooms: estate.bedrooms || 0,
+        bathrooms: estate.bathrooms || 0
+      };
+    }
+    return null;
+  };
 
   const handleAddToCart = () => {
     // Check if user is logged in
@@ -57,22 +68,22 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     }
 
     const plot = {
-      id: `${id}-plot-${Date.now()}`,
-      propertyId: id,
-      plotNumber: Math.floor(Math.random() * totalPlots) + 1,
-      size: sqm,
-      pricePerPlot,
-      propertyName: title,
-      location,
-      imageUrl,
-      propertyType
+      id: `${property.id}-plot-${Date.now()}`,
+      propertyId: property.id,
+      plotNumber: Math.floor(Math.random() * property.totalPlots) + 1,
+      size: property.sqm,
+      pricePerPlot: property.pricePerPlot,
+      propertyName: property.title,
+      location: property.location,
+      imageUrl: property.imageUrl,
+      propertyType: property.propertyType
     };
 
     addToCart(plot, 1);
     
     toast({
       title: "Added to cart",
-      description: `${title} has been added to your cart`,
+      description: `${property.title} has been added to your cart`,
     });
   };
 
@@ -80,9 +91,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     setIsDetailsOpen(true);
   };
 
-  const occupancyRate = ((totalPlots - availablePlots) / totalPlots) * 100;
+  const occupancyRate = ((property.totalPlots - property.availablePlots) / property.totalPlots) * 100;
   const isHighDemand = occupancyRate > 70;
-  const isSoldOut = availablePlots === 0;
+  const isSoldOut = property.availablePlots === 0;
+  
+  const rentalInfo = getRentalInfo();
+  const roomInfo = getBedroomBathInfo();
 
   return (
     <>
@@ -93,8 +107,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
         {/* Image Container */}
         <div className="relative h-48 overflow-hidden">
           <img 
-            src={imageUrl} 
-            alt={title}
+            src={property.imageUrl} 
+            alt={property.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -103,9 +117,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           />
           {/* Status Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
-            {phase && (
+            {property.phase && (
               <Badge variant="secondary" className="bg-white/90 text-estate-blue font-semibold">
-                Phase {phase}
+                Phase {property.phase}
+              </Badge>
+            )}
+            {isHome && (
+              <Badge className="bg-estate-blue text-white">
+                <Home size={12} className="mr-1" />
+                Home
               </Badge>
             )}
             {isHighDemand && !isSoldOut && (
@@ -122,47 +142,76 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           {/* Property Type Badge */}
           <div className="absolute top-3 right-3">
             <Badge variant="outline" className="bg-white/90 text-estate-blue border-estate-blue">
-              {propertyType}
+              {property.propertyType}
             </Badge>
           </div>
         </div>
         {/* Content */}
         <div className="p-6">
           <h3 className="text-xl font-bold text-gray-900 mb-2 hover:text-estate-blue transition-colors">
-            {title}
+            {property.title}
           </h3>
           <div className="flex items-center text-gray-600 mb-3">
             <MapPin size={16} className="mr-2 text-estate-red" />
-            <span className="text-sm">{location}</span>
+            <span className="text-sm">{property.location}</span>
           </div>
+          
+          {/* Room info for homes */}
+          {isHome && roomInfo && (
+            <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
+              {roomInfo.bedrooms > 0 && (
+                <div className="flex items-center">
+                  <Bed size={14} className="mr-1" />
+                  {roomInfo.bedrooms} bed{roomInfo.bedrooms > 1 ? 's' : ''}
+                </div>
+              )}
+              {roomInfo.bathrooms > 0 && (
+                <div className="flex items-center">
+                  <Bath size={14} className="mr-1" />
+                  {roomInfo.bathrooms} bath{roomInfo.bathrooms > 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
+          )}
+          
           {/* Property Stats */}
           <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
             <div className="flex items-center">
-              <Layers size={16} className="mr-2 text-estate-blue" />
-              <span>{sqm} sqm</span>
+              <Maximize size={16} className="mr-2 text-estate-blue" />
+              <span>{property.sqm} sqm{!isHome ? ' per plot' : ''}</span>
             </div>
             <div className="flex items-center">
               <Users size={16} className="mr-2 text-estate-blue" />
-              <span>{availablePlots} Plots Available</span>
+              <span>{property.availablePlots} {isHome ? 'Units' : 'Plots'} Available</span>
             </div>
           </div>
+          
           {/* Price */}
           <div className="mb-4">
-            <p className="text-2xl font-bold text-estate-red">{price}</p>
-            {pricePerPlot > 0 && (
-              <p className="text-sm text-gray-600">₦{pricePerPlot.toLocaleString()} per plot</p>
+            <p className="text-2xl font-bold text-estate-red">{property.price}</p>
+            {property.pricePerPlot > 0 && !isHome && (
+              <p className="text-sm text-gray-600">₦{property.pricePerPlot.toLocaleString()} per plot</p>
+            )}
+            
+            {/* Rental price for homes */}
+            {isHome && rentalInfo && (
+              <div className="text-sm text-gray-600 mt-2">
+                <div>Monthly: <span className="font-semibold text-green-600">{rentalInfo.monthly}</span></div>
+                <div>Annual: <span className="font-semibold text-green-600">{rentalInfo.annual}</span></div>
+              </div>
             )}
           </div>
+          
           {/* Progress Bar */}
           <div className="mb-4">
             <div className="flex justify-between text-xs text-gray-600 mb-1">
               <span>Availability</span>
-              <span>{Math.round((availablePlots / totalPlots) * 100)}% available</span>
+              <span>{Math.round((property.availablePlots / property.totalPlots) * 100)}% available</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-estate-blue h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(availablePlots / totalPlots) * 100}%` }}
+                style={{ width: `${(property.availablePlots / property.totalPlots) * 100}%` }}
               ></div>
             </div>
           </div>
@@ -202,12 +251,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
         property={{
-          id,
-          title,
-          location,
-          price,
-          imageUrl,
-          propertyType
+          id: property.id,
+          title: property.title,
+          location: property.location,
+          price: property.price,
+          imageUrl: property.imageUrl,
+          propertyType: property.propertyType
         }}
       />
       

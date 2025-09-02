@@ -202,7 +202,10 @@ const ProfileForm = () => {
       }
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: user.id,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
           date_of_birth: formData.dateOfBirth,
           gender: formData.gender,
           marital_status: formData.maritalStatus,
@@ -239,14 +242,13 @@ const ProfileForm = () => {
           terms_accepted: termsAccepted,
           profile_completed: true,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
+        });
 
       if (error) throw error;
 
       toast({
         title: "Profile Updated",
-        description: "Your profile & KYC were saved successfully!"
+        description: "Your profile & KYC were saved successfully! You can now purchase properties and view documentation."
       });
 
       navigate('/dashboard');
