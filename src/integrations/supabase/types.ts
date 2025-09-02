@@ -992,7 +992,10 @@ export type Database = {
         Returns: undefined
       }
       get_user_profile: {
-        Args: Record<PropertyKey, never> | { user_id: number }
+        Args:
+          | Record<PropertyKey, never>
+          | { p_user_id: string }
+          | { user_id: number }
         Returns: {
           email: string
           first_name: string
