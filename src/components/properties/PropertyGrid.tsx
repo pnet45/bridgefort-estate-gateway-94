@@ -1,18 +1,23 @@
 
 import { usePropertyContext } from '@/contexts/property';
 import AnimatedPropertyGrid from './AnimatedPropertyGrid';
+import { Property } from '@/contexts/property/types';
 
 interface PropertyGridProps {
   filterCategory?: string;
+  properties?: Property[]; // Optional properties prop
 }
 
-const PropertyGrid: React.FC<PropertyGridProps> = ({ filterCategory }) => {
+const PropertyGrid: React.FC<PropertyGridProps> = ({ filterCategory, properties }) => {
   const { filteredProperties, loading } = usePropertyContext();
+  
+  // Use provided properties or get from context
+  const sourceProperties = properties || filteredProperties;
   
   // Filter by category if specified
   const displayProperties = filterCategory 
-    ? filteredProperties.filter(p => p.property_category === filterCategory)
-    : filteredProperties;
+    ? sourceProperties.filter(p => p.property_category === filterCategory)
+    : sourceProperties;
 
   if (loading) {
     return (

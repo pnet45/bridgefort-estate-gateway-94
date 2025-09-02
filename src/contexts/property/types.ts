@@ -10,6 +10,7 @@ export interface Property {
   phase?: number;
   size: number;
   propertyType: string;
+  property_category?: string; // Added property_category field
   promoPrice?: number;
   actualPrice?: number;
   prelaunchPrice?: number;
