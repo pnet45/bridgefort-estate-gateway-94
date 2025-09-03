@@ -246,9 +246,23 @@ const ProfileForm = () => {
 
       if (error) throw error;
 
+      // Send welcome email
+      try {
+        await supabase.functions.invoke('send-welcome-email', {
+          body: {
+            email: user.email,
+            firstName: formData.firstName,
+            lastName: formData.lastName
+          }
+        });
+      } catch (emailError) {
+        console.error('Error sending welcome email:', emailError);
+        // Don't fail the profile creation if email fails
+      }
+
       toast({
-        title: "Profile Updated",
-        description: "Your profile & KYC were saved successfully! You can now purchase properties and view documentation."
+        title: "Profile Created Successfully!",
+        description: "Welcome to PWAN Bridgefort! Your profile has been completed and you can now purchase properties and access documentation services. A welcome email has been sent to your registered email address."
       });
 
       navigate('/dashboard');

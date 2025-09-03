@@ -48,7 +48,7 @@ const HomesSales = () => {
             </div>
             
             <PropertyFilters />
-            <PropertyGrid filterCategory="home" />
+            <PropertyGrid filterCategory="home" enhanced={true} />
           </div>
         </section>
 

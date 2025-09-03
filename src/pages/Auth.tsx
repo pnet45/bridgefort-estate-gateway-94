@@ -192,8 +192,29 @@ const Auth = () => {
       if (error) throw error;
       
       if (data.user) {
-        // If PBO code is provided, update profile to mark as PBO
+        // If PBO code is provided, check for duplicates and update profile
         if (pboCode.trim()) {
+          // Check if PBO code already exists
+          const { data: existingPBO, error: pboError } = await supabase
+            .from('profiles')
+            .select('id, is_pbo, pbo_referral_code')
+            .eq('pbo_referral_code', pboCode.trim())
+            .single();
+
+          if (pboError && pboError.code !== 'PGRST116') {
+            throw pboError;
+          }
+
+          if (existingPBO) {
+            toast({
+              title: "PBO Code Already Used",
+              description: "This PBO referral code has already been used by another PBO. Please use a different code.",
+              variant: "destructive"
+            });
+            return;
+          }
+
+          // Update profile to mark as PBO with referral code
           await supabase
             .from('profiles')
             .update({

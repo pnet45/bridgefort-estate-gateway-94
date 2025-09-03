@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 
 const stories = [
   {
@@ -24,25 +24,62 @@ const stories = [
   }
 ];
 
-const SuccessStories = () => (
-  <section className="py-10 bg-white">
-    <div className="container-custom">
-      <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">Success Stories</h2>
-      <div className="grid md:grid-cols-2 gap-8">
-        {stories.map((s, idx) => (
-          <div key={idx} className="bg-gray-50 rounded-lg shadow-md flex flex-col md:flex-row">
-            <div className="md:w-2/5 h-44 md:h-auto overflow-hidden">
-              <img src={s.img} alt={s.title} className="w-full h-full object-cover" />
+const SuccessStories = () => {
+  const [expandedStory, setExpandedStory] = useState<number | null>(null);
+
+  const toggleExpanded = (index: number) => {
+    setExpandedStory(expandedStory === index ? null : index);
+  };
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
+  return (
+    <section className="py-10 bg-white">
+      <div className="container-custom">
+        <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">Success Stories</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {stories.map((s, idx) => (
+            <div 
+              key={idx} 
+              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-estate-blue/30 transform hover:-translate-y-1"
+            >
+              <div className="h-48 sm:h-56 overflow-hidden">
+                <img 
+                  src={s.img} 
+                  alt={s.title} 
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                />
+              </div>
+              <div className="p-4 sm:p-6">
+                <h3 className="font-bold text-lg sm:text-xl text-estate-blue mb-3 leading-tight">
+                  {s.title}
+                </h3>
+                <div className="text-gray-700 text-sm sm:text-base leading-relaxed">
+                  <p>
+                    {expandedStory === idx 
+                      ? s.summary 
+                      : truncateText(s.summary, 150)
+                    }
+                  </p>
+                  {s.summary.length > 150 && (
+                    <button
+                      onClick={() => toggleExpanded(idx)}
+                      className="mt-3 text-estate-blue hover:text-estate-darkBlue font-medium text-sm underline transition-colors duration-200"
+                    >
+                      {expandedStory === idx ? 'Read Less' : 'Read More'}
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="md:w-3/5 p-6 flex flex-col">
-              <h3 className="font-bold text-xl text-estate-blue mb-2">{s.title}</h3>
-              <p className="text-gray-700">{s.summary}</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default SuccessStories;
