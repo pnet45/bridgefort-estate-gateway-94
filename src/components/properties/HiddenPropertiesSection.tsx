@@ -4,20 +4,7 @@ import { User } from '@supabase/supabase-js';
 import { Eye } from 'lucide-react';
 import PropertyCard from '../PropertyCard';
 import { Button } from '@/components/ui/button';
-
-interface Property {
-  id: string;
-  title: string;
-  location: string;
-  price: string;
-  imageUrl: string;
-  sqm: number;
-  propertyType: string;
-  phase?: number;
-  totalPlots?: number;
-  availablePlots?: number;
-  pricePerPlot?: number;
-}
+import { Property } from '@/contexts/property/types';
 
 interface HiddenPropertiesSectionProps {
   hiddenProperties: Property[];
@@ -42,10 +29,12 @@ const HiddenPropertiesSection = ({ hiddenProperties, user, onUnhideProperty }: H
           >
             <div className="opacity-50">
               <PropertyCard 
-                {...property} 
-                totalPlots={property.totalPlots || 100}
-                availablePlots={property.availablePlots || 50}
-                pricePerPlot={property.pricePerPlot || 1000000}
+                property={{
+                  ...property,
+                  totalPlots: property.totalPlots || 100,
+                  availablePlots: property.availablePlots || 50,
+                  pricePerPlot: property.pricePerPlot || 1000000
+                }}
               />
             </div>
             

@@ -1,20 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import PropertyCard from '../PropertyCard';
-
-interface Property {
-  id: string;
-  title: string;
-  location: string;
-  price: string;
-  imageUrl: string;
-  sqm: number;
-  propertyType: string;
-  phase?: number;
-  totalPlots?: number;
-  availablePlots?: number;
-  pricePerPlot?: number;
-}
+import { Property } from '@/contexts/property/types';
 
 interface AnimatedPropertyGridProps {
   properties: Property[];
@@ -61,7 +48,7 @@ const AnimatedPropertyGrid = ({ properties }: AnimatedPropertyGridProps) => {
             animationDelay: `${index * 200}ms`
           }}
         >
-          <PropertyCard {...property} />
+          <PropertyCard property={property} />
         </div>
       ))}
     </div>

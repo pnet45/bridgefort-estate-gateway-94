@@ -30,7 +30,7 @@ const FeaturedProperties = () => {
                 className="animate-fade-in focus-box-in"
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
-                <PropertyCard {...property} />
+                <PropertyCard property={property} />
               </div>
             ))}
           </div>
