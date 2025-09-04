@@ -130,7 +130,7 @@ export const sampleProperties: Property[] = [
     title: 'Premium 5-Bedroom Fully Detached Duplex',
     location: 'Lekki, Lagos',
     price: '₦750,000,000',
-    imageUrl: luxury4BedroomAsaba, // Reusing image for now
+    imageUrl: luxuryTerraceLagos,
     propertyType: 'Residential House',
     property_category: 'home',
     size: 500,
@@ -149,7 +149,7 @@ export const sampleProperties: Property[] = [
     title: 'Elegant 4-Bedroom Mansion in Ikoyi',
     location: 'Ikoyi, Lagos',
     price: '₦1,200,000,000',
-    imageUrl: luxuryDetachedAsaba, // Reusing image for now
+    imageUrl: luxury3BedroomLagos,
     propertyType: 'Residential House',
     property_category: 'home',
     size: 600,
