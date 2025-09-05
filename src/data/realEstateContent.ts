@@ -1,5 +1,71 @@
 export const realEstateArticles = [
   {
+    id: 'precious-gardens-physical-allocation-2025',
+    title: '📍 Physical Allocation - Precious Gardens Estate Scheme 1',
+    excerpt: 'We are excited to officially inform you that your plot has been successfully demarcated and ready for allocation at Precious Gardens Scheme 1, Ebute-Okun, Ode-Omi, Ogun Waterside LGA.',
+    content: `# 📍 Physical Allocation - Precious Gardens Estate Scheme 1
+
+*By Emmanuel Etokakpan | Admin Officer | PWAN Bridgefort Estates & Investment Ltd*
+
+Dear Valued Investors,
+
+We sincerely appreciate your trust and confidence in us at PWAN Bridgefort Estates and Investment Ltd. Thank you for choosing us as your real estate investment partner. Your patronage means a lot to us, and we are committed to serving you in your best interest.
+
+## 🎉 Your Plot is Ready for Allocation!
+
+We are excited to officially inform you that your plot has been successfully **demarcated and ready for allocation** at **Precious Gardens Scheme 1**, Ebute-Okun, Ode-Omi, Ogun Waterside LGA, Ogun State.
+
+### 📅 Allocation Details
+
+**Allocation Day:** Saturday, 20th September 2025  
+**Take-off Time:** 9:00 AM Prompt  
+**Take-off Location:** Plot 117, Wosilat Seriki Street Eleganza Gardens, Opp VGC Estate Lekki-Epe Express
+
+### 📋 Important Information
+
+- Your plot(s) documents will be handed over to you at the takeoff location by 9:00am
+- Please make yourself available on or before 9:00am
+- **Documentation Fee:** Kindly ensure you have paid your documentation fee (if you haven't done so) before the allocation date
+- Your documents will be ready for pickup on the same day
+
+### 👥 Sending a Representative?
+
+In the event that you will be sending a representative, we request that you notify us via **pwanbridgefortestates@gmail.com** with details of your representative before the allocation date.
+
+## 🏡 About Precious Gardens Estate Scheme 1
+
+Located in the serene community of Ebute-Okun, Ode-Omi, in Ogun Waterside LGA, Ogun State, Precious Gardens Estate represents premium land ownership with excellent investment potential.
+
+### 🌟 Estate Features
+- Strategic location with excellent accessibility
+- Proper survey and demarcation
+- Clean title documentation
+- Peaceful residential environment
+- Growth potential in emerging area
+
+## 🎊 Congratulations on Your New Land Ownership!
+
+Once again, we congratulate you on your new land ownership and we look forward to celebrating this milestone achievement with you. Thank you for being a valued member of the PWAN Bridgefort family.
+
+### 📞 Contact Information
+
+**Emmanuel Etokakpan**  
+Admin Officer  
+PWAN Bridgefort Estates & Investment Ltd  
+📱 07067318720 | 08083209655
+
+---
+
+*...Rebuilding the future.*
+
+**Warm regards,**  
+The PWAN Bridgefort Team`,
+    category: 'Estate Allocation',
+    image: '/lovable-uploads/9979be2c-1112-4567-bbf9-d036d65b9a61.png',
+    date: new Date().toISOString().split('T')[0],
+    readTime: 3
+  },
+  {
     id: 'lagos-rising-smart-time-to-invest',
     title: '🏙️ Lagos Rising: Why Now Is the Smartest Time to Own a Piece of the Future',
     excerpt: 'As inflation soars and rental prices skyrocket across Nigeria, owning real estate today is not just smart—it\'s a survival strategy for the future.',

@@ -1,5 +1,13 @@
 import React from "react";
 const announcementItems = [{
+  title: "Physical Allocation - Precious Gardens Estate Scheme 1",
+  text: "Your plot has been successfully demarcated and ready for allocation! Allocation Day: Saturday, 20th September 2025 at 9:00 AM. Documents ready for pickup on the same day.",
+  img: "/lovable-uploads/9979be2c-1112-4567-bbf9-d036d65b9a61.png",
+  cta: {
+    label: "Read Full Details",
+    url: "/blog"
+  }
+}, {
   title: "Join Our Team: We're Hiring Marketing & Sales Executives",
   text: "We are recruiting goal-driven and passionate Marketing and Sales Executives for immediate employment (remuneration is very attractive: basic salary and commissions).",
   img: "/lovable-uploads/e36d5fd8-2846-41e4-a03b-16f1a93f04df.png",
