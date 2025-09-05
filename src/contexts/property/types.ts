@@ -23,6 +23,8 @@ export interface Property {
   features?: string[]; // Added missing property
   amenities?: string[]; // Added missing property
   paymentPlans?: string[]; // Added missing property
+  monthlyRent?: number; // Added for rental properties
+  annualRent?: number; // Added for rental properties
   // Legacy properties for backward compatibility
   price: string; // Made required instead of optional
   sqm: number; // Made required to fix TypeScript errors

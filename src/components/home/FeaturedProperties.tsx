@@ -8,8 +8,16 @@ import { usePropertyContext } from '@/contexts/property';
 const FeaturedProperties = () => {
   const { filteredProperties, loading } = usePropertyContext();
 
-  // Select the top 3 properties to feature (you can enhance this logic as needed)
-  const featured = filteredProperties.slice(0, 3);
+  // Prioritize new estates first, then show other properties
+  const newEstates = filteredProperties.filter(p => 
+    p.id === 'big-league-haven-2' || p.id === 'hampton-court-agbara'
+  );
+  const otherProperties = filteredProperties.filter(p => 
+    p.id !== 'big-league-haven-2' && p.id !== 'hampton-court-agbara'
+  );
+  
+  // Show new estates first, then fill with other properties to reach 3 total
+  const featured = [...newEstates, ...otherProperties].slice(0, 3);
 
   return (
     <section className="section-padding bg-gray-50">

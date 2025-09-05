@@ -36,12 +36,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
   
   const menuItems = [
     { name: 'Home', icon: <Home size={20} />, path: '/' },
-    { name: 'Properties', icon: <Building size={20} />, path: '/properties' },
-    { name: 'Buy and Resell', icon: <Landmark size={20} />, path: '/buy2sell' },
+    { name: 'About Us', icon: <Info size={20} />, path: '/about' },
+    { name: 'Estate Lands', icon: <Building size={20} />, path: '/properties/estates' },
+    { name: 'Homes Sales', icon: <Home size={20} />, path: '/homes-sales' },
+    { name: 'Apartments for Rent', icon: <Building size={20} />, path: '/properties/apartments' },
     { name: 'Services', icon: <Briefcase size={20} />, path: '/services' },
     { name: 'Training', icon: <GraduationCap size={20} />, path: '/training' },
+    { name: 'Buy and Resell', icon: <Landmark size={20} />, path: '/buy2sell' },
     { name: 'Blog', icon: <BookOpen size={20} />, path: '/blog' },
-    { name: 'About Us', icon: <Info size={20} />, path: '/about' },
     { name: 'Contact', icon: <Phone size={20} />, path: '/contact' },
   ];
   

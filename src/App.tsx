@@ -14,6 +14,8 @@ import Index from '@/pages/Index';
 import Home from '@/pages/Home';
 import About from '@/pages/About';
 import Properties from '@/pages/Properties';
+import EstateProperties from '@/pages/EstateProperties';
+import ApartmentRentals from '@/pages/ApartmentRentals';
 import Services from '@/pages/Services';
 import Training from '@/pages/Training';
 import Career from '@/pages/Career';
@@ -55,6 +57,8 @@ function App() {
                 <Route path="/home" element={<Home />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/properties" element={<Properties />} />
+                <Route path="/properties/estates" element={<EstateProperties />} />
+                <Route path="/properties/apartments" element={<ApartmentRentals />} />
                 <Route path="/homes-sales" element={<HomesSales />} />
                 <Route path="/services" element={<Services />} />
                 <Route path="/training" element={<Training />} />

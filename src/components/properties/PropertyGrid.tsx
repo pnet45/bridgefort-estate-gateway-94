@@ -18,7 +18,12 @@ const PropertyGrid: React.FC<PropertyGridProps> = ({ filterCategory, properties,
   
   // Filter by category if specified
   const displayProperties = filterCategory 
-    ? sourceProperties.filter(p => p.property_category === filterCategory)
+    ? sourceProperties.filter(p => {
+        if (filterCategory === 'land') {
+          return p.property_category === 'land' || !p.property_category; // Default to land if not specified
+        }
+        return p.property_category === filterCategory;
+      })
     : sourceProperties;
 
   if (loading) {
@@ -39,8 +44,8 @@ const PropertyGrid: React.FC<PropertyGridProps> = ({ filterCategory, properties,
     );
   }
 
-  // Use enhanced cards for homes or regular animated grid for others
-  if (enhanced && filterCategory === 'home') {
+  // Use enhanced cards for homes and rentals or regular animated grid for others
+  if (enhanced && (filterCategory === 'home' || filterCategory === 'rental')) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {displayProperties.map((property) => (
