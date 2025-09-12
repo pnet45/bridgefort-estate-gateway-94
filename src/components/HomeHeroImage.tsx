@@ -30,12 +30,17 @@ const HomeHeroImage = () => {
   return (
     <section className="relative w-full h-[60vh] md:h-[70vh] lg:h-[80vh]">
       <div className="h-full">
-        <div 
-          className="h-full bg-cover bg-center transition-all duration-1000 ease-in-out" 
-          style={{
-            backgroundImage: `url(${heroImages[currentSlide]})`
-          }}
-        >
+        <div className="h-full relative overflow-hidden">
+          <img 
+            src={heroImages[currentSlide]} 
+            alt={`PWAN Bridgefort Hero Image ${currentSlide + 1}`}
+            className="w-full h-full object-cover transition-all duration-1000 ease-in-out"
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/lovable-uploads/PropertyHero.png';
+            }}
+          />
           {/* Dark overlay for better text visibility */}
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center">
             <div className="container-custom text-white px-4">

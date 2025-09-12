@@ -10,7 +10,16 @@ const TeamPhoto = () => {
         </div>
         
         <div className="rounded-lg overflow-hidden shadow-xl">
-          <img src="/lovable-uploads/Homeslider.png" alt="PWAN Bridgefort Team" className="w-full h-auto" />
+          <img 
+            src="/lovable-uploads/Homeslider.png" 
+            alt="PWAN Bridgefort Team" 
+            className="w-full h-auto object-cover"
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/lovable-uploads/PropertyHero.png';
+            }}
+          />
         </div>
       </div>
     </section>;

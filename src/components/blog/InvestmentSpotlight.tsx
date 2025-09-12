@@ -24,7 +24,16 @@ const InvestmentSpotlight = () => (
         {investmentItems.map((item, i) => (
           <div key={i} className="rounded-lg shadow overflow-hidden bg-white flex flex-col md:flex-row transition">
             <div className="md:w-1/3 h-44 md:h-52 overflow-hidden">
-              <img src={item.img} alt={item.title} className="w-full h-full object-cover" />
+              <img 
+                src={item.img} 
+                alt={item.title} 
+                className="w-full h-full object-cover" 
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/lovable-uploads/PropertyHero.png';
+                }}
+              />
             </div>
             <div className="md:w-2/3 p-6 flex flex-col">
               <h3 className="font-bold text-xl md:text-2xl text-estate-blue mb-2">{item.title}</h3>

@@ -22,7 +22,16 @@ const IncentivePrograms = () => (
         {incentives.map((ic, i) => (
           <div key={i} className="bg-gray-50 rounded-lg shadow flex flex-col md:flex-row items-stretch overflow-hidden">
             <div className="md:w-2/5 h-44 md:h-auto overflow-hidden">
-              <img src={ic.image} alt={ic.name} className="w-full h-full object-cover" />
+              <img 
+                src={ic.image} 
+                alt={ic.name} 
+                className="w-full h-full object-cover" 
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/lovable-uploads/PropertyHero.png';
+                }}
+              />
             </div>
             <div className="md:w-3/5 p-6 flex flex-col">
               <h3 className="font-bold text-xl text-estate-blue mb-2">{ic.name}</h3>

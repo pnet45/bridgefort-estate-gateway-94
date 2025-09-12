@@ -110,9 +110,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             src={property.imageUrl} 
             alt={property.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/placeholder.svg';
+              // Try fallback to a default estate image from public folder
+              if (!target.src.includes('Homeslider')) {
+                target.src = '/lovable-uploads/PropertyHero.png';
+              } else {
+                target.src = '/placeholder.svg';
+              }
             }}
           />
           {/* Status Badges */}

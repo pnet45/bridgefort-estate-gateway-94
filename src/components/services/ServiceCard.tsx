@@ -26,7 +26,16 @@ const ServiceCard = ({
     <Card className="overflow-hidden shadow-lg border-0">
       <div className="flex flex-col md:flex-row">
         <div className="md:w-2/5">
-          <img alt={imageAlt} className="w-full h-full object-cover" src={imageSrc} />
+            <img 
+              alt={imageAlt} 
+              className="w-full h-64 md:h-full object-cover" 
+              src={imageSrc}
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/lovable-uploads/PropertyHero.png';
+              }}
+            />
         </div>
         <div className="md:w-3/5 p-6">
           <div className="flex items-center gap-3 mb-4">

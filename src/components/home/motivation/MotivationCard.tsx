@@ -39,6 +39,11 @@ const MotivationCard = ({ title, text, author, image, fade }: MotivationCardProp
             alt={title}
             className="rounded-lg shadow-lg max-h-[260px] md:max-h-[320px] object-contain bg-white/80"
             style={{ minWidth: "180px", maxWidth: "100%", width: "320px" }}
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/lovable-uploads/Happy new week.png';
+            }}
           />
         </div>
       </div>
@@ -54,6 +59,11 @@ const MotivationCard = ({ title, text, author, image, fade }: MotivationCardProp
             alt={title}
             className="rounded-lg shadow-lg max-h-[260px] md:max-h-[320px] object-contain bg-white/80"
             style={{ minWidth: "180px", maxWidth: "100%", width: "320px" }}
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/lovable-uploads/Happy new week.png';
+            }}
           />
         </div>
         <div className="w-full md:w-2/3 lg:w-1/2 flex flex-col justify-center items-start text-white py-4 pl-0 md:pl-8 md:text-left text-left">
@@ -77,20 +87,16 @@ const MotivationCard = ({ title, text, author, image, fade }: MotivationCardProp
 
   // Default fallback layout
   return (
-    <div
-      className={`h-full w-full bg-cover bg-center transition-all duration-1000 ease-in-out relative transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"}`}
-      style={{
-        backgroundImage: `url(${image})`,
-        backgroundColor: "#142447",
-      }}
-    >
+    <div className={`h-full w-full relative transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"}`}>
       <img
         src={image}
         alt={title}
-        className="absolute pointer-events-none opacity-0"
-        aria-hidden="true"
-        width={2}
-        height={2}
+        className="w-full h-full object-cover"
+        loading="lazy"
+        onError={(e) => {
+          const target = e.target as HTMLImageElement;
+          target.src = '/lovable-uploads/Happy new week.png';
+        }}
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/75 to-black/25 flex items-center rounded-bl-xl rounded-2xl my-0 py-[12px] bg-cyan-700">
         <div className="container-custom px-4 text-white">

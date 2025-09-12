@@ -27,7 +27,16 @@ const FeaturedAnnouncements = () => <section className="py-10 bg-white">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {announcementItems.map((item, i) => <div key={i} className="rounded-lg overflow-hidden shadow bg-gray-50 flex flex-col md:flex-row transition-all">
             <div className="md:w-1/3 h-44 md:h-52 overflow-hidden">
-              <img src={item.img} alt={item.title} className="w-full h-full object-fill" />
+              <img 
+                src={item.img} 
+                alt={item.title} 
+                className="w-full h-full object-cover" 
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/lovable-uploads/PropertyHero.png';
+                }}
+              />
             </div>
             <div className="md:w-2/3 p-6 flex flex-col">
               <h3 className="font-bold text-xl text-estate-blue mb-2">{item.title}</h3>

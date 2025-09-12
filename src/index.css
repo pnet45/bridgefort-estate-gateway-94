@@ -98,6 +98,27 @@
     color: hsl(var(--estate-blue));
   }
   
+  /* Responsive image utilities */
+  .responsive-image {
+    @apply w-full h-auto object-cover;
+  }
+  
+  .hero-image {
+    @apply w-full h-full object-cover transition-transform duration-300;
+  }
+  
+  .property-card-image {
+    @apply w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105;
+  }
+  
+  .feature-card-image {
+    @apply w-full h-44 md:h-52 object-cover;
+  }
+  
+  .thumbnail-image {
+    @apply w-full h-full object-cover rounded-lg;
+  }
+  
   .bg-estate-blue {
     background-color: hsl(var(--estate-blue));
   }
