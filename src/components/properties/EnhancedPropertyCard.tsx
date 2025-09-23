@@ -62,6 +62,16 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
             className={`w-full h-full object-cover transition-all duration-700 ${
               isHovered ? 'scale-110 brightness-110' : 'scale-100'
             }`}
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              // Try fallback to a default estate image from public folder
+              if (!target.src.includes('Homeslider')) {
+                target.src = '/lovable-uploads/PropertyHero.png';
+              } else {
+                target.src = '/placeholder.svg';
+              }
+            }}
           />
           
           {/* Floating Action Buttons */}
