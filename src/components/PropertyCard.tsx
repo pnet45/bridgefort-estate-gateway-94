@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MapPin, Users, Layers, Bed, Bath, Home, Maximize } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Users, Layers, Bed, Bath, Home, Maximize, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEcommerce } from '@/contexts/ecommerce';
@@ -17,13 +17,67 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [showProfileCheck, setShowProfileCheck] = useState(false);
   const [profileCheckMessage, setProfileCheckMessage] = useState('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useEcommerce();
   const { user, profile } = useAuth();
+
+  // Get images array - prioritize media array, fallback to imageUrl
+  const getImages = () => {
+    if (property.media && property.media.length > 0) {
+      return property.media;
+    }
+    return [property.imageUrl];
+  };
+
+  const images = getImages();
+  const hasMultipleImages = images.length > 1;
+
+  // Auto-slide functionality - 20 seconds interval
+  useEffect(() => {
+    if (hasMultipleImages) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => 
+          prevIndex === images.length - 1 ? 0 : prevIndex + 1
+        );
+      }, 20000); // 20 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [hasMultipleImages, images.length]);
 
   // Get additional info for homes
   const estate = property as any;
   const isHome = property.property_category === 'home';
   
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.target as HTMLImageElement;
+    const fallbackImages = [
+      '/lovable-uploads/Homeslider.png',
+      '/lovable-uploads/Homeslider2.png', 
+      '/lovable-uploads/Homeslider3.png',
+      '/lovable-uploads/PropertyHero.png'
+    ];
+    
+    const randomFallback = fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
+    target.src = randomFallback;
+  };
+
+  const nextImage = () => {
+    if (hasMultipleImages) {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === images.length - 1 ? 0 : prevIndex + 1
+      );
+    }
+  };
+
+  const prevImage = () => {
+    if (hasMultipleImages) {
+      setCurrentImageIndex((prevIndex) => 
+        prevIndex === 0 ? images.length - 1 : prevIndex - 1
+      );
+    }
+  };
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
@@ -107,20 +161,56 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
         {/* Image Container */}
         <div className="relative h-48 overflow-hidden">
           <img 
-            src={property.imageUrl} 
+            src={images[currentImageIndex]} 
             alt={property.title}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              // Try fallback to a default estate image from public folder
-              if (!target.src.includes('Homeslider')) {
-                target.src = '/lovable-uploads/PropertyHero.png';
-              } else {
-                target.src = '/placeholder.svg';
-              }
-            }}
+            onError={handleImageError}
           />
+          
+          {/* Navigation arrows - only show if multiple images */}
+          {hasMultipleImages && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevImage();
+                }}
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextImage();
+                }}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </>
+          )}
+
+          {/* Image indicators - only show if multiple images */}
+          {hasMultipleImages && (
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex(index);
+                  }}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentImageIndex
+                      ? 'bg-white'
+                      : 'bg-white/50 hover:bg-white/75'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
           {/* Status Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {property.phase && (

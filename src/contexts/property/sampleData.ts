@@ -10,6 +10,29 @@ import luxuryRentalOgun from '@/assets/luxury-rental-ogun.jpg';
 
 export const sampleProperties: Property[] = [
   // NEW FEATURED ESTATES - Latest Additions
+  // Big League Haven 1 - New Addition
+  {
+    id: 'big-league-haven-1',
+    name: 'The Big League Haven 1',
+    title: 'The Big League Haven 1 - Premium Estate',
+    location: 'Warri-Asaba Road, Ogwashi-Uku, Asaba, Delta State',
+    price: '₦5,500,000',
+    actualPrice: 7500000,
+    prelaunchPrice: 5500000,
+    imageUrl: '/lovable-uploads/BIG_league_Heaven_1.jpg',
+    propertyType: 'Residential Land',
+    property_category: 'land',
+    size: 464,
+    sqm: 464,
+    totalPlots: 200,
+    availablePlots: 175,
+    pricePerPlot: 5500000,
+    description: 'THE BIG LEAGUE HAVEN 1 – a prestigious estate located at Warri-Asaba Road, Ogwashi-Uku, Asaba, Delta State. Your golden opportunity to secure prime land in a fast-developing area with top-notch proposed estate features. Plot Size: 50ft x 100ft (464SQM), Freehold title.',
+    features: ['Secure Perimeter Fencing', 'Good Road Network', 'Constant Power Supply', 'Portable Water System', 'Recreational & Green Areas'],
+    amenities: ['Delta State Polytechnic Nearby', 'Admiralty University Access', 'Asaba International Airport', 'Asaba-Ughelli Expressway'],
+    paymentPlans: ['Initial Deposit: ₦1,000,000', 'Balance within 3 months', 'Flexible Payment Options'],
+    media: ['/lovable-uploads/BIG_league_Heaven_1.jpg', '/lovable-uploads/Homeslider2.png']
+  },
   {
     id: 'big-league-haven-2',
     name: 'The Big League Haven 2',
@@ -29,7 +52,31 @@ export const sampleProperties: Property[] = [
     description: 'THE BIG LEAGUE HAVEN 2 – a prestigious estate located Off Warri-Asaba Road, Olor Ogwashi, Asaba, Delta State. Your golden opportunity to secure prime land in a fast-developing area with top-notch proposed estate features. Plot Size: 50ft x 100ft (464SQM), Freehold title.',
     features: ['Secure Perimeter Fencing', 'Good Road Network', 'Constant Power Supply', 'Portable Water System', 'Recreational & Green Areas'],
     amenities: ['Delta State Polytechnic Nearby', 'Admiralty University Access', 'Asaba International Airport', 'Asaba-Ughelli Expressway'],
-    paymentPlans: ['Initial Deposit: ₦200,000', 'Balance within 3 months', 'Flexible Payment Options']
+    paymentPlans: ['Initial Deposit: ₦200,000', 'Balance within 3 months', 'Flexible Payment Options'],
+    media: ['/lovable-uploads/Homeslider2.png']
+  },
+  // Hampton Ville Estate - New Addition  
+  {
+    id: 'hampton-ville-estate',
+    name: 'Hampton Ville Estate',
+    title: 'Hampton Ville Estate - Epe, Lagos',
+    location: 'Epe - Ikorodu Road, Itoikin, Epe, Lagos',
+    price: '₦9,900,000',
+    actualPrice: 15000000,
+    prelaunchPrice: 9900000,
+    imageUrl: '/lovable-uploads/Hampton_Ville_-_Epe.jpg',
+    propertyType: 'Residential Land',
+    property_category: 'land',
+    size: 500,
+    sqm: 500,
+    totalPlots: 200,
+    availablePlots: 180,
+    pricePerPlot: 9900000,
+    description: 'Hampton Ville Estate – Free Documentation. Located at Epe - Ikorodu Road, Itoikin, Epe, Lagos. Plot Size: 50 x 100 SQF (500SQM), Gazette land title with excellent proposed estate features.',
+    features: ['Gated Estate', 'Electricity & Streetlights', 'Well-Paved Roads & Drainage', 'Recreational Parks & Green Areas', 'Modern Security Gatehouse & 24/7 Security'],
+    amenities: ['Close to Lagos Mainland', 'Good Road Network', 'Educational Institutions Nearby', 'Commercial Centers'],
+    paymentPlans: ['Initial Deposit: ₦1,000,000', 'Balance within 3 months', 'Flexible Payment Plan'],
+    media: ['/lovable-uploads/Hampton_Ville_-_Epe.jpg', '/lovable-uploads/Homeslider3.png']
   },
   {
     id: 'hampton-court-agbara',
@@ -50,7 +97,8 @@ export const sampleProperties: Property[] = [
     description: 'Hampton Court, Agbara – an exclusive residential estate strategically located at Omilende Community, via Edu Town, Agbara, Ogun State. This estate combines serenity, accessibility, and class, making it the perfect destination for homeowners and investors.',
     features: ['Standard Perimeter Fencing', 'Electricity & Streetlights', 'Well-Paved Roads & Drainage', 'Recreational Parks & Green Areas', 'Modern Security Gatehouse & 24/7 Security'],
     amenities: ['Greenfield County Estate', 'Nestlé Nigeria Plc Factory', 'Agbara Industrial Estate', 'Crawford University', 'Crown Hotel & Resort'],
-    paymentPlans: ['Initial Deposit: ₦200,000', 'Balance within 3 months', 'Flexible Payment Plan']
+    paymentPlans: ['Initial Deposit: ₦200,000', 'Balance within 3 months', 'Flexible Payment Plan'],
+    media: ['/lovable-uploads/Homeslider3.png']
   },
   // Luxury Home Sales and Rentals - Updated prices based on market data
   {
@@ -366,6 +414,7 @@ export const sampleProperties: Property[] = [
     price: '₦2,500,000',
     imageUrl: '/lovable-uploads/Precious.png',
     propertyType: 'Residential',
+    property_category: 'land',
     size: 500,
     sqm: 500,
     totalPlots: 100,
@@ -374,7 +423,31 @@ export const sampleProperties: Property[] = [
     description: 'A premium residential estate in Sagamu with modern amenities and excellent infrastructure.',
     features: ['24/7 Security', 'Good Road Network', 'Electricity', 'Water Supply'],
     amenities: ['Swimming Pool', 'Playground', 'Shopping Mall', 'Hospital'],
-    paymentPlans: ['Outright Payment', '6 Months Plan', '12 Months Plan']
+    paymentPlans: ['Outright Payment', '6 Months Plan', '12 Months Plan'],
+    media: ['/lovable-uploads/Precious.png']
+  },
+  // Precious Gardens Scheme 2 - New Addition
+  {
+    id: 'precious-gardens-scheme-2',
+    name: 'Precious Gardens Scheme 2',
+    title: 'Precious Gardens Scheme 2',
+    location: 'Ode-Omi, via Ibeju-Lekki, Lagos',
+    price: '₦1,500,000',
+    actualPrice: 2500000,
+    prelaunchPrice: 1500000,
+    imageUrl: '/lovable-uploads/PRECIOUS_GARDEN_SCHEME_2.jpg',
+    propertyType: 'Residential Land',
+    property_category: 'land',
+    size: 500,
+    sqm: 500,
+    totalPlots: 200,
+    availablePlots: 150,
+    pricePerPlot: 1500000,
+    description: 'Precious Gardens Scheme 2 - Provisional Survey Plan & Deed of Assignment. Located at Ode-Omi, via Ibeju-Lekki, Lagos. Plot Size: 500SQM (50ft by 100ft), 250SQM at ₦1.25M discounted price.',
+    features: ['Gated Estate', 'Electricity & Streetlights', 'Well-Paved Roads & Drainage', 'Recreational Parks & Green Areas', 'Modern Security'],
+    amenities: ['Close to Lekki-Epe Expressway', 'Commercial Areas', 'Educational Institutions', 'Healthcare Facilities'],
+    paymentPlans: ['Initial Deposit: ₦500,000', 'Balance within 3 months', '6 Months Plan'],
+    media: ['/lovable-uploads/PRECIOUS_GARDEN_SCHEME_2.jpg', '/lovable-uploads/Precious.png']
   },
   {
     id: 'sunflower-city',
@@ -447,5 +520,74 @@ export const sampleProperties: Property[] = [
     features: ['Ample Parking Space', 'Perimeter Fencing', 'Centralized Security', 'Backup Generator'],
     amenities: ['Conference Center', 'Business Lounge', 'High-Speed Internet', 'Restaurant'],
     paymentPlans: ['Outright Payment', '3 Months Plan', '6 Months Plan']
+  },
+  // Greenfield County Estate - New Addition
+  {
+    id: 'greenfield-county-estate',
+    name: 'Greenfield County Estate',
+    title: 'Greenfield County Estate & Farmland',
+    location: 'Agbara, Ogun State',
+    price: '₦2,500,000',
+    actualPrice: 3200000,
+    prelaunchPrice: 2500000,
+    imageUrl: '/lovable-uploads/GREENFIELD.jpg',
+    propertyType: 'Residential Land',
+    property_category: 'land',
+    size: 500,
+    sqm: 500,
+    totalPlots: 300,
+    availablePlots: 250,
+    pricePerPlot: 2500000,
+    description: 'Introducing Greenfield County Estate & Farmland located at Agbara, Ogun State. Survey Plan & Deed of Assignment with 500SQM plot. Discounted Price ₦2.5M, Actual Price: ₦3.2M. Documentation Inclusive.',
+    features: ['Gated Estate', 'Street Light', '24/7 Security', 'Good Roads', 'Shopping Mall', 'Recreational Park', 'Electricity', 'Gymnasium'],
+    amenities: ['Crawford University', 'Badagry Expressway', 'Edu Community School', 'Crown Hotel & Resort', 'Nestle PLC Agbara', 'Lagos State Univ. of Education'],
+    paymentPlans: ['Outright Payment', '3 Months Plan', '6 Months Plan'],
+    media: ['/lovable-uploads/GREENFIELD.jpg']
+  },
+  // The Ambassadors Estate - New Addition
+  {
+    id: 'ambassadors-estate',
+    name: 'The Ambassadors Estate',
+    title: 'The Ambassadors Estate',
+    location: 'Ode-Omi Community, via Ibeju-Lekki, Lagos',
+    price: '₦1,800,000',
+    actualPrice: 2500000,
+    prelaunchPrice: 1800000,
+    imageUrl: '/lovable-uploads/The_Ambassadors_Estate.jpg',
+    propertyType: 'Residential Land',
+    property_category: 'land',
+    size: 500,
+    sqm: 500,
+    totalPlots: 200,
+    availablePlots: 170,
+    pricePerPlot: 1800000,
+    description: 'The Ambassadors Estate located at Ode-Omi Community, via Ibeju-Lekki, Lagos. Discounted Price ₦1.8M, Actual Price: ₦2.5M. Land Title: Freehold, Plot Size: 50 x 100 SQF (500SQM). Initial Deposit: ₦1M, Balance payable in 3 Months.',
+    features: ['Secure Perimeter Fencing', 'Good Road Network', 'Constant Power Supply', 'Portable Water System', 'Recreational & Green Areas'],
+    amenities: ['Close to Lekki-Epe Expressway', 'Commercial Areas', 'Educational Institutions', 'Healthcare Facilities'],
+    paymentPlans: ['Initial Deposit: ₦1,000,000', 'Balance within 3 months', 'Flexible Payment Options'],
+    media: ['/lovable-uploads/The_Ambassadors_Estate.jpg', '/lovable-uploads/The Ambassadors.jpg']
+  },
+  // Bridgefort Biz Hub - New Addition
+  {
+    id: 'bridgefort-biz-hub',
+    name: 'Bridgefort Biz Hub',
+    title: 'Bridgefort Biz Hub - Commercial Estate',
+    location: 'Ebute Okun, Ode-Omi, via Ibeju-Lekki',
+    price: '₦2,500,000',
+    actualPrice: 3000000,
+    prelaunchPrice: 2500000,
+    imageUrl: '/lovable-uploads/Bridgefort_Biz_Hub_-_Ode_Omi.jpg',
+    propertyType: 'Commercial Land',
+    property_category: 'land',
+    size: 500,
+    sqm: 500,
+    totalPlots: 150,
+    availablePlots: 120,
+    pricePerPlot: 2500000,
+    description: 'Bridgefort Biz Hub - Commercial Estate located at Ebute Okun, Ode-Omi, via Ibeju-Lekki. Discounted Price ₦2.5M, Actual Price: ₦3M. Land Title: Freehold, Plot Size: 50 x 100 SQF (500SQM). Initial Deposit: ₦1M, Balance payable in 3 Months.',
+    features: ['Gated Estate', 'Electricity & Streetlights', 'Well-Paved Roads & Drainage', 'Shopping Mall', 'Business Lounge', 'High-Speed Internet', 'Restaurant'],
+    amenities: ['Strategic Commercial Location', 'Close to Major Roads', 'Business Districts', 'Banking Facilities'],
+    paymentPlans: ['Initial Deposit: ₦1,000,000', 'Balance within 3 months', 'Flexible Payment Options'],
+    media: ['/lovable-uploads/Bridgefort_Biz_Hub_-_Ode_Omi.jpg']
   },
 ];
