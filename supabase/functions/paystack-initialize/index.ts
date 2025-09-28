@@ -66,7 +66,7 @@ serve(async (req) => {
 
       // Insert payment with user_id
       const paymentInsertResult = await supabase.from('payments').insert([{
-        order_id: metadata?.custom_fields?.find(cf => cf.variable_name === 'order_id')?.value,
+        order_id: metadata?.custom_fields?.find((cf: any) => cf.variable_name === 'order_id')?.value,
         paystack_reference: paystackData.data.reference,
         status: 'pending',
         amount: amount,
@@ -86,7 +86,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Edge function error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "An error occurred" }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

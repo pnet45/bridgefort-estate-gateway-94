@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 
@@ -9,6 +9,7 @@ interface PropertyDropdownProps {
 
 const PropertyDropdown = ({ className = '', onClick }: PropertyDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const propertyLinks = [
     { to: '/properties/estates', label: 'Estate Lands' },
@@ -16,13 +17,36 @@ const PropertyDropdown = ({ className = '', onClick }: PropertyDropdownProps) =>
     { to: '/properties/apartments', label: 'Apartments for Rent' }
   ];
 
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleLinkClick = () => {
+    setIsOpen(false);
+    onClick?.();
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div 
+      ref={dropdownRef}
       className="relative group"
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
     >
       <button
+        onClick={toggleDropdown}
         className={`nav-link font-bold animate-fade-in text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300 flex items-center gap-1 ${className}`}
         style={{
           animationDelay: '450ms',
@@ -47,7 +71,7 @@ const PropertyDropdown = ({ className = '', onClick }: PropertyDropdownProps) =>
                     : 'text-gray-700 hover:text-estate-blue hover:bg-gray-50'
                 } ${index === 0 ? 'rounded-t-md' : ''} ${index === propertyLinks.length - 1 ? 'rounded-b-md' : 'border-b border-gray-100'}`
               }
-              onClick={onClick}
+              onClick={handleLinkClick}
             >
               {link.label}
             </NavLink>

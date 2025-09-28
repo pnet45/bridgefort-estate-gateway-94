@@ -120,7 +120,7 @@ serve(async (req) => {
       })
     }
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "An error occurred" }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     })
