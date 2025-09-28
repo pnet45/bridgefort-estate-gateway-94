@@ -38,7 +38,7 @@ const Contact = () => {
                     <div>
                       <h3 className="text-lg font-semibold mb-1">Our Locations</h3>
                       <p className="text-gray-600 mb-2">Head Office | Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, VGC bus stop, Lekki-Ajah, Lagos</p>
-                      <p className="text-gray-600">Lagos | Suite 6 Gacoun Plaza Opposite K Close, 23 Road, Festac, Lagos</p>
+                      <p className="text-gray-600">Lagos | Suite 8 Gacoum Plaza Opposite K Close, 23 Road, Festac, Lagos</p>
                     </div>
                   </div>
 
