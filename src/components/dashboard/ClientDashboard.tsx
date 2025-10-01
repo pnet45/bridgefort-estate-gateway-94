@@ -85,12 +85,16 @@ const ClientDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 gap-1">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="properties">Properties</TabsTrigger>
-          <TabsTrigger value="documentation">Documentation</TabsTrigger>
+          <TabsTrigger value="documentation" className="text-xs md:text-sm">
+            Documentation
+          </TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="inspections">Inspections</TabsTrigger>
+          <TabsTrigger value="inspections" className="text-xs md:text-sm">
+            Inspections
+          </TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
           {canCreatePosts && <TabsTrigger value="blog">Blog Posts</TabsTrigger>}
         </TabsList>
