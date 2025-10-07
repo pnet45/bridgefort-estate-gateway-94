@@ -15,6 +15,7 @@ import HomeHeroImage from '@/components/HomeHeroImage';
 import YouTubeSection from '../components/home/YouTubeSection';
 import { PropertyProvider } from '../contexts/property';
 import MondayMotivationHero from '../components/home/MondayMotivationHero';
+import FeaturedAnnouncements from '../components/blog/FeaturedAnnouncements';
 
 const Home = () => {
   // Wrap all property-dependent sections with the provider for shared data (for search, FeaturedProperties, etc)
@@ -24,6 +25,9 @@ const Home = () => {
 
       {/* Hero Section with Static Image */}
       <HomeHeroImage />
+
+      {/* Featured Announcements */}
+      <FeaturedAnnouncements />
 
       {/* Property Provider wraps both search and featured! */}
       <PropertyProvider>

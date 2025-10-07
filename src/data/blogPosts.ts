@@ -1,6 +1,8 @@
 import { salesStrategyBlogPost } from './salesStrategyBlogPost';
+import { customerServiceWeekPost } from './customerServiceWeekPost';
 
 export const blogPosts = [
+  customerServiceWeekPost,
   salesStrategyBlogPost,
   {
     id: 'real-estate-investment-tips',

@@ -1,5 +1,13 @@
 import React from "react";
 const announcementItems = [{
+  title: "PWAN Bridgefort Celebrates Customer Service Week",
+  text: "Exciting value-driven activities from October 6-10, 2025! Join us as we celebrate service excellence with client appreciation visits, recognition events, and special goodwill gestures to our valued investors.",
+  img: "/lovable-uploads/Happy new week.png",
+  cta: {
+    label: "Read Full Press Release",
+    url: "/blog/customer-service-week-2025"
+  }
+}, {
   title: "Physical Allocation - Precious Gardens Estate Scheme 1",
   text: "Your plot has been successfully demarcated and ready for allocation! Allocation Day: Saturday, 20th September 2025 at 9:00 AM. Documents ready for pickup on the same day.",
   img: "/lovable-uploads/9979be2c-1112-4567-bbf9-d036d65b9a61.png",
