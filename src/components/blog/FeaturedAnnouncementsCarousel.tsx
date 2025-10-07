@@ -189,7 +189,7 @@ const FeaturedAnnouncementsCarousel = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 2) % announcementItems.length);
-    }, 5000); // Change slides every 5 seconds
+    }, 15000); // Change slides every 15 seconds
 
     return () => clearInterval(interval);
   }, []);
