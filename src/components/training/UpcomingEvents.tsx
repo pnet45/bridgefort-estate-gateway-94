@@ -5,7 +5,7 @@ import TrainingRegistrationForm from './TrainingRegistrationForm';
 const upcomingEvents = [{
   id: 1,
   title: "TRANSFORMATIONAL MASTERCLASS WITH DALVIN SILVA",
-  date: "29 August 2025",
+  date: "Saturday, 6th December 2025",
   time: "08:00am - 05:00pm",
   location: "PWAN Amazon Center Golden Destiny Hotel, 7 & 8 B/Stop, Airport Road by Tetrazinni, Ajao Estate, Isolo, Lagos",
   image: "/lovable-uploads/Dalvin-Silva-PhD.jpg",
@@ -15,7 +15,7 @@ const upcomingEvents = [{
 }, {
   id: 2,
   title: "Success Summit",
-  date: "May 12, 2025",
+  date: "Friday, 28th November 2025",
   time: "10:00 AM Prompt",
   location: "Autograph Event Center, Sanni Abacha Road, Port Harcourt, Rivers State",
   image: "/lovable-uploads/Summit1.jpg",
@@ -26,7 +26,7 @@ const upcomingEvents = [{
 }, {
   id: 3,
   title: "Customer Retention Bootcamp",
-  date: "June 20, 2025",
+  date: "Wednesday, 3rd December 2025",
   time: "10:00 AM - 3:00 PM",
   location: "PWAN Bridgefort Head Office, Lekki-Ajah, Lagos",
   image: "/lovable-uploads/pbo.png",

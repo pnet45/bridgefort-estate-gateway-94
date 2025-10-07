@@ -40,7 +40,7 @@ const TrainingContent = () => {
                 title="Property Portfolio Diversification"
                 description="Strategic approaches to building a diversified real estate investment portfolio."
                 image="/lovable-uploads/180e436c-ef89-4ab0-a2d1-e6271847b3e9.png"
-                date="February 3, 2025"
+                date="Friday, 14th November 2025"
                 duration="1 hour 45 min"
               />
               
@@ -58,7 +58,7 @@ const TrainingContent = () => {
                 title="Real Estate Investment Financing"
                 description="Explore various financing options and strategies for property acquisition."
                 image="/lovable-uploads/b006d931-462b-4646-97c9-0b2f3bc1d210.jpg"
-                date="January 10, 2025"
+                date="Tuesday, 2nd December 2025"
                 duration="2 hours"
               />
               
@@ -90,7 +90,7 @@ const TrainingContent = () => {
                 title="Effective Property Presentation"
                 description="Learn how to showcase properties to highlight their best features and attract buyers."
                 image="/lovable-uploads/de82d988-dda1-4526-8001-d88a34fd7090.png"
-                date="January 18, 2025"
+                date="Monday, 8th December 2025"
                 duration="55 min"
               />
               
@@ -108,7 +108,7 @@ const TrainingContent = () => {
                 title="Prospecting Techniques"
                 description="Strategies for identifying and approaching potential clients in the Nigerian market."
                 image="/lovable-uploads/180e436c-ef89-4ab0-a2d1-e6271847b3e9.png"
-                date="March 30, 2025"
+                date="Thursday, 20th November 2025"
                 duration="1 hour"
               />
               
@@ -158,7 +158,7 @@ const TrainingContent = () => {
                 title="Overcoming Sales Objections"
                 description="Strategies for addressing common client concerns and hesitations in real estate."
                 image="/lovable-uploads/de82d988-dda1-4526-8001-d88a34fd7090.png"
-                date="February 18, 2025"
+                date="Friday, 12th December 2025"
                 duration="2 hours"
               />
               
@@ -167,7 +167,7 @@ const TrainingContent = () => {
                 title="Closing Techniques for High-Value Properties"
                 description="Specialized approaches for finalizing premium real estate transactions."
                 image="/lovable-uploads/22de0a72-5f26-4e48-bf04-b3cb5999d519.png"
-                date="January 8, 2025"
+                date="Wednesday, 10th December 2025"
                 duration="1 hour 20 min"
               />
               
@@ -208,7 +208,7 @@ const TrainingContent = () => {
                 title="Client Relationship Management"
                 description="Building systems to maintain strong connections with past clients."
                 image="/lovable-uploads/22de0a72-5f26-4e48-bf04-b3cb5999d519.png"
-                date="May 15, 2025"
+                date="Thursday, 18th December 2025"
                 duration="1 hour 10 min"
               />
               
@@ -235,7 +235,7 @@ const TrainingContent = () => {
                 title="Long-term Investment Advisory"
                 description="Positioning yourself as a trusted advisor for clients' ongoing real estate needs."
                 image="/lovable-uploads/f4c5cb9d-d79d-419a-9577-444691d59b72.jpg"
-                date="April 10, 2025"
+                date="Monday, 1st December 2025"
                 duration="2 hours total"
               />
               
