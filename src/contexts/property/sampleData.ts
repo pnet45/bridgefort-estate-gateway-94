@@ -9,6 +9,71 @@ import luxuryDetachedAsaba from '@/assets/luxury-detached-asaba.jpg';
 import luxuryRentalOgun from '@/assets/luxury-rental-ogun.jpg';
 
 export const sampleProperties: Property[] = [
+  // LUXURY HOMES FOR SALE
+  // 5 Bedroom Luxury Detached - Lekki Phase 1
+  {
+    id: 'lekki-phase1-5bed-luxury',
+    name: '5 Bedroom Luxury Detached Duplex - Lekki Phase 1',
+    title: '5 BED | LEKKI PHASE 1 (RIGHT SIDE) | N820M & N900M (WITH POOL)',
+    location: 'Lekki Phase 1 (Right Side), Lagos',
+    price: '₦820,000,000',
+    actualPrice: 900000000,
+    pricePerPlot: 820000000,
+    imageUrl: '/lovable-uploads/IMG-20251003-WA0066.jpg',
+    propertyType: 'Detached House',
+    property_category: 'home',
+    size: 0,
+    sqm: 0,
+    totalPlots: 1,
+    availablePlots: 1,
+    bedrooms: 5,
+    bathrooms: 5,
+    is_for_sale: true,
+    is_for_rent: false,
+    description: 'Modern 5 bedroom fully detached duplex with en-suite rooms in the prestigious Lekki Phase 1 (Right Side). This luxury home features cinema room, fitted kitchen, family lounge, balcony, chandelier, walk-in closet, rooftop terrace, pantry, swimming pool, and one room boys quarter. Located in a gated and secured estate with Governor consent & Building approval.',
+    features: [
+      '5 Bedrooms with En-suite',
+      '5 Bathrooms',
+      'Cinema Room',
+      '1 Guest Toilet',
+      'Fitted Kitchen with Modern Appliances',
+      'Family Lounge',
+      'Balcony',
+      'Chandelier Lighting',
+      'Walk-in Closet',
+      'Rooftop Terrace',
+      'Pantry',
+      'Swimming Pool',
+      'One Room Boys Quarter',
+      'Gated and Secured Estate'
+    ],
+    amenities: [
+      'Governor Consent',
+      'Building Approval',
+      '24/7 Security',
+      'Gated Estate',
+      'Prime Lekki Location',
+      'Access to Major Roads'
+    ],
+    paymentPlans: [
+      'Base Price: ₦820,000,000',
+      'With Pool: ₦900,000,000',
+      'Flexible Payment Terms Available',
+      'Contact for More Information'
+    ],
+    media: [
+      '/lovable-uploads/IMG-20251003-WA0066.jpg',
+      '/lovable-uploads/IMG-20251003-WA0073.jpg',
+      '/lovable-uploads/IMG-20251003-WA0060.jpg',
+      '/lovable-uploads/IMG-20251003-WA0070.jpg',
+      '/lovable-uploads/IMG-20251003-WA0062.jpg',
+      '/lovable-uploads/IMG-20251003-WA0064.jpg',
+      '/lovable-uploads/IMG-20251003-WA0072.jpg',
+      '/lovable-uploads/IMG-20251003-WA0065.jpg',
+      '/lovable-uploads/IMG-20251003-WA0069.jpg',
+      '/lovable-uploads/IMG-20251004-WA0003.jpg'
+    ]
+  },
   // NEW FEATURED ESTATES - Latest Additions
   // Big League Haven 1 - New Addition
   {

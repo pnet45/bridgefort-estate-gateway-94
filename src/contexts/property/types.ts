@@ -25,6 +25,10 @@ export interface Property {
   paymentPlans?: string[]; // Added missing property
   monthlyRent?: number; // Added for rental properties
   annualRent?: number; // Added for rental properties
+  bedrooms?: number; // Added for home properties
+  bathrooms?: number; // Added for home properties
+  is_for_sale?: boolean; // Added for sale/rent status
+  is_for_rent?: boolean; // Added for sale/rent status
   // Legacy properties for backward compatibility
   price: string; // Made required instead of optional
   sqm: number; // Made required to fix TypeScript errors
