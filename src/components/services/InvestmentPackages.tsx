@@ -7,7 +7,7 @@ const InvestmentPackages = () => {
     title: 'Luxury Homes',
     description: 'Premium residential properties in sought-after locations with exceptional amenities and potential for appreciation.',
     icon: Home,
-    features: ['Premium locations in Lagos, Abuja, and Port Harcourt', 'High-quality construction and modern design', 'Excellent rental yield potential', 'Strong capital appreciation history', 'Flexible payment plans available'],
+    features: ['Premium locations in Lagos, Abuja, Asaba, and Port Harcourt', 'High-quality construction and modern design', 'Excellent rental yield potential', 'Strong capital appreciation history', 'Flexible payment plans available'],
     cta: 'Explore Luxury Homes'
   }, {
     title: 'Commercial Plots',
