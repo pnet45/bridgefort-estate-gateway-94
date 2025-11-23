@@ -1,6 +1,6 @@
-
 import React, { ReactNode } from 'react';
 import { CheckCircle } from 'lucide-react';
+import { motion } from "framer-motion";
 
 interface InfoBoxProps {
   icon: ReactNode;
@@ -22,7 +22,13 @@ const InfoBox = ({
   extraContent
 }: InfoBoxProps) => {
   return (
-    <div className="bg-white p-8 rounded-xl shadow-md">
+    <motion.div 
+      className="bg-white p-8 rounded-xl shadow-md"
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
       <div className="flex items-center mb-6">
         <div className="bg-estate-blue bg-opacity-10 p-3 rounded-full mr-4">
           {icon}
@@ -54,7 +60,7 @@ const InfoBox = ({
       </p>
       
       {extraContent}
-    </div>
+    </motion.div>
   );
 };
 

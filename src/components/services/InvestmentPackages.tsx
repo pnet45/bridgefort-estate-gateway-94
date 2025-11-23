@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle, Home, Building, Wallet } from 'lucide-react';
+import { motion } from "framer-motion";
 import BuyAndResellFeature from './Buy2SellFeature';
 const InvestmentPackages = () => {
   const investmentPackages = [{
@@ -33,7 +34,14 @@ const InvestmentPackages = () => {
         <BuyAndResellFeature />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {investmentPackages.map((pkg, index) => <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition duration-300">
+          {investmentPackages.map((pkg, index) => <motion.div 
+              key={index} 
+              className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition duration-300"
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
+            >
               <div className="p-6">
                 <div className="bg-estate-blue bg-opacity-10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-6">
                   <pkg.icon size={28} className="text-white" />
@@ -54,7 +62,7 @@ const InvestmentPackages = () => {
                   {pkg.cta}
                 </Link>
               </div>
-            </div>)}
+            </motion.div>)}
         </div>
       </div>
     </section>;

@@ -983,32 +983,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      count_users: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      delete_user_profile: {
-        Args: { user_id: number }
-        Returns: undefined
-      }
-      get_user_profile: {
-        Args:
-          | Record<PropertyKey, never>
-          | { p_user_id: string }
-          | { user_id: number }
-        Returns: {
-          email: string
-          first_name: string
-          id: number
-          last_name: string
-        }[]
-      }
-      has_role: {
-        Args: { _role: string; _user_id: string } | { role_name: string }
-        Returns: boolean
-      }
+      count_users: { Args: never; Returns: number }
+      delete_user_profile: { Args: { user_id: number }; Returns: undefined }
+      get_user_profile:
+        | {
+            Args: { p_user_id: string }
+            Returns: {
+              profile: Json
+            }[]
+          }
+        | { Args: never; Returns: undefined }
+        | {
+            Args: { user_id: number }
+            Returns: {
+              email: string
+              first_name: string
+              id: number
+              last_name: string
+            }[]
+          }
+      has_role:
+        | { Args: { role_name: string }; Returns: boolean }
+        | { Args: { _role: string; _user_id: string }; Returns: boolean }
       list_all_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           email: string
           first_name: string
