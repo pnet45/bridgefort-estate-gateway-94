@@ -23,9 +23,10 @@ const InfoBox = ({
 }: InfoBoxProps) => {
   return (
     <motion.div 
-      className="bg-white p-8 rounded-xl shadow-md"
+      className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300"
       initial={{ opacity: 0, scale: 0.95, y: 20 }}
       whileInView={{ opacity: 1, scale: 1, y: 0 }}
+      whileHover={{ y: -6, transition: { duration: 0.3 } }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >

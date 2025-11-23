@@ -36,9 +36,10 @@ const InvestmentPackages = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {investmentPackages.map((pkg, index) => <motion.div 
               key={index} 
-              className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition duration-300"
+              className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-2xl transition-shadow duration-300"
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
             >

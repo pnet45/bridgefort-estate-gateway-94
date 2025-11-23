@@ -26,10 +26,11 @@ const ServiceCard = ({
     <motion.div
       initial={{ opacity: 0, scale: 0.9, y: 30 }}
       whileInView={{ opacity: 1, scale: 1, y: 0 }}
+      whileHover={{ y: -8, transition: { duration: 0.3 } }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <Card className="overflow-hidden shadow-lg border-0">
+      <Card className="overflow-hidden shadow-lg border-0 hover:shadow-2xl transition-shadow duration-300">
       <div className="flex flex-col md:flex-row">
         <div className="md:w-2/5">
             <img 
