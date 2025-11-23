@@ -1,7 +1,7 @@
-
 import React, { ReactNode } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 interface ServiceCardProps {
   imageSrc: string;
@@ -23,7 +23,13 @@ const ServiceCard = ({
   buttonText
 }: ServiceCardProps) => {
   return (
-    <Card className="overflow-hidden shadow-lg border-0">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9, y: 30 }}
+      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <Card className="overflow-hidden shadow-lg border-0">
       <div className="flex flex-col md:flex-row">
         <div className="md:w-2/5">
             <img 
@@ -58,6 +64,7 @@ const ServiceCard = ({
         </div>
       </div>
     </Card>
+    </motion.div>
   );
 };
 
