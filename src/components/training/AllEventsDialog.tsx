@@ -5,15 +5,15 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Event {
-  id: number;
+  id: string;
   title: string;
   date: string;
   time: string;
   location: string;
-  image: string;
+  image: string | null;
   capacity: string;
   category: string;
-  description?: string;
+  description?: string | null;
   featured?: boolean;
 }
 
@@ -21,7 +21,7 @@ interface AllEventsDialogProps {
   open: boolean;
   onClose: () => void;
   events: Event[];
-  onRegister: (event: { id: number; title: string; date: string }) => void;
+  onRegister: (event: { id: string; title: string; date: string }) => void;
 }
 
 const AllEventsDialog = ({ open, onClose, events, onRegister }: AllEventsDialogProps) => {

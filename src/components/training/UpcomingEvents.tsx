@@ -1,59 +1,107 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import TrainingRegistrationForm from './TrainingRegistrationForm';
 import AllEventsDialog from './AllEventsDialog';
-const upcomingEvents = [{
-  id: 1,
-  title: "TRANSFORMATIONAL MASTERCLASS WITH DALVIN SILVA",
-  date: "Saturday, 6th December 2025",
-  time: "08:00am - 05:00pm",
-  location: "PWAN Amazon Center Golden Destiny Hotel, 7 & 8 B/Stop, Airport Road by Tetrazinni, Ajao Estate, Isolo, Lagos",
-  image: "/lovable-uploads/Dalvin-Silva-PhD.jpg",
-  capacity: "Limited to 50 participants",
-  category: "Masterclass",
-  featured: true
-}, {
-  id: 2,
-  title: "Success Summit",
-  date: "Friday, 28th November 2025",
-  time: "10:00 AM Prompt",
-  location: "Autograph Event Center, Sanni Abacha Road, Port Harcourt, Rivers State",
-  image: "/lovable-uploads/Summit1.jpg",
-  capacity: "FREE Admission - Food & Drinks available",
-  description: "Get ready for an unforgettable experience at the MAY 2025 SUCCESS SUMMIT — LIVE in Port Harcourt! Featuring Dr. Dalvin Silva, PhD, MD/CEO of PWAN Bridgefort, Dr. Julius Oyedemi, Acting Managing Director of PWAN Group, Dr. Michael Afamefuna Okonkwo, Executive Chairman of PWAN Group, and Jayne O. Onwumere, Founder/President of PWAN Group. Don't miss this life-changing opportunity to connect, learn, and grow with some of the most visionary minds in business and leadership.",
-  category: "Summit",
-  featured: true
-}, {
-  id: 3,
-  title: "Customer Retention Bootcamp",
-  date: "Wednesday, 3rd December 2025",
-  time: "10:00 AM - 3:00 PM",
-  location: "PWAN Bridgefort Head Office, Lekki-Ajah, Lagos",
-  image: "/lovable-uploads/pbo.png",
-  capacity: "Limited to 20 participants",
-  category: "Retention",
-  featured: false
-}];
-export const getUpcomingEvents = () => upcomingEvents;
-export const getFeaturedEvent = () => upcomingEvents.find(event => event.featured) || upcomingEvents[0];
+import { supabase } from '@/integrations/supabase/client';
+
+interface TrainingEvent {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  image: string | null;
+  capacity: string;
+  category: string;
+  description?: string | null;
+  featured: boolean;
+}
+
+export const getUpcomingEvents = async (): Promise<TrainingEvent[]> => {
+  const { data, error } = await supabase
+    .from('training_events')
+    .select('*')
+    .order('date', { ascending: true });
+  
+  if (error) {
+    console.error('Error fetching events:', error);
+    return [];
+  }
+  
+  return data || [];
+};
+
+export const getFeaturedEvent = async (): Promise<TrainingEvent | null> => {
+  const { data, error } = await supabase
+    .from('training_events')
+    .select('*')
+    .eq('featured', true)
+    .order('date', { ascending: true })
+    .limit(1)
+    .single();
+  
+  if (error || !data) {
+    const events = await getUpcomingEvents();
+    return events[0] || null;
+  }
+  
+  return data;
+};
 const UpcomingEvents = () => {
+  const [upcomingEvents, setUpcomingEvents] = useState<TrainingEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   const [registrationEvent, setRegistrationEvent] = useState<null | {
-    id: number;
+    id: string;
     title: string;
     date: string;
   }>(null);
   const [showAllEvents, setShowAllEvents] = useState(false);
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    const events = await getUpcomingEvents();
+    setUpcomingEvents(events);
+    setLoading(false);
+  };
+
   const openRegistration = (event: {
-    id: number;
+    id: string;
     title: string;
     date: string;
   }) => {
     setRegistrationEvent(event);
   };
+
   const closeRegistration = () => {
     setRegistrationEvent(null);
   };
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="container-custom">
+          <div className="text-center">Loading events...</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (upcomingEvents.length === 0) {
+    return (
+      <section className="py-16 bg-gray-50">
+        <div className="container-custom">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold mb-4">Upcoming Events</h2>
+            <p className="text-gray-600">No upcoming events at this time.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
   return <section className="py-16 bg-gray-50">
       <div className="container-custom">
         <div className="text-center mb-10">
@@ -66,7 +114,7 @@ const UpcomingEvents = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {upcomingEvents.map(event => <Card key={event.id} className="overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border-0">
               <div className="relative">
-                <img src={event.image} alt={event.title} className="w-full h-60 object-cover object-center" />
+                <img src={event.image || '/lovable-uploads/pbo.png'} alt={event.title} className="w-full h-60 object-cover object-center" />
                 <div className="absolute top-3 left-3 bg-estate-blue text-white text-xs uppercase font-bold py-1 px-2 rounded">
                   {event.category}
                 </div>

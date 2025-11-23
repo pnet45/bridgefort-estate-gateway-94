@@ -861,6 +861,51 @@ export type Database = {
         }
         Relationships: []
       }
+      training_events: {
+        Row: {
+          capacity: string
+          category: string
+          created_at: string | null
+          date: string
+          description: string | null
+          featured: boolean | null
+          id: string
+          image: string | null
+          location: string
+          time: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          capacity: string
+          category?: string
+          created_at?: string | null
+          date: string
+          description?: string | null
+          featured?: boolean | null
+          id?: string
+          image?: string | null
+          location: string
+          time: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          capacity?: string
+          category?: string
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          featured?: boolean | null
+          id?: string
+          image?: string | null
+          location?: string
+          time?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       training_registrations: {
         Row: {
           address: string | null

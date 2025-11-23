@@ -8,6 +8,7 @@ import InspectionsTab from './tabs/InspectionsTab';
 import DocumentationPricingTab from './DocumentationPricingTab';
 import MyPaymentsSection from './MyPaymentsSection';
 import BlogPostsTab from './BlogPostsTab';
+import TrainingEventsTab from './TrainingEventsTab';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -85,7 +86,7 @@ const ClientDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 gap-1">
+        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-3 md:grid-cols-8' : canCreatePosts ? 'grid-cols-3 md:grid-cols-7' : 'grid-cols-3 md:grid-cols-6'} gap-1`}>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="properties">Properties</TabsTrigger>
           <TabsTrigger value="documentation" className="text-xs md:text-sm">
@@ -97,6 +98,7 @@ const ClientDashboard = () => {
           </TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
           {canCreatePosts && <TabsTrigger value="blog">Blog Posts</TabsTrigger>}
+          {isAdmin && <TabsTrigger value="training">Training</TabsTrigger>}
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -133,6 +135,12 @@ const ClientDashboard = () => {
               onEditPost={handleEditPost}
               onDeleteClick={handleDeleteClick}
             />
+          </TabsContent>
+        )}
+
+        {isAdmin && (
+          <TabsContent value="training" className="space-y-6">
+            <TrainingEventsTab />
           </TabsContent>
         )}
       </Tabs>

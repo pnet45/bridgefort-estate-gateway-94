@@ -1,16 +1,39 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getFeaturedEvent } from './UpcomingEvents';
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TrainingRegistrationForm from './TrainingRegistrationForm';
 
+interface TrainingEvent {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  image: string | null;
+  capacity: string;
+  description?: string | null;
+}
+
 const FeaturedTraining = () => {
-  const featuredEvent = getFeaturedEvent();
+  const [featuredEvent, setFeaturedEvent] = useState<TrainingEvent | null>(null);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchEvent = async () => {
+      const event = await getFeaturedEvent();
+      setFeaturedEvent(event);
+    };
+    fetchEvent();
+  }, []);
 
   const openRegistration = () => setIsRegistrationOpen(true);
   const closeRegistration = () => setIsRegistrationOpen(false);
+
+  if (!featuredEvent) {
+    return null;
+  }
 
   return (
     <section className="py-16 bg-white">
@@ -25,7 +48,7 @@ const FeaturedTraining = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="relative">
             <img 
-              src={featuredEvent.image} 
+              src={featuredEvent.image || '/lovable-uploads/pbo.png'} 
               alt={featuredEvent.title} 
               className="w-full h-auto rounded-lg shadow-lg" 
             />
