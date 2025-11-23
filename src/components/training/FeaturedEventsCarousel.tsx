@@ -4,16 +4,38 @@ import { getUpcomingEvents } from './UpcomingEvents';
 import TrainingRegistrationForm from './TrainingRegistrationForm';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
+
+interface TrainingEvent {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  image: string | null;
+  capacity: string;
+  category: string;
+  featured?: boolean;
+}
+
 const FeaturedEventsCarousel = () => {
-  const featuredEvents = getUpcomingEvents().filter(event => event.featured);
+  const [featuredEvents, setFeaturedEvents] = useState<TrainingEvent[]>([]);
   const [registrationEvent, setRegistrationEvent] = useState<null | {
-    id: number;
+    id: string;
     title: string;
     date: string;
   }>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const events = await getUpcomingEvents();
+      setFeaturedEvents(events.filter(event => event.featured));
+    };
+    fetchEvents();
+  }, []);
+
   const openRegistration = (event: {
-    id: number;
+    id: string;
     title: string;
     date: string;
   }) => {
@@ -55,7 +77,7 @@ const FeaturedEventsCarousel = () => {
               {featuredEvents.map(event => <CarouselItem key={event.id} className="basis-full">
                   <Card className="overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border-0 h-full">
                     <div className="relative">
-                      <img src={event.image} alt={event.title} className="w-full h-72 object-center object-contain" />
+                      <img src={event.image || '/lovable-uploads/pbo.png'} alt={event.title} className="w-full h-72 object-center object-contain" />
                       <div className="absolute top-3 left-3 bg-estate-blue text-white text-xs uppercase font-bold py-1 px-2 rounded">
                         {event.category}
                       </div>

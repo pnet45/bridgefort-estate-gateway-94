@@ -11,13 +11,33 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 
+interface TrainingEvent {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  image: string | null;
+  capacity: string;
+  description?: string | null;
+  featured?: boolean;
+}
+
 const SeminarAndTraining = () => {
-  const featuredEvents = getUpcomingEvents().filter(event => event.featured);
+  const [featuredEvents, setFeaturedEvents] = useState<TrainingEvent[]>([]);
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
-  const [registrationEvent, setRegistrationEvent] = useState<null | {id: number; title: string; date: string}>(null);
+  const [registrationEvent, setRegistrationEvent] = useState<null | {id: string; title: string; date: string}>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const openRegistration = (event: {id: number; title: string; date: string}) => {
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const events = await getUpcomingEvents();
+      setFeaturedEvents(events.filter(event => event.featured));
+    };
+    fetchEvents();
+  }, []);
+
+  const openRegistration = (event: {id: string; title: string; date: string}) => {
     setRegistrationEvent(event);
     setIsRegistrationOpen(true);
   };
@@ -65,7 +85,7 @@ const SeminarAndTraining = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2">
                         <div className="relative">
                           <img 
-                            src={event.image} 
+                            src={event.image || '/lovable-uploads/pbo.png'} 
                             alt={event.title} 
                             className="w-full h-full object-cover object-center"
                           />
@@ -122,7 +142,7 @@ const SeminarAndTraining = () => {
             <div className="grid grid-cols-1 md:grid-cols-2">
               <div className="relative">
                 <img 
-                  src={featuredEvents[0].image} 
+                  src={featuredEvents[0].image || '/lovable-uploads/pbo.png'} 
                   alt={featuredEvents[0].title} 
                   className="w-full h-full object-cover object-center"
                 />
