@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import TrainingRegistrationForm from './TrainingRegistrationForm';
+import AllEventsDialog from './AllEventsDialog';
 const upcomingEvents = [{
   id: 1,
   title: "TRANSFORMATIONAL MASTERCLASS WITH DALVIN SILVA",
@@ -42,6 +43,7 @@ const UpcomingEvents = () => {
     title: string;
     date: string;
   }>(null);
+  const [showAllEvents, setShowAllEvents] = useState(false);
   const openRegistration = (event: {
     id: number;
     title: string;
@@ -110,12 +112,23 @@ const UpcomingEvents = () => {
         </div>
         
         <div className="text-center mt-10">
-          <button className="btn-primary">
+          <button 
+            className="btn-primary"
+            onClick={() => setShowAllEvents(true)}
+          >
             View All Events
           </button>
         </div>
       </div>
       
+      {/* All Events Dialog */}
+      <AllEventsDialog 
+        open={showAllEvents}
+        onClose={() => setShowAllEvents(false)}
+        events={upcomingEvents}
+        onRegister={openRegistration}
+      />
+
       {/* Training Registration Form */}
       {registrationEvent && <TrainingRegistrationForm open={!!registrationEvent} onClose={closeRegistration} eventTitle={registrationEvent.title} eventDate={registrationEvent.date} />}
     </section>;
