@@ -50,6 +50,7 @@ export const getFeaturedEvent = async (): Promise<TrainingEvent | null> => {
 };
 const UpcomingEvents = () => {
   const [upcomingEvents, setUpcomingEvents] = useState<TrainingEvent[]>([]);
+  const [pastEvents, setPastEvents] = useState<TrainingEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [registrationEvent, setRegistrationEvent] = useState<null | {
     id: string;
@@ -64,7 +65,14 @@ const UpcomingEvents = () => {
 
   const fetchEvents = async () => {
     const events = await getUpcomingEvents();
-    setUpcomingEvents(events);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const upcoming = events.filter(event => new Date(event.date) >= today);
+    const past = events.filter(event => new Date(event.date) < today);
+    
+    setUpcomingEvents(upcoming);
+    setPastEvents(past);
     setLoading(false);
   };
 
@@ -90,86 +98,105 @@ const UpcomingEvents = () => {
     );
   }
 
-  if (upcomingEvents.length === 0) {
-    return (
-      <section className="py-16 bg-gray-50">
-        <div className="container-custom">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold mb-4">Upcoming Events</h2>
-            <p className="text-gray-600">No upcoming events at this time.</p>
+  const renderEventCard = (event: TrainingEvent, isPast: boolean) => (
+    <Card key={event.id} className="overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border-0">
+      <div className="relative">
+        <img src={event.image || '/lovable-uploads/pbo.png'} alt={event.title} className="w-full h-60 object-cover object-center" />
+        <div className="absolute top-3 left-3 bg-estate-blue text-white text-xs uppercase font-bold py-1 px-2 rounded">
+          {event.category}
+        </div>
+        {event.featured && <div className="absolute top-3 right-3 bg-estate-red text-white text-xs uppercase font-bold py-1 px-2 rounded">
+            Featured
+          </div>}
+      </div>
+      
+      <CardContent className="p-6">
+        <h3 className="text-xl font-semibold mb-3">{event.title}</h3>
+        
+        <div className="space-y-3 mb-5">
+          <div className="flex items-center text-gray-600">
+            <Calendar size={18} className="mr-3 text-estate-blue" />
+            <span>{event.date}</span>
+          </div>
+          
+          <div className="flex items-center text-gray-600">
+            <Clock size={18} className="mr-3 text-estate-blue" />
+            <span>{event.time}</span>
+          </div>
+          
+          <div className="flex items-center text-gray-600">
+            <MapPin size={18} className="mr-3 text-estate-blue" />
+            <span>{event.location}</span>
+          </div>
+          
+          <div className="flex items-center text-gray-600">
+            <Users size={18} className="mr-3 text-estate-blue" />
+            <span>{event.capacity}</span>
           </div>
         </div>
-      </section>
-    );
-  }
+        
+        {isPast ? (
+          <button 
+            className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded transition duration-300"
+            onClick={() => setShowAllEvents(true)}
+          >
+            View Events
+          </button>
+        ) : (
+          <button 
+            className="w-full bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition duration-300" 
+            onClick={() => openRegistration({
+              id: event.id,
+              title: event.title,
+              date: event.date
+            })}
+          >
+            Register Now
+          </button>
+        )}
+      </CardContent>
+    </Card>
+  );
   return <section className="py-16 bg-gray-50">
       <div className="container-custom">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold mb-4">Upcoming Events</h2>
-          <p className="text-gray-600 max-w-3xl mx-auto">
-            Join our in-person training events for hands-on learning and networking opportunities with industry experts.
-          </p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {upcomingEvents.map(event => <Card key={event.id} className="overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border-0">
-              <div className="relative">
-                <img src={event.image || '/lovable-uploads/pbo.png'} alt={event.title} className="w-full h-60 object-cover object-center" />
-                <div className="absolute top-3 left-3 bg-estate-blue text-white text-xs uppercase font-bold py-1 px-2 rounded">
-                  {event.category}
-                </div>
-                {event.featured && <div className="absolute top-3 right-3 bg-estate-red text-white text-xs uppercase font-bold py-1 px-2 rounded">
-                    Featured
-                  </div>}
-              </div>
-              
-              <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-3">{event.title}</h3>
-                
-                <div className="space-y-3 mb-5">
-                  <div className="flex items-center text-gray-600">
-                    <Calendar size={18} className="mr-3 text-estate-blue" />
-                    <span>{event.date}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <Clock size={18} className="mr-3 text-estate-blue" />
-                    <span>{event.time}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <MapPin size={18} className="mr-3 text-estate-blue" />
-                    <span>{event.location}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-600">
-                    <Users size={18} className="mr-3 text-estate-blue" />
-                    <span>{event.capacity}</span>
-                  </div>
-                </div>
-                
-                {new Date(event.date) < new Date() ? (
-                  <button 
-                    className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded transition duration-300"
-                    onClick={() => setShowAllEvents(true)}
-                  >
-                    View Events
-                  </button>
-                ) : (
-                  <button 
-                    className="w-full bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition duration-300" 
-                    onClick={() => openRegistration({
-                      id: event.id,
-                      title: event.title,
-                      date: event.date
-                    })}
-                  >
-                    Register Now
-                  </button>
-                )}
-              </CardContent>
-            </Card>)}
-        </div>
+        {/* Upcoming Events Section */}
+        {upcomingEvents.length > 0 && (
+          <>
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold mb-4">Upcoming Events</h2>
+              <p className="text-gray-600 max-w-3xl mx-auto">
+                Join our in-person training events for hands-on learning and networking opportunities with industry experts.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+              {upcomingEvents.map(event => renderEventCard(event, false))}
+            </div>
+          </>
+        )}
+
+        {/* Past Events Section */}
+        {pastEvents.length > 0 && (
+          <>
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold mb-4">Past Events</h2>
+              <p className="text-gray-600 max-w-3xl mx-auto">
+                Review our previous training events and see what we've accomplished together.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {pastEvents.map(event => renderEventCard(event, true))}
+            </div>
+          </>
+        )}
+
+        {upcomingEvents.length === 0 && pastEvents.length === 0 && (
+          <div className="text-center">
+            <h2 className="text-3xl font-bold mb-4">Training Events</h2>
+            <p className="text-gray-600">No events available at this time.</p>
+          </div>
+        )}
         
         <div className="text-center mt-10">
           <button 
@@ -185,7 +212,7 @@ const UpcomingEvents = () => {
       <AllEventsDialog 
         open={showAllEvents}
         onClose={() => setShowAllEvents(false)}
-        events={upcomingEvents}
+        events={[...upcomingEvents, ...pastEvents]}
         onRegister={openRegistration}
       />
 
