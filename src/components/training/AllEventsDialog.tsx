@@ -132,20 +132,29 @@ const AllEventsDialog = ({ open, onClose, events, onRegister }: AllEventsDialogP
                         )}
                       </div>
 
-                      {/* Register Button */}
-                      <button
-                        onClick={() => {
-                          onRegister({
-                            id: event.id,
-                            title: event.title,
-                            date: event.date
-                          });
-                          onClose();
-                        }}
-                        className="w-full bg-estate-red hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 shadow-lg"
-                      >
-                        Register Now
-                      </button>
+                      {/* Register/View Events Button */}
+                      {new Date(event.date) < new Date() ? (
+                        <button
+                          onClick={onClose}
+                          className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 shadow-lg"
+                        >
+                          Past Event
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            onRegister({
+                              id: event.id,
+                              title: event.title,
+                              date: event.date
+                            });
+                            onClose();
+                          }}
+                          className="w-full bg-estate-red hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 shadow-lg"
+                        >
+                          Register Now
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 </div>
