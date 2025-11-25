@@ -5,3 +5,5 @@ project_id = "default"
 [functions.paystack-verify]
 [functions.generate-blog-article]
 verify_jwt = false
+[functions.send-training-reminder]
+verify_jwt = false

@@ -111,13 +111,24 @@ const FeaturedEventsCarousel = () => {
                         </div>
                       </div>
                       
-                      <button className="w-full bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition duration-300" onClick={() => openRegistration({
-                    id: event.id,
-                    title: event.title,
-                    date: event.date
-                  })}>
-                        Register Now
-                      </button>
+                      {new Date(event.date) < new Date() ? (
+                        <button 
+                          className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded transition duration-300"
+                        >
+                          Past Event
+                        </button>
+                      ) : (
+                        <button 
+                          className="w-full bg-estate-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition duration-300" 
+                          onClick={() => openRegistration({
+                            id: event.id,
+                            title: event.title,
+                            date: event.date
+                          })}
+                        >
+                          Register Now
+                        </button>
+                      )}
                     </CardContent>
                   </Card>
                 </CarouselItem>)}
