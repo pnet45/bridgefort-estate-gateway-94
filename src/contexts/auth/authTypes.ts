@@ -37,4 +37,5 @@ export interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error: any }>;
   updatePassword: (password: string) => Promise<{ error: any }>;
   refreshProfile: () => Promise<void>;
+  signInWithGoogle: () => Promise<{ error: any }>;
 }
