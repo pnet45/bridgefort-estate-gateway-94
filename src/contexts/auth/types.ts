@@ -8,7 +8,7 @@ export interface AuthContextType {
   profile: UserProfile | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: any; data?: any }>;
   signInWithGoogle: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;

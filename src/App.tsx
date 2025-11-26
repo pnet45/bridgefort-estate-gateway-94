@@ -51,7 +51,7 @@ function App() {
         <AuthProvider>
           <EcommerceProvider>
             <ScrollToTop />
-            <div className="App">
+            <div className="App" style={{ transform: 'scale(0.9)', transformOrigin: 'top center', minHeight: '111.11vh' }}>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/home" element={<Home />} />

@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/toaster";
 import FeaturedEventsCarousel from '../components/training/FeaturedEventsCarousel';
 import SuccessSummit from '../components/training/SuccessSummit';
 import UpcomingTrainingEvents from '../components/training/UpcomingTrainingEvents';
+import TrainingCalendar from '../components/training/TrainingCalendar';
 
 const Training = () => {
   return (
@@ -22,6 +23,9 @@ const Training = () => {
       
       {/* Hero Section */}
       <TrainingHero />
+
+      {/* Calendar View */}
+      <TrainingCalendar />
 
       {/* Success Summit Section */}
       <SuccessSummit />
