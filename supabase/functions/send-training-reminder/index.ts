@@ -80,42 +80,106 @@ Deno.serve(async (req) => {
 
       console.log(`Found ${registrations.length} registration(s) for ${event.title}`);
 
-      // TODO: Integrate with your email service (Resend, SendGrid, etc.)
-      // For now, we'll just log the reminders that would be sent
+      // Send email reminders using Resend
+      const resendApiKey = Deno.env.get('RESEND_API_KEY');
+      
       for (const registration of registrations) {
-        console.log(`Would send reminder to: ${registration.email} for event: ${event.title}`);
+        console.log(`Sending reminder to: ${registration.email} for event: ${event.title}`);
         
-        // Example email structure (uncomment and configure when email service is ready):
-        /*
-        const emailResponse = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${Deno.env.get('RESEND_API_KEY')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'Training <training@yourdomain.com>',
-            to: [registration.email],
-            subject: `Reminder: ${event.title} Tomorrow!`,
-            html: `
-              <h1>Training Event Reminder</h1>
-              <p>Hi ${registration.name},</p>
-              <p>This is a friendly reminder that you're registered for:</p>
-              <h2>${event.title}</h2>
-              <p><strong>Date:</strong> ${event.date}</p>
-              <p><strong>Time:</strong> ${event.time}</p>
-              <p><strong>Location:</strong> ${event.location}</p>
-              <p>We look forward to seeing you there!</p>
-            `,
-          }),
-        });
-
-        if (!emailResponse.ok) {
-          console.error('Failed to send email to:', registration.email);
+        if (!resendApiKey) {
+          console.error('RESEND_API_KEY not configured');
+          continue;
         }
-        */
 
-        totalRemindersSent++;
+        try {
+          const emailResponse = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'PWAN Bridgefort Training <training@pwanbridgefort.ng>',
+              to: [registration.email],
+              subject: `Reminder: ${event.title} Tomorrow!`,
+              html: `
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <style>
+                      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                      .header { background: linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                      .content { background: #fff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
+                      .event-details { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                      .detail-row { display: flex; margin: 10px 0; }
+                      .detail-label { font-weight: bold; min-width: 100px; color: #1e3a8a; }
+                      .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
+                      .button { display: inline-block; background: #dc2626; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    </style>
+                  </head>
+                  <body>
+                    <div class="container">
+                      <div class="header">
+                        <h1>🎯 Training Event Reminder</h1>
+                      </div>
+                      <div class="content">
+                        <p>Hi ${registration.name},</p>
+                        <p>This is a friendly reminder that you're registered for an exciting training event tomorrow!</p>
+                        
+                        <div class="event-details">
+                          <h2 style="color: #1e3a8a; margin-top: 0;">${event.title}</h2>
+                          <div class="detail-row">
+                            <span class="detail-label">📅 Date:</span>
+                            <span>${new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                          </div>
+                          <div class="detail-row">
+                            <span class="detail-label">🕐 Time:</span>
+                            <span>${event.time}</span>
+                          </div>
+                          <div class="detail-row">
+                            <span class="detail-label">📍 Location:</span>
+                            <span>${event.location}</span>
+                          </div>
+                        </div>
+
+                        <p><strong>What to bring:</strong></p>
+                        <ul>
+                          <li>Notepad and pen for taking notes</li>
+                          <li>Your registration confirmation (this email)</li>
+                          <li>An open mind ready to learn!</li>
+                        </ul>
+
+                        <p>We're looking forward to seeing you there!</p>
+                        
+                        <p style="margin-top: 30px;">
+                          <strong>Questions?</strong><br>
+                          Contact us at: <a href="tel:+2348030624059">+234 803 062 4059</a><br>
+                          Email: <a href="mailto:training@pwanbridgefort.ng">training@pwanbridgefort.ng</a>
+                        </p>
+                      </div>
+                      <div class="footer">
+                        <p><strong>PWAN Bridgefort</strong><br>
+                        ...Rebuilding the Future<br>
+                        <a href="https://www.pwanbridgefort.ng">www.pwanbridgefort.ng</a></p>
+                      </div>
+                    </div>
+                  </body>
+                </html>
+              `,
+            }),
+          });
+
+          if (!emailResponse.ok) {
+            const errorText = await emailResponse.text();
+            console.error(`Failed to send email to ${registration.email}:`, errorText);
+          } else {
+            console.log(`Successfully sent reminder to ${registration.email}`);
+            totalRemindersSent++;
+          }
+        } catch (emailError) {
+          console.error(`Error sending email to ${registration.email}:`, emailError);
+        }
       }
     }
 
