@@ -1,13 +1,34 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Users, Calendar, Clock } from 'lucide-react';
 import CenterTrainingBookingForm from './CenterTrainingBookingForm';
 import TrainingImageCarousel from './TrainingImageCarousel';
+import { supabase } from '@/integrations/supabase/client';
 
 const CenterTrainingSection = () => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [trainingImages, setTrainingImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchTrainingImages = async () => {
+      const { data, error } = await supabase
+        .from('training_events')
+        .select('image')
+        .not('image', 'is', null)
+        .order('date', { ascending: false });
+
+      if (data && !error) {
+        const images = data
+          .map(event => event.image)
+          .filter((img): img is string => img !== null);
+        setTrainingImages(images);
+      }
+    };
+
+    fetchTrainingImages();
+  }, []);
 
   return (
     <section className="py-16 bg-white">
@@ -55,14 +76,7 @@ const CenterTrainingSection = () => {
 
           <div className="relative">
             <TrainingImageCarousel 
-              images={[
-                "/lovable-uploads/pbo1.jpg",
-                "/lovable-uploads/pbo.png",
-                "/lovable-uploads/Dalvin-Silva-PhD.jpg",
-                "/lovable-uploads/Happy new week.png",
-                "/lovable-uploads/Summit1.jpg",
-                "/lovable-uploads/rise-and-grind-real-estae-waits-for-no-1.png"
-              ]}
+              images={trainingImages}
               className="rounded-lg shadow-lg w-full h-80"
             />
             <div className="absolute inset-0 bg-estate-blue bg-opacity-20 rounded-lg"></div>
