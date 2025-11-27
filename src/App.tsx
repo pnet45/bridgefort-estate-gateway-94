@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/auth';
 import { EcommerceProvider } from '@/contexts/ecommerce';
 import PrivateRoute from '@/components/PrivateRoute';
 import ScrollToTop from '@/components/ScrollToTop';
+import ScrollToTopButton from '@/components/ScrollToTopButton';
 import FloatingMessageButton from '@/components/FloatingMessageButton';
 import CartSidebar from '@/components/ecommerce/CartSidebar';
 import WhatsAppChat from "@/components/WhatsAppChat";
@@ -106,6 +107,7 @@ function App() {
               <FloatingMessageButton />
               <CartSidebar />
               <WhatsAppChat /> {/* Make WhatsApp icon global */}
+              <ScrollToTopButton />
             </div>
           </EcommerceProvider>
         </AuthProvider>
