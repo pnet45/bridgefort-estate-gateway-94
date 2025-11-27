@@ -17,6 +17,7 @@ interface TrainingEventCardProps {
   phone?: string;
   email?: string;
   website?: string;
+  category?: string;
 }
 
 const TrainingEventCard = ({
@@ -31,7 +32,8 @@ const TrainingEventCard = ({
   duration,
   phone,
   email,
-  website
+  website,
+  category
 }: TrainingEventCardProps) => {
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
@@ -39,7 +41,14 @@ const TrainingEventCard = ({
     <>
       <Card className="hover:shadow-lg transition-shadow h-full">
         <CardHeader>
-          <CardTitle className="text-estate-blue text-lg leading-tight">{title}</CardTitle>
+          <div className="flex justify-between items-start gap-2">
+            <CardTitle className="text-estate-blue text-lg leading-tight">{title}</CardTitle>
+            {category && (
+              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full whitespace-nowrap">
+                {category}
+              </span>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

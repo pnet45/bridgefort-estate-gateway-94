@@ -810,6 +810,63 @@ export type Database = {
         }
         Relationships: []
       }
+      training_attendance: {
+        Row: {
+          attendance_date: string | null
+          attended: boolean | null
+          certificate_issued: boolean | null
+          certificate_issued_at: string | null
+          completed: boolean | null
+          created_at: string | null
+          event_id: string | null
+          id: string
+          registration_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attendance_date?: string | null
+          attended?: boolean | null
+          certificate_issued?: boolean | null
+          certificate_issued_at?: string | null
+          completed?: boolean | null
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          registration_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attendance_date?: string | null
+          attended?: boolean | null
+          certificate_issued?: boolean | null
+          certificate_issued_at?: string | null
+          completed?: boolean | null
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          registration_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_attendance_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "training_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_attendance_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "training_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_events: {
         Row: {
           capacity: string
