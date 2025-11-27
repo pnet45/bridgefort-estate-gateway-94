@@ -323,57 +323,6 @@ export type Database = {
         }
         Relationships: []
       }
-      Estate: {
-        Row: {
-          ActualPrice: number | null
-          created_at: string
-          Description: string | null
-          EstateName: string | null
-          id: number
-          Location: string | null
-          Media: string[] | null
-          Phase: number | null
-          PreLaunchPrice: number | null
-          PromoPrice: number | null
-          Scheme: number | null
-          size: number | null
-          Tittle: string | null
-          Type: string | null
-        }
-        Insert: {
-          ActualPrice?: number | null
-          created_at?: string
-          Description?: string | null
-          EstateName?: string | null
-          id?: number
-          Location?: string | null
-          Media?: string[] | null
-          Phase?: number | null
-          PreLaunchPrice?: number | null
-          PromoPrice?: number | null
-          Scheme?: number | null
-          size?: number | null
-          Tittle?: string | null
-          Type?: string | null
-        }
-        Update: {
-          ActualPrice?: number | null
-          created_at?: string
-          Description?: string | null
-          EstateName?: string | null
-          id?: number
-          Location?: string | null
-          Media?: string[] | null
-          Phase?: number | null
-          PreLaunchPrice?: number | null
-          PromoPrice?: number | null
-          Scheme?: number | null
-          size?: number | null
-          Tittle?: string | null
-          Type?: string | null
-        }
-        Relationships: []
-      }
       estate_documentation_payments: {
         Row: {
           amount: number
@@ -1037,7 +986,6 @@ export type Database = {
               profile: Json
             }[]
           }
-        | { Args: never; Returns: undefined }
         | {
             Args: { user_id: number }
             Returns: {
@@ -1047,6 +995,7 @@ export type Database = {
               last_name: string
             }[]
           }
+        | { Args: never; Returns: undefined }
       has_role:
         | { Args: { role_name: string }; Returns: boolean }
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
