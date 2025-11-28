@@ -29,14 +29,39 @@ const UpcomingTrainingEvents = () => {
   }, []);
 
   useEffect(() => {
+    // Set up real-time subscription for training events
+    const channel = supabase
+      .channel('training_events_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'training_events',
+        },
+        () => {
+          fetchEvents();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
     applyFilters();
   }, [events, selectedCategory, startDate, endDate]);
 
   const fetchEvents = async () => {
     try {
+      const today = new Date().toISOString().split('T')[0];
+      
       const { data, error } = await supabase
         .from('training_events')
         .select('*')
+        .gte('date', today)
         .order('date', { ascending: true });
 
       if (error) throw error;
@@ -106,6 +131,7 @@ const UpcomingTrainingEvents = () => {
             {filteredEvents.map((event) => (
               <TrainingEventCard
                 key={event.id}
+                eventId={event.id}
                 title={event.title}
                 description={event.description || ''}
                 date={new Date(event.date).toLocaleDateString('en-US', {
@@ -118,6 +144,7 @@ const UpcomingTrainingEvents = () => {
                 venue={event.location}
                 capacity={event.capacity}
                 category={event.category}
+                isPastEvent={false}
               />
             ))}
           </div>

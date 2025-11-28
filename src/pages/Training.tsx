@@ -15,6 +15,7 @@ import FeaturedEventsCarousel from '../components/training/FeaturedEventsCarouse
 import SuccessSummit from '../components/training/SuccessSummit';
 import UpcomingTrainingEvents from '../components/training/UpcomingTrainingEvents';
 import TrainingCalendar from '../components/training/TrainingCalendar';
+import PastEventsSection from '../components/training/PastEventsSection';
 
 const Training = () => {
   return (
@@ -41,6 +42,9 @@ const Training = () => {
 
       {/* Upcoming Training Events */}
       <UpcomingTrainingEvents />
+
+      {/* Past Events Section */}
+      <PastEventsSection />
 
       {/* Training Categories */}
       <TrainingCategories />
