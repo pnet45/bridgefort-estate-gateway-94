@@ -53,7 +53,7 @@ const AllEventsDialog = ({ open, onClose, events, onRegister }: AllEventsDialogP
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-6xl w-[95vw] h-[90vh] p-0 bg-transparent border-0 shadow-none"
+        className="max-w-[90vw] w-[90vw] h-[90vh] p-0 bg-transparent border-0 shadow-none flex items-center justify-center"
         style={{ backdropFilter: 'blur(12px)' }}
       >
         {/* Close Button */}
@@ -66,16 +66,16 @@ const AllEventsDialog = ({ open, onClose, events, onRegister }: AllEventsDialogP
         </button>
 
         {/* Carousel Container */}
-        <div className="relative h-full flex items-center justify-center">
-          <div className="overflow-hidden w-full h-full" ref={emblaRef}>
-            <div className="flex h-full">
+        <div className="relative w-full h-full flex items-center justify-center px-16">
+          <div className="overflow-hidden w-full h-full max-w-5xl" ref={emblaRef}>
+            <div className="flex h-full items-center">
               {events.map((event) => (
-                <div key={event.id} className="flex-[0_0_100%] min-w-0 px-4 h-full flex items-center justify-center">
+                <div key={event.id} className="flex-[0_0_100%] min-w-0 h-full flex items-center justify-center">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-4xl w-full max-h-[85vh] flex flex-col md:flex-row"
+                    className="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-h-[75vh] flex flex-col md:flex-row mx-4"
                   >
                     {/* Image Section */}
                     <div className="md:w-2/5 relative">
@@ -162,13 +162,13 @@ const AllEventsDialog = ({ open, onClose, events, onRegister }: AllEventsDialogP
             </div>
           </div>
 
-          {/* Navigation Arrows */}
+          {/* Navigation Arrows - Always Visible */}
           {events.length > 1 && (
             <>
               <button
                 onClick={scrollPrev}
                 disabled={selectedIndex === 0}
-                className="absolute left-2 md:left-8 z-40 bg-white/90 hover:bg-white p-3 rounded-full shadow-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-40 bg-white/90 hover:bg-white p-3 rounded-full shadow-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
                 aria-label="Previous event"
               >
                 <ChevronLeft className="h-6 w-6 text-gray-800" />
@@ -177,7 +177,7 @@ const AllEventsDialog = ({ open, onClose, events, onRegister }: AllEventsDialogP
               <button
                 onClick={scrollNext}
                 disabled={selectedIndex === events.length - 1}
-                className="absolute right-2 md:right-8 z-40 bg-white/90 hover:bg-white p-3 rounded-full shadow-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-40 bg-white/90 hover:bg-white p-3 rounded-full shadow-xl disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
                 aria-label="Next event"
               >
                 <ChevronRight className="h-6 w-6 text-gray-800" />
