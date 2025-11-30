@@ -7,3 +7,6 @@ project_id = "default"
 verify_jwt = false
 [functions.send-training-reminder]
 verify_jwt = false
+[functions.generate-certificate]
+[functions.send-certificate-email]
+
