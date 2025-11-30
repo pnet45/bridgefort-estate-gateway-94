@@ -6,13 +6,14 @@ const HomeHeroImage = () => {
   
   // Array of hero images for the slideshow
   const heroImages = [
-    '/lovable-uploads/PropertyHero.png',
+    '/lovable-uploads/ikoyi link bridge.png',
     '/lovable-uploads/Homeheroimage2222.png',
     '/lovable-uploads/00f20cea-44fd-4566-bf5f-18091450610e.jpg',
     '/lovable-uploads/Homeslider2.png',
     '/lovable-uploads/Homeslider.png',
     '/lovable-uploads/f4c5cb9d-d79d-419a-9577-444691d59b72.jpg',
     '/lovable-uploads/Homeslider3.png',
+    '/lovable-uploads/PropertyHero.png',
     '/lovable-uploads/Homeslider4.png'
   ];
   
