@@ -95,6 +95,39 @@ const AttendanceTab = () => {
     }
   };
 
+  const sendCertificateEmail = async (attendanceId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('You must be logged in to send certificates');
+        return;
+      }
+
+      toast.loading('Sending certificate email...', { id: 'certificate-email' });
+
+      const { data, error } = await supabase.functions.invoke('send-certificate-email', {
+        body: { attendanceId },
+      });
+
+      if (error) {
+        console.error('Error sending certificate email:', error);
+        toast.error('Failed to send certificate email', { id: 'certificate-email' });
+        return;
+      }
+
+      if (data?.success) {
+        toast.success('Certificate emailed successfully!', { id: 'certificate-email' });
+        fetchAttendanceRecords();
+      } else {
+        toast.error(data?.error || 'Failed to send certificate', { id: 'certificate-email' });
+      }
+    } catch (error: any) {
+      console.error('Error in sendCertificateEmail:', error);
+      toast.error('Failed to send certificate email', { id: 'certificate-email' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -201,6 +234,17 @@ const AttendanceTab = () => {
                       >
                         <Award className="h-4 w-4" />
                         Mark Completed
+                      </Button>
+                    )}
+
+                    {record.completed && !record.certificate_issued && (
+                      <Button
+                        size="sm"
+                        onClick={() => sendCertificateEmail(record.id)}
+                        className="gap-1 bg-green-600 hover:bg-green-700"
+                      >
+                        <Award className="h-4 w-4" />
+                        Issue & Email Certificate
                       </Button>
                     )}
 
