@@ -1,8 +1,12 @@
-import React, { useCallback, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Users, Clock } from 'lucide-react';
+import React, { useCallback, useState, useRef } from 'react';
+import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Users, Clock, Download, Share2 } from 'lucide-react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import useEmblaCarousel from 'embla-carousel-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { toast } from '@/hooks/use-toast';
 
 interface Event {
   id: string;
@@ -27,6 +31,8 @@ interface AllEventsDialogProps {
 const AllEventsDialog = ({ open, onClose, events, onRegister }: AllEventsDialogProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: 'center' });
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [downloading, setDownloading] = useState(false);
+  const eventCardRef = useRef<HTMLDivElement>(null);
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -50,28 +56,167 @@ const AllEventsDialog = ({ open, onClose, events, onRegister }: AllEventsDialogP
     };
   }, [emblaApi, onSelect]);
 
+  const downloadAsPDF = async () => {
+    if (!eventCardRef.current) return;
+    
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(eventCardRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`${events[selectedIndex].title.replace(/\s+/g, '_')}_Event.pdf`);
+      
+      toast({
+        title: "Success",
+        description: "Event details downloaded as PDF"
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download PDF. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const downloadAsImage = async () => {
+    if (!eventCardRef.current) return;
+    
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(eventCardRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${events[selectedIndex].title.replace(/\s+/g, '_')}_Event.png`;
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "Success",
+          description: "Event details downloaded as image"
+        });
+      });
+    } catch (error) {
+      console.error('Error generating image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to download image. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const shareEvent = async () => {
+    const event = events[selectedIndex];
+    const shareData = {
+      title: event.title,
+      text: `Join us for ${event.title} on ${event.date} at ${event.time}. Location: ${event.location}`,
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        toast({
+          title: "Success",
+          description: "Event details shared successfully"
+        });
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Error sharing:', error);
+        }
+      }
+    } else {
+      // Fallback: copy to clipboard
+      const text = `${shareData.title}\n${shareData.text}`;
+      navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied to clipboard",
+        description: "Event details copied. You can paste and share it now."
+      });
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent 
         className="max-w-[90vw] w-[90vw] h-[90vh] p-0 bg-transparent border-0 shadow-none flex items-center justify-center"
         style={{ backdropFilter: 'blur(12px)' }}
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-50 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all duration-200"
-          aria-label="Close"
-        >
-          <X className="h-6 w-6 text-gray-800" />
-        </button>
+        {/* Action Buttons */}
+        <div className="absolute top-4 right-4 z-50 flex gap-2">
+          <Button
+            onClick={downloadAsPDF}
+            disabled={downloading}
+            variant="secondary"
+            size="icon"
+            className="bg-white/90 hover:bg-white rounded-full shadow-lg"
+            aria-label="Download as PDF"
+          >
+            <Download className="h-5 w-5 text-gray-800" />
+          </Button>
+          <Button
+            onClick={downloadAsImage}
+            disabled={downloading}
+            variant="secondary"
+            size="icon"
+            className="bg-white/90 hover:bg-white rounded-full shadow-lg"
+            aria-label="Download as Image"
+          >
+            <Download className="h-5 w-5 text-blue-600" />
+          </Button>
+          <Button
+            onClick={shareEvent}
+            disabled={downloading}
+            variant="secondary"
+            size="icon"
+            className="bg-white/90 hover:bg-white rounded-full shadow-lg"
+            aria-label="Share Event"
+          >
+            <Share2 className="h-5 w-5 text-green-600" />
+          </Button>
+          <button
+            onClick={onClose}
+            className="bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all duration-200"
+            aria-label="Close"
+          >
+            <X className="h-6 w-6 text-gray-800" />
+          </button>
+        </div>
 
         {/* Carousel Container */}
         <div className="relative w-full h-full flex items-center justify-center px-16">
           <div className="overflow-hidden w-full h-full max-w-5xl" ref={emblaRef}>
             <div className="flex h-full items-center">
-              {events.map((event) => (
+              {events.map((event, idx) => (
                 <div key={event.id} className="flex-[0_0_100%] min-w-0 h-full flex items-center justify-center">
                   <motion.div
+                    ref={idx === selectedIndex ? eventCardRef : null}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}

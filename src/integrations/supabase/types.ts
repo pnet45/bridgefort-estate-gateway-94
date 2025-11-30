@@ -709,6 +709,7 @@ export type Database = {
           pbo_referral_code: string | null
           phone_number: string | null
           profile_completed: boolean | null
+          profile_completion_percentage: number | null
           profile_picture_url: string | null
           residence_permit: string | null
           source_of_income: string | null
@@ -754,6 +755,7 @@ export type Database = {
           pbo_referral_code?: string | null
           phone_number?: string | null
           profile_completed?: boolean | null
+          profile_completion_percentage?: number | null
           profile_picture_url?: string | null
           residence_permit?: string | null
           source_of_income?: string | null
@@ -799,6 +801,7 @@ export type Database = {
           pbo_referral_code?: string | null
           phone_number?: string | null
           profile_completed?: boolean | null
+          profile_completion_percentage?: number | null
           profile_picture_url?: string | null
           residence_permit?: string | null
           source_of_income?: string | null
