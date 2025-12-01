@@ -72,17 +72,33 @@ const TrainingRegistrationForm = ({ open, onClose, eventTitle, eventDate }: Trai
       
       if (error) throw error;
       
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-training-registration-confirmation', {
+          body: {
+            name: data.name,
+            email: data.email,
+            eventTitle: eventTitle || 'Training Event',
+            eventDate: eventDate || 'TBA',
+            phone: data.phone,
+          }
+        });
+      } catch (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+        // Don't fail the registration if email fails
+      }
+      
       toast({
-        title: "Registration successful",
-        description: "Thank you for registering! You'll receive a confirmation shortly.",
+        title: "Registration Successful! ✓",
+        description: "Thank you for registering! Check your email for confirmation details.",
       });
       
       form.reset();
       onClose();
     } catch (error: any) {
       toast({
-        title: "Registration failed",
-        description: "There was a problem submitting your registration. Please try again.",
+        title: "Registration Failed",
+        description: error.message || "There was a problem submitting your registration. Please try again.",
         variant: "destructive",
       });
       console.error('Error submitting form:', error);
