@@ -1,6 +1,12 @@
 
 export const motivationData = [
   {
+    title: "Welcome to December: The Month of Decision",
+    text: "Happy New Month! December is here - a month of reflection, celebration, and most importantly, decision-making. At PWAN Bridgefort, we believe this is the perfect time to make that life-changing property investment. Start the new year as a property owner. Your dream home or investment property awaits - let's make December count!",
+    author: "PWAN Bridgefort Team",
+    image: "/lovable-uploads/december-motivation.jpg"
+  },
+  {
     title: "Monday Motivation: Your Dream Home Awaits!",
     text: "Every Monday is a fresh start to make your property dreams come true. At PWAN Bridgefort, we believe that success starts with taking the first step. Whether you're looking to invest, buy your first home, or expand your portfolio - today is the perfect day to begin your journey to property ownership!",
     author: "PWAN Bridgefort Team",
