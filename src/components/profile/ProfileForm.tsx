@@ -755,7 +755,7 @@ const ProfileForm = () => {
             <TabsContent value="review">
               <div className="space-y-6">
                 <h3>Review your information</h3>
-                <ReCaptcha ref={recaptchaRef} onVerify={setRecaptchaToken} />
+                <ReCaptcha ref={recaptchaRef} onChange={setRecaptchaToken} />
                 <NavigationButtons stepKey="review" />
               </div>
             </TabsContent>
