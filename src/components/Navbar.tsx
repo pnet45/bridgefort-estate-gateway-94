@@ -11,6 +11,7 @@ import LogoSlideIn from './navbar/LogoSlideIn';
 import CartIcon from './ecommerce/CartIcon';
 import AnimatedNavLinks from './navbar/AnimatedNavLinks';
 import AnimatedAuthSection from './navbar/AnimatedAuthSection';
+import ProfileCompletionWidget from './navbar/ProfileCompletionWidget';
 
 const Navbar = () => {
   const { user, userRole } = useAuth();
@@ -62,12 +63,15 @@ const Navbar = () => {
             </div>
             
             {/* Desktop Auth Section */}
-            <AnimatedAuthSection 
-              user={user}
-              profile={profile}
-              userRole={userRole}
-              shouldShowLogin={shouldShowLogin}
-            />
+            <div className="hidden lg:flex items-center space-x-4">
+              {user && <ProfileCompletionWidget />}
+              <AnimatedAuthSection 
+                user={user}
+                profile={profile}
+                userRole={userRole}
+                shouldShowLogin={shouldShowLogin}
+              />
+            </div>
             
             {/* Mobile Menu Button */}
             <button
