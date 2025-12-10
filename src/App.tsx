@@ -40,6 +40,7 @@ import NotFound from '@/pages/NotFound';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 import Sitemap from '@/pages/Sitemap';
+import BridgefortMails from '@/pages/BridgefortMails';
 
 import './App.css';
 
@@ -98,6 +99,11 @@ function App() {
                 <Route path="/edit-post/:id" element={
                   <PrivateRoute>
                     <EditPost />
+                  </PrivateRoute>
+                } />
+                <Route path="/bridgefortmails" element={
+                  <PrivateRoute>
+                    <BridgefortMails />
                   </PrivateRoute>
                 } />
                 

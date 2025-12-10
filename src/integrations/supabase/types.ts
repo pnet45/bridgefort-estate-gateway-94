@@ -242,6 +242,42 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          recipient_email: string
+          recipient_name: string | null
+          sender_id: string | null
+          sent_at: string
+          status: string
+          subject: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          recipient_email: string
+          recipient_name?: string | null
+          sender_id?: string | null
+          sent_at?: string
+          status?: string
+          subject: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          recipient_email?: string
+          recipient_name?: string | null
+          sender_id?: string | null
+          sent_at?: string
+          status?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       estate: {
         Row: {
           actual_price: number | null
