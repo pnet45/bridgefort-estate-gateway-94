@@ -1040,6 +1040,7 @@ export type Database = {
       count_users: { Args: never; Returns: number }
       delete_user_profile: { Args: { user_id: number }; Returns: undefined }
       get_user_profile:
+        | { Args: never; Returns: undefined }
         | {
             Args: { p_user_id: string }
             Returns: {
@@ -1055,10 +1056,9 @@ export type Database = {
               last_name: string
             }[]
           }
-        | { Args: never; Returns: undefined }
       has_role:
-        | { Args: { role_name: string }; Returns: boolean }
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
+        | { Args: { role_name: string }; Returns: boolean }
       list_all_users: {
         Args: never
         Returns: {
