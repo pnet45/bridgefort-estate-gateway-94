@@ -99,7 +99,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'PWAN Bridgefort <welcome@pwanbridgefort.com>',
+        from: 'PWAN Bridgefort <noreply@pwanbridgefort.ng>',
         to: [email],
         subject: '🏡 Welcome to PWAN Bridgefort - Your Property Journey Starts Here!',
         html: welcomeEmailHtml,
