@@ -13,6 +13,7 @@ import TrainingAnalyticsTab from './TrainingAnalyticsTab';
 import AttendanceTab from './AttendanceTab';
 import ProfilesManagementTab from './tabs/ProfilesManagementTab';
 import { ProfileLeaderboardTab } from './tabs/ProfileLeaderboardTab';
+import UserManagementTab from './tabs/UserManagementTab';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -90,7 +91,7 @@ const ClientDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-4 md:grid-cols-12' : canCreatePosts ? 'grid-cols-3 md:grid-cols-7' : 'grid-cols-3 md:grid-cols-6'} gap-1`}>
+        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-4 md:grid-cols-13' : canCreatePosts ? 'grid-cols-3 md:grid-cols-7' : 'grid-cols-3 md:grid-cols-6'} gap-1`}>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="properties">Properties</TabsTrigger>
           <TabsTrigger value="documentation" className="text-xs md:text-sm">
@@ -109,6 +110,7 @@ const ClientDashboard = () => {
               <TabsTrigger value="analytics" className="text-xs md:text-sm">Analytics</TabsTrigger>
               <TabsTrigger value="profiles" className="text-xs md:text-sm">Profiles</TabsTrigger>
               <TabsTrigger value="leaderboard" className="text-xs md:text-sm">Leaderboard</TabsTrigger>
+              <TabsTrigger value="users" className="text-xs md:text-sm">Users</TabsTrigger>
             </>
           )}
         </TabsList>
@@ -166,6 +168,9 @@ const ClientDashboard = () => {
             </TabsContent>
             <TabsContent value="leaderboard" className="space-y-6">
               <ProfileLeaderboardTab />
+            </TabsContent>
+            <TabsContent value="users" className="space-y-6">
+              <UserManagementTab />
             </TabsContent>
           </>
         )}
