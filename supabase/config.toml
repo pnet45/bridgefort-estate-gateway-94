@@ -9,4 +9,5 @@ verify_jwt = false
 verify_jwt = false
 [functions.generate-certificate]
 [functions.send-certificate-email]
+[functions.create-admin-user]
 
