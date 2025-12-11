@@ -45,7 +45,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         const emailResponse = await resend.emails.send({
-          from: "PWAN Bridgefort <onboarding@resend.dev>",
+          from: "PWAN Bridgefort <noreply@pwanbridgefort.ng>",
           to: [profile.email],
           subject: "Complete Your Profile - Unlock Full Access to PWAN Bridgefort",
           html: `
