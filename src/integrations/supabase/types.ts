@@ -403,6 +403,30 @@ export type Database = {
           },
         ]
       }
+      failed_login_attempts: {
+        Row: {
+          attempted_at: string
+          created_at: string
+          email: string
+          id: string
+          ip_address: string | null
+        }
+        Insert: {
+          attempted_at?: string
+          created_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+        }
+        Update: {
+          attempted_at?: string
+          created_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+        }
+        Relationships: []
+      }
       hidden_properties: {
         Row: {
           created_at: string | null
@@ -1073,6 +1097,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_login_attempts: { Args: never; Returns: undefined }
+      clear_failed_logins: { Args: { clear_email: string }; Returns: undefined }
       count_users: { Args: never; Returns: number }
       delete_user_profile: { Args: { user_id: number }; Returns: undefined }
       get_user_profile:
@@ -1095,6 +1121,14 @@ export type Database = {
       has_role:
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
         | { Args: { role_name: string }; Returns: boolean }
+      is_account_locked: {
+        Args: {
+          check_email: string
+          lockout_minutes?: number
+          max_attempts?: number
+        }
+        Returns: boolean
+      }
       list_all_users: {
         Args: never
         Returns: {
@@ -1103,6 +1137,10 @@ export type Database = {
           id: number
           last_name: string
         }[]
+      }
+      record_failed_login: {
+        Args: { attempt_email: string; attempt_ip?: string }
+        Returns: undefined
       }
       update_user_profile: {
         Args: { first_name: string; last_name: string; user_id: number }
