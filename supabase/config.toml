@@ -1,13 +1,31 @@
-
-project_id = "default"
+project_id = "xyvspvtdaacqfmfocvhw"
 
 [functions.paystack-initialize]
+verify_jwt = false
+
 [functions.paystack-verify]
+verify_jwt = false
+
 [functions.generate-blog-article]
 verify_jwt = false
+
 [functions.send-training-reminder]
 verify_jwt = false
-[functions.generate-certificate]
-[functions.send-certificate-email]
-[functions.create-admin-user]
 
+[functions.generate-certificate]
+verify_jwt = false
+
+[functions.send-certificate-email]
+verify_jwt = false
+
+[functions.create-admin-user]
+verify_jwt = false
+
+[functions.verify-recaptcha]
+verify_jwt = false
+
+[functions.send-lockout-notification]
+verify_jwt = false
+
+[functions.send-welcome-email]
+verify_jwt = false

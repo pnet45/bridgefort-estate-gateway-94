@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import ProfileForm from '@/components/profile/ProfileForm';
+import NewProfileForm from '@/components/profile/NewProfileForm';
 import { Loader2 } from 'lucide-react';
 
 const Profile = () => {
@@ -70,7 +70,7 @@ const Profile = () => {
                 : 'Please complete your profile to access all features including property purchases and documentation services'}
             </p>
           </div>
-          <ProfileForm />
+          <NewProfileForm />
         </div>
       </main>
       

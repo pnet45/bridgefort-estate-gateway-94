@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -13,13 +13,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import KYCUploadField from './KYCUploadField';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import ReCaptcha from '@/components/ui/ReCaptcha';
 
 const NewProfileForm = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('personal');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
@@ -197,40 +198,43 @@ const NewProfileForm = () => {
 
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: user.id,
           first_name: formData.firstName,
           last_name: formData.lastName,
           date_of_birth: formData.dateOfBirth,
           gender: formData.gender,
           marital_status: formData.maritalStatus,
-          spouse_name: formData.spouseName,
+          spouse_name: formData.spouseName || null,
           nationality: formData.nationality,
           languages_spoken: formData.languagesSpoken,
           phone_number: formData.phoneNumber,
-          state_of_origin: formData.stateOfOrigin,
-          local_government: formData.localGovernment,
-          address: formData.address,
-          current_residence: formData.currentResidence,
+          state_of_origin: formData.stateOfOrigin || null,
+          local_government: formData.localGovernment || null,
+          address: formData.address || null,
+          current_residence: formData.currentResidence || null,
           occupation: formData.occupation,
           employer_name: formData.employerName,
-          employer_address: formData.employerAddress,
+          employer_address: formData.employerAddress || null,
           next_of_kin_name: formData.nextOfKinName,
-          next_of_kin_relationship: formData.nextOfKinRelationship,
-          next_of_kin_address: formData.nextOfKinAddress,
+          next_of_kin_relationship: formData.nextOfKinRelationship || null,
+          next_of_kin_address: formData.nextOfKinAddress || null,
           next_of_kin_phone: formData.nextOfKinPhone,
           next_of_kin_email: formData.nextOfKinEmail,
           kyc_docs: kycDocs,
           id_type: idDetails.idType,
           id_number: idDetails.idNumber,
-          id_expiry: idDetails.expiryDate,
-          source_of_income: formData.sourceOfFunds,
-          monthly_income: formData.annualIncome,
-          banking_details: `${formData.bankName} - ${formData.accountNumber} - ${formData.accountName}`,
+          id_expiry: idDetails.expiryDate || null,
+          source_of_income: formData.sourceOfFunds || null,
+          monthly_income: formData.annualIncome ? parseFloat(formData.annualIncome.replace(/[^\d.]/g, '')) : null,
+          banking_details: formData.bankName ? `${formData.bankName} - ${formData.accountNumber} - ${formData.accountName}` : null,
           terms_accepted: termsAccepted,
           profile_completed: true,
+          profile_completion_percentage: 100,
           updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
+        }, {
+          onConflict: 'id'
+        });
 
       if (error) throw error;
 
@@ -254,8 +258,79 @@ const NewProfileForm = () => {
 
   const languages = ['English', 'Yoruba', 'Igbo', 'Efik', 'Hausa','Pidgin', 'French'];
   const idTypes = ['International Passport', 'National ID Card', 'NIN Slip', 'Voter\'s Card', 'Driver\'s Licence', 'Work Permit', 'Resident Permit', 'Others'];
-  const sourceOfFunds = ['Salary', 'Business Income', 'Gift', 'Bank Loan', 'Other Loan', 'Inheritance', 'Investment Return', 'Others'];
+  const sourceOfFundsOptions = ['Salary', 'Business Income', 'Gift', 'Bank Loan', 'Other Loan', 'Inheritance', 'Investment Return', 'Others'];
   const incomeRanges = ['Below ₦1M', '₦1M - ₦5M', '₦6M - ₦20M', 'Above ₦20M'];
+
+  // Load existing profile data
+  useEffect(() => {
+    const loadProfileData = async () => {
+      if (!user) {
+        setInitialLoading(false);
+        return;
+      }
+      
+      try {
+        const { data: profileData, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profileData && !error) {
+          // Parse banking details
+          const bankingParts = profileData.banking_details?.split(' - ') || [];
+          
+          setFormData(prev => ({
+            ...prev,
+            firstName: profileData.first_name || '',
+            lastName: profileData.last_name || '',
+            dateOfBirth: profileData.date_of_birth || '',
+            gender: profileData.gender || '',
+            maritalStatus: profileData.marital_status || '',
+            spouseName: profileData.spouse_name || '',
+            nationality: profileData.nationality || '',
+            languagesSpoken: profileData.languages_spoken || [],
+            phoneNumber: profileData.phone_number || '',
+            stateOfOrigin: profileData.state_of_origin || '',
+            localGovernment: profileData.local_government || '',
+            address: profileData.address || '',
+            currentResidence: profileData.current_residence || '',
+            occupation: profileData.occupation || '',
+            employerName: profileData.employer_name || '',
+            employerAddress: profileData.employer_address || '',
+            nextOfKinName: profileData.next_of_kin_name || '',
+            nextOfKinRelationship: profileData.next_of_kin_relationship || '',
+            nextOfKinAddress: profileData.next_of_kin_address || '',
+            nextOfKinPhone: profileData.next_of_kin_phone || '',
+            nextOfKinEmail: profileData.next_of_kin_email || '',
+            sourceOfFunds: profileData.source_of_income || '',
+            bankName: bankingParts[0] || '',
+            accountNumber: bankingParts[1] || '',
+            accountName: bankingParts[2] || ''
+          }));
+
+          setIdDetails(prev => ({
+            ...prev,
+            idType: profileData.id_type || '',
+            idNumber: profileData.id_number || '',
+            expiryDate: profileData.id_expiry || ''
+          }));
+
+          if (profileData.kyc_docs) {
+            setKycDocs(profileData.kyc_docs as {[key: string]: { url: string; name: string; type: string }});
+          }
+
+          setTermsAccepted(profileData.terms_accepted || false);
+        }
+      } catch (error) {
+        console.error('Error loading profile data:', error);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    loadProfileData();
+  }, [user]);
 
   const NavigationButtons = ({ stepKey }: { stepKey: string }) => {
     const currentIndex = getCurrentStepIndex();
@@ -298,6 +373,19 @@ const NewProfileForm = () => {
       </div>
     );
   };
+
+  if (initialLoading) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-estate-blue" />
+            <span className="ml-2 text-muted-foreground">Loading profile data...</span>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -643,7 +731,7 @@ const NewProfileForm = () => {
                           <SelectValue placeholder="Select source of funds" />
                         </SelectTrigger>
                         <SelectContent>
-                          {sourceOfFunds.map(source => (
+                          {sourceOfFundsOptions.map(source => (
                             <SelectItem key={source} value={source}>{source}</SelectItem>
                           ))}
                         </SelectContent>

@@ -147,6 +147,17 @@ const AdminAuth = () => {
     }
   };
 
+  const sendLockoutNotification = async (lockedEmail: string, attemptCount: number) => {
+    try {
+      await supabase.functions.invoke('send-lockout-notification', {
+        body: { lockedEmail, attemptCount }
+      });
+      console.log('Lockout notification sent to admin');
+    } catch (error) {
+      console.error('Error sending lockout notification:', error);
+    }
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -212,9 +223,11 @@ const AdminAuth = () => {
         if (nowLocked) {
           setIsLocked(true);
           setLockoutRemaining(15);
+          // Send notification to admin
+          await sendLockoutNotification(email, 5);
           toast({
             title: "Account Locked",
-            description: "Too many failed attempts. Account locked for 15 minutes.",
+            description: "Too many failed attempts. Account locked for 15 minutes. Admin has been notified.",
             variant: "destructive"
           });
         } else {
