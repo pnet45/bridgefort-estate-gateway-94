@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, UserPlus, Shield, Users, Trash2 } from 'lucide-react';
+import { Loader2, UserPlus, Shield, Users, Trash2, Unlock, Lock } from 'lucide-react';
 
 interface UserWithRole {
   id: string;
@@ -20,10 +20,18 @@ interface UserWithRole {
   role: string | null;
 }
 
+interface LockedAccount {
+  email: string;
+  attempt_count: number;
+  last_attempt: string;
+}
+
 const UserManagementTab = () => {
   const [users, setUsers] = useState<UserWithRole[]>([]);
+  const [lockedAccounts, setLockedAccounts] = useState<LockedAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [unlocking, setUnlocking] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -80,8 +88,71 @@ const UserManagementTab = () => {
     }
   };
 
+  const fetchLockedAccounts = async () => {
+    try {
+      // Get accounts with failed attempts in the last 15 minutes
+      const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+      
+      const { data, error } = await supabase
+        .from('failed_login_attempts')
+        .select('email, attempted_at')
+        .gte('attempted_at', fifteenMinutesAgo)
+        .order('attempted_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Group by email and count attempts
+      const accountMap = new Map<string, { count: number; lastAttempt: string }>();
+      (data || []).forEach(attempt => {
+        const existing = accountMap.get(attempt.email);
+        if (existing) {
+          existing.count++;
+          if (attempt.attempted_at > existing.lastAttempt) {
+            existing.lastAttempt = attempt.attempted_at;
+          }
+        } else {
+          accountMap.set(attempt.email, { count: 1, lastAttempt: attempt.attempted_at });
+        }
+      });
+
+      // Filter to only show accounts with 5+ attempts (locked)
+      const locked: LockedAccount[] = [];
+      accountMap.forEach((value, email) => {
+        if (value.count >= 5) {
+          locked.push({
+            email,
+            attempt_count: value.count,
+            last_attempt: value.lastAttempt
+          });
+        }
+      });
+
+      setLockedAccounts(locked);
+    } catch (error) {
+      console.error('Error fetching locked accounts:', error);
+    }
+  };
+
+  const handleUnlockAccount = async (email: string) => {
+    setUnlocking(email);
+    try {
+      const { error } = await supabase.rpc('clear_failed_logins', { clear_email: email });
+      
+      if (error) throw error;
+
+      toast.success(`Account ${email} has been unlocked`);
+      fetchLockedAccounts();
+    } catch (error: any) {
+      console.error('Error unlocking account:', error);
+      toast.error(error.message || 'Failed to unlock account');
+    } finally {
+      setUnlocking(null);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchLockedAccounts();
   }, []);
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -372,6 +443,72 @@ const UserManagementTab = () => {
               </Table>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Locked Accounts Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5 text-destructive" />
+            Locked Accounts
+          </CardTitle>
+          <CardDescription>
+            Accounts locked due to failed login attempts (5+ attempts in 15 minutes)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {lockedAccounts.length === 0 ? (
+            <p className="text-center text-muted-foreground py-4">No locked accounts</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Failed Attempts</TableHead>
+                  <TableHead>Last Attempt</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {lockedAccounts.map((account) => (
+                  <TableRow key={account.email}>
+                    <TableCell className="font-medium">{account.email}</TableCell>
+                    <TableCell>
+                      <Badge variant="destructive">{account.attempt_count} attempts</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(account.last_attempt).toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUnlockAccount(account.email)}
+                        disabled={unlocking === account.email}
+                        className="gap-2"
+                      >
+                        {unlocking === account.email ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Unlock className="h-4 w-4" />
+                        )}
+                        Unlock
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={fetchLockedAccounts}
+            className="mt-4"
+          >
+            Refresh
+          </Button>
         </CardContent>
       </Card>
 
