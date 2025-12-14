@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { token } = await req.json()
+    const { token, action = 'LOGIN' } = await req.json()
     
     if (!token) {
       return new Response(
@@ -36,7 +36,7 @@ serve(async (req) => {
       )
     }
 
-    // Verify reCAPTCHA with Google
+    // Verify reCAPTCHA with Google - works for both v2 and Enterprise
     const verifyUrl = 'https://www.google.com/recaptcha/api/siteverify'
     const verifyData = new URLSearchParams({
       secret: secretKey,
@@ -53,17 +53,18 @@ serve(async (req) => {
 
     const verifyResult = await verifyResponse.json()
     
-    console.log('reCAPTCHA verification result:', verifyResult)
+    console.log('reCAPTCHA verification result:', JSON.stringify(verifyResult))
 
     if (verifyResult.success) {
       return new Response(
-        JSON.stringify({ success: true, score: verifyResult.score }),
+        JSON.stringify({ success: true, score: verifyResult.score || 1.0 }),
         { 
           status: 200, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
     } else {
+      console.error('reCAPTCHA verification failed:', verifyResult['error-codes'])
       return new Response(
         JSON.stringify({ 
           success: false, 
