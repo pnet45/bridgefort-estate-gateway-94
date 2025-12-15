@@ -53,9 +53,14 @@ const Navbar = () => {
     <>
       <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50 flex flex-col" style={{ minHeight: 80 }}>
         <div className="container-custom flex flex-col flex-1" style={{ minHeight: 80 }}>
-          <div className="flex justify-between items-center py-4 flex-shrink-0">
-            {/* Logo with slide-in animation */}
-            <LogoSlideIn />
+          <div className="flex justify-between items-center py-4 flex-shrink-0 relative">
+            {/* Mobile: Empty spacer for left side to balance the menu icon */}
+            <div className="lg:hidden w-8" />
+            
+            {/* Logo - centered on mobile, left on desktop */}
+            <div className="lg:absolute lg:relative lg:left-0 flex-1 lg:flex-none flex justify-center lg:justify-start">
+              <LogoSlideIn />
+            </div>
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-8">
@@ -73,7 +78,7 @@ const Navbar = () => {
               />
             </div>
             
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - aligned right */}
             <button
               className="lg:hidden"
               onClick={toggleMenu}
