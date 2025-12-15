@@ -9,8 +9,9 @@ import { toast } from '@/hooks/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import ReCaptcha from '@/components/ui/ReCaptcha';
 import { supabase } from '@/integrations/supabase/client';
-import { Shield, Lock, ArrowLeft, AlertTriangle, Check, X } from 'lucide-react';
+import { Shield, Lock, ArrowLeft, AlertTriangle, Check, X, UserPlus } from 'lucide-react';
 import { z } from 'zod';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Password validation schema
 const passwordSchema = z.string()
@@ -29,8 +30,12 @@ interface PasswordStrength {
 }
 
 const AdminAuth = () => {
+  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [lockoutRemaining, setLockoutRemaining] = useState(0);
@@ -296,6 +301,108 @@ const AdminAuth = () => {
     }
   };
 
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!recaptchaToken) {
+      toast({
+        title: "reCAPTCHA Required",
+        description: "Please complete the reCAPTCHA verification",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate password strength
+    const passwordResult = passwordSchema.safeParse(password);
+    if (!passwordResult.success) {
+      toast({
+        title: "Weak Password",
+        description: "Password does not meet security requirements",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Verify reCAPTCHA first
+      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+      if (!isRecaptchaValid) {
+        toast({
+          title: "reCAPTCHA Failed",
+          description: "Please complete the reCAPTCHA verification again",
+          variant: "destructive"
+        });
+        setRecaptchaToken(null);
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
+        return;
+      }
+
+      // Call the admin signup edge function
+      const { data, error } = await supabase.functions.invoke('create-admin-signup', {
+        body: { 
+          email, 
+          password, 
+          firstName, 
+          lastName 
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.error) {
+        toast({
+          title: "Signup Failed",
+          description: data.error,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Admin Account Created",
+        description: "You can now log in with your credentials"
+      });
+
+      // Switch to login tab and pre-fill email
+      setActiveTab('login');
+      setPassword('');
+      setConfirmPassword('');
+      setFirstName('');
+      setLastName('');
+      setRecaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
+    } catch (error: any) {
+      toast({
+        title: "Signup Failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive"
+      });
+      setRecaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const StrengthIndicator = ({ met, label }: { met: boolean; label: string }) => (
     <div className={`flex items-center gap-2 text-xs ${met ? 'text-green-400' : 'text-slate-500'}`}>
       {met ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
@@ -304,6 +411,18 @@ const AdminAuth = () => {
   );
 
   const allStrengthMet = Object.values(passwordStrength).every(Boolean);
+
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setFirstName('');
+    setLastName('');
+    setRecaptchaToken(null);
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -334,113 +453,244 @@ const AdminAuth = () => {
       <div className="flex-grow flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 shadow-2xl">
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <Lock className="h-8 w-8 text-primary" />
+                {activeTab === 'login' ? (
+                  <Lock className="h-8 w-8 text-primary" />
+                ) : (
+                  <UserPlus className="h-8 w-8 text-primary" />
+                )}
               </div>
-              <h2 className="text-2xl font-bold text-white">Administrator Login</h2>
-              <p className="text-slate-400 mt-2">Access the admin dashboard to manage users, emails, and site content</p>
+              <h2 className="text-2xl font-bold text-white">
+                {activeTab === 'login' ? 'Administrator Login' : 'Create Admin Account'}
+              </h2>
+              <p className="text-slate-400 mt-2">
+                {activeTab === 'login' 
+                  ? 'Access the admin dashboard to manage users, emails, and site content'
+                  : 'Register a new administrator account'}
+              </p>
             </div>
 
-            {/* Lockout Warning */}
-            {isLocked && (
-              <div className="mb-6 p-4 bg-red-900/30 border border-red-700 rounded-lg flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-red-300 font-medium">Account Temporarily Locked</p>
-                  <p className="text-red-400 text-sm mt-1">
-                    Too many failed login attempts. Please try again in {lockoutRemaining} minutes.
-                  </p>
-                </div>
-              </div>
-            )}
+            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as 'login' | 'signup'); resetForm(); }} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-900/50">
+                <TabsTrigger value="login" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Login
+                </TabsTrigger>
+                <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  Sign Up
+                </TabsTrigger>
+              </TabsList>
 
-            <form onSubmit={handleSignIn} className="space-y-5">
-              <div>
-                <Label htmlFor="email" className="text-slate-300">Email Address</Label>
-                <Input
-                  type="email"
-                  id="email"
-                  placeholder="admin@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLocked}
-                  className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary disabled:opacity-50"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="password" className="text-slate-300">Password</Label>
-                <Input
-                  type="password"
-                  id="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setShowPasswordHints(true)}
-                  onBlur={() => setShowPasswordHints(false)}
-                  required
-                  disabled={isLocked}
-                  className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary disabled:opacity-50"
-                />
-                
-                {/* Password Strength Indicators */}
-                {(showPasswordHints || password.length > 0) && (
-                  <div className="mt-3 p-3 bg-slate-900/50 rounded-lg border border-slate-700">
-                    <p className="text-xs text-slate-400 mb-2 font-medium">Password Requirements:</p>
-                    <div className="grid grid-cols-1 gap-1.5">
-                      <StrengthIndicator met={passwordStrength.hasMinLength} label="At least 8 characters" />
-                      <StrengthIndicator met={passwordStrength.hasUppercase} label="One uppercase letter" />
-                      <StrengthIndicator met={passwordStrength.hasLowercase} label="One lowercase letter" />
-                      <StrengthIndicator met={passwordStrength.hasNumber} label="One number" />
-                      <StrengthIndicator met={passwordStrength.hasSpecialChar} label="One special character (!@#$%^&*)" />
+              {/* Login Tab */}
+              <TabsContent value="login">
+                {/* Lockout Warning */}
+                {isLocked && (
+                  <div className="mb-6 p-4 bg-red-900/30 border border-red-700 rounded-lg flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-red-300 font-medium">Account Temporarily Locked</p>
+                      <p className="text-red-400 text-sm mt-1">
+                        Too many failed login attempts. Please try again in {lockoutRemaining} minutes.
+                      </p>
                     </div>
-                    {allStrengthMet && (
-                      <div className="mt-2 pt-2 border-t border-slate-700">
-                        <p className="text-xs text-green-400 flex items-center gap-1">
-                          <Check className="h-3 w-3" />
-                          Password meets all requirements
-                        </p>
+                  </div>
+                )}
+
+                <form onSubmit={handleSignIn} className="space-y-5">
+                  <div>
+                    <Label htmlFor="login-email" className="text-slate-300">Email Address</Label>
+                    <Input
+                      type="email"
+                      id="login-email"
+                      placeholder="admin@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={isLocked}
+                      className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary disabled:opacity-50"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="login-password" className="text-slate-300">Password</Label>
+                    <Input
+                      type="password"
+                      id="login-password"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={isLocked}
+                      className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary disabled:opacity-50"
+                    />
+                  </div>
+
+                  {/* reCAPTCHA */}
+                  <div className="flex justify-center py-2">
+                    <ReCaptcha
+                      ref={recaptchaRef}
+                      onChange={(token) => setRecaptchaToken(token)}
+                      onExpired={() => setRecaptchaToken(null)}
+                      onError={() => setRecaptchaToken(null)}
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    disabled={loading || !recaptchaToken || isLocked} 
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-5"
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Authenticating...
+                      </span>
+                    ) : isLocked ? (
+                      <span className="flex items-center gap-2">
+                        <Lock className="h-4 w-4" />
+                        Account Locked
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Sign In to Admin Panel
+                      </span>
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              {/* Signup Tab */}
+              <TabsContent value="signup">
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="signup-firstName" className="text-slate-300">First Name</Label>
+                      <Input
+                        type="text"
+                        id="signup-firstName"
+                        placeholder="John"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                        className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="signup-lastName" className="text-slate-300">Last Name</Label>
+                      <Input
+                        type="text"
+                        id="signup-lastName"
+                        placeholder="Doe"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
+                        className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="signup-email" className="text-slate-300">Email Address</Label>
+                    <Input
+                      type="email"
+                      id="signup-email"
+                      placeholder="admin@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="signup-password" className="text-slate-300">Password</Label>
+                    <Input
+                      type="password"
+                      id="signup-password"
+                      placeholder="Create a strong password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setShowPasswordHints(true)}
+                      onBlur={() => setShowPasswordHints(false)}
+                      required
+                      className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary"
+                    />
+                    
+                    {/* Password Strength Indicators */}
+                    {(showPasswordHints || password.length > 0) && (
+                      <div className="mt-3 p-3 bg-slate-900/50 rounded-lg border border-slate-700">
+                        <p className="text-xs text-slate-400 mb-2 font-medium">Password Requirements:</p>
+                        <div className="grid grid-cols-1 gap-1.5">
+                          <StrengthIndicator met={passwordStrength.hasMinLength} label="At least 8 characters" />
+                          <StrengthIndicator met={passwordStrength.hasUppercase} label="One uppercase letter" />
+                          <StrengthIndicator met={passwordStrength.hasLowercase} label="One lowercase letter" />
+                          <StrengthIndicator met={passwordStrength.hasNumber} label="One number" />
+                          <StrengthIndicator met={passwordStrength.hasSpecialChar} label="One special character (!@#$%^&*)" />
+                        </div>
+                        {allStrengthMet && (
+                          <div className="mt-2 pt-2 border-t border-slate-700">
+                            <p className="text-xs text-green-400 flex items-center gap-1">
+                              <Check className="h-3 w-3" />
+                              Password meets all requirements
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
 
-              {/* reCAPTCHA */}
-              <div className="flex justify-center py-2">
-                <ReCaptcha
-                  ref={recaptchaRef}
-                  onChange={(token) => setRecaptchaToken(token)}
-                  onExpired={() => setRecaptchaToken(null)}
-                  onError={() => setRecaptchaToken(null)}
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="signup-confirmPassword" className="text-slate-300">Confirm Password</Label>
+                    <Input
+                      type="password"
+                      id="signup-confirmPassword"
+                      placeholder="Confirm your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary"
+                    />
+                    {confirmPassword && password !== confirmPassword && (
+                      <p className="text-xs text-red-400 mt-1">Passwords do not match</p>
+                    )}
+                    {confirmPassword && password === confirmPassword && (
+                      <p className="text-xs text-green-400 mt-1 flex items-center gap-1">
+                        <Check className="h-3 w-3" /> Passwords match
+                      </p>
+                    )}
+                  </div>
 
-              <Button 
-                type="submit" 
-                disabled={loading || !recaptchaToken || isLocked} 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-5"
-              >
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Authenticating...
-                  </span>
-                ) : isLocked ? (
-                  <span className="flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
-                    Account Locked
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Sign In to Admin Panel
-                  </span>
-                )}
-              </Button>
-            </form>
+                  {/* reCAPTCHA */}
+                  <div className="flex justify-center py-2">
+                    <ReCaptcha
+                      ref={recaptchaRef}
+                      onChange={(token) => setRecaptchaToken(token)}
+                      onExpired={() => setRecaptchaToken(null)}
+                      onError={() => setRecaptchaToken(null)}
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    disabled={loading || !recaptchaToken || !allStrengthMet || password !== confirmPassword} 
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-5"
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Creating Account...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        Create Admin Account
+                      </span>
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
 
             <div className="mt-6 pt-6 border-t border-slate-700">
               <p className="text-xs text-center text-slate-500">
@@ -463,3 +713,4 @@ const AdminAuth = () => {
 };
 
 export default AdminAuth;
+
