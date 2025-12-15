@@ -180,16 +180,8 @@ const AdminAuth = () => {
       return;
     }
 
-    // Validate password strength
-    const passwordResult = passwordSchema.safeParse(password);
-    if (!passwordResult.success) {
-      toast({
-        title: "Weak Password",
-        description: "Password does not meet security requirements",
-        variant: "destructive"
-      });
-      return;
-    }
+    // Note: Password validation is for signup, not login - skip for login
+    // The server will validate the password
 
     setLoading(true);
     try {
