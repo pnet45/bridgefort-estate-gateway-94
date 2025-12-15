@@ -10,8 +10,8 @@ interface ReCaptchaProps {
 
 const ReCaptcha = forwardRef<ReCAPTCHA, ReCaptchaProps>(
   ({ onChange, onExpired, onError }, ref) => {
-    // Using the production site key
-    const siteKey = '6LfEFiosAAAAAGXh3Iwp9Zw94go1jEs01WnnaXmH';
+    // Using reCAPTCHA v2 site key
+    const siteKey = '6Lc6wyssAAAAAFZXHMFPGkmX8lcVxFbejyjemBoQ';
 
     return (
       <ReCAPTCHA
