@@ -254,14 +254,11 @@ const AdminAuth = () => {
         return;
       }
 
-      const { data: roleData, error: roleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', authUser.id)
-        .eq('role', 'admin')
-        .single();
+      // Use the has_role function to check admin status (bypasses RLS)
+      const { data: isAdmin, error: roleError } = await supabase
+        .rpc('has_role', { _user_id: authUser.id, _role: 'admin' });
 
-      if (roleError || !roleData) {
+      if (roleError || !isAdmin) {
         await recordFailedAttempt(email);
         // Sign out non-admin user
         await supabase.auth.signOut();
@@ -366,7 +363,7 @@ const AdminAuth = () => {
 
       if (data?.error) {
         toast({
-          title: "Signup Failed",
+          title: data?.requiresApproval ? "Admin Signup Restricted" : "Signup Failed",
           description: data.error,
           variant: "destructive"
         });
@@ -375,7 +372,9 @@ const AdminAuth = () => {
 
       toast({
         title: "Admin Account Created",
-        description: "You can now log in with your credentials"
+        description: data?.requiresEmailVerification 
+          ? "Please check your email to verify your account before logging in."
+          : "You can now log in with your credentials"
       });
 
       // Switch to login tab and pre-fill email

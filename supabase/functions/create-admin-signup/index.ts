@@ -43,13 +43,39 @@ serve(async (req) => {
       );
     }
 
+    // Check if any admins already exist
+    const { data: existingAdmins, error: adminCheckError } = await supabaseAdmin
+      .from('user_roles')
+      .select('id')
+      .eq('role', 'admin')
+      .limit(1);
+
+    if (adminCheckError) {
+      console.error('Error checking existing admins:', adminCheckError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to verify admin status' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // If admins exist, this signup is not allowed (require approval from existing admins)
+    if (existingAdmins && existingAdmins.length > 0) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Admin signup is restricted. Please contact an existing administrator for account creation.',
+          requiresApproval: true 
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log(`Creating admin user with email: ${email}`);
 
-    // Create user using admin API
+    // Create user using admin API - DON'T auto-confirm email for first admin
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true,
+      email_confirm: false, // Require email verification
       user_metadata: {
         first_name: firstName || '',
         last_name: lastName || ''
@@ -97,7 +123,8 @@ serve(async (req) => {
           email: newUser.user.email,
           role: 'admin'
         },
-        message: 'Admin account created successfully. You can now log in.'
+        message: 'Admin account created successfully. Please check your email to verify your account before logging in.',
+        requiresEmailVerification: true
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
