@@ -58,20 +58,102 @@ serve(async (req) => {
       );
     }
 
-    // If admins exist, this signup is not allowed (require approval from existing admins)
+    // If admins exist, create a pending request instead
     if (existingAdmins && existingAdmins.length > 0) {
+      console.log(`Admins exist - creating pending request for: ${email}`);
+
+      // Check if there's already a pending request for this email
+      const { data: existingRequest } = await supabaseAdmin
+        .from('pending_admin_requests')
+        .select('id, status')
+        .eq('email', email.toLowerCase())
+        .single();
+
+      if (existingRequest) {
+        if (existingRequest.status === 'pending') {
+          return new Response(
+            JSON.stringify({ 
+              error: 'A request for this email is already pending approval.',
+              requiresApproval: true 
+            }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else if (existingRequest.status === 'rejected') {
+          // Allow resubmission - update the existing request
+          const { error: updateError } = await supabaseAdmin
+            .from('pending_admin_requests')
+            .update({
+              first_name: firstName || null,
+              last_name: lastName || null,
+              password_hash: password, // Store temporarily for approval
+              status: 'pending',
+              requested_at: new Date().toISOString(),
+              reviewed_at: null,
+              reviewed_by: null,
+              rejection_reason: null
+            })
+            .eq('id', existingRequest.id);
+
+          if (updateError) {
+            console.error('Error updating request:', updateError);
+            return new Response(
+              JSON.stringify({ error: 'Failed to submit request' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+
+          return new Response(
+            JSON.stringify({ 
+              success: true,
+              message: 'Your admin access request has been resubmitted. An existing administrator will review and approve your request.',
+              requiresApproval: true,
+              pendingApproval: true
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      // Create new pending request
+      const { error: insertError } = await supabaseAdmin
+        .from('pending_admin_requests')
+        .insert({
+          email: email.toLowerCase(),
+          first_name: firstName || null,
+          last_name: lastName || null,
+          password_hash: password, // Store temporarily - will be used when approved
+          status: 'pending'
+        });
+
+      if (insertError) {
+        console.error('Error creating pending request:', insertError);
+        if (insertError.code === '23505') { // Unique violation
+          return new Response(
+            JSON.stringify({ error: 'A request for this email already exists' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: 'Failed to submit request' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       return new Response(
         JSON.stringify({ 
-          error: 'Admin signup is restricted. Please contact an existing administrator for account creation.',
-          requiresApproval: true 
+          success: true,
+          message: 'Your admin access request has been submitted. An existing administrator will review and approve your request.',
+          requiresApproval: true,
+          pendingApproval: true
         }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Creating admin user with email: ${email}`);
+    // No admins exist - create first admin directly
+    console.log(`Creating first admin user with email: ${email}`);
 
-    // Create user using admin API - DON'T auto-confirm email for first admin
+    // Create user using admin API - require email verification for first admin
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
