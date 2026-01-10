@@ -42,6 +42,7 @@ import TermsOfService from '@/pages/TermsOfService';
 import Sitemap from '@/pages/Sitemap';
 import BridgefortMails from '@/pages/BridgefortMails';
 import AdminAuth from '@/pages/AdminAuth';
+import AdminConsole from '@/pages/AdminConsole';
 
 import './App.css';
 
@@ -81,7 +82,11 @@ function App() {
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/sitemap" element={<Sitemap />} />
                 <Route path="/admin-login" element={<AdminAuth />} />
-                
+                <Route path="/admin-console" element={
+                  <PrivateRoute>
+                    <AdminConsole />
+                  </PrivateRoute>
+                } />
                 {/* Protected Routes */}
                 <Route path="/dashboard" element={
                   <PrivateRoute>

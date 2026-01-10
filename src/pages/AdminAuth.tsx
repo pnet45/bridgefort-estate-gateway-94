@@ -57,7 +57,7 @@ const AdminAuth = () => {
   // Redirect if already logged in as admin
   useEffect(() => {
     if (user && userRole === 'admin') {
-      navigate('/dashboard');
+      navigate('/admin-console');
     }
   }, [user, userRole, navigate]);
 
@@ -279,9 +279,9 @@ const AdminAuth = () => {
 
       toast({
         title: "Admin Login Successful",
-        description: "Welcome to the Admin Panel"
+        description: "Welcome to the Admin Console"
       });
-      navigate('/dashboard');
+      navigate('/admin-console');
     } catch (error) {
       await recordFailedAttempt(email);
       toast({
@@ -371,10 +371,12 @@ const AdminAuth = () => {
       }
 
       toast({
-        title: "Admin Account Created",
-        description: data?.requiresEmailVerification 
-          ? "Please check your email to verify your account before logging in."
-          : "You can now log in with your credentials"
+        title: data?.pendingApproval ? "Request Submitted" : "Admin Account Created",
+        description: data?.pendingApproval 
+          ? "Your request has been submitted. An existing administrator will review and approve your request."
+          : data?.requiresEmailVerification 
+            ? "Please check your email to verify your account before logging in."
+            : "You can now log in with your credentials"
       });
 
       // Switch to login tab and pre-fill email
