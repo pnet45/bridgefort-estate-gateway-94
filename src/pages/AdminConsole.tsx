@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalTab from '@/components/admin/AdminApprovalTab';
+import AdminEmailCenter from '@/components/admin/AdminEmailCenter';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
@@ -276,13 +277,7 @@ const AdminConsole = () => {
           </TabsContent>
 
           <TabsContent value="emails">
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Email Management</h2>
-              <p className="text-slate-400 mb-4">Send emails to users and manage email templates.</p>
-              <Button onClick={() => navigate('/bridgefortmails')}>
-                Open Email Center
-              </Button>
-            </div>
+            <AdminEmailCenter />
           </TabsContent>
 
           <TabsContent value="settings">
