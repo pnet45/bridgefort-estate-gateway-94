@@ -15,11 +15,26 @@ import {
   LogOut,
   Bell,
   Home,
-  UserCheck
+  UserCheck,
+  CheckSquare,
+  Calendar,
+  StickyNote,
+  Megaphone,
+  FolderOpen,
+  MessageSquare
 } from 'lucide-react';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalTab from '@/components/admin/AdminApprovalTab';
 import AdminEmailCenter from '@/components/admin/AdminEmailCenter';
+import AdminDashboardStats from '@/components/admin/AdminDashboardStats';
+import AdminInbox from '@/components/admin/AdminInbox';
+import AdminTaskManager from '@/components/admin/AdminTaskManager';
+import AdminCalendar from '@/components/admin/AdminCalendar';
+import AdminNotes from '@/components/admin/AdminNotes';
+import AdminNotices from '@/components/admin/AdminNotices';
+import AdminFileSharing from '@/components/admin/AdminFileSharing';
+import AdminChat from '@/components/admin/AdminChat';
+import AdminOnlineUsers from '@/components/admin/AdminOnlineUsers';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
@@ -36,7 +51,6 @@ const AdminConsole = () => {
         return;
       }
 
-      // Verify admin role
       const { data: isAdmin, error } = await supabase
         .rpc('has_role', { _user_id: user.id, _role: 'admin' });
 
@@ -50,7 +64,6 @@ const AdminConsole = () => {
         return;
       }
 
-      // Fetch profile
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -59,7 +72,6 @@ const AdminConsole = () => {
 
       setProfile(profileData);
 
-      // Fetch pending admin requests count
       const { count } = await supabase
         .from('pending_admin_requests')
         .select('*', { count: 'exact', head: true })
@@ -157,107 +169,62 @@ const AdminConsole = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="bg-slate-800 border border-slate-700 p-1 flex-wrap h-auto gap-1">
-            <TabsTrigger 
-              value="overview" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
-            >
+            <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
               <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Overview</span>
+              <span className="hidden sm:inline">Dashboard</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="users" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
-            >
+            <TabsTrigger value="crm" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+              <CheckSquare className="h-4 w-4" />
+              <span className="hidden sm:inline">CRM</span>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
               <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">User Management</span>
+              <span className="hidden sm:inline">Users</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="approvals" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2 relative"
-            >
+            <TabsTrigger value="approvals" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2 relative">
               <UserCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">Admin Approvals</span>
+              <span className="hidden sm:inline">Approvals</span>
               {pendingCount > 0 && (
                 <span className="ml-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
                   {pendingCount}
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger 
-              value="content" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Content</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="emails" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
-            >
+            <TabsTrigger value="emails" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
               <Mail className="h-4 w-4" />
               <span className="hidden sm:inline">Emails</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="settings" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Settings</span>
+            <TabsTrigger value="content" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Content</span>
             </TabsTrigger>
           </TabsList>
 
+          {/* Dashboard Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard
-                title="Total Users"
-                value="--"
-                icon={<Users className="h-5 w-5" />}
-                color="blue"
-              />
-              <StatCard
-                title="Pending Approvals"
-                value={pendingCount.toString()}
-                icon={<UserCheck className="h-5 w-5" />}
-                color="yellow"
-              />
-              <StatCard
-                title="Blog Posts"
-                value="--"
-                icon={<FileText className="h-5 w-5" />}
-                color="green"
-              />
-              <StatCard
-                title="Emails Sent"
-                value="--"
-                icon={<Mail className="h-5 w-5" />}
-                color="purple"
-              />
-            </div>
-
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <QuickAction
-                  title="Create User"
-                  icon={<Users className="h-6 w-6" />}
-                  onClick={() => {}}
-                />
-                <QuickAction
-                  title="Send Email"
-                  icon={<Mail className="h-6 w-6" />}
-                  onClick={() => navigate('/bridgefortmails')}
-                />
-                <QuickAction
-                  title="New Blog Post"
-                  icon={<FileText className="h-6 w-6" />}
-                  onClick={() => navigate('/create-post')}
-                />
-                <QuickAction
-                  title="View Site"
-                  icon={<Home className="h-6 w-6" />}
-                  onClick={() => navigate('/')}
-                />
+            <AdminDashboardStats />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <AdminInbox />
               </div>
+              <div className="space-y-6">
+                <AdminOnlineUsers />
+                <AdminChat />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* CRM Tab */}
+          <TabsContent value="crm" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <AdminTaskManager />
+              <AdminCalendar />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <AdminNotices />
+              <AdminNotes />
+              <AdminFileSharing />
             </div>
           </TabsContent>
 
@@ -269,21 +236,18 @@ const AdminConsole = () => {
             <AdminApprovalTab onCountChange={setPendingCount} />
           </TabsContent>
 
-          <TabsContent value="content">
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Content Management</h2>
-              <p className="text-slate-400">Blog posts, properties, and site content management coming soon.</p>
-            </div>
-          </TabsContent>
-
           <TabsContent value="emails">
             <AdminEmailCenter />
           </TabsContent>
 
-          <TabsContent value="settings">
+          <TabsContent value="content">
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Admin Settings</h2>
-              <p className="text-slate-400">System settings and configuration coming soon.</p>
+              <h2 className="text-xl font-semibold text-white mb-4">Content Management</h2>
+              <p className="text-slate-400">Blog posts, properties, and site content management.</p>
+              <div className="mt-4 flex gap-4">
+                <Button onClick={() => navigate('/create-post')}>Create Blog Post</Button>
+                <Button variant="outline" onClick={() => navigate('/blog')}>View Blog</Button>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
@@ -293,58 +257,5 @@ const AdminConsole = () => {
     </div>
   );
 };
-
-const StatCard = ({ 
-  title, 
-  value, 
-  icon, 
-  color 
-}: { 
-  title: string; 
-  value: string; 
-  icon: React.ReactNode; 
-  color: 'blue' | 'green' | 'yellow' | 'purple';
-}) => {
-  const colorClasses = {
-    blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    green: 'bg-green-500/10 text-green-400 border-green-500/20',
-    yellow: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-    purple: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  };
-
-  return (
-    <div className={`p-6 rounded-xl border ${colorClasses[color]}`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-slate-400">{title}</p>
-          <p className="text-3xl font-bold text-white mt-1">{value}</p>
-        </div>
-        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
-          {icon}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const QuickAction = ({ 
-  title, 
-  icon, 
-  onClick 
-}: { 
-  title: string; 
-  icon: React.ReactNode; 
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    className="p-4 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-xl transition-colors group"
-  >
-    <div className="text-primary group-hover:scale-110 transition-transform mb-2">
-      {icon}
-    </div>
-    <p className="text-sm text-slate-300">{title}</p>
-  </button>
-);
 
 export default AdminConsole;
