@@ -21,7 +21,9 @@ import {
   StickyNote,
   Megaphone,
   FolderOpen,
-  MessageSquare
+  MessageSquare,
+  Building,
+  Activity
 } from 'lucide-react';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalTab from '@/components/admin/AdminApprovalTab';
@@ -35,6 +37,9 @@ import AdminNotices from '@/components/admin/AdminNotices';
 import AdminFileSharing from '@/components/admin/AdminFileSharing';
 import AdminChat from '@/components/admin/AdminChat';
 import AdminOnlineUsers from '@/components/admin/AdminOnlineUsers';
+import AdminPropertyManagement from '@/components/admin/AdminPropertyManagement';
+import AdminActivityLogs from '@/components/admin/AdminActivityLogs';
+import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
@@ -43,6 +48,8 @@ const AdminConsole = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -116,18 +123,26 @@ const AdminConsole = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-slate-400 hover:text-white relative"
-              >
-                <Bell className="h-5 w-5" />
-                {pendingCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
-                    {pendingCount}
-                  </span>
-                )}
-              </Button>
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setNotificationOpen(!notificationOpen)}
+                  className="text-slate-400 hover:text-white relative"
+                >
+                  <Bell className="h-5 w-5" />
+                  {pendingCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
+                      {pendingCount}
+                    </span>
+                  )}
+                </Button>
+                <AdminNotificationCenter 
+                  isOpen={notificationOpen} 
+                  onClose={() => setNotificationOpen(false)}
+                  onNavigate={(tab) => setActiveTab(tab)}
+                />
+              </div>
 
               <div className="flex items-center gap-3 px-3 py-1.5 bg-slate-700/50 rounded-lg">
                 <div className="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center">
@@ -167,11 +182,15 @@ const AdminConsole = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-slate-800 border border-slate-700 p-1 flex-wrap h-auto gap-1">
             <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Dashboard</span>
+            </TabsTrigger>
+            <TabsTrigger value="properties" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+              <Building className="h-4 w-4" />
+              <span className="hidden sm:inline">Properties</span>
             </TabsTrigger>
             <TabsTrigger value="crm" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
               <CheckSquare className="h-4 w-4" />
@@ -194,6 +213,10 @@ const AdminConsole = () => {
               <Mail className="h-4 w-4" />
               <span className="hidden sm:inline">Emails</span>
             </TabsTrigger>
+            <TabsTrigger value="activity" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Activity</span>
+            </TabsTrigger>
             <TabsTrigger value="content" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Content</span>
@@ -213,6 +236,11 @@ const AdminConsole = () => {
                 <AdminChat />
               </div>
             </div>
+          </TabsContent>
+
+          {/* Properties Tab */}
+          <TabsContent value="properties">
+            <AdminPropertyManagement />
           </TabsContent>
 
           {/* CRM Tab */}
@@ -238,6 +266,11 @@ const AdminConsole = () => {
 
           <TabsContent value="emails">
             <AdminEmailCenter />
+          </TabsContent>
+
+          {/* Activity Logs Tab */}
+          <TabsContent value="activity">
+            <AdminActivityLogs />
           </TabsContent>
 
           <TabsContent value="content">
