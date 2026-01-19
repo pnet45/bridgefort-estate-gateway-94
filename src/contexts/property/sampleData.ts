@@ -100,7 +100,7 @@ export const sampleProperties: Property[] = [
     paymentPlans: ['Initial Deposit: ₦200,000', 'Balance within 3 months', 'Flexible Payment Plan'],
     media: ['/lovable-uploads/Homeslider3.png']
   },
-  // Luxury Home Sales - Keep only one featured home
+  // Luxury Home Sales - Featured homes
   {
     id: 'luxury-3bedroom-lagos',
     name: 'Premium 3-Bedroom House Lagos',
@@ -125,7 +125,31 @@ export const sampleProperties: Property[] = [
     paymentPlans: ['Outright Payment', 'Mortgage Available', '12 Months Plan'],
     media: [luxury3BedroomLagos]
   },
-  // Apartment Rentals - Keep only one featured rental
+  {
+    id: 'luxury-4bedroom-asaba',
+    name: 'Luxury 4-Bedroom Duplex Asaba',
+    title: 'Premium 4-Bedroom Duplex in Asaba',
+    location: 'GRA, Asaba, Delta State',
+    price: '₦95,000,000',
+    imageUrl: luxury4BedroomAsaba,
+    propertyType: 'Residential House',
+    property_category: 'home',
+    size: 320,
+    sqm: 320,
+    totalPlots: 1,
+    availablePlots: 1,
+    pricePerPlot: 95000000,
+    bedrooms: 4,
+    bathrooms: 4,
+    is_for_sale: true,
+    is_for_rent: false,
+    description: 'Magnificent 4-bedroom duplex in the prestigious GRA of Asaba. Features exquisite interior finishing, modern kitchen, spacious compound, and BQ.',
+    features: ['4 Bedrooms', '4 Bathrooms', 'BQ', 'Modern Kitchen', 'Spacious Compound'],
+    amenities: ['Generator', 'Borehole', 'Security Post', 'Car Park', 'Garden'],
+    paymentPlans: ['Outright Payment', 'Mortgage Available', '12 Months Plan'],
+    media: [luxury4BedroomAsaba]
+  },
+  // Apartment Rentals - Featured rental
   {
     id: 'luxury-rental-ogun',
     name: 'Luxury Rental Apartment Ogun',
