@@ -179,7 +179,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
       if (isEditing && estate) {
         // Update existing estate
         const { error } = await supabase
-          .from('Estate')
+          .from('estate')
           .update(estateData)
           .eq('id', estate.id);
           
@@ -192,7 +192,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
       } else {
         // Create new estate
         const { error } = await supabase
-          .from('Estate')
+          .from('estate')
           .insert(estateData);
           
         if (error) throw error;

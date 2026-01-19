@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { 
   Table, 
   TableBody, 
@@ -11,10 +12,18 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, Loader2, Building, Eye } from 'lucide-react';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue 
+} from '@/components/ui/select';
+import { Plus, Pencil, Trash2, Loader2, Building, Search, Filter, X } from 'lucide-react';
 import PropertyForm from '../properties/PropertyForm';
 import { logAdminActivity } from './AdminActivityLogs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 
 interface Estate {
   id: string;
@@ -51,6 +60,12 @@ const AdminPropertyManagement: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [estateToDelete, setEstateToDelete] = useState<Estate | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
+  const [priceRange, setPriceRange] = useState<string>('all');
 
   useEffect(() => {
     fetchEstates();
@@ -65,6 +80,59 @@ const AdminPropertyManagement: React.FC = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Get unique locations and types for filters
+  const uniqueLocations = useMemo(() => {
+    const locations = estates
+      .map(e => e.location)
+      .filter((loc): loc is string => !!loc);
+    return [...new Set(locations)].sort();
+  }, [estates]);
+
+  const uniqueTypes = useMemo(() => {
+    const types = estates
+      .map(e => e.type)
+      .filter((type): type is string => !!type);
+    return [...new Set(types)].sort();
+  }, [estates]);
+
+  // Filtered estates
+  const filteredEstates = useMemo(() => {
+    return estates.filter(estate => {
+      // Search filter
+      const searchMatch = 
+        estate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (estate.location?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (estate.description?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (estate.title?.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      // Type filter
+      const typeMatch = typeFilter === 'all' || estate.type === typeFilter;
+      
+      // Location filter
+      const locationMatch = locationFilter === 'all' || estate.location === locationFilter;
+      
+      // Price range filter
+      let priceMatch = true;
+      const price = estate.promo_price || estate.actual_price || 0;
+      if (priceRange === 'under1m') priceMatch = price < 1000000;
+      else if (priceRange === '1m-5m') priceMatch = price >= 1000000 && price < 5000000;
+      else if (priceRange === '5m-10m') priceMatch = price >= 5000000 && price < 10000000;
+      else if (priceRange === '10m-50m') priceMatch = price >= 10000000 && price < 50000000;
+      else if (priceRange === 'above50m') priceMatch = price >= 50000000;
+      
+      return searchMatch && typeMatch && locationMatch && priceMatch;
+    });
+  }, [estates, searchTerm, typeFilter, locationFilter, priceRange]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setTypeFilter('all');
+    setLocationFilter('all');
+    setPriceRange('all');
+  };
+
+  const hasActiveFilters = searchTerm || typeFilter !== 'all' || locationFilter !== 'all' || priceRange !== 'all';
 
   const fetchEstates = async () => {
     try {
@@ -159,6 +227,9 @@ const AdminPropertyManagement: React.FC = () => {
             <Building className="h-5 w-5 text-green-400" />
           </div>
           <h2 className="text-xl font-semibold text-white">Property Management</h2>
+          <Badge variant="outline" className="text-slate-400">
+            {filteredEstates.length} of {estates.length}
+          </Badge>
         </div>
         <Button onClick={handleAddNew} className="gap-2">
           <Plus className="h-4 w-4" />
@@ -166,15 +237,92 @@ const AdminPropertyManagement: React.FC = () => {
         </Button>
       </div>
 
+      {/* Search and Filters */}
+      <div className="space-y-4 mb-6">
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Search by name, location, description..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+            />
+          </div>
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="text-slate-400 hover:text-white gap-2"
+            >
+              <X className="h-4 w-4" />
+              Clear Filters
+            </Button>
+          )}
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-slate-400" />
+            <span className="text-sm text-slate-400">Filters:</span>
+          </div>
+          
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-[140px] bg-slate-700 border-slate-600 text-white">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              {uniqueTypes.map(type => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={locationFilter} onValueChange={setLocationFilter}>
+            <SelectTrigger className="w-[180px] bg-slate-700 border-slate-600 text-white">
+              <SelectValue placeholder="Location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {uniqueLocations.map(loc => (
+                <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={priceRange} onValueChange={setPriceRange}>
+            <SelectTrigger className="w-[160px] bg-slate-700 border-slate-600 text-white">
+              <SelectValue placeholder="Price Range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Prices</SelectItem>
+              <SelectItem value="under1m">Under ₦1M</SelectItem>
+              <SelectItem value="1m-5m">₦1M - ₦5M</SelectItem>
+              <SelectItem value="5m-10m">₦5M - ₦10M</SelectItem>
+              <SelectItem value="10m-50m">₦10M - ₦50M</SelectItem>
+              <SelectItem value="above50m">Above ₦50M</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      ) : estates.length === 0 ? (
+      ) : filteredEstates.length === 0 ? (
         <div className="text-center py-12">
           <Building className="h-12 w-12 mx-auto text-slate-500 mb-4" />
-          <p className="text-slate-400 mb-4">No properties found</p>
-          <Button onClick={handleAddNew}>Add Your First Property</Button>
+          <p className="text-slate-400 mb-4">
+            {estates.length === 0 ? 'No properties found' : 'No properties match your filters'}
+          </p>
+          {estates.length === 0 ? (
+            <Button onClick={handleAddNew}>Add Your First Property</Button>
+          ) : (
+            <Button variant="outline" onClick={clearFilters}>Clear Filters</Button>
+          )}
         </div>
       ) : (
         <ScrollArea className="h-[500px]">
@@ -189,13 +337,18 @@ const AdminPropertyManagement: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {estates.map((estate) => (
+              {filteredEstates.map((estate) => (
                 <TableRow key={estate.id} className="border-slate-700 hover:bg-slate-700/50">
                   <TableCell className="font-medium text-white">{estate.name}</TableCell>
                   <TableCell className="text-slate-300">{estate.location || '-'}</TableCell>
-                  <TableCell className="text-slate-300">{estate.type || 'Land'}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-slate-300 border-slate-600">
+                      {estate.type || 'Land'}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-slate-300">
-                    {estate.promo_price ? `₦${estate.promo_price.toLocaleString()}` : '-'}
+                    {estate.promo_price ? `₦${estate.promo_price.toLocaleString()}` : 
+                     estate.actual_price ? `₦${estate.actual_price.toLocaleString()}` : '-'}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">

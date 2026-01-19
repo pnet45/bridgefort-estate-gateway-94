@@ -1,6 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/auth';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,39 +6,35 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { useEmail } from '@/hooks/useEmail';
 import { 
   Mail, Send, Inbox, Clock, Search, Trash2, 
-  PenSquare, Users, RefreshCw, CheckCircle, XCircle 
+  PenSquare, Users, RefreshCw, CheckCircle, XCircle,
+  MailOpen, Reply, User, Archive, Star
 } from 'lucide-react';
-import { format } from 'date-fns';
-
-interface EmailLog {
-  id: string;
-  recipient_email: string;
-  recipient_name: string | null;
-  subject: string;
-  body: string;
-  status: string;
-  sent_at: string;
-}
-
-interface UserProfile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  email?: string;
-}
 
 export default function AdminEmailCenter() {
-  const { user } = useAuth();
-  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
+  const {
+    sentEmails,
+    inboxMessages,
+    contacts,
+    loading,
+    sending,
+    unreadCount,
+    sendEmail,
+    replyToMessage,
+    deleteEmailLog,
+    deleteMessage,
+    refreshAll,
+  } = useEmail();
+
+  const [activeTab, setActiveTab] = useState('inbox');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedEmail, setSelectedEmail] = useState<EmailLog | null>(null);
-  const [activeTab, setActiveTab] = useState('compose');
+  const [inboxFilter, setInboxFilter] = useState<'all' | 'unread' | 'read'>('all');
   
   // Compose form state
   const [recipientEmail, setRecipientEmail] = useState('');
@@ -48,44 +42,11 @@ export default function AdminEmailCenter() {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      // Fetch email logs
-      const { data: logs, error: logsError } = await supabase
-        .from('email_logs')
-        .select('*')
-        .order('sent_at', { ascending: false });
-
-      if (logsError) throw logsError;
-      setEmailLogs(logs || []);
-
-      // Fetch users for recipient selection
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name');
-
-      if (profilesError) throw profilesError;
-
-      // Fetch emails from auth.users via edge function
-      const { data: usersData } = await supabase.functions.invoke('get-user-emails');
-      
-      const usersWithEmails = (profiles || []).map(profile => ({
-        ...profile,
-        email: usersData?.users?.find((u: any) => u.id === profile.id)?.email || ''
-      }));
-      
-      setUsers(usersWithEmails);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Selected items
+  const [selectedEmail, setSelectedEmail] = useState<any>(null);
+  const [selectedMessage, setSelectedMessage] = useState<any>(null);
+  const [replySubject, setReplySubject] = useState('');
+  const [replyContent, setReplyContent] = useState('');
 
   const handleSendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,94 +55,323 @@ export default function AdminEmailCenter() {
       return;
     }
 
-    setSending(true);
-    try {
-      const { error } = await supabase.functions.invoke('send-admin-email', {
-        body: {
-          to: recipientEmail,
-          name: recipientName,
-          subject,
-          body
-        }
-      });
-
-      if (error) throw error;
-
-      // Log the email
-      await supabase.from('email_logs').insert({
-        sender_id: user?.id,
-        recipient_email: recipientEmail,
-        recipient_name: recipientName,
-        subject,
-        body,
-        status: 'sent'
-      });
-
+    const result = await sendEmail(recipientEmail, subject, body, recipientName);
+    
+    if (result.success) {
       toast.success('Email sent successfully!');
       setRecipientEmail('');
       setRecipientName('');
       setSubject('');
       setBody('');
-      fetchData();
-    } catch (error: any) {
-      console.error('Error sending email:', error);
-      toast.error(error.message || 'Failed to send email');
-    } finally {
-      setSending(false);
+      setActiveTab('sent');
+    } else {
+      toast.error(result.error || 'Failed to send email');
+    }
+  };
+
+  const handleReply = async () => {
+    if (!selectedMessage || !replyContent.trim()) {
+      toast.error('Please write a reply message');
+      return;
+    }
+
+    const result = await replyToMessage(
+      selectedMessage,
+      replySubject || `Re: ${selectedMessage.subject}`,
+      replyContent
+    );
+
+    if (result.success) {
+      toast.success(`Reply sent to ${selectedMessage.email}`);
+      setReplyContent('');
+      setReplySubject('');
+      setSelectedMessage(null);
+    } else {
+      toast.error(result.error || 'Failed to send reply');
     }
   };
 
   const handleDeleteLog = async (id: string) => {
-    try {
-      const { error } = await supabase.from('email_logs').delete().eq('id', id);
-      if (error) throw error;
+    const result = await deleteEmailLog(id);
+    if (result.success) {
       toast.success('Email log deleted');
-      setEmailLogs(prev => prev.filter(log => log.id !== id));
       if (selectedEmail?.id === id) setSelectedEmail(null);
-    } catch (error) {
+    } else {
       toast.error('Failed to delete log');
     }
   };
 
-  const handleSelectContact = (userContact: UserProfile) => {
-    setRecipientEmail(userContact.email || '');
-    setRecipientName(`${userContact.first_name || ''} ${userContact.last_name || ''}`.trim());
+  const handleDeleteMessage = async (id: string) => {
+    const result = await deleteMessage(id);
+    if (result.success) {
+      toast.success('Message deleted');
+    } else {
+      toast.error('Failed to delete message');
+    }
+  };
+
+  const handleSelectContact = (contact: any) => {
+    setRecipientEmail(contact.email || '');
+    setRecipientName(`${contact.first_name || ''} ${contact.last_name || ''}`.trim());
     setActiveTab('compose');
   };
 
-  const filteredLogs = emailLogs.filter(log =>
+  // Filtered data
+  const filteredSentEmails = sentEmails.filter(log =>
     log.recipient_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const filteredInbox = inboxMessages.filter(msg => {
+    const matchesSearch = 
+      msg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      msg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      msg.subject.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesFilter = 
+      inboxFilter === 'all' ||
+      (inboxFilter === 'unread' && !msg.responded) ||
+      (inboxFilter === 'read' && msg.responded);
+    
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Mail className="h-6 w-6 text-primary" />
-          <h2 className="text-xl font-semibold text-white">Email Center</h2>
+          <div className="p-2 bg-blue-900/30 rounded-lg">
+            <Mail className="h-6 w-6 text-blue-400" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-white">Email Center</h2>
+            <p className="text-sm text-slate-400">Manage all communications</p>
+          </div>
+          {unreadCount > 0 && (
+            <Badge variant="destructive" className="ml-2">{unreadCount} unread</Badge>
+          )}
         </div>
-        <Button variant="outline" size="sm" onClick={fetchData} disabled={loading}>
+        <Button variant="outline" size="sm" onClick={refreshAll} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-slate-700 border border-slate-600">
-          <TabsTrigger value="compose" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+        <TabsList className="bg-slate-700 border border-slate-600 p-1">
+          <TabsTrigger 
+            value="inbox" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+          >
+            <Inbox className="h-4 w-4" />
+            Inbox
+            {unreadCount > 0 && (
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                {unreadCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger 
+            value="compose" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+          >
             <PenSquare className="h-4 w-4" />
             Compose
           </TabsTrigger>
-          <TabsTrigger value="sent" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+          <TabsTrigger 
+            value="sent" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+          >
             <Send className="h-4 w-4" />
-            Sent ({emailLogs.length})
+            Sent ({sentEmails.length})
           </TabsTrigger>
-          <TabsTrigger value="contacts" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+          <TabsTrigger 
+            value="contacts" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+          >
             <Users className="h-4 w-4" />
-            Contacts ({users.length})
+            Contacts ({contacts.length})
           </TabsTrigger>
         </TabsList>
+
+        {/* Inbox Tab */}
+        <TabsContent value="inbox" className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Search messages..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-slate-700 border-slate-600 text-white"
+              />
+            </div>
+            <div className="flex bg-slate-700 rounded-lg p-1">
+              {(['all', 'unread', 'read'] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setInboxFilter(f)}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                    inboxFilter === f
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="p-0">
+              <ScrollArea className="h-[500px]">
+                {loading ? (
+                  <div className="p-6 space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="h-20 bg-slate-700 rounded-lg animate-pulse" />
+                    ))}
+                  </div>
+                ) : filteredInbox.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <Mail className="h-12 w-12 mx-auto text-slate-500 mb-4" />
+                    <p className="text-slate-400">No messages found</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-700">
+                    {filteredInbox.map((message) => (
+                      <Dialog key={message.id}>
+                        <DialogTrigger asChild>
+                          <div
+                            onClick={() => {
+                              setSelectedMessage(message);
+                              setReplySubject(`Re: ${message.subject}`);
+                            }}
+                            className={`p-4 hover:bg-slate-700/50 cursor-pointer transition-colors ${
+                              !message.responded ? 'bg-slate-700/30' : ''
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-3 flex-1 min-w-0">
+                                <div className={`p-2 rounded-full ${
+                                  message.responded 
+                                    ? 'bg-slate-600' 
+                                    : 'bg-primary/20'
+                                }`}>
+                                  {message.responded ? (
+                                    <MailOpen className="h-4 w-4 text-slate-400" />
+                                  ) : (
+                                    <Mail className="h-4 w-4 text-primary" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`font-medium truncate ${
+                                      !message.responded ? 'text-white' : 'text-slate-300'
+                                    }`}>
+                                      {message.name}
+                                    </span>
+                                    {!message.responded && (
+                                      <Badge variant="default" className="text-xs">New</Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-primary truncate">{message.subject}</p>
+                                  <p className="text-sm text-slate-400 truncate">{message.message}</p>
+                                </div>
+                              </div>
+                              <div className="text-xs text-slate-500 whitespace-nowrap">
+                                {format(new Date(message.created_at), 'MMM d, h:mm a')}
+                              </div>
+                            </div>
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle className="text-white">{message.subject}</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-4 text-sm text-slate-400 flex-wrap">
+                              <div className="flex items-center gap-1">
+                                <User className="h-4 w-4" />
+                                {message.name}
+                              </div>
+                              <div>{message.email}</div>
+                              <div>{message.phone}</div>
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                {format(new Date(message.created_at), 'PPp')}
+                              </div>
+                            </div>
+                            
+                            <div className="bg-slate-700/50 rounded-lg p-4">
+                              <p className="text-slate-200 whitespace-pre-wrap">{message.message}</p>
+                            </div>
+
+                            {message.responded ? (
+                              <Badge variant="secondary" className="bg-green-500/20 text-green-400">
+                                Replied on {format(new Date(message.responded_at!), 'PPp')}
+                              </Badge>
+                            ) : (
+                              <div className="space-y-4 border-t border-slate-700 pt-4">
+                                <h4 className="font-medium text-white flex items-center gap-2">
+                                  <Reply className="h-4 w-4" />
+                                  Reply
+                                </h4>
+                                <div className="space-y-2">
+                                  <Label className="text-slate-400">Subject</Label>
+                                  <Input
+                                    value={replySubject}
+                                    onChange={(e) => setReplySubject(e.target.value)}
+                                    className="bg-slate-700 border-slate-600 text-white"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label className="text-slate-400">Message</Label>
+                                  <Textarea
+                                    value={replyContent}
+                                    onChange={(e) => setReplyContent(e.target.value)}
+                                    placeholder="Type your reply..."
+                                    rows={6}
+                                    className="bg-slate-700 border-slate-600 text-white"
+                                  />
+                                </div>
+                                <div className="flex justify-between">
+                                  <Button
+                                    variant="destructive"
+                                    onClick={() => handleDeleteMessage(message.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete
+                                  </Button>
+                                  <Button
+                                    onClick={handleReply}
+                                    disabled={!replyContent.trim() || sending}
+                                  >
+                                    {sending ? (
+                                      <>
+                                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                        Sending...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Send className="h-4 w-4 mr-2" />
+                                        Send Reply
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Compose Tab */}
         <TabsContent value="compose">
@@ -236,24 +426,26 @@ export default function AdminEmailCenter() {
                     placeholder="Write your email message here..."
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
-                    rows={8}
+                    rows={10}
                     required
                     className="bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
-                <Button type="submit" disabled={sending}>
-                  {sending ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      Send Email
-                    </>
-                  )}
-                </Button>
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={sending} className="gap-2">
+                    {sending ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        Send Email
+                      </>
+                    )}
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>
@@ -266,57 +458,63 @@ export default function AdminEmailCenter() {
             <Card className="lg:col-span-1 bg-slate-800 border-slate-700">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-lg text-white">
-                  <Inbox className="h-5 w-5" />
+                  <Send className="h-5 w-5" />
                   Sent Emails
                 </CardTitle>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
-                    placeholder="Search emails..."
+                    placeholder="Search sent emails..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9 bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
               </CardHeader>
-              <CardContent className="max-h-[400px] overflow-y-auto space-y-2">
-                {loading ? (
-                  <div className="flex justify-center py-8">
-                    <RefreshCw className="h-6 w-6 animate-spin text-slate-400" />
-                  </div>
-                ) : filteredLogs.length === 0 ? (
-                  <p className="text-center text-slate-400 py-8">No emails found</p>
-                ) : (
-                  filteredLogs.map((log) => (
-                    <div
-                      key={log.id}
-                      onClick={() => setSelectedEmail(log)}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                        selectedEmail?.id === log.id
-                          ? 'bg-primary/20 border border-primary/30'
-                          : 'bg-slate-700/50 hover:bg-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium truncate text-white">{log.recipient_email}</p>
-                          <p className="text-sm text-slate-400 truncate">{log.subject}</p>
-                        </div>
-                        <Badge variant={log.status === 'sent' ? 'default' : 'destructive'} className="shrink-0">
-                          {log.status === 'sent' ? (
-                            <CheckCircle className="h-3 w-3" />
-                          ) : (
-                            <XCircle className="h-3 w-3" />
-                          )}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {format(new Date(log.sent_at), 'MMM d, yyyy h:mm a')}
-                      </p>
+              <CardContent className="p-0">
+                <ScrollArea className="h-[400px]">
+                  {loading ? (
+                    <div className="p-4 space-y-3">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className="h-16 bg-slate-700 rounded-lg animate-pulse" />
+                      ))}
                     </div>
-                  ))
-                )}
+                  ) : filteredSentEmails.length === 0 ? (
+                    <p className="text-center text-slate-400 py-8">No sent emails found</p>
+                  ) : (
+                    <div className="p-2 space-y-2">
+                      {filteredSentEmails.map((log) => (
+                        <div
+                          key={log.id}
+                          onClick={() => setSelectedEmail(log)}
+                          className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                            selectedEmail?.id === log.id
+                              ? 'bg-primary/20 border border-primary/30'
+                              : 'bg-slate-700/50 hover:bg-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate text-white">{log.recipient_email}</p>
+                              <p className="text-sm text-slate-400 truncate">{log.subject}</p>
+                            </div>
+                            <Badge variant={log.status === 'sent' ? 'default' : 'destructive'} className="shrink-0">
+                              {log.status === 'sent' ? (
+                                <CheckCircle className="h-3 w-3" />
+                              ) : (
+                                <XCircle className="h-3 w-3" />
+                              )}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {format(new Date(log.sent_at), 'MMM d, yyyy h:mm a')}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
               </CardContent>
             </Card>
 
@@ -340,8 +538,9 @@ export default function AdminEmailCenter() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteLog(selectedEmail.id)}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
                       >
-                        <Trash2 className="h-4 w-4 text-red-400" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                     <div>
@@ -353,7 +552,9 @@ export default function AdminEmailCenter() {
                       <p className="text-slate-300">{format(new Date(selectedEmail.sent_at), 'MMMM d, yyyy h:mm a')}</p>
                     </div>
                     <hr className="border-slate-700" />
-                    <div className="whitespace-pre-wrap text-slate-300">{selectedEmail.body}</div>
+                    <div className="whitespace-pre-wrap text-slate-300 bg-slate-700/30 p-4 rounded-lg">
+                      {selectedEmail.body}
+                    </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-48 text-slate-400">
@@ -377,27 +578,41 @@ export default function AdminEmailCenter() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="flex justify-center py-8">
-                  <RefreshCw className="h-6 w-6 animate-spin text-slate-400" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="h-24 bg-slate-700 rounded-lg animate-pulse" />
+                  ))}
                 </div>
-              ) : users.length === 0 ? (
-                <p className="text-center text-slate-400 py-8">No contacts found</p>
+              ) : contacts.length === 0 ? (
+                <div className="text-center py-12">
+                  <Users className="h-12 w-12 mx-auto text-slate-500 mb-4" />
+                  <p className="text-slate-400">No contacts found</p>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {users.map((userContact) => (
+                  {contacts.filter(c => c.email).map((contact) => (
                     <div
-                      key={userContact.id}
+                      key={contact.id}
                       className="p-4 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-colors"
                     >
-                      <p className="font-medium text-white">
-                        {userContact.first_name} {userContact.last_name}
-                      </p>
-                      <p className="text-sm text-slate-400">{userContact.email}</p>
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-primary/20 rounded-full">
+                          <User className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-white truncate">
+                            {contact.first_name || contact.last_name 
+                              ? `${contact.first_name || ''} ${contact.last_name || ''}`.trim()
+                              : 'No Name'}
+                          </p>
+                          <p className="text-sm text-slate-400 truncate">{contact.email}</p>
+                        </div>
+                      </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="mt-2"
-                        onClick={() => handleSelectContact(userContact)}
+                        className="mt-3 w-full"
+                        onClick={() => handleSelectContact(contact)}
                       >
                         <Mail className="h-3 w-3 mr-1" />
                         Send Email
