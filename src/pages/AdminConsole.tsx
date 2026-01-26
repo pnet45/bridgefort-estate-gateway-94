@@ -23,7 +23,8 @@ import {
   FolderOpen,
   MessageSquare,
   Building,
-  Activity
+  Activity,
+  TrendingUp
 } from 'lucide-react';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalTab from '@/components/admin/AdminApprovalTab';
@@ -40,6 +41,7 @@ import AdminOnlineUsers from '@/components/admin/AdminOnlineUsers';
 import AdminPropertyManagement from '@/components/admin/AdminPropertyManagement';
 import AdminActivityLogs from '@/components/admin/AdminActivityLogs';
 import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
+import AdminPropertyAnalytics from '@/components/admin/AdminPropertyAnalytics';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
@@ -213,6 +215,10 @@ const AdminConsole = () => {
               <Mail className="h-4 w-4" />
               <span className="hidden sm:inline">Emails</span>
             </TabsTrigger>
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Analytics</span>
+            </TabsTrigger>
             <TabsTrigger value="activity" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
               <Activity className="h-4 w-4" />
               <span className="hidden sm:inline">Activity</span>
@@ -266,6 +272,11 @@ const AdminConsole = () => {
 
           <TabsContent value="emails">
             <AdminEmailCenter />
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <AdminPropertyAnalytics />
           </TabsContent>
 
           {/* Activity Logs Tab */}
