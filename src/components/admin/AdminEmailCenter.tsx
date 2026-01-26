@@ -11,10 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useEmail } from '@/hooks/useEmail';
+import AdminEmailTemplates from './AdminEmailTemplates';
+import AdminBulkEmail from './AdminBulkEmail';
 import { 
   Mail, Send, Inbox, Clock, Search, Trash2, 
   PenSquare, Users, RefreshCw, CheckCircle, XCircle,
-  MailOpen, Reply, User, Archive, Star
+  MailOpen, Reply, User, Archive, Star, LayoutTemplate, Megaphone
 } from 'lucide-react';
 
 export default function AdminEmailCenter() {
@@ -191,6 +193,20 @@ export default function AdminEmailCenter() {
           >
             <Users className="h-4 w-4" />
             Contacts ({contacts.length})
+          </TabsTrigger>
+          <TabsTrigger 
+            value="templates" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+          >
+            <LayoutTemplate className="h-4 w-4" />
+            Templates
+          </TabsTrigger>
+          <TabsTrigger 
+            value="bulk" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+          >
+            <Megaphone className="h-4 w-4" />
+            Bulk Email
           </TabsTrigger>
         </TabsList>
 
@@ -623,6 +639,23 @@ export default function AdminEmailCenter() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Templates Tab */}
+        <TabsContent value="templates">
+          <AdminEmailTemplates 
+            onSelectTemplate={(template) => {
+              setSubject(template.subject);
+              setBody(template.body);
+              setActiveTab('compose');
+              toast.success('Template applied to compose');
+            }}
+          />
+        </TabsContent>
+
+        {/* Bulk Email Tab */}
+        <TabsContent value="bulk">
+          <AdminBulkEmail />
         </TabsContent>
       </Tabs>
     </div>

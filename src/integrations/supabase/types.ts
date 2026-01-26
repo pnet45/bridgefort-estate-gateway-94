@@ -604,6 +604,75 @@ export type Database = {
         }
         Relationships: []
       }
+      email_campaigns: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          failed_count: number | null
+          id: string
+          name: string
+          recipient_emails: string[] | null
+          recipient_filter: string | null
+          sent_at: string | null
+          sent_count: number | null
+          status: string | null
+          subject: string
+          template_id: string | null
+          total_recipients: number | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          failed_count?: number | null
+          id?: string
+          name: string
+          recipient_emails?: string[] | null
+          recipient_filter?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string | null
+          subject: string
+          template_id?: string | null
+          total_recipients?: number | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          failed_count?: number | null
+          id?: string
+          name?: string
+          recipient_emails?: string[] | null
+          recipient_filter?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string | null
+          subject?: string
+          template_id?: string | null
+          total_recipients?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_logs: {
         Row: {
           body: string
@@ -639,6 +708,50 @@ export type Database = {
           subject?: string
         }
         Relationships: []
+      }
+      email_templates: {
+        Row: {
+          body: string
+          category: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       estate: {
         Row: {
@@ -1274,6 +1387,33 @@ export type Database = {
           terms_accepted?: boolean | null
           updated_at?: string | null
           visa_status?: string | null
+        }
+        Relationships: []
+      }
+      property_analytics: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          property_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          property_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          property_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
