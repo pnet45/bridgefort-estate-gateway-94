@@ -15,6 +15,15 @@ export interface Estate {
   sub_form?: string;
   media?: string[];
   created_at?: string;
+  property_category?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  is_for_sale?: boolean;
+  is_for_rent?: boolean;
+  monthly_rent?: number;
+  annual_rent?: number;
+  total_plots?: number;
+  sold_plots?: number;
 }
 
 export interface EstateFormData extends Omit<Estate, 'id' | 'created_at'> {

@@ -66,6 +66,8 @@ export default function AdminBulkEmail() {
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledAt, setScheduledAt] = useState('');
 
   const fetchCampaigns = async () => {
     try {
@@ -172,6 +174,8 @@ export default function AdminBulkEmail() {
     setCustomEmails('');
     setSelectedRecipients(new Set());
     setSendProgress(0);
+    setIsScheduled(false);
+    setScheduledAt('');
   };
 
   const applyTemplate = (templateId: string) => {
@@ -221,6 +225,42 @@ export default function AdminBulkEmail() {
     if (!subject.trim() || !body.trim()) {
       toast.error('Please fill in subject and body');
       return;
+    }
+
+    // If scheduled, just save the campaign without sending
+    if (isScheduled && scheduledAt) {
+      const scheduledDate = new Date(scheduledAt);
+      if (scheduledDate <= new Date()) {
+        toast.error('Scheduled time must be in the future');
+        return;
+      }
+
+      try {
+        const { error: campaignError } = await supabase
+          .from('email_campaigns')
+          .insert({
+            name: name || `Campaign ${new Date().toLocaleDateString()}`,
+            subject,
+            body,
+            recipient_filter: recipientFilter,
+            recipient_emails: selectedEmails.map(e => e.email),
+            total_recipients: selectedEmails.length,
+            status: 'scheduled',
+            scheduled_at: scheduledDate.toISOString(),
+            created_by: user?.id,
+          });
+
+        if (campaignError) throw campaignError;
+
+        toast.success(`Campaign scheduled for ${scheduledDate.toLocaleString()}`);
+        resetForm();
+        setDialogOpen(false);
+        fetchCampaigns();
+        return;
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to schedule campaign');
+        return;
+      }
     }
 
     setSending(true);
@@ -519,6 +559,30 @@ export default function AdminBulkEmail() {
                 </div>
               </div>
 
+              {/* Scheduling Options */}
+              <div className="mt-4 p-4 bg-slate-700/50 rounded-lg">
+                <div className="flex items-center gap-2 mb-3">
+                  <Checkbox
+                    id="schedule"
+                    checked={isScheduled}
+                    onCheckedChange={(checked) => setIsScheduled(checked === true)}
+                  />
+                  <Label htmlFor="schedule" className="text-slate-300 cursor-pointer flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Schedule for later
+                  </Label>
+                </div>
+                {isScheduled && (
+                  <Input
+                    type="datetime-local"
+                    value={scheduledAt}
+                    onChange={(e) => setScheduledAt(e.target.value)}
+                    className="bg-slate-600 border-slate-500 text-white"
+                    min={new Date().toISOString().slice(0, 16)}
+                  />
+                )}
+              </div>
+
               {sending && (
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center justify-between text-sm">
@@ -539,10 +603,15 @@ export default function AdminBulkEmail() {
                       <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                       Sending...
                     </>
+                  ) : isScheduled ? (
+                    <>
+                      <Clock className="h-4 w-4 mr-2" />
+                      Schedule Campaign
+                    </>
                   ) : (
                     <>
                       <Send className="h-4 w-4 mr-2" />
-                      Send Campaign ({recipientFilter === 'custom' 
+                      Send Now ({recipientFilter === 'custom' 
                         ? customEmails.split(/[,\n]/).filter(e => e.trim()).length 
                         : selectedRecipients.size} recipients)
                     </>

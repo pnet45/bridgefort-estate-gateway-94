@@ -614,6 +614,7 @@ export type Database = {
           name: string
           recipient_emails: string[] | null
           recipient_filter: string | null
+          scheduled_at: string | null
           sent_at: string | null
           sent_count: number | null
           status: string | null
@@ -631,6 +632,7 @@ export type Database = {
           name: string
           recipient_emails?: string[] | null
           recipient_filter?: string | null
+          scheduled_at?: string | null
           sent_at?: string | null
           sent_count?: number | null
           status?: string | null
@@ -648,6 +650,7 @@ export type Database = {
           name?: string
           recipient_emails?: string[] | null
           recipient_filter?: string | null
+          scheduled_at?: string | null
           sent_at?: string | null
           sent_count?: number | null
           status?: string | null

@@ -8,9 +8,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { 
   BarChart3, Eye, MessageSquare, DollarSign, TrendingUp, 
-  RefreshCw, Calendar, Building, ArrowUpRight, ArrowDownRight
+  RefreshCw, Calendar, Building, ArrowUpRight, ArrowDownRight,
+  Download, FileText
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import jsPDF from 'jspdf';
 
 interface PropertyStats {
   property_id: string;
@@ -193,6 +195,100 @@ export default function AdminPropertyAnalytics() {
     }).format(amount);
   };
 
+  // Export to CSV
+  const exportToCSV = () => {
+    if (propertyStats.length === 0) {
+      toast.error('No data to export');
+      return;
+    }
+
+    const headers = ['Property Name', 'Views', 'Inquiries', 'Sales', 'Conversion Rate'];
+    const rows = propertyStats.map(stat => [
+      stat.property_name,
+      stat.views,
+      stat.inquiries,
+      stat.sales,
+      stat.views > 0 ? `${Math.round((stat.inquiries / stat.views) * 100)}%` : '0%'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `property-analytics-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('CSV exported successfully');
+  };
+
+  // Export to PDF
+  const exportToPDF = () => {
+    if (propertyStats.length === 0) {
+      toast.error('No data to export');
+      return;
+    }
+
+    const doc = new jsPDF();
+    
+    // Title
+    doc.setFontSize(18);
+    doc.text('Property Analytics Report', 14, 22);
+    
+    // Date range
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 30);
+    doc.text(`Date Range: Last ${dateRange} days`, 14, 36);
+    
+    // Summary
+    doc.setFontSize(12);
+    doc.text('Summary', 14, 48);
+    doc.setFontSize(10);
+    doc.text(`Total Views: ${totals.views.toLocaleString()}`, 14, 56);
+    doc.text(`Total Inquiries: ${totals.inquiries.toLocaleString()}`, 14, 62);
+    doc.text(`Total Sales: ${totals.sales.toLocaleString()}`, 14, 68);
+    doc.text(`Total Revenue: ${formatCurrency(totals.revenue)}`, 14, 74);
+    
+    // Property table
+    doc.setFontSize(12);
+    doc.text('Property Performance', 14, 90);
+    
+    let yPos = 98;
+    doc.setFontSize(8);
+    doc.text('Property', 14, yPos);
+    doc.text('Views', 100, yPos);
+    doc.text('Inquiries', 120, yPos);
+    doc.text('Sales', 145, yPos);
+    doc.text('Conv. %', 165, yPos);
+    
+    yPos += 6;
+    propertyStats.slice(0, 20).forEach(stat => {
+      const propName = stat.property_name.length > 40 
+        ? stat.property_name.slice(0, 40) + '...' 
+        : stat.property_name;
+      doc.text(propName, 14, yPos);
+      doc.text(stat.views.toString(), 100, yPos);
+      doc.text(stat.inquiries.toString(), 120, yPos);
+      doc.text(stat.sales.toString(), 145, yPos);
+      doc.text(stat.views > 0 ? `${Math.round((stat.inquiries / stat.views) * 100)}%` : '0%', 165, yPos);
+      yPos += 6;
+      
+      if (yPos > 280) {
+        doc.addPage();
+        yPos = 20;
+      }
+    });
+    
+    doc.save(`property-analytics-${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('PDF exported successfully');
+  };
+
   const pieData = propertyStats.slice(0, 6).map((stat, index) => ({
     name: stat.property_name.length > 15 ? stat.property_name.slice(0, 15) + '...' : stat.property_name,
     value: stat.views + stat.inquiries + stat.sales,
@@ -242,6 +338,16 @@ export default function AdminPropertyAnalytics() {
 
           <Button variant="outline" size="icon" onClick={fetchAnalytics} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
+
+          <Button variant="outline" size="sm" onClick={exportToCSV} className="gap-2">
+            <Download className="h-4 w-4" />
+            CSV
+          </Button>
+
+          <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-2">
+            <FileText className="h-4 w-4" />
+            PDF
           </Button>
         </div>
       </div>

@@ -36,7 +36,7 @@ const PropertyManagement: React.FC = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('Estate')
+        .from('estate')
         .select('*')
         .order('created_at', { ascending: false });
         
@@ -100,7 +100,7 @@ const PropertyManagement: React.FC = () => {
     setIsDeleting(true);
     try {
       const { error } = await supabase
-        .from('Estate')
+        .from('estate')
         .delete()
         .eq('id', estateToDelete.id);
         

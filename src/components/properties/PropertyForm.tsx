@@ -33,7 +33,16 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
     description: '',
     sub_form: '',
     media: [],
-    media_files: []
+    media_files: [],
+    property_category: 'land',
+    bedrooms: undefined,
+    bathrooms: undefined,
+    is_for_sale: true,
+    is_for_rent: false,
+    monthly_rent: undefined,
+    annual_rent: undefined,
+    total_plots: undefined,
+    sold_plots: undefined,
   });
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
@@ -173,7 +182,16 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         type: formData.type,
         description: formData.description,
         sub_form: formData.sub_form,
-        media: allMedia
+        media: allMedia,
+        property_category: formData.property_category,
+        bedrooms: formData.bedrooms,
+        bathrooms: formData.bathrooms,
+        is_for_sale: formData.is_for_sale,
+        is_for_rent: formData.is_for_rent,
+        monthly_rent: formData.monthly_rent,
+        annual_rent: formData.annual_rent,
+        total_plots: formData.total_plots,
+        sold_plots: formData.sold_plots,
       };
       
       if (isEditing && estate) {
