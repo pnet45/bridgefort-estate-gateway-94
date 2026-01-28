@@ -77,50 +77,10 @@ export function usePropertyFetch(
         setFilteredProperties(applyFilters(propertyData, searchQuery, filters));
       }
     } catch (error) {
-      const sampleProperties: Property[] = [
-        {
-          id: "1",
-          name: "Bridgefort County",
-          title: "Bridgefort County",
-          location: "Ogun State",
-          price: "₦2,500,000",
-          imageUrl: "/lovable-uploads/Bridgefort County - Lagoon Front .jpg",
-          size: 600,
-          sqm: 600,
-          propertyType: "Residential Land",
-          property_category: "land",
-          phase: 1,
-          totalPlots: 200,
-          availablePlots: 150,
-          pricePerPlot: 2500000,
-          description: "Premium waterfront estate",
-          features: [],
-          amenities: [],
-          paymentPlans: [],
-        },
-        {
-          id: "2",
-          name: "Precious Gardens Estate",
-          title: "Precious Gardens Estate",
-          location: "Lagos State",
-          price: "₦3,200,000",
-          imageUrl: "/lovable-uploads/Precious Gardens Estate.jpg",
-          size: 500,
-          sqm: 500,
-          propertyType: "Residential Land",
-          property_category: "land",
-          phase: 2,
-          totalPlots: 150,
-          availablePlots: 85,
-          pricePerPlot: 3200000,
-          description: "Luxury residential estate",
-          features: [],
-          amenities: [],
-          paymentPlans: [],
-        },
-      ];
-      setProperties(sampleProperties);
-      setFilteredProperties(applyFilters(sampleProperties, searchQuery, filters));
+      console.error('Error fetching properties:', error);
+      // No fallback to sample data - show empty state
+      setProperties([]);
+      setFilteredProperties([]);
     } finally {
       setLoading(false);
     }
