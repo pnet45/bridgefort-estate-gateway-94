@@ -110,6 +110,8 @@ const PropertyDetailsDialogFullscreen = ({
         return `/lovable-uploads/SUB. FORM - FOUNTAIN SPRINGS.pdf`;
       case "Hampton Ville Estate":
         return `/lovable-uploads/SUBSCRIPTION FORM - HAMPTON VILLE PHASE 1 & 2.pdf`;
+      case "Hampton Court Estate – Phase 3":
+        return `/documents/hampton-court-phase3-subscription-form.pdf`;
       default:
         return `/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf`;
     }
@@ -121,12 +123,76 @@ const PropertyDetailsDialogFullscreen = ({
         return ["/lovable-uploads/fbb073b9-ed7e-4a53-bcb5-54c870b10b6f.png"];
       case "Fortress Hills Estate":
         return ["/lovable-uploads/b6b178d0-ae26-4527-9569-dce064d705b9.png"];
+      case "Hampton Court Estate – Phase 3":
+        return ["/images/hampton-court-phase3.jpeg"];
       default:
         return [property.imageUrl];
     }
   };
 
   const getEstateDetails = (propertyTitle: string) => {
+    if (propertyTitle === "Hampton Court Estate – Phase 3") {
+      return {
+        companyInfo: {
+          name: "PWAN BRIDGEFORT ESTATES & INVESTMENT LTD",
+          rc: "RC 7150756",
+          address: "Plot 117, W. O. Seriki Street, Eleganza Gardens Estate, VGC Bus Stop, Lekki-Epe Expressway, Ajah, Lagos State",
+          vision: "To make land and home ownership dream a reality for all and rebuilding the future of real estate services",
+          awards: ["MOST IMPACTFUL CEO AWARD", "UPCOMING REAL ESTATE FIRM OF THE YEAR", "CUSTOMER SERVICE PROFESSIONAL OF THE YEAR", "MOST SOLUTION DRIVEN COMPANY"],
+          estates: ["Precious Gardens", "Fortress Hills", "Hampton Ville", "Fountain Springs", "The Ambassadors", "Big League", "Bridgefort Luxury", "Olanma Gardens", "Akuchi Luxury", "Afaoma Estate Series", "Hampton Court"]
+        },
+        location: "Omilende Community, Via Edu Town, Agbara, Ogun State",
+        coordinates: "Represented on each survey plan",
+        landmarks: [
+          "Lagos - Badagry Expressway",
+          "Crown City Resort",
+          "Agbara Industrial Estate",
+          "Loral International Schools",
+          "Unilever Nigeria Plc",
+          "Nestle Nigeria Plc",
+          "Chinese Free Trade Zone",
+          "Crawford University",
+          "Opic Estate",
+          "Idioke Palace",
+          "Magistrate & High Court",
+          "Lagos State University College of Education"
+        ],
+        plotSizes: [
+          { size: "250sqm", dimensions: "60ft x 45ft", earlyBird: "₦750,000", actual: "₦850,000", instalment: "₦950,000", extended: "₦1,050,000" },
+          { size: "500sqm", dimensions: "60ft x 90ft", earlyBird: "₦1,500,000", actual: "₦1,600,000", instalment: "₦1,800,000", extended: "₦2,000,000" }
+        ],
+        fees: {
+          deedOfAssignment: "₦300,000 per plot",
+          surveyPlan: "₦300,000 per plot (Additional for Corporate Entities)",
+          plotDemarcation: "₦100,000 per plot",
+          plotMaintenance: "₦10,000 per plot (Monthly, ₦120,000 annually after allocation)"
+        },
+        specialFeatures: [
+          "Corner-piece Plot attracts additional 10% of land cost",
+          "Commercial Plot attracts additional 10% of land cost",
+          "Standard Special Plots: Additional 50% of plot price (plastered dwarf fenced)",
+          "VIP Special Plots: Additional 75% of plot price (dwarf fenced with proline)",
+          "Good road network",
+          "Power & security infrastructure",
+          "Recreational facilities",
+          "Residential & investment-ready environment"
+        ],
+        propertyTitle: "Survey Plan & Deed of Assignment (FREEHOLD)",
+        paymentStructure: {
+          minimumDeposit: "₦100,000 (250sqm) / ₦200,000 (500sqm)",
+          changeInDocs: "₦10,000",
+          transferOwnership: "10% of Sale Price"
+        },
+        inspection: "Free inspections Monday-Saturday, 10am-1pm. Prior appointment required at PWAN BRIDGEFORT office.",
+        allocationTimeline: "Physical allocation in minimum 6 months after payment completion and 50% primary infrastructure fee payment.",
+        developmentTimeline: "Evidence of active possession (at least fencing) required within 6 months of physical allocation.",
+        bankDetails: {
+          bank: "Zenith Bank",
+          accountName: "PWAN BRIDGEFORT ESTATES AND INV LTD",
+          accountNumber: "1310762860"
+        }
+      };
+    }
     if (propertyTitle === "Akuchi Luxury Estate") {
       return {
         companyInfo: {
