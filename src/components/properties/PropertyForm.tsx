@@ -334,6 +334,23 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
               </SelectContent>
             </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="property_category">Property Category *</Label>
+            <Select 
+              value={formData.property_category || 'land'} 
+              onValueChange={(value) => setFormData({...formData, property_category: value})}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="land">Estate Land</SelectItem>
+                <SelectItem value="home">Home (Sale)</SelectItem>
+                <SelectItem value="rental">Apartment (Rent)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -400,6 +417,55 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
           />
         </div>
         
+        {/* Home/Rental specific fields */}
+        {(formData.property_category === 'home' || formData.property_category === 'rental') && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-blue-50 rounded-lg">
+            <h3 className="text-lg font-semibold text-estate-blue md:col-span-2">Home/Apartment Details</h3>
+            <div className="space-y-2">
+              <Label htmlFor="bedrooms">Bedrooms</Label>
+              <Input id="bedrooms" name="bedrooms" type="number" min="0" value={formData.bedrooms || ''} onChange={handleNumberInputChange} placeholder="Number of bedrooms" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bathrooms">Bathrooms</Label>
+              <Input id="bathrooms" name="bathrooms" type="number" min="0" value={formData.bathrooms || ''} onChange={handleNumberInputChange} placeholder="Number of bathrooms" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="total_plots">Total Units</Label>
+              <Input id="total_plots" name="total_plots" type="number" min="0" value={formData.total_plots || ''} onChange={handleNumberInputChange} placeholder="Total units available" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sold_plots">Sold Units</Label>
+              <Input id="sold_plots" name="sold_plots" type="number" min="0" value={formData.sold_plots || ''} onChange={handleNumberInputChange} placeholder="Units already sold" />
+            </div>
+            {formData.property_category === 'rental' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="monthly_rent">Monthly Rent (₦)</Label>
+                  <Input id="monthly_rent" name="monthly_rent" type="number" min="0" value={formData.monthly_rent || ''} onChange={handleNumberInputChange} placeholder="Monthly rent amount" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="annual_rent">Annual Rent (₦)</Label>
+                  <Input id="annual_rent" name="annual_rent" type="number" min="0" value={formData.annual_rent || ''} onChange={handleNumberInputChange} placeholder="Annual rent amount" />
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Land specific fields */}
+        {formData.property_category === 'land' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="total_plots">Total Plots</Label>
+              <Input id="total_plots" name="total_plots" type="number" min="0" value={formData.total_plots || ''} onChange={handleNumberInputChange} placeholder="Total plots" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sold_plots">Sold Plots</Label>
+              <Input id="sold_plots" name="sold_plots" type="number" min="0" value={formData.sold_plots || ''} onChange={handleNumberInputChange} placeholder="Sold plots" />
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="sub_form">Subscription Form Link</Label>
           <Input 
@@ -410,7 +476,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
             placeholder="Enter subscription form link" 
           />
         </div>
-        
+
         <div className="space-y-4">
           <Label className="block">Media</Label>
           <div className="flex flex-wrap gap-4">
@@ -424,13 +490,13 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                 <button 
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:opacity-90"
                 >
                   <X size={16} />
                 </button>
               </div>
             ))}
-            <div className="w-24 h-24 border-2 border-dashed border-gray-300 flex items-center justify-center rounded-md cursor-pointer hover:border-estate-blue relative">
+            <div className="w-24 h-24 border-2 border-dashed border-muted-foreground/30 flex items-center justify-center rounded-md cursor-pointer hover:border-primary relative">
               <input 
                 type="file" 
                 accept="image/*,video/*" 
@@ -438,10 +504,10 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                 onChange={handleFileChange}
                 className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
               />
-              <Upload size={24} className="text-gray-500" />
+              <Upload size={24} className="text-muted-foreground" />
             </div>
           </div>
-          <p className="text-sm text-gray-500">Upload images and videos of the property</p>
+          <p className="text-sm text-muted-foreground">Upload images and videos of the property</p>
         </div>
         
         <div className="flex justify-end space-x-4 pt-4">
