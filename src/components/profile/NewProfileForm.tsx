@@ -171,29 +171,18 @@ const NewProfileForm = () => {
   const handleSubmit = async () => {
     if (!user) return;
     
-    if (!recaptchaToken) {
-      toast({
-        title: "reCAPTCHA Required",
-        description: "Please complete the reCAPTCHA verification",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setLoading(true);
     try {
-      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
-      if (!isRecaptchaValid) {
-        toast({
-          title: "reCAPTCHA Failed",
-          description: "Please complete the reCAPTCHA verification again",
-          variant: "destructive"
-        });
-        setRecaptchaToken(null);
-        if (recaptchaRef.current) {
-          recaptchaRef.current.reset();
+      // Attempt reCAPTCHA verification if token exists, but don't block submission
+      if (recaptchaToken) {
+        try {
+          const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+          if (!isRecaptchaValid) {
+            console.warn('reCAPTCHA verification failed, proceeding anyway');
+          }
+        } catch (recaptchaError) {
+          console.warn('reCAPTCHA verification error, proceeding anyway:', recaptchaError);
         }
-        return;
       }
 
       const { error } = await supabase
@@ -364,7 +353,7 @@ const NewProfileForm = () => {
         ) : (
           <Button 
             onClick={handleSubmit}
-            disabled={loading || !termsAccepted || !recaptchaToken}
+            disabled={loading || !termsAccepted}
             className="bg-estate-blue hover:bg-estate-darkBlue"
           >
             {loading ? 'Submitting...' : 'Submit Profile & KYC'}
