@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import DOMPurify from "dompurify";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { X } from "lucide-react";
@@ -285,7 +286,10 @@ const FeaturedAnnouncementsCarousel = () => {
             )}
             <div 
               className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: selectedArticle?.fullContent || '' }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedArticle?.fullContent || '', {
+                ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'img', 'span', 'br', 'div'],
+                ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'style'],
+              }) }}
             />
           </ScrollArea>
         </DialogContent>

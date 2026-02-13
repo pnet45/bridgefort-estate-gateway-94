@@ -38,18 +38,11 @@ export const initializePayment = async (paymentData: PaystackPaymentData & { use
       import.meta.env.VITE_SUPABASE_ANON_KEY
     );
 
-    // Ensure user_id is present for the upgraded schema
-    const fullPaymentData = { ...paymentData };
-    if (!fullPaymentData.user_id && supabase.auth.getUser) {
-      // If running in a browser context, get logged-in user_id (fallback)
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user?.id) {
-        fullPaymentData.user_id = userData.user.id;
-      }
-    }
+    // user_id is no longer sent - the edge function derives it from the auth token
+    const { user_id, ...safePaymentData } = paymentData;
 
     const { data, error } = await supabase.functions.invoke('paystack-initialize', {
-      body: fullPaymentData
+      body: safePaymentData
     });
     if (error) throw new Error(error.message);
     return data;
@@ -68,9 +61,9 @@ export const verifyPayment = async (reference: string, user_id?: string) => {
       import.meta.env.VITE_SUPABASE_ANON_KEY
     );
 
-    const payload = { reference, ...(user_id ? { user_id } : {}) };
+    // user_id is no longer sent - the edge function derives it from the auth token
     const { data, error } = await supabase.functions.invoke('paystack-verify', {
-      body: payload,
+      body: { reference },
     });
 
     if (error) throw new Error(error.message);

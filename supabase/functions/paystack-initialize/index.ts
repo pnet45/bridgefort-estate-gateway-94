@@ -14,8 +14,35 @@ serve(async (req) => {
   }
 
   try {
-    const { email, amount, metadata, reference, user_id } = await req.json();
-    console.log('Incoming request:', { email, amount, metadata, reference, user_id });
+    // Authenticate the user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+    
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      );
+    }
+
+    const authenticatedUserId = claimsData.claims.sub;
+
+    const { email, amount, metadata, reference } = await req.json();
+    console.log('Incoming request:', { email, amount, metadata, reference, user_id: authenticatedUserId });
 
     const PAYSTACK_SECRET_KEY = Deno.env.get('PAYSTACK_SECRET_KEY');
     if (!PAYSTACK_SECRET_KEY) {
@@ -28,11 +55,9 @@ serve(async (req) => {
         }
       );
     }
-    console.log('PAYSTACK_SECRET_KEY is present');
 
     const callbackUrl = `${req.headers.get('origin') || 'http://localhost:3000'}/payment-success`;
 
-    // Show config to see what is sent to Paystack
     console.log('Sending request to Paystack:', {
       email, amount: amount * 100, reference, metadata, callback_url: callbackUrl
     });
@@ -57,20 +82,19 @@ serve(async (req) => {
     const paystackData = await response.json();
     console.log('Paystack API response data:', paystackData);
 
-    // Insert a payment record into payments table (new schema)
+    // Insert a payment record using the authenticated user_id
     if (paystackData.status && paystackData.data?.reference) {
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
+      const supabaseAdmin = createClient(
+        supabaseUrl,
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      // Insert payment with user_id
-      const paymentInsertResult = await supabase.from('payments').insert([{
+      const paymentInsertResult = await supabaseAdmin.from('payments').insert([{
         order_id: metadata?.custom_fields?.find((cf: any) => cf.variable_name === 'order_id')?.value,
         paystack_reference: paystackData.data.reference,
         status: 'pending',
         amount: amount,
-        user_id: user_id,
+        user_id: authenticatedUserId, // Use authenticated user, not client-supplied
       }]);
       console.log('Inserted payment to supabase:', paymentInsertResult);
     }
@@ -86,7 +110,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Edge function error:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "An error occurred" }),
+      JSON.stringify({ error: 'An error occurred processing your payment request' }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

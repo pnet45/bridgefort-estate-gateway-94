@@ -1,4 +1,5 @@
 import React from 'react';
+import DOMPurify from 'dompurify';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -73,7 +74,10 @@ const FullArticleDialog = ({ open, onClose, article }: FullArticleDialogProps) =
             <div 
               className="prose prose-lg max-w-none"
               dangerouslySetInnerHTML={{ 
-                __html: `<p class="mb-4">${formatContent(article.content)}</p>` 
+                __html: DOMPurify.sanitize(`<p class="mb-4">${formatContent(article.content)}</p>`, {
+                  ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'img', 'span', 'br'],
+                  ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'style'],
+                })
               }}
             />
           </div>
