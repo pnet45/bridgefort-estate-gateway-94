@@ -1,5 +1,6 @@
 
 import React from "react";
+import DOMPurify from "dompurify";
 
 /**
  * BlogPostContent
@@ -44,11 +45,16 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ htmlContent }) => {
     `;
   }
 
+  const sanitizedHtml = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'img', 'span', 'br', 'div', 'blockquote'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'style', 'target', 'rel'],
+  });
+
   return (
     <div
       className="post-content prose prose-estate max-w-none text-left leading-relaxed"
       style={{ textAlign: "left" }}
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
   );
 };

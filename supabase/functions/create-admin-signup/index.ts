@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -16,7 +15,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    // Create admin client with service role key
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -24,7 +22,6 @@ serve(async (req) => {
       }
     });
 
-    // Parse request body
     const { email, password, firstName, lastName } = await req.json();
 
     if (!email || !password) {
@@ -58,7 +55,7 @@ serve(async (req) => {
       );
     }
 
-    // If admins exist, create a pending request instead
+    // If admins exist, create a pending request (WITHOUT storing the password)
     if (existingAdmins && existingAdmins.length > 0) {
       console.log(`Admins exist - creating pending request for: ${email}`);
 
@@ -79,13 +76,12 @@ serve(async (req) => {
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         } else if (existingRequest.status === 'rejected') {
-          // Allow resubmission - update the existing request
           const { error: updateError } = await supabaseAdmin
             .from('pending_admin_requests')
             .update({
               first_name: firstName || null,
               last_name: lastName || null,
-              password_hash: password, // Store temporarily for approval
+              password_hash: 'REDACTED', // Never store plain text passwords
               status: 'pending',
               requested_at: new Date().toISOString(),
               reviewed_at: null,
@@ -105,7 +101,7 @@ serve(async (req) => {
           return new Response(
             JSON.stringify({ 
               success: true,
-              message: 'Your admin access request has been resubmitted. An existing administrator will review and approve your request.',
+              message: 'Your admin access request has been resubmitted. An existing administrator will review and approve your request. You will receive a password setup email upon approval.',
               requiresApproval: true,
               pendingApproval: true
             }),
@@ -114,20 +110,20 @@ serve(async (req) => {
         }
       }
 
-      // Create new pending request
+      // Create new pending request - do NOT store password
       const { error: insertError } = await supabaseAdmin
         .from('pending_admin_requests')
         .insert({
           email: email.toLowerCase(),
           first_name: firstName || null,
           last_name: lastName || null,
-          password_hash: password, // Store temporarily - will be used when approved
+          password_hash: 'REDACTED', // Never store plain text passwords
           status: 'pending'
         });
 
       if (insertError) {
         console.error('Error creating pending request:', insertError);
-        if (insertError.code === '23505') { // Unique violation
+        if (insertError.code === '23505') {
           return new Response(
             JSON.stringify({ error: 'A request for this email already exists' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -142,7 +138,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: true,
-          message: 'Your admin access request has been submitted. An existing administrator will review and approve your request.',
+          message: 'Your admin access request has been submitted. An existing administrator will review and approve your request. You will receive a password setup email upon approval.',
           requiresApproval: true,
           pendingApproval: true
         }),
@@ -153,11 +149,10 @@ serve(async (req) => {
     // No admins exist - create first admin directly
     console.log(`Creating first admin user with email: ${email}`);
 
-    // Create user using admin API - require email verification for first admin
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: false, // Require email verification
+      email_confirm: false,
       user_metadata: {
         first_name: firstName || '',
         last_name: lastName || ''
@@ -174,7 +169,6 @@ serve(async (req) => {
 
     console.log(`User created successfully: ${newUser.user.id}`);
 
-    // Assign admin role to user
     const { error: roleInsertError } = await supabaseAdmin
       .from('user_roles')
       .insert({
@@ -184,7 +178,6 @@ serve(async (req) => {
 
     if (roleInsertError) {
       console.error('Role assignment error:', roleInsertError);
-      // User was created but role assignment failed - still return success but with warning
       return new Response(
         JSON.stringify({ 
           success: true, 

@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -17,7 +16,6 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     
-    // Create admin client with service role key
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -60,7 +58,6 @@ serve(async (req) => {
       );
     }
 
-    // Parse request body
     const { requestId } = await req.json();
 
     if (!requestId) {
@@ -87,11 +84,14 @@ serve(async (req) => {
 
     console.log(`Approving admin request for: ${pendingRequest.email}`);
 
-    // Create the user account
+    // Create user account with a random temporary password
+    // The user will set their own password via the invite/reset flow
+    const tempPassword = crypto.randomUUID() + '!Aa1'; // Meets password requirements
+    
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: pendingRequest.email,
-      password: pendingRequest.password_hash, // This is the plain password stored temporarily
-      email_confirm: true, // Auto-confirm since admin approved
+      password: tempPassword, // Temporary - user will reset via email
+      email_confirm: true,
       user_metadata: {
         first_name: pendingRequest.first_name || '',
         last_name: pendingRequest.last_name || ''
@@ -120,6 +120,16 @@ serve(async (req) => {
       console.error('Role assignment error:', roleInsertError);
     }
 
+    // Send password reset email so user can set their own password
+    const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'recovery',
+      email: pendingRequest.email,
+    });
+
+    if (resetError) {
+      console.error('Password reset email error:', resetError);
+    }
+
     // Update the pending request status
     const { error: updateError } = await supabaseAdmin
       .from('pending_admin_requests')
@@ -137,7 +147,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Admin account created for ${pendingRequest.email}`,
+        message: `Admin account created for ${pendingRequest.email}. A password reset email has been sent.`,
         user: {
           id: newUser.user.id,
           email: newUser.user.email
