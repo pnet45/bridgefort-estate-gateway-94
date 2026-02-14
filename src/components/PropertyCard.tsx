@@ -159,11 +159,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
         onClick={handleCardClick}
       >
         {/* Image Container */}
-        <div className="relative h-48 overflow-hidden">
+        <div className="relative h-64 overflow-hidden">
           <img 
             src={images[currentImageIndex]} 
             alt={property.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-contain bg-gray-100 transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
             onError={handleImageError}
           />
