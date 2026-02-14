@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,12 +11,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useEmail } from '@/hooks/useEmail';
+import { supabase } from '@/integrations/supabase/client';
 import AdminEmailTemplates from './AdminEmailTemplates';
 import AdminBulkEmail from './AdminBulkEmail';
 import { 
   Mail, Send, Inbox, Clock, Search, Trash2, 
   PenSquare, Users, RefreshCw, CheckCircle, XCircle,
-  MailOpen, Reply, User, Archive, Star, LayoutTemplate, Megaphone
+  MailOpen, Reply, User, Archive, Star, LayoutTemplate, Megaphone, FolderOpen
 } from 'lucide-react';
 
 export default function AdminEmailCenter() {
@@ -50,6 +51,49 @@ export default function AdminEmailCenter() {
   const [replySubject, setReplySubject] = useState('');
   const [replyContent, setReplyContent] = useState('');
 
+  // Admin emails (folder-based)
+  const [adminEmails, setAdminEmails] = useState<any[]>([]);
+  const [archiveEmails, setArchiveEmails] = useState<any[]>([]);
+
+  const fetchAdminEmails = useCallback(async (folder: string) => {
+    const { data, error } = await supabase
+      .from('admin_emails')
+      .select('*')
+      .eq('folder', folder)
+      .order('created_at', { ascending: false });
+    if (!error && data) return data;
+    return [];
+  }, []);
+
+  const refreshFolderEmails = useCallback(async () => {
+    const [archiveData] = await Promise.all([
+      fetchAdminEmails('archive'),
+    ]);
+    setArchiveEmails(archiveData);
+  }, [fetchAdminEmails]);
+
+  useEffect(() => {
+    refreshFolderEmails();
+    const channel = supabase
+      .channel('admin-emails-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_emails' }, refreshFolderEmails)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [refreshFolderEmails]);
+
+  const moveToFolder = async (emailId: string, folder: string) => {
+    const { error } = await supabase
+      .from('admin_emails')
+      .update({ folder })
+      .eq('id', emailId);
+    if (!error) {
+      toast.success(`Email moved to ${folder}`);
+      refreshFolderEmails();
+      refreshAll();
+    } else {
+      toast.error('Failed to move email');
+    }
+  };
   const handleSendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!recipientEmail || !subject || !body) {
@@ -60,6 +104,18 @@ export default function AdminEmailCenter() {
     const result = await sendEmail(recipientEmail, subject, body, recipientName);
     
     if (result.success) {
+      // Also save to admin_emails as sent
+      await supabase.from('admin_emails').insert({
+        from_email: 'noreply@pwanbridgefort.ng',
+        from_name: 'PWAN Bridgefort',
+        to_email: recipientEmail,
+        to_name: recipientName || null,
+        subject,
+        body,
+        folder: 'sent',
+        is_read: true,
+        source: 'compose',
+      });
       toast.success('Email sent successfully!');
       setRecipientEmail('');
       setRecipientName('');
@@ -207,6 +263,13 @@ export default function AdminEmailCenter() {
           >
             <Megaphone className="h-4 w-4" />
             Bulk Email
+          </TabsTrigger>
+          <TabsTrigger 
+            value="archive" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+          >
+            <Archive className="h-4 w-4" />
+            Archive ({archiveEmails.length})
           </TabsTrigger>
         </TabsList>
 
@@ -656,6 +719,58 @@ export default function AdminEmailCenter() {
         {/* Bulk Email Tab */}
         <TabsContent value="bulk">
           <AdminBulkEmail />
+        </TabsContent>
+
+        {/* Archive Tab */}
+        <TabsContent value="archive">
+          <Card className="bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Archive className="h-5 w-5" />
+                Archived Emails
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[500px]">
+                {archiveEmails.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <Archive className="h-12 w-12 mx-auto text-slate-500 mb-4" />
+                    <p className="text-slate-400">No archived emails</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-700">
+                    {archiveEmails.map((email) => (
+                      <div key={email.id} className="p-4 hover:bg-slate-700/50 transition-colors">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-white truncate">
+                              {email.from_name || email.from_email}
+                            </p>
+                            <p className="text-sm text-primary truncate">{email.subject}</p>
+                            <p className="text-sm text-slate-400 truncate">{email.body}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-500">
+                              {format(new Date(email.created_at), 'MMM d, h:mm a')}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => moveToFolder(email.id, 'inbox')}
+                              title="Move back to inbox"
+                              className="text-slate-400 hover:text-white"
+                            >
+                              <Inbox className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

@@ -149,6 +149,81 @@ export type Database = {
           },
         ]
       }
+      admin_emails: {
+        Row: {
+          body: string
+          created_at: string
+          external_ref: string | null
+          folder: string
+          from_email: string
+          from_name: string | null
+          html: string | null
+          id: string
+          is_read: boolean
+          is_starred: boolean
+          parent_id: string | null
+          sender_id: string | null
+          source: string
+          subject: string
+          to_email: string
+          to_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          external_ref?: string | null
+          folder?: string
+          from_email: string
+          from_name?: string | null
+          html?: string | null
+          id?: string
+          is_read?: boolean
+          is_starred?: boolean
+          parent_id?: string | null
+          sender_id?: string | null
+          source?: string
+          subject?: string
+          to_email: string
+          to_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          external_ref?: string | null
+          folder?: string
+          from_email?: string
+          from_name?: string | null
+          html?: string | null
+          id?: string
+          is_read?: boolean
+          is_starred?: boolean
+          parent_id?: string | null
+          sender_id?: string | null
+          source?: string
+          subject?: string
+          to_email?: string
+          to_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_emails_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "admin_emails"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_emails_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_notes: {
         Row: {
           color: string | null
