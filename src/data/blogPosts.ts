@@ -1,7 +1,9 @@
 import { salesStrategyBlogPost } from './salesStrategyBlogPost';
 import { customerServiceWeekPost } from './customerServiceWeekPost';
+import { valentineBlogPost } from './valentineBlogPost';
 
 export const blogPosts = [
+  valentineBlogPost,
   customerServiceWeekPost,
   salesStrategyBlogPost,
   {

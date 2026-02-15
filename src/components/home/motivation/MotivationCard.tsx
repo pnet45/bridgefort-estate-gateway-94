@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 interface MotivationCardProps {
   title: string;
@@ -7,9 +8,11 @@ interface MotivationCardProps {
   author: string;
   image: string;
   fade: boolean;
+  link?: string;
 }
 
-const MotivationCard = ({ title, text, author, image, fade }: MotivationCardProps) => {
+const MotivationCard = ({ title, text, author, image, fade, link }: MotivationCardProps) => {
+  const navigate = useNavigate();
   const isRiseAndGrind = title.startsWith("Rise and Grind");
   const isNewWeek = title.startsWith("New Week, Fresh Listings, Fresh Leads");
 
@@ -87,7 +90,10 @@ const MotivationCard = ({ title, text, author, image, fade }: MotivationCardProp
 
   // Default fallback layout
   return (
-    <div className={`h-full w-full relative transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"}`}>
+    <div
+      className={`h-full w-full relative transition-opacity duration-500 ${fade ? "opacity-100" : "opacity-0"} ${link ? "cursor-pointer" : ""}`}
+      onClick={link ? () => navigate(link) : undefined}
+    >
       <img
         src={image}
         alt={title}
@@ -116,6 +122,11 @@ const MotivationCard = ({ title, text, author, image, fade }: MotivationCardProp
             >
               By {author} <span className="text-xs ml-1">Monday Motivation</span>
             </p>
+            {link && (
+              <span className="ml-3 inline-block bg-red-500 text-white px-4 py-1 rounded-full text-sm font-semibold animate-fade-in" style={{ animationDelay: "600ms" }}>
+                Read Full Article →
+              </span>
+            )}
           </div>
         </div>
       </div>

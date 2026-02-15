@@ -1,6 +1,13 @@
 
 export const motivationData = [
   {
+    title: "Valentine 2026: Gift Love That Lasts — Choose Land Over Liabilities",
+    text: "This Valentine, express love the smartest way — gift real estate! Unlike chocolates and flowers that fade, land appreciates in value and secures your loved one's future. At PWAN Bridgefort, we help you turn love into lasting wealth. Gift a plot, build a legacy. ❤️",
+    author: "PWAN Bridgefort Team",
+    image: "/lovable-uploads/valentine-2026.jpeg",
+    link: "/blog/valentine-2026-gift-of-land"
+  },
+  {
     title: "Welcome to December: The Month of Decision",
     text: "Happy New Month! December is here - a month of reflection, celebration, and most importantly, decision-making. At PWAN Bridgefort, we believe this is the perfect time to make that life-changing property investment. Start the new year as a property owner. Your dream home or investment property awaits - let's make December count!",
     author: "PWAN Bridgefort Team",

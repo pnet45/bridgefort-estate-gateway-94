@@ -18,7 +18,7 @@ const MondayMotivationHero = () => {
     );
   }
 
-  const { title, text, author, image } = currentData;
+  const { title, text, author, image, link } = currentData as any;
   const isRiseAndGrind = title.startsWith("Rise and Grind");
   const isNewWeek = title.startsWith("New Week, Fresh Listings, Fresh Leads");
 
@@ -46,6 +46,7 @@ const MondayMotivationHero = () => {
         author={author}
         image={image}
         fade={fade}
+        link={link}
       />
       <MotivationBadge />
       <MotivationIndicators current={current} onSlideChange={setCurrent} />
