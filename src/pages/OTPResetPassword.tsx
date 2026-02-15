@@ -18,42 +18,16 @@ const OTPResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // Generate OTP
-      const otpCode = generateOTP();
-      const expiresAt = new Date();
-      expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10 minutes expiry
-
-      // Save OTP to database
-      const { error: insertError } = await supabase
-        .from('password_reset_otps')
-        .insert({
-          email,
-          otp_code: otpCode,
-          expires_at: expiresAt.toISOString()
-        });
-
-      if (insertError) {
-        throw insertError;
-      }
-
-      // Send OTP via email (using edge function)
-      const { error: emailError } = await supabase.functions.invoke('send-otp-email', {
-        body: { email, otp: otpCode }
+      const { data, error } = await supabase.functions.invoke('request-password-reset', {
+        body: { email }
       });
 
-      if (emailError) {
-        console.warn('Email sending failed:', emailError);
-        // Continue anyway as OTP is saved
-      }
+      if (error) throw error;
 
       setStep('otp');
       toast({
@@ -76,18 +50,12 @@ const OTPResetPassword = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase
-        .from('password_reset_otps')
-        .select('*')
-        .eq('email', email)
-        .eq('otp_code', otp)
-        .eq('used', false)
-        .gte('expires_at', new Date().toISOString())
-        .single();
+      const { data, error } = await supabase.functions.invoke('verify-otp-reset-password', {
+        body: { email, otp, action: 'verify' }
+      });
 
-      if (error || !data) {
-        throw new Error('Invalid or expired OTP');
-      }
+      if (error) throw error;
+      if (!data?.verified) throw new Error('Invalid or expired OTP');
 
       setStep('newPassword');
       toast({
@@ -129,30 +97,11 @@ const OTPResetPassword = () => {
     setIsLoading(true);
     
     try {
-      // Get user by email
-      const { data: userData, error: userError } = await supabase
-        .from('password_reset_otps')
-        .select('user_id')
-        .eq('email', email)
-        .eq('otp_code', otp)
-        .single();
+      const { data, error } = await supabase.functions.invoke('verify-otp-reset-password', {
+        body: { email, otp, new_password: newPassword }
+      });
 
-      if (userError) throw userError;
-
-      // Update password
-      const { error: updateError } = await supabase.auth.admin.updateUserById(
-        userData.user_id,
-        { password: newPassword }
-      );
-
-      if (updateError) throw updateError;
-
-      // Mark OTP as used
-      await supabase
-        .from('password_reset_otps')
-        .update({ used: true })
-        .eq('email', email)
-        .eq('otp_code', otp);
+      if (error) throw error;
 
       toast({
         title: "Password Reset Successful",
@@ -216,7 +165,7 @@ const OTPResetPassword = () => {
                     maxLength={6}
                     required
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                     className="mt-1 text-center text-2xl"
                     placeholder="000000"
                   />
