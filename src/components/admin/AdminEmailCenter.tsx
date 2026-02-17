@@ -17,7 +17,8 @@ import AdminBulkEmail from './AdminBulkEmail';
 import { 
   Mail, Send, Inbox, Clock, Search, Trash2, 
   PenSquare, Users, RefreshCw, CheckCircle, XCircle,
-  MailOpen, Reply, User, Archive, Star, LayoutTemplate, Megaphone, FolderOpen
+  MailOpen, Reply, User, Archive, Star, LayoutTemplate, Megaphone, FolderOpen,
+  Download, Paperclip, Globe
 } from 'lucide-react';
 
 export default function AdminEmailCenter() {
@@ -55,6 +56,13 @@ export default function AdminEmailCenter() {
   const [adminEmails, setAdminEmails] = useState<any[]>([]);
   const [archiveEmails, setArchiveEmails] = useState<any[]>([]);
 
+  // Resend received emails
+  const [receivedEmails, setReceivedEmails] = useState<any[]>([]);
+  const [receivedLoading, setReceivedLoading] = useState(false);
+  const [selectedReceivedEmail, setSelectedReceivedEmail] = useState<any>(null);
+  const [receivedEmailDetail, setReceivedEmailDetail] = useState<any>(null);
+  const [receivedAttachments, setReceivedAttachments] = useState<any[]>([]);
+
   const fetchAdminEmails = useCallback(async (folder: string) => {
     const { data, error } = await supabase
       .from('admin_emails')
@@ -72,14 +80,68 @@ export default function AdminEmailCenter() {
     setArchiveEmails(archiveData);
   }, [fetchAdminEmails]);
 
+  const fetchReceivedEmails = useCallback(async () => {
+    setReceivedLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
+        body: { action: 'list' },
+      });
+      if (error) throw error;
+      if (data?.success && data?.data?.data) {
+        setReceivedEmails(data.data.data);
+      } else if (data?.success && Array.isArray(data?.data)) {
+        setReceivedEmails(data.data);
+      } else {
+        setReceivedEmails([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching received emails:', error);
+      toast.error('Failed to fetch received emails from Resend');
+    } finally {
+      setReceivedLoading(false);
+    }
+  }, []);
+
+  const fetchReceivedEmailDetail = useCallback(async (emailId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
+        body: { action: 'get', emailId },
+      });
+      if (error) throw error;
+      if (data?.success) {
+        setReceivedEmailDetail(data.data);
+      }
+    } catch (error: any) {
+      console.error('Error fetching email detail:', error);
+    }
+  }, []);
+
+  const fetchReceivedAttachments = useCallback(async (emailId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
+        body: { action: 'list-attachments', emailId },
+      });
+      if (error) throw error;
+      if (data?.success && data?.data?.data) {
+        setReceivedAttachments(data.data.data);
+      } else {
+        setReceivedAttachments([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching attachments:', error);
+      setReceivedAttachments([]);
+    }
+  }, []);
+
   useEffect(() => {
     refreshFolderEmails();
+    fetchReceivedEmails();
     const channel = supabase
       .channel('admin-emails-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_emails' }, refreshFolderEmails)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [refreshFolderEmails]);
+  }, [refreshFolderEmails, fetchReceivedEmails]);
 
   const moveToFolder = async (emailId: string, folder: string) => {
     const { error } = await supabase
@@ -263,6 +325,13 @@ export default function AdminEmailCenter() {
           >
             <Megaphone className="h-4 w-4" />
             Bulk Email
+          </TabsTrigger>
+          <TabsTrigger 
+            value="received" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+          >
+            <Globe className="h-4 w-4" />
+            Received ({receivedEmails.length})
           </TabsTrigger>
           <TabsTrigger 
             value="archive" 
@@ -719,6 +788,171 @@ export default function AdminEmailCenter() {
         {/* Bulk Email Tab */}
         <TabsContent value="bulk">
           <AdminBulkEmail />
+        </TabsContent>
+
+        {/* Received Emails Tab (from Resend) */}
+        <TabsContent value="received">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Email List */}
+            <Card className="lg:col-span-1 bg-slate-800 border-slate-700">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-lg text-white">
+                    <Globe className="h-5 w-5" />
+                    Received Emails
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={fetchReceivedEmails}
+                    disabled={receivedLoading}
+                    className="text-slate-400 hover:text-white"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${receivedLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ScrollArea className="h-[500px]">
+                  {receivedLoading ? (
+                    <div className="p-4 space-y-3">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className="h-16 bg-slate-700 rounded-lg animate-pulse" />
+                      ))}
+                    </div>
+                  ) : receivedEmails.length === 0 ? (
+                    <div className="p-12 text-center">
+                      <Globe className="h-12 w-12 mx-auto text-slate-500 mb-4" />
+                      <p className="text-slate-400">No received emails found</p>
+                      <p className="text-xs text-slate-500 mt-2">
+                        Make sure your MX records are configured for Resend receiving
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-2 space-y-2">
+                      {receivedEmails.map((email: any) => (
+                        <div
+                          key={email.id}
+                          onClick={() => {
+                            setSelectedReceivedEmail(email);
+                            setReceivedEmailDetail(null);
+                            setReceivedAttachments([]);
+                            fetchReceivedEmailDetail(email.id);
+                            fetchReceivedAttachments(email.id);
+                          }}
+                          className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                            selectedReceivedEmail?.id === email.id
+                              ? 'bg-primary/20 border border-primary/30'
+                              : 'bg-slate-700/50 hover:bg-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate text-white">
+                                {email.from || email.from_email || 'Unknown Sender'}
+                              </p>
+                              <p className="text-sm text-primary truncate">
+                                {email.subject || '(No Subject)'}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {email.created_at 
+                              ? format(new Date(email.created_at), 'MMM d, yyyy h:mm a')
+                              : 'Unknown date'}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Email Detail */}
+            <Card className="lg:col-span-2 bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-lg text-white">Email Detail</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedReceivedEmail ? (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-slate-400">From:</p>
+                      <p className="font-medium text-white">
+                        {receivedEmailDetail?.from || selectedReceivedEmail.from || selectedReceivedEmail.from_email || 'Unknown'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-400">To:</p>
+                      <p className="text-white">
+                        {receivedEmailDetail?.to || selectedReceivedEmail.to || 'Unknown'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-400">Subject:</p>
+                      <p className="font-semibold text-lg text-white">
+                        {receivedEmailDetail?.subject || selectedReceivedEmail.subject || '(No Subject)'}
+                      </p>
+                    </div>
+                    {selectedReceivedEmail.created_at && (
+                      <div>
+                        <p className="text-sm text-slate-400">Received:</p>
+                        <p className="text-slate-300">
+                          {format(new Date(selectedReceivedEmail.created_at), 'MMMM d, yyyy h:mm a')}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Attachments */}
+                    {receivedAttachments.length > 0 && (
+                      <div>
+                        <p className="text-sm text-slate-400 flex items-center gap-1 mb-2">
+                          <Paperclip className="h-3 w-3" />
+                          Attachments ({receivedAttachments.length})
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {receivedAttachments.map((att: any) => (
+                            <Badge 
+                              key={att.id} 
+                              variant="secondary" 
+                              className="flex items-center gap-1 cursor-pointer hover:bg-slate-600"
+                            >
+                              <Paperclip className="h-3 w-3" />
+                              {att.filename || att.name || 'Attachment'}
+                              {att.size && <span className="text-xs">({Math.round(att.size / 1024)}KB)</span>}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <hr className="border-slate-700" />
+                    
+                    {/* Email body */}
+                    <ScrollArea className="h-[300px]">
+                      {receivedEmailDetail?.html ? (
+                        <div 
+                          className="text-slate-300 bg-slate-700/30 p-4 rounded-lg prose prose-invert max-w-none"
+                          dangerouslySetInnerHTML={{ __html: receivedEmailDetail.html }}
+                        />
+                      ) : (
+                        <div className="whitespace-pre-wrap text-slate-300 bg-slate-700/30 p-4 rounded-lg">
+                          {receivedEmailDetail?.text || receivedEmailDetail?.body || selectedReceivedEmail.text || 'Loading email content...'}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-48 text-slate-400">
+                    <Globe className="h-12 w-12 mb-4" />
+                    <p>Select a received email to view</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Archive Tab */}
