@@ -54,6 +54,7 @@ export default function AdminEmailCenter() {
 
   // Admin emails (folder-based)
   const [adminEmails, setAdminEmails] = useState<any[]>([]);
+  const [adminSentEmails, setAdminSentEmails] = useState<any[]>([]);
   const [archiveEmails, setArchiveEmails] = useState<any[]>([]);
 
   // Resend received emails
@@ -74,10 +75,14 @@ export default function AdminEmailCenter() {
   }, []);
 
   const refreshFolderEmails = useCallback(async () => {
-    const [archiveData] = await Promise.all([
+    const [archiveData, sentData, inboxData] = await Promise.all([
       fetchAdminEmails('archive'),
+      fetchAdminEmails('sent'),
+      fetchAdminEmails('inbox'),
     ]);
     setArchiveEmails(archiveData);
+    setAdminSentEmails(sentData);
+    setAdminEmails(inboxData);
   }, [fetchAdminEmails]);
 
   const fetchReceivedEmails = useCallback(async () => {
@@ -237,12 +242,83 @@ export default function AdminEmailCenter() {
   };
 
   // Filtered data
-  const filteredSentEmails = sentEmails.filter(log =>
+  // Combine sent emails from email_logs + admin_emails (sent folder)
+  const combinedSentEmails = [
+    ...sentEmails.map(e => ({ ...e, _source: 'log' as const })),
+    ...adminSentEmails.map(e => ({
+      id: e.id,
+      recipient_email: e.to_email,
+      recipient_name: e.to_name,
+      subject: e.subject,
+      body: e.body,
+      status: 'sent',
+      sent_at: e.created_at,
+      sender_id: e.sender_id,
+      _source: 'admin' as const,
+    })),
+  ].sort((a, b) => new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime());
+
+  // De-duplicate by subject + recipient + close timestamp (within 5s)
+  const dedupedSentEmails = combinedSentEmails.filter((email, index, arr) => {
+    return !arr.slice(0, index).some(prev => 
+      prev.recipient_email === email.recipient_email &&
+      prev.subject === email.subject &&
+      Math.abs(new Date(prev.sent_at).getTime() - new Date(email.sent_at).getTime()) < 5000
+    );
+  });
+
+  const filteredSentEmails = dedupedSentEmails.filter(log =>
     log.recipient_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredInbox = inboxMessages.filter(msg => {
+  // Combine inbox: contact_messages + admin_emails (inbox folder) + Resend received emails
+  const combinedInbox = [
+    ...inboxMessages.map(msg => ({
+      id: msg.id,
+      name: msg.name,
+      email: msg.email,
+      subject: msg.subject,
+      message: msg.message,
+      responded: msg.responded,
+      created_at: msg.created_at,
+      phone: msg.phone,
+      _source: 'contact' as const,
+    })),
+    ...adminEmails.map(e => ({
+      id: e.id,
+      name: e.from_name || e.from_email,
+      email: e.from_email,
+      subject: e.subject,
+      message: e.body,
+      responded: e.is_read,
+      created_at: e.created_at,
+      phone: '',
+      _source: 'admin_email' as const,
+    })),
+    ...receivedEmails.map(e => ({
+      id: e.id,
+      name: e.from || 'Unknown',
+      email: e.from || '',
+      subject: e.subject || '(No Subject)',
+      message: '',
+      responded: false,
+      created_at: e.created_at,
+      phone: '',
+      _source: 'resend' as const,
+    })),
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  // De-duplicate inbox by email + subject + close timestamp
+  const dedupedInbox = combinedInbox.filter((item, index, arr) => {
+    return !arr.slice(0, index).some(prev => 
+      prev.email === item.email &&
+      prev.subject === item.subject &&
+      Math.abs(new Date(prev.created_at).getTime() - new Date(item.created_at).getTime()) < 5000
+    );
+  });
+
+  const filteredInbox = dedupedInbox.filter(msg => {
     const matchesSearch = 
       msg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       msg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -284,10 +360,10 @@ export default function AdminEmailCenter() {
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
           >
             <Inbox className="h-4 w-4" />
-            Inbox
-            {unreadCount > 0 && (
+            Inbox ({filteredInbox.length})
+            {dedupedInbox.filter(m => !m.responded).length > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                {unreadCount}
+                {dedupedInbox.filter(m => !m.responded).length}
               </Badge>
             )}
           </TabsTrigger>
@@ -303,7 +379,7 @@ export default function AdminEmailCenter() {
             className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
           >
             <Send className="h-4 w-4" />
-            Sent ({sentEmails.length})
+            Sent ({dedupedSentEmails.length})
           </TabsTrigger>
           <TabsTrigger 
             value="contacts" 
@@ -457,7 +533,7 @@ export default function AdminEmailCenter() {
 
                             {message.responded ? (
                               <Badge variant="secondary" className="bg-green-500/20 text-green-400">
-                                Replied on {format(new Date(message.responded_at!), 'PPp')}
+                                Replied
                               </Badge>
                             ) : (
                               <div className="space-y-4 border-t border-slate-700 pt-4">
