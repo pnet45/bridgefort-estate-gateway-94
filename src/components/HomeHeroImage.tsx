@@ -36,7 +36,7 @@ const HomeHeroImage = () => {
           <img 
             src={heroImages[currentSlide]} 
             alt={`PWAN Bridgefort Hero Image ${currentSlide + 1}`}
-            className="w-full h-full object-cover transition-all duration-1000 ease-in-out"
+            className="w-full h-[60vh] object-cover transition-all duration-1000 ease-in-out"
             loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
