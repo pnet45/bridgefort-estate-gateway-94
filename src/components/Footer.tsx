@@ -102,13 +102,13 @@ const Footer = () => {
               <Link to="/privacy-policy" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">Privacy Policy</Link>
               <Link to="/terms-of-service" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">Terms of Service</Link>
               <Link to="/sitemap" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">Sitemap</Link>
-              <Link to="/admin-login" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">Admin Portal</Link>
+              <Link to="/admin-login" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">
+              </Link>
             </div>
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>);
 };
 
 export default Footer;
