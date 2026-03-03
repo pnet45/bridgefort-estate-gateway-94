@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import { usePropertyContext } from '@/contexts/property';
 
 interface EstateListDialogProps {
@@ -14,7 +14,6 @@ const EstateListDialog: React.FC<EstateListDialogProps> = ({ isOpen, onClose }) 
   const { properties } = usePropertyContext();
 
   const handleDownloadForm = (estateName: string) => {
-    // For now, use the general form. In production, each estate would have its own form
     const link = document.createElement('a');
     link.href = '/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf';
     link.download = `${estateName}-Subscription-Form.pdf`;
@@ -26,6 +25,17 @@ const EstateListDialog: React.FC<EstateListDialogProps> = ({ isOpen, onClose }) 
     link.href = imageUrl;
     link.download = `${estateName}-Image.jpg`;
     link.click();
+  };
+
+  const handleDownloadDescription = (estate: any) => {
+    const description = estate.description || `${estate.title}\n\nLocation: ${estate.location}\nPrice: ${estate.price || 'Contact for pricing'}\nType: ${estate.propertyType || 'Land'}`;
+    const blob = new Blob([description], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${estate.title}-Description.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -72,6 +82,16 @@ const EstateListDialog: React.FC<EstateListDialogProps> = ({ isOpen, onClose }) 
                 >
                   <Download size={16} />
                   Download Form
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full flex items-center justify-center gap-2"
+                  onClick={() => handleDownloadDescription(estate)}
+                >
+                  <FileText size={16} />
+                  Download Description
                 </Button>
               </div>
             </div>

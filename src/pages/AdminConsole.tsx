@@ -6,25 +6,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Shield, 
-  Users, 
-  FileText, 
-  Mail, 
-  Settings, 
-  LayoutDashboard,
-  LogOut,
-  Bell,
-  Home,
-  UserCheck,
-  CheckSquare,
-  Calendar,
-  StickyNote,
-  Megaphone,
-  FolderOpen,
-  MessageSquare,
-  Building,
-  Activity,
-  TrendingUp
+  Shield, Users, FileText, Mail, LayoutDashboard, LogOut, Bell, Home,
+  UserCheck, CheckSquare, Calendar, Building, Activity, TrendingUp
 } from 'lucide-react';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalTab from '@/components/admin/AdminApprovalTab';
@@ -42,6 +25,7 @@ import AdminPropertyManagement from '@/components/admin/AdminPropertyManagement'
 import AdminActivityLogs from '@/components/admin/AdminActivityLogs';
 import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
 import AdminPropertyAnalytics from '@/components/admin/AdminPropertyAnalytics';
+import AdminContentManagement from '@/components/admin/AdminContentManagement';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
@@ -55,48 +39,22 @@ const AdminConsole = () => {
 
   useEffect(() => {
     const checkAdminAccess = async () => {
-      if (!user) {
-        navigate('/admin-login');
-        return;
-      }
-
-      const { data: isAdmin, error } = await supabase
-        .rpc('has_role', { _user_id: user.id, _role: 'admin' });
-
+      if (!user) { navigate('/admin-login'); return; }
+      const { data: isAdmin, error } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
       if (error || !isAdmin) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have permission to access the admin console",
-          variant: "destructive"
-        });
-        navigate('/dashboard');
-        return;
+        toast({ title: "Access Denied", description: "You don't have permission to access the admin console", variant: "destructive" });
+        navigate('/dashboard'); return;
       }
-
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       setProfile(profileData);
-
-      const { count } = await supabase
-        .from('pending_admin_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
-
+      const { count } = await supabase.from('pending_admin_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending');
       setPendingCount(count || 0);
       setLoading(false);
     };
-
     checkAdminAccess();
   }, [user, navigate]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/admin-login');
-  };
+  const handleSignOut = async () => { await signOut(); navigate('/admin-login'); };
 
   if (loading) {
     return (
@@ -107,10 +65,10 @@ const AdminConsole = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-[200vh] bg-slate-900">
       {/* Admin Header */}
       <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
@@ -124,57 +82,33 @@ const AdminConsole = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setNotificationOpen(!notificationOpen)}
-                  className="text-slate-400 hover:text-white relative"
-                >
+                <Button variant="ghost" size="icon" onClick={() => setNotificationOpen(!notificationOpen)} className="text-slate-400 hover:text-white relative">
                   <Bell className="h-5 w-5" />
                   {pendingCount > 0 && (
-                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
-                      {pendingCount}
-                    </span>
+                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>
                   )}
                 </Button>
-                <AdminNotificationCenter 
-                  isOpen={notificationOpen} 
-                  onClose={() => setNotificationOpen(false)}
-                  onNavigate={(tab) => setActiveTab(tab)}
-                />
+                <AdminNotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={(tab) => setActiveTab(tab)} />
               </div>
 
-              <div className="flex items-center gap-3 px-3 py-1.5 bg-slate-700/50 rounded-lg">
+              <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 bg-slate-700/50 rounded-lg">
                 <div className="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center">
-                  <span className="text-primary font-medium text-sm">
-                    {profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'A'}
-                  </span>
+                  <span className="text-primary font-medium text-sm">{profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'A'}</span>
                 </div>
-                <div className="hidden sm:block">
-                  <p className="text-sm font-medium text-white">
-                    {profile?.first_name || 'Admin'}
-                  </p>
+                <div>
+                  <p className="text-sm font-medium text-white">{profile?.first_name || 'Admin'}</p>
                   <p className="text-xs text-slate-400">{userRole}</p>
                 </div>
               </div>
 
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/')}
-                className="text-slate-400 hover:text-white"
-              >
-                <Home className="h-4 w-4 mr-2" />
+              <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-400 hover:text-white">
+                <Home className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">Main Site</span>
               </Button>
-
-              <Button
-                variant="ghost"
-                onClick={handleSignOut}
-                className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
+              <Button variant="ghost" onClick={handleSignOut} className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
+                <LogOut className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
@@ -183,60 +117,55 @@ const AdminConsole = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-slate-800 border border-slate-700 p-1 flex-wrap h-auto gap-1">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+          <TabsList className="bg-slate-800 border border-slate-700 p-1 flex flex-wrap h-auto gap-1 justify-start">
+            {/* Row 1 - Primary tabs */}
+            <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
               <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Dashboard</span>
+              <span>Dashboard</span>
             </TabsTrigger>
-            <TabsTrigger value="properties" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <TabsTrigger value="properties" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
               <Building className="h-4 w-4" />
-              <span className="hidden sm:inline">Properties</span>
+              <span>Properties</span>
             </TabsTrigger>
-            <TabsTrigger value="crm" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <TabsTrigger value="crm" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
               <CheckSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">CRM</span>
+              <span>CRM</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <TabsTrigger value="users" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
               <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Users</span>
+              <span>Users</span>
             </TabsTrigger>
-            <TabsTrigger value="approvals" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2 relative">
+            <TabsTrigger value="approvals" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm relative">
               <UserCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">Approvals</span>
+              <span>Approvals</span>
               {pendingCount > 0 && (
-                <span className="ml-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">
-                  {pendingCount}
-                </span>
+                <span className="ml-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="emails" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <TabsTrigger value="emails" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
               <Mail className="h-4 w-4" />
-              <span className="hidden sm:inline">Emails</span>
+              <span>Emails</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
               <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Analytics</span>
+              <span>Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <TabsTrigger value="activity" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
               <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline">Activity</span>
+              <span>Activity</span>
             </TabsTrigger>
-            <TabsTrigger value="content" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2">
+            <TabsTrigger value="content" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
               <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Content</span>
+              <span>Content</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Dashboard Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             <AdminDashboardStats />
-            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <AdminInbox />
-              </div>
+              <div className="lg:col-span-2"><AdminInbox /></div>
               <div className="space-y-6">
                 <AdminOnlineUsers />
                 <AdminChat />
@@ -244,12 +173,8 @@ const AdminConsole = () => {
             </div>
           </TabsContent>
 
-          {/* Properties Tab */}
-          <TabsContent value="properties">
-            <AdminPropertyManagement />
-          </TabsContent>
+          <TabsContent value="properties"><AdminPropertyManagement /></TabsContent>
 
-          {/* CRM Tab */}
           <TabsContent value="crm" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <AdminTaskManager />
@@ -262,38 +187,12 @@ const AdminConsole = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="users">
-            <UserManagementTab />
-          </TabsContent>
-
-          <TabsContent value="approvals">
-            <AdminApprovalTab onCountChange={setPendingCount} />
-          </TabsContent>
-
-          <TabsContent value="emails">
-            <AdminEmailCenter />
-          </TabsContent>
-
-          {/* Analytics Tab */}
-          <TabsContent value="analytics">
-            <AdminPropertyAnalytics />
-          </TabsContent>
-
-          {/* Activity Logs Tab */}
-          <TabsContent value="activity">
-            <AdminActivityLogs />
-          </TabsContent>
-
-          <TabsContent value="content">
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Content Management</h2>
-              <p className="text-slate-400">Blog posts, properties, and site content management.</p>
-              <div className="mt-4 flex gap-4">
-                <Button onClick={() => navigate('/create-post')}>Create Blog Post</Button>
-                <Button variant="outline" onClick={() => navigate('/blog')}>View Blog</Button>
-              </div>
-            </div>
-          </TabsContent>
+          <TabsContent value="users"><UserManagementTab /></TabsContent>
+          <TabsContent value="approvals"><AdminApprovalTab onCountChange={setPendingCount} /></TabsContent>
+          <TabsContent value="emails"><AdminEmailCenter /></TabsContent>
+          <TabsContent value="analytics"><AdminPropertyAnalytics /></TabsContent>
+          <TabsContent value="activity"><AdminActivityLogs /></TabsContent>
+          <TabsContent value="content"><AdminContentManagement /></TabsContent>
         </Tabs>
       </main>
 
