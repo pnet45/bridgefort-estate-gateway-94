@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useEmail } from '@/hooks/useEmail';
@@ -16,7 +17,7 @@ import EmailReadingPane from './email/EmailReadingPane';
 import ComposeDialog from './email/ComposeDialog';
 import {
   Mail, Search, RefreshCw, Trash2, Archive, MailOpen,
-  CheckSquare, Star, Users, User, Inbox
+  CheckSquare, Star, Users, User, Inbox, GripVertical
 } from 'lucide-react';
 
 export default function AdminEmailCenter() {
@@ -33,6 +34,11 @@ export default function AdminEmailCenter() {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [composeOpen, setComposeOpen] = useState(false);
   const [composeInitial, setComposeInitial] = useState({ to: '', name: '', subject: '', body: '' });
+  const [fullViewEmail, setFullViewEmail] = useState(false);
+
+  // Resizable column width
+  const [listWidth, setListWidth] = useState(420);
+  const [isResizing, setIsResizing] = useState(false);
 
   // DB-backed admin_emails
   const [adminEmails, setAdminEmails] = useState<any[]>([]);
@@ -87,6 +93,26 @@ export default function AdminEmailCenter() {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
+
+  // Resizable column handler
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    const startX = e.clientX;
+    const startWidth = listWidth;
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      const newWidth = Math.max(250, Math.min(700, startWidth + e.clientX - startX));
+      setListWidth(newWidth);
+    };
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [listWidth]);
 
   // Normalize all emails into UnifiedEmail
   const allUnifiedEmails: UnifiedEmail[] = useMemo(() => {
@@ -160,7 +186,7 @@ export default function AdminEmailCenter() {
     return [...fromAdminEmails, ...fromContactMessages, ...fromEmailLogs, ...fromResend];
   }, [adminEmails, inboxMessages, sentEmails, receivedEmails, receivedDetails]);
 
-  // Dedup by subject + sender + close timestamps
+  // Dedup
   const deduped = useMemo(() => {
     const seen = new Map<string, UnifiedEmail>();
     const sorted = [...allUnifiedEmails].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -169,43 +195,26 @@ export default function AdminEmailCenter() {
       const existing = seen.get(key);
       if (existing) {
         const timeDiff = Math.abs(new Date(existing.created_at).getTime() - new Date(e.created_at).getTime());
-        if (timeDiff < 5000) return; // skip duplicate
+        if (timeDiff < 5000) return;
       }
       seen.set(`${key}|${e.id}`, e);
     });
     return Array.from(seen.values());
   }, [allUnifiedEmails]);
 
-  // Thread by normalized subject
   const getThreadId = (subject: string) => subject.replace(/^(re|fwd|fw):\s*/gi, '').trim().toLowerCase();
 
-  // Filter by folder
   const folderEmails = useMemo(() => {
     let filtered = deduped;
     switch (activeFolder) {
-      case 'inbox':
-        filtered = deduped.filter(e => e.folder === 'inbox');
-        break;
-      case 'sent':
-        filtered = deduped.filter(e => e.folder === 'sent');
-        break;
-      case 'drafts':
-        filtered = deduped.filter(e => e.folder === 'drafts');
-        break;
-      case 'starred':
-        filtered = deduped.filter(e => e.is_starred);
-        break;
-      case 'archive':
-        filtered = deduped.filter(e => e.folder === 'archive');
-        break;
-      case 'trash':
-        filtered = deduped.filter(e => e.folder === 'trash');
-        break;
-      case 'received':
-        filtered = deduped.filter(e => e.source === 'resend');
-        break;
-      default:
-        filtered = [];
+      case 'inbox': filtered = deduped.filter(e => e.folder === 'inbox'); break;
+      case 'sent': filtered = deduped.filter(e => e.folder === 'sent'); break;
+      case 'drafts': filtered = deduped.filter(e => e.folder === 'drafts'); break;
+      case 'starred': filtered = deduped.filter(e => e.is_starred); break;
+      case 'archive': filtered = deduped.filter(e => e.folder === 'archive'); break;
+      case 'trash': filtered = deduped.filter(e => e.folder === 'trash'); break;
+      case 'received': filtered = deduped.filter(e => e.source === 'resend'); break;
+      default: filtered = [];
     }
     if (searchTerm) {
       const s = searchTerm.toLowerCase();
@@ -219,7 +228,6 @@ export default function AdminEmailCenter() {
     return filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }, [deduped, activeFolder, searchTerm]);
 
-  // Get thread for selected email
   const selectedEmail = folderEmails.find(e => e.id === selectedEmailId) || null;
   const threadEmails = useMemo(() => {
     if (!selectedEmail) return [];
@@ -229,7 +237,6 @@ export default function AdminEmailCenter() {
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }, [selectedEmail, deduped]);
 
-  // Counts
   const counts = useMemo(() => ({
     inbox: deduped.filter(e => e.folder === 'inbox').length,
     unread: deduped.filter(e => e.folder === 'inbox' && !e.is_read).length,
@@ -245,7 +252,6 @@ export default function AdminEmailCenter() {
   // Actions
   const toggleStar = async (email: UnifiedEmail) => {
     if (email.id.startsWith('cm-') || email.id.startsWith('log-') || email.id.startsWith('resend-')) {
-      // Save to admin_emails first if not already there
       toast.info('Star is available for admin emails');
       return;
     }
@@ -255,23 +261,14 @@ export default function AdminEmailCenter() {
 
   const moveToFolder = async (email: UnifiedEmail, folder: string) => {
     if (email.id.startsWith('cm-')) {
-      if (folder === 'trash') {
-        await deleteMessage(email._original.id);
-        toast.success('Message deleted');
-      }
+      if (folder === 'trash') { await deleteMessage(email._original.id); toast.success('Message deleted'); }
       return;
     }
     if (email.id.startsWith('log-')) {
-      if (folder === 'trash') {
-        await deleteEmailLog(email._original.id);
-        toast.success('Email log deleted');
-      }
+      if (folder === 'trash') { await deleteEmailLog(email._original.id); toast.success('Email log deleted'); }
       return;
     }
-    if (email.id.startsWith('resend-')) {
-      toast.info('Cannot move Resend emails');
-      return;
-    }
+    if (email.id.startsWith('resend-')) { toast.info('Cannot move Resend emails'); return; }
     await supabase.from('admin_emails').update({ folder }).eq('id', email.id);
     toast.success(`Moved to ${folder}`);
     fetchAllAdminEmails();
@@ -279,25 +276,22 @@ export default function AdminEmailCenter() {
   };
 
   const markRead = async (email: UnifiedEmail) => {
-    if (email.id.startsWith('cm-')) return;
-    if (email.id.startsWith('log-') || email.id.startsWith('resend-')) return;
+    if (email.id.startsWith('cm-') || email.id.startsWith('log-') || email.id.startsWith('resend-')) return;
     await supabase.from('admin_emails').update({ is_read: !email.is_read }).eq('id', email.id);
     fetchAllAdminEmails();
   };
 
   const handleSelectEmail = (email: UnifiedEmail) => {
     setSelectedEmailId(email.id);
-    // Auto mark read
     if (!email.is_read && !email.id.startsWith('cm-') && !email.id.startsWith('log-') && !email.id.startsWith('resend-')) {
       supabase.from('admin_emails').update({ is_read: true }).eq('id', email.id).then(() => fetchAllAdminEmails());
     }
-    // Fetch resend detail
     if (email.id.startsWith('resend-')) {
       fetchReceivedDetail(email._original.id);
     }
   };
 
-  const handleComposeSend = async (to: string, name: string, subj: string, body: string) => {
+  const handleComposeSend = async (to: string, name: string, subj: string, body: string, cc?: string, bcc?: string) => {
     if (!to || !subj || !body) {
       toast.error('Fill in all required fields');
       return { success: false, error: 'Missing fields' };
@@ -315,6 +309,19 @@ export default function AdminEmailCenter() {
         is_read: true,
         source: 'compose',
       });
+      // Send to CC recipients too
+      if (cc) {
+        const ccEmails = cc.split(',').map(e => e.trim()).filter(Boolean);
+        for (const ccEmail of ccEmails) {
+          await sendEmail(ccEmail, subj, body, '');
+        }
+      }
+      if (bcc) {
+        const bccEmails = bcc.split(',').map(e => e.trim()).filter(Boolean);
+        for (const bccEmail of bccEmails) {
+          await sendEmail(bccEmail, subj, body, '');
+        }
+      }
       toast.success('Email sent!');
       fetchAllAdminEmails();
     } else {
@@ -346,8 +353,7 @@ export default function AdminEmailCenter() {
       else toast.error(result.error || 'Failed');
       return result;
     }
-    const result = await handleComposeSend(email.from_email, email.from_name, subj, body);
-    return result;
+    return handleComposeSend(email.from_email, email.from_name, subj, body);
   };
 
   const handleForward = async (email: UnifiedEmail, to: string, subj: string, body: string) => {
@@ -372,7 +378,6 @@ export default function AdminEmailCenter() {
       body: email.body,
     });
     setComposeOpen(true);
-    // Delete the draft
     if (!email.id.startsWith('cm-') && !email.id.startsWith('log-') && !email.id.startsWith('resend-')) {
       supabase.from('admin_emails').delete().eq('id', email.id).then(() => fetchAllAdminEmails());
     }
@@ -384,16 +389,15 @@ export default function AdminEmailCenter() {
     fetchReceivedEmails();
   };
 
-  // Non-email folder views
   const isToolView = ['contacts', 'templates', 'bulk'].includes(activeFolder);
 
   return (
-    <div className="flex h-[calc(100vh-12rem)] gap-0 rounded-xl border border-border overflow-hidden bg-background">
+    <div className={`flex h-[calc(100vh-12rem)] gap-0 rounded-xl border border-border overflow-hidden bg-background ${isResizing ? 'select-none' : ''}`}>
       {/* Sidebar */}
       <div className="border-r border-border p-3 hidden md:block">
         <GmailSidebar
           activeFolder={activeFolder}
-          onFolderChange={(f) => { setActiveFolder(f); setSelectedEmailId(null); setSearchTerm(''); }}
+          onFolderChange={(f) => { setActiveFolder(f); setSelectedEmailId(null); setSearchTerm(''); setFullViewEmail(false); }}
           onCompose={() => { setComposeInitial({ to: '', name: '', subject: '', body: '' }); setComposeOpen(true); }}
           counts={counts}
         />
@@ -403,7 +407,6 @@ export default function AdminEmailCenter() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <div className="flex items-center gap-2 px-4 py-2 border-b border-border shrink-0">
-          {/* Mobile folder selector */}
           <select
             value={activeFolder}
             onChange={(e) => { setActiveFolder(e.target.value as EmailFolder); setSelectedEmailId(null); }}
@@ -490,54 +493,71 @@ export default function AdminEmailCenter() {
         {/* Email list + reading pane */}
         {!isToolView && (
           <div className="flex-1 flex min-h-0">
-            {/* Email list */}
-            <div className={`${selectedEmailId ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-96 lg:w-[420px] shrink-0 border-r border-border`}>
-              <ScrollArea className="flex-1">
-                {loading && folderEmails.length === 0 ? (
-                  <div className="p-4 space-y-3">
-                    {[...Array(8)].map((_, i) => (
-                      <div key={i} className="h-14 bg-muted rounded animate-pulse" />
-                    ))}
+            {/* Email list - resizable */}
+            {!fullViewEmail && (
+              <>
+                <div
+                  className={`${selectedEmailId ? 'hidden md:flex' : 'flex'} flex-col shrink-0 border-r border-border`}
+                  style={{ width: selectedEmailId ? listWidth : '100%', maxWidth: selectedEmailId ? '60%' : '100%' }}
+                >
+                  <ScrollArea className="flex-1">
+                    {loading && folderEmails.length === 0 ? (
+                      <div className="p-4 space-y-3">
+                        {[...Array(8)].map((_, i) => (
+                          <div key={i} className="h-14 bg-muted rounded animate-pulse" />
+                        ))}
+                      </div>
+                    ) : folderEmails.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                        <Inbox className="h-12 w-12 mb-3 opacity-30" />
+                        <p>No emails in {activeFolder}</p>
+                      </div>
+                    ) : (
+                      folderEmails.map(email => (
+                        <EmailListItem
+                          key={email.id}
+                          email={email}
+                          isSelected={selectedEmailId === email.id}
+                          isChecked={checkedIds.has(email.id)}
+                          onSelect={() => {
+                            if (activeFolder === 'drafts') {
+                              handleOpenDraft(email);
+                            } else {
+                              handleSelectEmail(email);
+                            }
+                          }}
+                          onCheck={(c) => {
+                            setCheckedIds(prev => {
+                              const next = new Set(prev);
+                              c ? next.add(email.id) : next.delete(email.id);
+                              return next;
+                            });
+                          }}
+                          onStar={() => toggleStar(email)}
+                        />
+                      ))
+                    )}
+                  </ScrollArea>
+                </div>
+
+                {/* Resizable divider */}
+                {selectedEmailId && (
+                  <div
+                    className="hidden md:flex w-1.5 cursor-col-resize items-center justify-center hover:bg-primary/20 transition-colors shrink-0"
+                    onMouseDown={handleMouseDown}
+                  >
+                    <GripVertical className="h-4 w-4 text-muted-foreground" />
                   </div>
-                ) : folderEmails.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                    <Inbox className="h-12 w-12 mb-3 opacity-30" />
-                    <p>No emails in {activeFolder}</p>
-                  </div>
-                ) : (
-                  folderEmails.map(email => (
-                    <EmailListItem
-                      key={email.id}
-                      email={email}
-                      isSelected={selectedEmailId === email.id}
-                      isChecked={checkedIds.has(email.id)}
-                      onSelect={() => {
-                        if (activeFolder === 'drafts') {
-                          handleOpenDraft(email);
-                        } else {
-                          handleSelectEmail(email);
-                        }
-                      }}
-                      onCheck={(c) => {
-                        setCheckedIds(prev => {
-                          const next = new Set(prev);
-                          c ? next.add(email.id) : next.delete(email.id);
-                          return next;
-                        });
-                      }}
-                      onStar={() => toggleStar(email)}
-                    />
-                  ))
                 )}
-              </ScrollArea>
-            </div>
+              </>
+            )}
 
             {/* Reading pane */}
             <div className={`${selectedEmailId ? 'flex' : 'hidden md:flex'} flex-1 flex-col min-w-0`}>
               <EmailReadingPane
                 email={selectedEmail}
                 threadEmails={threadEmails}
-                onBack={() => setSelectedEmailId(null)}
+                onBack={() => { setSelectedEmailId(null); setFullViewEmail(false); }}
                 onReply={handleReply}
                 onForward={handleForward}
                 onStar={toggleStar}
@@ -545,6 +565,8 @@ export default function AdminEmailCenter() {
                 onDelete={(e) => moveToFolder(e, 'trash')}
                 onMarkRead={markRead}
                 sending={sending}
+                isFullView={fullViewEmail}
+                onToggleFullView={() => setFullViewEmail(!fullViewEmail)}
               />
             </div>
           </div>

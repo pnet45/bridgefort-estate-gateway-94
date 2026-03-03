@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Send, RefreshCw, Save, Trash2, Minus } from 'lucide-react';
+import { Send, RefreshCw, Save, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ComposeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSend: (to: string, name: string, subject: string, body: string) => Promise<{ success: boolean; error?: string }>;
+  onSend: (to: string, name: string, subject: string, body: string, cc?: string, bcc?: string) => Promise<{ success: boolean; error?: string }>;
   onSaveDraft: (to: string, name: string, subject: string, body: string) => void;
   onDiscard: () => void;
   sending: boolean;
@@ -27,6 +27,9 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
   const [name, setName] = useState(initialName);
   const [subject, setSubject] = useState(initialSubject);
   const [body, setBody] = useState(initialBody);
+  const [cc, setCc] = useState('');
+  const [bcc, setBcc] = useState('');
+  const [showCcBcc, setShowCcBcc] = useState(false);
 
   React.useEffect(() => {
     if (open) {
@@ -34,11 +37,14 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
       setName(initialName);
       setSubject(initialSubject);
       setBody(initialBody);
+      setCc('');
+      setBcc('');
+      setShowCcBcc(false);
     }
   }, [open, initialTo, initialName, initialSubject, initialBody]);
 
   const handleSend = async () => {
-    const result = await onSend(to, name, subject, body);
+    const result = await onSend(to, name, subject, body, cc, bcc);
     if (result.success) {
       onOpenChange(false);
     }
@@ -63,9 +69,41 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
               value={to}
               onChange={(e) => setTo(e.target.value)}
               placeholder="recipient@example.com"
-              className="border-0 shadow-none focus-visible:ring-0 h-8"
+              className="border-0 shadow-none focus-visible:ring-0 h-8 flex-1"
             />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowCcBcc(!showCcBcc)}
+              className="text-xs text-muted-foreground shrink-0"
+            >
+              Cc/Bcc {showCcBcc ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+            </Button>
           </div>
+          {showCcBcc && (
+            <>
+              <div className="flex items-center border-b border-border py-1">
+                <Label className="w-12 text-sm text-muted-foreground">Cc</Label>
+                <Input
+                  type="email"
+                  value={cc}
+                  onChange={(e) => setCc(e.target.value)}
+                  placeholder="cc@example.com (comma separated)"
+                  className="border-0 shadow-none focus-visible:ring-0 h-8"
+                />
+              </div>
+              <div className="flex items-center border-b border-border py-1">
+                <Label className="w-12 text-sm text-muted-foreground">Bcc</Label>
+                <Input
+                  type="email"
+                  value={bcc}
+                  onChange={(e) => setBcc(e.target.value)}
+                  placeholder="bcc@example.com (comma separated)"
+                  className="border-0 shadow-none focus-visible:ring-0 h-8"
+                />
+              </div>
+            </>
+          )}
           <div className="flex items-center border-b border-border py-1">
             <Label className="w-12 text-sm text-muted-foreground">Name</Label>
             <Input

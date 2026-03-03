@@ -13,24 +13,23 @@ export interface Position {
   requirements: string[];
 }
 
-// Array of example positions (move here from OpenPositions.tsx)
 const positions: Position[] = [
   {
-    title: 'Estate Manager',
+    title: 'Inspection Officer',
     location: 'Lagos, Nigeria',
     type: 'Full-time',
     salary: 'Competitive',
-    description: 'We are seeking an experienced Estate Manager to oversee our premium residential and commercial properties. The ideal candidate will have a strong background in property management and exceptional client relationship skills.',
+    description: 'We are seeking an experienced Inspection Officer to oversee property inspections and ensure quality standards across our premium residential and commercial properties.',
     responsibilities: [
-      'Oversee day-to-day operations of multiple estate properties',
-      'Coordinate with maintenance teams and security personnel',
-      'Handle client inquiries and address resident concerns',
+      'Conduct thorough inspections of estate properties before and after allocation',
+      'Coordinate with maintenance teams and security personnel on property conditions',
+      'Document inspection findings and prepare detailed reports',
       'Ensure regulatory compliance and maintain property documentation',
-      'Conduct regular property inspections and coordinate improvements'
+      'Schedule and lead client property viewings and site inspections'
     ],
     requirements: [
-      "Bachelor's degree in Real Estate Management, Business Administration, or related field",
-      '3+ years of experience in estate or property management',
+      "Bachelor's degree in Real Estate Management, Civil Engineering, or related field",
+      '3+ years of experience in property inspection or estate management',
       'Excellent communication and interpersonal skills',
       'Strong organizational and problem-solving abilities',
       "Valid driver's license and ability to travel between properties"
@@ -99,6 +98,28 @@ const positions: Position[] = [
       'Excellent analytical and problem-solving abilities',
       'Strong communication skills and attention to detail',
       'Ability to work efficiently under pressure and meet deadlines'
+    ]
+  },
+  {
+    title: 'Driver',
+    location: 'Lagos, Nigeria',
+    type: 'Full-time',
+    salary: 'Negotiable',
+    description: 'We are looking for a reliable and experienced Driver to support our operations. The ideal candidate will transport staff and clients to property sites, meetings, and events safely and efficiently.',
+    responsibilities: [
+      'Drive company vehicles to transport staff and clients to property sites and meetings',
+      'Maintain vehicle cleanliness and ensure routine maintenance checks',
+      'Plan and follow optimal routes for timely arrivals',
+      'Ensure safety of passengers and compliance with traffic regulations',
+      'Assist with logistics, deliveries, and errands as required'
+    ],
+    requirements: [
+      "Valid driver's license (Class E or equivalent)",
+      '3+ years of professional driving experience',
+      'Good knowledge of Lagos roads and major routes',
+      'Clean driving record with no major violations',
+      'Good communication skills and professional demeanor',
+      'Basic vehicle maintenance knowledge'
     ]
   }
 ];
