@@ -30,13 +30,13 @@ const HomeHeroImage = () => {
   }, [heroImages.length]);
 
   return (
-    <section className="relative w-full h-[60vh] md:h-[70vh] lg:h-[80vh]">
+    <section className="relative w-full h-[35vh] md:h-[70vh] lg:h-[80vh]">
       <div className="h-full">
         <div className="h-full relative overflow-hidden">
           <img 
             src={heroImages[currentSlide]} 
             alt={`PWAN Bridgefort Hero Image ${currentSlide + 1}`}
-            className="w-full h-[60vh] object-cover transition-all duration-1000 ease-in-out"
+            className="w-full h-[35vh] md:h-[70vh] lg:h-[80vh] object-cover transition-all duration-1000 ease-in-out"
             loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
