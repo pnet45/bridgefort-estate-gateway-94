@@ -23,8 +23,10 @@ const Home = () => {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      {/* Hero Section with Static Image */}
-      <HomeHeroImage />
+      {/* Hero Section - bleeds behind navbar */}
+      <div className="-mt-20">
+        <HomeHeroImage />
+      </div>
 
       {/* Property Provider wraps both search and featured! */}
       <PropertyProvider>

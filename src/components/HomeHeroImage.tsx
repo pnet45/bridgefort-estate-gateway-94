@@ -1,31 +1,59 @@
 
 import React, { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface HeroSlide {
+  id: string;
+  image_url: string;
+  title: string | null;
+  subtitle: string | null;
+  display_order: number;
+}
+
+const FALLBACK_SLIDES = [
+  '/lovable-uploads/ikoyi link bridge.png',
+  '/lovable-uploads/Homeheroimage2222.png',
+  '/lovable-uploads/PropertyHero.png',
+];
+
+const FALLBACK_TITLE = "PWAN Bridgefort. ...Rebuilding the Future!";
+const FALLBACK_SUBTITLE = "At PWAN Bridgefort, we're not just selling properties—we're building legacies.";
 
 const HomeHeroImage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  
-  // Array of hero images for the slideshow
-  const heroImages = [
-    '/lovable-uploads/ikoyi link bridge.png',
-    '/lovable-uploads/Homeheroimage2222.png',
-    '/lovable-uploads/00f20cea-44fd-4566-bf5f-18091450610e.jpg',
-    '/lovable-uploads/Homeslider2.png',
-    '/lovable-uploads/Homeslider.png',
-    '/lovable-uploads/f4c5cb9d-d79d-419a-9577-444691d59b72.jpg',
-    '/lovable-uploads/Homeslider3.png',
-    '/lovable-uploads/PropertyHero.png',
-    '/lovable-uploads/Homeslider4.png'
-  ];
-  
-  const heroTitle = "PWAN Bridgefort. ...Rebuilding the Future!";
-  const heroSubtitle = "At PWAN Bridgefort, we're not just selling properties—we're building legacies.";
+  const [slides, setSlides] = useState<HeroSlide[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch hero slides from DB
+  useEffect(() => {
+    const fetchSlides = async () => {
+      const { data, error } = await supabase
+        .from('hero_slides')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (!error && data && data.length > 0) {
+        setSlides(data);
+      }
+      setLoading(false);
+    };
+    fetchSlides();
+  }, []);
+
+  const heroImages = slides.length > 0
+    ? slides.map(s => s.image_url)
+    : FALLBACK_SLIDES;
+
+  const currentSlideData = slides[currentSlide];
+  const heroTitle = currentSlideData?.title || FALLBACK_TITLE;
+  const heroSubtitle = currentSlideData?.subtitle || FALLBACK_SUBTITLE;
 
   // Auto-slide every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % heroImages.length);
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
     }, 5000);
-    
     return () => clearInterval(interval);
   }, [heroImages.length]);
 
@@ -44,8 +72,8 @@ const HomeHeroImage = () => {
             }}
           />
           {/* Dark overlay for better text visibility */}
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center">
-            <div className="container-custom text-white px-4">
+          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end pb-16 md:items-center md:pb-0">
+            <div className="container-custom text-white px-4 pt-20">
               <h1 className="text-lg md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-6 max-w-3xl leading-snug md:leading-tight animate-fade-in">
                 {heroTitle}
               </h1>
