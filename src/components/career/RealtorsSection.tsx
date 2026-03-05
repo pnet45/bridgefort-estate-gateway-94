@@ -34,7 +34,7 @@ const RealtorsSection = () => {
       <section className="py-16 bg-estate-blue text-white">
         <div className="container-custom">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">For Realtors</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">For Realtors and PBOs</h2>
             <p className="text-xl max-w-2xl mx-auto">
               Join our network of successful real estate professionals and take your career to new heights
             </p>
