@@ -54,6 +54,14 @@ const HomeHeroImage = () => {
               }}>
                 {heroSubtitle}
               </p>
+              <div className="flex flex-wrap gap-3 animate-fade-in" style={{ animationDelay: '400ms' }}>
+                <a href="/properties" className="inline-flex items-center bg-primary text-primary-foreground font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg hover:bg-primary/90 transition-colors text-sm md:text-base">
+                  Browse Properties
+                </a>
+                <a href="/contact" className="inline-flex items-center border-2 border-white text-white font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg hover:bg-white/20 transition-colors text-sm md:text-base">
+                  Contact Us
+                </a>
+              </div>
             </div>
           </div>
         </div>
