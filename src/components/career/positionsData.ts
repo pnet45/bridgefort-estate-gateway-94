@@ -28,7 +28,7 @@ const positions: Position[] = [
       'Schedule and lead client property viewings and site inspections'
     ],
     requirements: [
-      "Bachelor's degree in Real Estate Management, Civil Engineering, or related field",
+      "Bachelor's degree or it's equivalent in Real Estate Management, Civil Engineering, or related field",
       '3+ years of experience in property inspection or estate management',
       'Excellent communication and interpersonal skills',
       'Strong organizational and problem-solving abilities',

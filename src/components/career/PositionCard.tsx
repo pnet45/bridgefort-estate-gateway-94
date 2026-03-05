@@ -66,7 +66,7 @@ const PositionCard: React.FC<PositionCardProps> = ({ position, expanded, onToggl
                 e.stopPropagation(); // Prevent card collapse on button click 
                 onApply(position.title);
               }}
-              className="bg-estate-blue hover:bg-estate-darkBlue flex items-center"
+              className="bg-estate-blue hover:bg-estate-darkBlue flex items-left"
             >
               <Briefcase size={16} className="mr-2" />
               Apply for this position
