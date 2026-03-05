@@ -46,10 +46,10 @@ const HomeHeroImage = () => {
           {/* Dark overlay for better text visibility */}
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center">
             <div className="container-custom text-white px-4">
-              <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 md:mb-6 max-w-3xl leading-tight animate-fade-in">
+              <h1 className="text-lg md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-6 max-w-3xl leading-snug md:leading-tight animate-fade-in">
                 {heroTitle}
               </h1>
-              <p className="text-base md:text-lg lg:text-xl xl:text-2xl mb-6 md:mb-8 max-w-2xl animate-fade-in" style={{
+              <p className="text-sm md:text-lg lg:text-xl xl:text-2xl mb-3 md:mb-8 max-w-2xl animate-fade-in" style={{
                 animationDelay: '200ms'
               }}>
                 {heroSubtitle}
