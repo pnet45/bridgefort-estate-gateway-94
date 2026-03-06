@@ -854,6 +854,7 @@ export type Database = {
           size: number | null
           sold_plots: number | null
           sub_form: string | null
+          subscription_form_url: string | null
           title: string | null
           total_plots: number | null
           type: string | null
@@ -880,6 +881,7 @@ export type Database = {
           size?: number | null
           sold_plots?: number | null
           sub_form?: string | null
+          subscription_form_url?: string | null
           title?: string | null
           total_plots?: number | null
           type?: string | null
@@ -906,11 +908,53 @@ export type Database = {
           size?: number | null
           sold_plots?: number | null
           sub_form?: string | null
+          subscription_form_url?: string | null
           title?: string | null
           total_plots?: number | null
           type?: string | null
         }
         Relationships: []
+      }
+      estate_doc_pricing: {
+        Row: {
+          created_at: string
+          deed_of_assignment: number | null
+          estate_id: string
+          id: string
+          plot_demarcation: number | null
+          plot_maintenance_fee: number | null
+          survey_plan: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deed_of_assignment?: number | null
+          estate_id: string
+          id?: string
+          plot_demarcation?: number | null
+          plot_maintenance_fee?: number | null
+          survey_plan?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deed_of_assignment?: number | null
+          estate_id?: string
+          id?: string
+          plot_demarcation?: number | null
+          plot_maintenance_fee?: number | null
+          survey_plan?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estate_doc_pricing_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: true
+            referencedRelation: "estate"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       estate_documentation_payments: {
         Row: {

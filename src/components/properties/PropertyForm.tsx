@@ -8,7 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Estate, EstateFormData } from '@/types/estate';
-import { X, Upload, Loader2 } from 'lucide-react';
+import { X, Upload, Loader2, FileText } from 'lucide-react';
+
+interface DocPricing {
+  deed_of_assignment: number;
+  survey_plan: number;
+  plot_demarcation: number;
+  plot_maintenance_fee: number | null;
+}
 
 interface PropertyFormProps {
   estate?: Estate;
@@ -45,6 +52,15 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
     sold_plots: undefined,
   });
   const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [subscriptionFile, setSubscriptionFile] = useState<File | null>(null);
+  const [existingSubFormUrl, setExistingSubFormUrl] = useState<string>('');
+  const [uploadingSubForm, setUploadingSubForm] = useState(false);
+  const [docPricing, setDocPricing] = useState<DocPricing>({
+    deed_of_assignment: 0,
+    survey_plan: 0,
+    plot_demarcation: 0,
+    plot_maintenance_fee: null,
+  });
 
   useEffect(() => {
     if (estate) {
@@ -53,8 +69,31 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         media_files: []
       });
       setPreviewImages(estate.media || []);
+      setExistingSubFormUrl(estate.sub_form || '');
+      // Fetch doc pricing
+      fetchDocPricing(estate.id);
     }
   }, [estate]);
+
+  const fetchDocPricing = async (estateId: string) => {
+    try {
+      const { data } = await supabase
+        .from('estate_doc_pricing')
+        .select('*')
+        .eq('estate_id', estateId)
+        .single();
+      if (data) {
+        setDocPricing({
+          deed_of_assignment: data.deed_of_assignment || 0,
+          survey_plan: data.survey_plan || 0,
+          plot_demarcation: data.plot_demarcation || 0,
+          plot_maintenance_fee: data.plot_maintenance_fee,
+        });
+      }
+    } catch (err) {
+      // No pricing set yet
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -168,6 +207,19 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         const uploadedUrls = await uploadFiles(formData.media_files);
         allMedia = [...allMedia, ...uploadedUrls];
       }
+
+      // Upload subscription form PDF if selected
+      let subFormUrl = formData.sub_form || existingSubFormUrl || '';
+      if (subscriptionFile) {
+        const fileExt = subscriptionFile.name.split('.').pop();
+        const fileName = `subscription-forms/${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('public')
+          .upload(fileName, subscriptionFile);
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl } } = supabase.storage.from('public').getPublicUrl(fileName);
+        subFormUrl = publicUrl;
+      }
       
       const estateData = {
         name: formData.name,
@@ -181,7 +233,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         title: formData.title,
         type: formData.type,
         description: formData.description,
-        sub_form: formData.sub_form,
+        sub_form: subFormUrl,
         media: allMedia,
         property_category: formData.property_category,
         bedrooms: formData.bedrooms,
@@ -194,31 +246,46 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         sold_plots: formData.sold_plots,
       };
       
+      let savedEstateId = estate?.id;
+
       if (isEditing && estate) {
-        // Update existing estate
         const { error } = await supabase
           .from('estate')
           .update(estateData)
           .eq('id', estate.id);
-          
         if (error) throw error;
-        
+        savedEstateId = estate.id;
         toast({
           title: "Estate updated",
           description: `${formData.name} has been updated successfully`
         });
       } else {
-        // Create new estate
-        const { error } = await supabase
+        const { data: newEstate, error } = await supabase
           .from('estate')
-          .insert(estateData);
-          
+          .insert(estateData)
+          .select('id')
+          .single();
         if (error) throw error;
-        
+        savedEstateId = newEstate?.id;
         toast({
           title: "Estate created",
           description: `${formData.name} has been created successfully`
         });
+      }
+
+      // Save documentation pricing
+      if (savedEstateId && (docPricing.deed_of_assignment || docPricing.survey_plan || docPricing.plot_demarcation || docPricing.plot_maintenance_fee)) {
+        const { error: pricingError } = await supabase
+          .from('estate_doc_pricing')
+          .upsert({
+            estate_id: savedEstateId,
+            deed_of_assignment: docPricing.deed_of_assignment,
+            survey_plan: docPricing.survey_plan,
+            plot_demarcation: docPricing.plot_demarcation,
+            plot_maintenance_fee: docPricing.plot_maintenance_fee,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'estate_id' });
+        if (pricingError) console.error('Error saving doc pricing:', pricingError);
       }
       
       onSuccess();
@@ -466,15 +533,86 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
           </div>
         )}
 
+        {/* Subscription Form Upload */}
         <div className="space-y-2">
-          <Label htmlFor="sub_form">Subscription Form Link</Label>
-          <Input 
-            id="sub_form" 
-            name="sub_form" 
-            value={formData.sub_form || ''} 
-            onChange={handleInputChange} 
-            placeholder="Enter subscription form link" 
-          />
+          <Label>Subscription Form (PDF)</Label>
+          {existingSubFormUrl && (
+            <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+              <FileText className="h-4 w-4 text-primary" />
+              <a href={existingSubFormUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline truncate">
+                Current form uploaded
+              </a>
+              <Button type="button" variant="ghost" size="sm" onClick={() => { setExistingSubFormUrl(''); setFormData(prev => ({ ...prev, sub_form: '' })); }}>
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 border-2 border-dashed border-muted-foreground/30 rounded-md p-3 relative hover:border-primary transition-colors">
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={(e) => {
+                  if (e.target.files?.[0]) setSubscriptionFile(e.target.files[0]);
+                }}
+                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+              />
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Upload size={16} />
+                <span className="text-sm">{subscriptionFile ? subscriptionFile.name : 'Choose PDF file from your computer'}</span>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">Upload a PDF subscription form for this estate. Users will be able to download it.</p>
+        </div>
+
+        {/* Documentation Pricing */}
+        <div className="space-y-4 p-4 bg-amber-50 rounded-lg border border-amber-200">
+          <h3 className="text-lg font-semibold text-estate-blue flex items-center gap-2">
+            <FileText className="h-5 w-5" /> Documentation Pricing
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Deed of Assignment (₦)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={docPricing.deed_of_assignment || ''}
+                onChange={(e) => setDocPricing(prev => ({ ...prev, deed_of_assignment: Number(e.target.value) || 0 }))}
+                placeholder="e.g. 250000"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Survey Plan (₦)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={docPricing.survey_plan || ''}
+                onChange={(e) => setDocPricing(prev => ({ ...prev, survey_plan: Number(e.target.value) || 0 }))}
+                placeholder="e.g. 150000"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Plot Demarcation (₦)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={docPricing.plot_demarcation || ''}
+                onChange={(e) => setDocPricing(prev => ({ ...prev, plot_demarcation: Number(e.target.value) || 0 }))}
+                placeholder="e.g. 100000"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Plot Maintenance Fee (₦) <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+              <Input
+                type="number"
+                min="0"
+                value={docPricing.plot_maintenance_fee ?? ''}
+                onChange={(e) => setDocPricing(prev => ({ ...prev, plot_maintenance_fee: e.target.value ? Number(e.target.value) : null }))}
+                placeholder="Optional"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4">
