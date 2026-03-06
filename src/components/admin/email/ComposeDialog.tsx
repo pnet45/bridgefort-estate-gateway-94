@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Send, RefreshCw, Save, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Send, RefreshCw, Save, Trash2, ChevronDown, ChevronUp, LayoutTemplate } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  category: string;
+  is_default: boolean;
+}
 
 interface ComposeDialogProps {
   open: boolean;
@@ -30,8 +41,10 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
   const [cc, setCc] = useState('');
   const [bcc, setBcc] = useState('');
   const [showCcBcc, setShowCcBcc] = useState(false);
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       setTo(initialTo);
       setName(initialName);
@@ -40,8 +53,34 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
       setCc('');
       setBcc('');
       setShowCcBcc(false);
+      fetchTemplates();
     }
   }, [open, initialTo, initialName, initialSubject, initialBody]);
+
+  const fetchTemplates = async () => {
+    setLoadingTemplates(true);
+    try {
+      const { data, error } = await supabase
+        .from('email_templates')
+        .select('id, name, subject, body, category, is_default')
+        .order('is_default', { ascending: false })
+        .order('name', { ascending: true });
+      if (!error && data) setTemplates(data);
+    } catch (err) {
+      console.error('Error fetching templates:', err);
+    } finally {
+      setLoadingTemplates(false);
+    }
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    if (templateId === 'none') return;
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      setSubject(template.subject);
+      setBody(template.body);
+    }
+  };
 
   const handleSend = async () => {
     const result = await onSend(to, name, subject, body, cc, bcc);
@@ -62,6 +101,26 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
           <DialogTitle className="text-base">New Message</DialogTitle>
         </DialogHeader>
         <div className="flex-1 flex flex-col min-h-0 px-4 py-2 space-y-1">
+          {/* Template Selector */}
+          <div className="flex items-center border-b border-border py-1">
+            <Label className="w-16 text-sm text-muted-foreground flex items-center gap-1">
+              <LayoutTemplate className="h-3.5 w-3.5" /> Template
+            </Label>
+            <Select onValueChange={handleTemplateSelect}>
+              <SelectTrigger className="border-0 shadow-none focus:ring-0 h-8 flex-1">
+                <SelectValue placeholder={loadingTemplates ? "Loading..." : "Choose a template (optional)"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No template</SelectItem>
+                {templates.map(t => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.is_default ? '⭐ ' : ''}{t.name} ({t.category})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="flex items-center border-b border-border py-1">
             <Label className="w-12 text-sm text-muted-foreground">To</Label>
             <Input
