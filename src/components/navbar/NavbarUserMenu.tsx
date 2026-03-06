@@ -33,7 +33,12 @@ const NavbarUserMenu = ({ profile, userRole }: NavbarUserMenuProps) => {
 
   const getUserName = () => {
     if (!profile) return 'User';
-    return `${profile.first_name} ${profile.last_name}`;
+    return profile.first_name || 'User';
+  };
+
+  const getFullName = () => {
+    if (!profile) return 'User';
+    return `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'User';
   };
 
   const getProfileImageUrl = () => {
@@ -69,7 +74,7 @@ const NavbarUserMenu = ({ profile, userRole }: NavbarUserMenuProps) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>
-            {getUserName()}
+            {getFullName()}
             {userRole && <p className="text-xs text-gray-500 capitalize">{userRole}</p>}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
