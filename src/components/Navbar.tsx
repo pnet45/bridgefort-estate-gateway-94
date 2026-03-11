@@ -18,9 +18,16 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   
   // Control when to show login button (not on auth page)
   const shouldShowLogin = !window.location.pathname.includes('/auth');
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (user) {
