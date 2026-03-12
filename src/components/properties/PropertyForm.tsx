@@ -247,6 +247,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         annual_rent: formData.annual_rent,
         total_plots: formData.total_plots,
         sold_plots: formData.sold_plots,
+        size_unit: sizeUnit,
+        is_sold_out: isSoldOut,
       };
       
       let savedEstateId = estate?.id;
