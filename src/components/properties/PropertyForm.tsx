@@ -377,16 +377,28 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="size">Size (sqm)</Label>
-            <Input 
-              id="size" 
-              name="size" 
-              type="number"
-              min="0"
-              value={formData.size || ''} 
-              onChange={handleNumberInputChange} 
-              placeholder="Enter size in square meters" 
-            />
+            <Label htmlFor="size">Size</Label>
+            <div className="flex gap-2">
+              <Input 
+                id="size" 
+                name="size" 
+                type="number"
+                min="0"
+                value={formData.size || ''} 
+                onChange={handleNumberInputChange} 
+                placeholder="Enter size" 
+                className="flex-1"
+              />
+              <Select value={sizeUnit} onValueChange={setSizeUnit}>
+                <SelectTrigger className="w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sqm">SQM</SelectItem>
+                  <SelectItem value="sqft">SQFT</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           <div className="space-y-2">
