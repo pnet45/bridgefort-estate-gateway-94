@@ -451,6 +451,21 @@ const NewProfileForm = () => {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="maritalStatus">Marital Status *</Label>
+                    <Select value={formData.maritalStatus} onValueChange={(value) => handleInputChange('maritalStatus', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select marital status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="single">Single</SelectItem>
+                        <SelectItem value="married">Married</SelectItem>
+                        <SelectItem value="divorced">Divorced</SelectItem>
+                        <SelectItem value="widowed">Widowed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="phoneNumber">Phone Number *</Label>
                     <Input
                       id="phoneNumber"
@@ -468,6 +483,36 @@ const NewProfileForm = () => {
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Address *</Label>
+                    <Input
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      placeholder="Enter your residential address"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="stateOfOrigin">State of Origin</Label>
+                    <Input
+                      id="stateOfOrigin"
+                      value={formData.stateOfOrigin}
+                      onChange={(e) => handleInputChange('stateOfOrigin', e.target.value)}
+                      placeholder="Enter your state of origin"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="localGovernment">Local Government</Label>
+                    <Input
+                      id="localGovernment"
+                      value={formData.localGovernment}
+                      onChange={(e) => handleInputChange('localGovernment', e.target.value)}
+                      placeholder="Enter your local government area"
                     />
                   </div>
 
