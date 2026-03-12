@@ -1,5 +1,6 @@
 
 import React, { useState, useRef } from 'react';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
