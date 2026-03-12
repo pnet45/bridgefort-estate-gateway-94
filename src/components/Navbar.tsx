@@ -18,16 +18,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   
   // Control when to show login button (not on auth page)
   const shouldShowLogin = !window.location.pathname.includes('/auth');
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     if (user) {
@@ -58,7 +51,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 backdrop-blur-lg ${scrolled ? 'bg-white/90 shadow-md' : 'bg-white/40'}`} style={{ minHeight: 80 }}>
+      <nav className="bg-white/40 backdrop-blur-lg fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300" style={{ minHeight: 80 }}>
         <div className="container-custom flex flex-col flex-1" style={{ minHeight: 80 }}>
           <div className="flex justify-between items-center py-3 flex-shrink-0 relative">
             {/* Mobile: Empty spacer for left side to balance the menu icon */}
