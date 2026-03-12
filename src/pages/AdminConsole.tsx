@@ -204,6 +204,8 @@ const AdminConsole = () => {
           <TabsContent value="analytics"><AdminPropertyAnalytics /></TabsContent>
           <TabsContent value="activity"><AdminActivityLogs /></TabsContent>
           <TabsContent value="content"><AdminContentManagement /></TabsContent>
+          <TabsContent value="other-payments"><AdminOtherPayments /></TabsContent>
+          <TabsContent value="permissions"><AdminRolePermissions /></TabsContent>
         </Tabs>
       </main>
 
