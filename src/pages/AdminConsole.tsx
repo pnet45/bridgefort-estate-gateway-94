@@ -163,6 +163,14 @@ const AdminConsole = () => {
               <FileText className="h-4 w-4" />
               <span>Content</span>
             </TabsTrigger>
+            <TabsTrigger value="other-payments" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
+              <DollarSign className="h-4 w-4" />
+              <span>Other Payments</span>
+            </TabsTrigger>
+            <TabsTrigger value="permissions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
+              <Settings className="h-4 w-4" />
+              <span>Permissions</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
