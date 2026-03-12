@@ -216,6 +216,8 @@ const NewProfileForm = () => {
           id_expiry: idDetails.expiryDate || null,
           source_of_income: formData.sourceOfFunds || null,
           monthly_income: formData.annualIncome === 'Below ₦1M' ? 500000 : formData.annualIncome === '₦1M - ₦5M' ? 3000000 : formData.annualIncome === '₦6M - ₦20M' ? 13000000 : formData.annualIncome === 'Above ₦20M' ? 25000000 : null,
+          employment_status: (formData as any).employmentStatus || null,
+          profile_picture_url: kycDocs['passport_photo']?.url || null,
           banking_details: formData.bankName ? `${formData.bankName} - ${formData.accountNumber} - ${formData.accountName}` : null,
           terms_accepted: termsAccepted,
           profile_completed: true,
