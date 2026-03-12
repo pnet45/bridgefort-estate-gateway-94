@@ -23,8 +23,8 @@ const Home = () => {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      {/* Hero Section - bleeds behind navbar */}
-      <div className="-mt-20">
+      {/* Hero Section - below fixed navbar */}
+      <div className="pt-20">
         <HomeHeroImage />
       </div>
 
