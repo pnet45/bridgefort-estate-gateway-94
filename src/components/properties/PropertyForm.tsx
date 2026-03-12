@@ -551,6 +551,15 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
           </div>
         )}
 
+        {/* Sold Out Toggle */}
+        <div className="flex items-center gap-3 p-4 bg-red-50 rounded-lg border border-red-200">
+          <Switch checked={isSoldOut} onCheckedChange={setIsSoldOut} />
+          <div>
+            <Label className="text-sm font-semibold text-red-700">Mark as Sold Out</Label>
+            <p className="text-xs text-red-500">When sold out, new purchases are disabled but existing clients can still complete payments.</p>
+          </div>
+        </div>
+
         {/* Subscription Form Upload */}
         <div className="space-y-2">
           <Label>Subscription Form (PDF)</Label>

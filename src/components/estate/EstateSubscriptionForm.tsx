@@ -8,15 +8,25 @@ interface EstateSubscriptionFormProps {
 }
 
 const EstateSubscriptionForm = ({ estateName, subFormPdf }: EstateSubscriptionFormProps) => {
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (subFormPdf) {
-      const link = document.createElement('a');
-      link.href = subFormPdf;
-      link.download = `${estateName}_subscription_form.pdf`;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        const response = await fetch(subFormPdf);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const safeEstateName = estateName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '_');
+        link.download = `${safeEstateName}_Subscription_Form.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Download error:', error);
+        // Fallback: open in new tab
+        window.open(subFormPdf, '_blank');
+      }
     }
   };
 
