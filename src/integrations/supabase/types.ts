@@ -842,6 +842,7 @@ export type Database = {
           id: string
           is_for_rent: boolean | null
           is_for_sale: boolean | null
+          is_sold_out: boolean | null
           location: string | null
           media: string[] | null
           monthly_rent: number | null
@@ -852,6 +853,7 @@ export type Database = {
           property_category: string | null
           scheme: number | null
           size: number | null
+          size_unit: string | null
           sold_plots: number | null
           sub_form: string | null
           subscription_form_url: string | null
@@ -869,6 +871,7 @@ export type Database = {
           id?: string
           is_for_rent?: boolean | null
           is_for_sale?: boolean | null
+          is_sold_out?: boolean | null
           location?: string | null
           media?: string[] | null
           monthly_rent?: number | null
@@ -879,6 +882,7 @@ export type Database = {
           property_category?: string | null
           scheme?: number | null
           size?: number | null
+          size_unit?: string | null
           sold_plots?: number | null
           sub_form?: string | null
           subscription_form_url?: string | null
@@ -896,6 +900,7 @@ export type Database = {
           id?: string
           is_for_rent?: boolean | null
           is_for_sale?: boolean | null
+          is_sold_out?: boolean | null
           location?: string | null
           media?: string[] | null
           monthly_rent?: number | null
@@ -906,6 +911,7 @@ export type Database = {
           property_category?: string | null
           scheme?: number | null
           size?: number | null
+          size_unit?: string | null
           sold_plots?: number | null
           sub_form?: string | null
           subscription_form_url?: string | null
@@ -996,6 +1002,47 @@ export type Database = {
             columns: ["documentation_type_id"]
             isOneToOne: false
             referencedRelation: "documentation_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estate_other_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          estate_id: string
+          id: string
+          is_active: boolean | null
+          payment_name: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          estate_id: string
+          id?: string
+          is_active?: boolean | null
+          payment_name: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          estate_id?: string
+          id?: string
+          is_active?: boolean | null
+          payment_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estate_other_payments_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estate"
             referencedColumns: ["id"]
           },
         ]
@@ -1569,6 +1616,33 @@ export type Database = {
           metadata?: Json | null
           property_id?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean | null
+          permission_key: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          permission_key: string
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          permission_key?: string
+          role?: string
+          updated_at?: string
         }
         Relationships: []
       }
