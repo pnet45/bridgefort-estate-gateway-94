@@ -363,8 +363,7 @@ const Auth = () => {
               <>
                 <div>
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
-                    type="password"
+                  <PasswordInput
                     id="confirmPassword"
                     placeholder="Confirm your password"
                     value={confirmPassword}

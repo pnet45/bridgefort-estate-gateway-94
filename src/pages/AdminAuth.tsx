@@ -642,8 +642,7 @@ const AdminAuth = () => {
 
                   <div>
                     <Label htmlFor="signup-confirmPassword" className="text-slate-300">Confirm Password</Label>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       id="signup-confirmPassword"
                       placeholder="Confirm your password"
                       value={confirmPassword}
