@@ -655,6 +655,22 @@ const NewProfileForm = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
+                      <Label htmlFor="employmentStatus">Employment Status *</Label>
+                      <Select value={formData.occupation ? 'employed' : ''} onValueChange={(value) => handleInputChange('employmentStatus', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="employed">Employed</SelectItem>
+                          <SelectItem value="self-employed">Self-Employed</SelectItem>
+                          <SelectItem value="unemployed">Unemployed</SelectItem>
+                          <SelectItem value="retired">Retired</SelectItem>
+                          <SelectItem value="student">Student</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
                       <Label htmlFor="occupation">Occupation *</Label>
                       <Input
                         id="occupation"
