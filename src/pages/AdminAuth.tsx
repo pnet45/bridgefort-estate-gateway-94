@@ -606,8 +606,7 @@ const AdminAuth = () => {
                   
                   <div>
                     <Label htmlFor="signup-password" className="text-slate-300">Password</Label>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       id="signup-password"
                       placeholder="Create a strong password"
                       value={password}
