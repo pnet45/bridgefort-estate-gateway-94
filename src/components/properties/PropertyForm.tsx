@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Estate, EstateFormData } from '@/types/estate';
 import { X, Upload, Loader2, FileText } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 interface DocPricing {
   deed_of_assignment: number;
