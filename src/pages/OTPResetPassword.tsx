@@ -185,9 +185,8 @@ const OTPResetPassword = () => {
               <form onSubmit={handleResetPassword} className="space-y-6">
                 <div>
                   <Label htmlFor="newPassword">New Password</Label>
-                  <Input
+                  <PasswordInput
                     id="newPassword"
-                    type="password"
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
