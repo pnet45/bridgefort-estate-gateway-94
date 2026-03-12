@@ -10,6 +10,7 @@ import { Toaster } from '@/components/ui/toaster';
 import ReCaptcha from '@/components/ui/ReCaptcha';
 import { supabase } from '@/integrations/supabase/client';
 import { Shield, Lock, ArrowLeft, AlertTriangle, Check, X, UserPlus } from 'lucide-react';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { z } from 'zod';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
