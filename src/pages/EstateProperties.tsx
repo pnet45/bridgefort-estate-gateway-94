@@ -11,9 +11,10 @@ import { Link } from 'react-router-dom';
 
 const EstateProperties = () => {
   return (
-    <PropertyProvider>
       <div className="flex flex-col min-h-screen">
         <Navbar />
+    <PropertyProvider>
+    
         
         {/* Hero Section */}
         <section className="relative bg-gradient-to-r from-estate-blue to-estate-darkBlue text-white py-20">
