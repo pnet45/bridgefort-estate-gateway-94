@@ -72,7 +72,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
       });
       setPreviewImages(estate.media || []);
       setExistingSubFormUrl(estate.sub_form || '');
-      // Fetch doc pricing
+      setSizeUnit((estate as any).size_unit || 'sqm');
+      setIsSoldOut((estate as any).is_sold_out || false);
       fetchDocPricing(estate.id);
     }
   }, [estate]);
