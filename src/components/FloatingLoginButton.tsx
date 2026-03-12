@@ -167,9 +167,8 @@ const FloatingLoginButton = () => {
             </div>
             <div>
               <Label htmlFor="quick-password">Password</Label>
-              <Input
+              <PasswordInput
                 id="quick-password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"

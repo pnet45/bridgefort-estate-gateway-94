@@ -195,9 +195,8 @@ const OTPResetPassword = () => {
                 </div>
                 <div>
                   <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
+                  <PasswordInput
                     id="confirmPassword"
-                    type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
