@@ -91,7 +91,7 @@
 
 @layer utilities {
   .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8;
   }
   
   .section-padding {
