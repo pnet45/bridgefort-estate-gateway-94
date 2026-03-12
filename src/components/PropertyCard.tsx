@@ -147,7 +147,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
 
   const occupancyRate = ((property.totalPlots - property.availablePlots) / property.totalPlots) * 100;
   const isHighDemand = occupancyRate > 70;
-  const isSoldOut = property.availablePlots === 0;
+  const isSoldOut = property.availablePlots === 0 || (property as any).is_sold_out === true;
   
   const rentalInfo = getRentalInfo();
   const roomInfo = getBedroomBathInfo();

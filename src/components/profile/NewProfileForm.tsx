@@ -216,6 +216,8 @@ const NewProfileForm = () => {
           id_expiry: idDetails.expiryDate || null,
           source_of_income: formData.sourceOfFunds || null,
           monthly_income: formData.annualIncome === 'Below ₦1M' ? 500000 : formData.annualIncome === '₦1M - ₦5M' ? 3000000 : formData.annualIncome === '₦6M - ₦20M' ? 13000000 : formData.annualIncome === 'Above ₦20M' ? 25000000 : null,
+          employment_status: (formData as any).employmentStatus || null,
+          profile_picture_url: kycDocs['passport_photo']?.url || null,
           banking_details: formData.bankName ? `${formData.bankName} - ${formData.accountNumber} - ${formData.accountName}` : null,
           terms_accepted: termsAccepted,
           profile_completed: true,
@@ -451,6 +453,21 @@ const NewProfileForm = () => {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="maritalStatus">Marital Status *</Label>
+                    <Select value={formData.maritalStatus} onValueChange={(value) => handleInputChange('maritalStatus', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select marital status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="single">Single</SelectItem>
+                        <SelectItem value="married">Married</SelectItem>
+                        <SelectItem value="divorced">Divorced</SelectItem>
+                        <SelectItem value="widowed">Widowed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="phoneNumber">Phone Number *</Label>
                     <Input
                       id="phoneNumber"
@@ -468,6 +485,36 @@ const NewProfileForm = () => {
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Address *</Label>
+                    <Input
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      placeholder="Enter your residential address"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="stateOfOrigin">State of Origin</Label>
+                    <Input
+                      id="stateOfOrigin"
+                      value={formData.stateOfOrigin}
+                      onChange={(e) => handleInputChange('stateOfOrigin', e.target.value)}
+                      placeholder="Enter your state of origin"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="localGovernment">Local Government</Label>
+                    <Input
+                      id="localGovernment"
+                      value={formData.localGovernment}
+                      onChange={(e) => handleInputChange('localGovernment', e.target.value)}
+                      placeholder="Enter your local government area"
                     />
                   </div>
 
@@ -609,6 +656,22 @@ const NewProfileForm = () => {
                   <h3 className="font-semibold text-estate-blue mb-4">WORK/EMPLOYMENT DETAILS</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="employmentStatus">Employment Status *</Label>
+                      <Select value={formData.occupation ? 'employed' : ''} onValueChange={(value) => handleInputChange('employmentStatus', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="employed">Employed</SelectItem>
+                          <SelectItem value="self-employed">Self-Employed</SelectItem>
+                          <SelectItem value="unemployed">Unemployed</SelectItem>
+                          <SelectItem value="retired">Retired</SelectItem>
+                          <SelectItem value="student">Student</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="occupation">Occupation *</Label>
                       <Input

@@ -10,6 +10,7 @@ import { Toaster } from '@/components/ui/toaster';
 import ReCaptcha from '@/components/ui/ReCaptcha';
 import { supabase } from '@/integrations/supabase/client';
 import { Shield, Lock, ArrowLeft, AlertTriangle, Check, X, UserPlus } from 'lucide-react';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { z } from 'zod';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -514,8 +515,7 @@ const AdminAuth = () => {
                   
                   <div>
                     <Label htmlFor="login-password" className="text-slate-300">Password</Label>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       id="login-password"
                       placeholder="Enter your password"
                       value={password}
@@ -606,8 +606,7 @@ const AdminAuth = () => {
                   
                   <div>
                     <Label htmlFor="signup-password" className="text-slate-300">Password</Label>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       id="signup-password"
                       placeholder="Create a strong password"
                       value={password}
@@ -643,8 +642,7 @@ const AdminAuth = () => {
 
                   <div>
                     <Label htmlFor="signup-confirmPassword" className="text-slate-300">Confirm Password</Label>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       id="signup-confirmPassword"
                       placeholder="Confirm your password"
                       value={confirmPassword}

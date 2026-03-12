@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -184,9 +185,8 @@ const OTPResetPassword = () => {
               <form onSubmit={handleResetPassword} className="space-y-6">
                 <div>
                   <Label htmlFor="newPassword">New Password</Label>
-                  <Input
+                  <PasswordInput
                     id="newPassword"
-                    type="password"
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
@@ -195,9 +195,8 @@ const OTPResetPassword = () => {
                 </div>
                 <div>
                   <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
+                  <PasswordInput
                     id="confirmPassword"
-                    type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}

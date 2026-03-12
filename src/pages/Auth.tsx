@@ -1,5 +1,6 @@
 
 import React, { useState, useRef } from 'react';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
@@ -337,8 +338,7 @@ const Auth = () => {
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input
-                type="password"
+              <PasswordInput
                 id="password"
                 placeholder="Enter your password"
                 value={password}
@@ -363,8 +363,7 @@ const Auth = () => {
               <>
                 <div>
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
-                    type="password"
+                  <PasswordInput
                     id="confirmPassword"
                     placeholder="Confirm your password"
                     value={confirmPassword}

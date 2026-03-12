@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Shield, Users, FileText, Mail, LayoutDashboard, LogOut, Bell, Home,
-  UserCheck, CheckSquare, Calendar, Building, Activity, TrendingUp
+  UserCheck, CheckSquare, Calendar, Building, Activity, TrendingUp,
+  DollarSign, Settings
 } from 'lucide-react';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalTab from '@/components/admin/AdminApprovalTab';
@@ -26,6 +27,8 @@ import AdminActivityLogs from '@/components/admin/AdminActivityLogs';
 import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
 import AdminPropertyAnalytics from '@/components/admin/AdminPropertyAnalytics';
 import AdminContentManagement from '@/components/admin/AdminContentManagement';
+import AdminOtherPayments from '@/components/admin/AdminOtherPayments';
+import AdminRolePermissions from '@/components/admin/AdminRolePermissions';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
@@ -160,6 +163,14 @@ const AdminConsole = () => {
               <FileText className="h-4 w-4" />
               <span>Content</span>
             </TabsTrigger>
+            <TabsTrigger value="other-payments" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
+              <DollarSign className="h-4 w-4" />
+              <span>Other Payments</span>
+            </TabsTrigger>
+            <TabsTrigger value="permissions" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
+              <Settings className="h-4 w-4" />
+              <span>Permissions</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -193,6 +204,8 @@ const AdminConsole = () => {
           <TabsContent value="analytics"><AdminPropertyAnalytics /></TabsContent>
           <TabsContent value="activity"><AdminActivityLogs /></TabsContent>
           <TabsContent value="content"><AdminContentManagement /></TabsContent>
+          <TabsContent value="other-payments"><AdminOtherPayments /></TabsContent>
+          <TabsContent value="permissions"><AdminRolePermissions /></TabsContent>
         </Tabs>
       </main>
 

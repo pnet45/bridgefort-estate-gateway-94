@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { User, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
@@ -166,9 +167,8 @@ const FloatingLoginButton = () => {
             </div>
             <div>
               <Label htmlFor="quick-password">Password</Label>
-              <Input
+              <PasswordInput
                 id="quick-password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"

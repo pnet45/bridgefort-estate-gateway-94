@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Estate, EstateFormData } from '@/types/estate';
 import { X, Upload, Loader2, FileText } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 interface DocPricing {
   deed_of_assignment: number;
@@ -51,6 +52,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
     total_plots: undefined,
     sold_plots: undefined,
   });
+  const [sizeUnit, setSizeUnit] = useState('sqm');
+  const [isSoldOut, setIsSoldOut] = useState(false);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [subscriptionFile, setSubscriptionFile] = useState<File | null>(null);
   const [existingSubFormUrl, setExistingSubFormUrl] = useState<string>('');
@@ -70,7 +73,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
       });
       setPreviewImages(estate.media || []);
       setExistingSubFormUrl(estate.sub_form || '');
-      // Fetch doc pricing
+      setSizeUnit((estate as any).size_unit || 'sqm');
+      setIsSoldOut((estate as any).is_sold_out || false);
       fetchDocPricing(estate.id);
     }
   }, [estate]);
@@ -244,6 +248,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         annual_rent: formData.annual_rent,
         total_plots: formData.total_plots,
         sold_plots: formData.sold_plots,
+        size_unit: sizeUnit,
+        is_sold_out: isSoldOut,
       };
       
       let savedEstateId = estate?.id;
@@ -372,16 +378,28 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="size">Size (sqm)</Label>
-            <Input 
-              id="size" 
-              name="size" 
-              type="number"
-              min="0"
-              value={formData.size || ''} 
-              onChange={handleNumberInputChange} 
-              placeholder="Enter size in square meters" 
-            />
+            <Label htmlFor="size">Size</Label>
+            <div className="flex gap-2">
+              <Input 
+                id="size" 
+                name="size" 
+                type="number"
+                min="0"
+                value={formData.size || ''} 
+                onChange={handleNumberInputChange} 
+                placeholder="Enter size" 
+                className="flex-1"
+              />
+              <Select value={sizeUnit} onValueChange={setSizeUnit}>
+                <SelectTrigger className="w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sqm">SQM</SelectItem>
+                  <SelectItem value="sqft">SQFT</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           <div className="space-y-2">
@@ -532,6 +550,15 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
             </div>
           </div>
         )}
+
+        {/* Sold Out Toggle */}
+        <div className="flex items-center gap-3 p-4 bg-red-50 rounded-lg border border-red-200">
+          <Switch checked={isSoldOut} onCheckedChange={setIsSoldOut} />
+          <div>
+            <Label className="text-sm font-semibold text-red-700">Mark as Sold Out</Label>
+            <p className="text-xs text-red-500">When sold out, new purchases are disabled but existing clients can still complete payments.</p>
+          </div>
+        </div>
 
         {/* Subscription Form Upload */}
         <div className="space-y-2">

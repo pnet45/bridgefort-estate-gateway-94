@@ -100,12 +100,23 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
   // Extract attachments from original email data
   const attachments = email._original?.attachments || [];
 
-  const handleDownloadAttachment = (attachment: any) => {
+  const handleDownloadAttachment = async (attachment: any) => {
     if (attachment.url) {
-      const link = document.createElement('a');
-      link.href = attachment.url;
-      link.download = attachment.filename || 'attachment';
-      link.click();
+      try {
+        const response = await fetch(attachment.url);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = attachment.filename || 'attachment';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        // Fallback: open in new tab
+        window.open(attachment.url, '_blank');
+      }
     }
   };
 

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, UserPlus, Shield, Users, Trash2, Unlock, Lock } from 'lucide-react';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 interface UserWithRole {
   id: string;
@@ -322,9 +323,8 @@ const UserManagementTab = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">Password *</Label>
-                    <Input
+                    <PasswordInput
                       id="password"
-                      type="password"
                       required
                       minLength={6}
                       value={formData.password}
