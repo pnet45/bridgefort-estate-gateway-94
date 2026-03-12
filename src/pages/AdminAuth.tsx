@@ -515,8 +515,7 @@ const AdminAuth = () => {
                   
                   <div>
                     <Label htmlFor="login-password" className="text-slate-300">Password</Label>
-                    <Input
-                      type="password"
+                    <PasswordInput
                       id="login-password"
                       placeholder="Enter your password"
                       value={password}
