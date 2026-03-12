@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
