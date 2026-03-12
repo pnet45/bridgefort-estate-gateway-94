@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, UserPlus, Shield, Users, Trash2, Unlock, Lock } from 'lucide-react';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 interface UserWithRole {
   id: string;
