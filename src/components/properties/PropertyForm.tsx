@@ -51,6 +51,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
     total_plots: undefined,
     sold_plots: undefined,
   });
+  const [sizeUnit, setSizeUnit] = useState('sqm');
+  const [isSoldOut, setIsSoldOut] = useState(false);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [subscriptionFile, setSubscriptionFile] = useState<File | null>(null);
   const [existingSubFormUrl, setExistingSubFormUrl] = useState<string>('');
