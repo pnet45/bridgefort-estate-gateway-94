@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Shield, Users, FileText, Mail, LayoutDashboard, LogOut, Bell, Home,
-  UserCheck, CheckSquare, Calendar, Building, Activity, TrendingUp
+  UserCheck, CheckSquare, Calendar, Building, Activity, TrendingUp,
+  DollarSign, Settings
 } from 'lucide-react';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalTab from '@/components/admin/AdminApprovalTab';
