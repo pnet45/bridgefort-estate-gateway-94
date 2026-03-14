@@ -24,7 +24,7 @@ const Home = () => {
       <Navbar />
 
       {/* Hero Section - below fixed navbar */}
-      <div className="pt-20">
+      <div className="pt-16 lg:pt-20">
         <HomeHeroImage />
       </div>
 

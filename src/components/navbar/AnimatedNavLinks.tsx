@@ -26,12 +26,11 @@ const AnimatedNavLinks = ({ className = '', onClick }: AnimatedNavLinksProps) =>
           key={link.to} 
           to={link.to} 
           className={({isActive}) => 
-            `nav-link font-bold animate-fade-in ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'} ${className}`
+            `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 hover:scale-105 hover:-translate-y-0.5 transition-all duration-300'} ${className}`
           }
           style={{
-            animationDelay: `${index * 150}ms`,
             opacity: 0,
-            animation: `slideDown 0.6s ease-out ${index * 150}ms forwards`
+            animation: `slideDown 0.5s ease-out ${index * 100}ms forwards`
           }}
           onClick={onClick}
         >
@@ -47,12 +46,11 @@ const AnimatedNavLinks = ({ className = '', onClick }: AnimatedNavLinksProps) =>
           key={link.to} 
           to={link.to} 
           className={({isActive}) => 
-            `nav-link font-bold animate-fade-in ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 transition-all duration-300'} ${className}`
+            `nav-link font-bold ${isActive ? 'text-estate-blue bg-blue-100 px-3 py-2 rounded-md' : 'text-estate-blue hover:text-white hover:bg-estate-blue hover:rounded-md hover:px-3 hover:py-2 hover:scale-105 hover:-translate-y-0.5 transition-all duration-300'} ${className}`
           }
           style={{
-            animationDelay: `${(index + 3) * 150}ms`,
             opacity: 0,
-            animation: `slideDown 0.6s ease-out ${(index + 3) * 150}ms forwards`
+            animation: `slideInRight 0.5s ease-out ${(index + 3) * 100}ms forwards`
           }}
           onClick={onClick}
         >
