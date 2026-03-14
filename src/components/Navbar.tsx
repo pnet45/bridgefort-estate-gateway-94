@@ -63,8 +63,8 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-8">
-              <AnimatedNavLinks className="hover:text-estate-blue transition" />
+            <div className="hidden lg:flex items-center space-x-1 xl:space-x-3 2xl:space-x-5 flex-shrink min-w-0">
+              <AnimatedNavLinks className="hover:text-estate-blue transition whitespace-nowrap text-sm xl:text-base" />
             </div>
             
             {/* Desktop Auth Section */}
