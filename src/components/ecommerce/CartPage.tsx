@@ -39,7 +39,7 @@ const CartPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="pt-20">
+      <div className="pt-16 lg:pt-20">
         <div className="container-custom py-8">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Sidebar */}

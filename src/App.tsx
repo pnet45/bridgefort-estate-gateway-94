@@ -55,7 +55,7 @@ function App() {
         <AuthProvider>
           <EcommerceProvider>
             <ScrollToTop />
-            <div className="App" style={{ transform: 'scale(0.9)', transformOrigin: 'top center', minHeight: '111.11vh' }}>
+            <div className="App flex flex-col min-h-screen w-full">
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/home" element={<Home />} />

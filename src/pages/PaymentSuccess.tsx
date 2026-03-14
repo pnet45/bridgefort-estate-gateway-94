@@ -52,7 +52,7 @@ const PaymentSuccess = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="pt-20 container mx-auto px-4 py-8">
+      <div className="pt-16 lg:pt-20 container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto">
           <Card>
             <CardHeader className="text-center">
