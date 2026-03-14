@@ -58,7 +58,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="pt-20">
+      <div className="pt-16 lg:pt-20">
         {/* User Info Header */}
         <div className="bg-white border-b">
           <div className="container mx-auto px-4 py-6">
