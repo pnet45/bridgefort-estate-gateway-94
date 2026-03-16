@@ -23,7 +23,7 @@ const ListingCard = ({ listing, viewMode = 'grid' }: ListingCardProps) => {
           <div className="relative w-full sm:w-72 h-48 sm:h-auto flex-shrink-0">
             <img src={thumbnail} alt={listing.title} className="w-full h-full object-cover" loading="lazy" />
             {listing.is_featured && (
-              <Badge className="absolute top-2 left-2 bg-amber-500 text-white"><Star className="w-3 h-3 mr-1" />Featured</Badge>
+            <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground"><Star className="w-3 h-3 mr-1" />Featured</Badge>
             )}
             <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground capitalize">{listing.price_period}</Badge>
           </div>
