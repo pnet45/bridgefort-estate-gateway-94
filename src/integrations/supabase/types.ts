@@ -1167,6 +1167,173 @@ export type Database = {
         }
         Relationships: []
       }
+      listings: {
+        Row: {
+          address: string | null
+          amenities: string[] | null
+          annual_rent: number | null
+          bathrooms: number | null
+          bedrooms: number | null
+          built_sqm: number | null
+          city: string | null
+          created_at: string | null
+          created_by: string | null
+          deposit_amount: number | null
+          description: string | null
+          drone_footage: string[] | null
+          encumbrances: string | null
+          estate: string | null
+          floor_plans: string[] | null
+          hoa_fees: number | null
+          hotspot: string | null
+          id: string
+          is_featured: boolean | null
+          is_published: boolean | null
+          land_sqm: number | null
+          latitude: number | null
+          listing_start_date: string | null
+          longitude: number | null
+          maintenance_fees: number | null
+          max_rental_months: number | null
+          min_rental_months: number | null
+          monthly_rent: number | null
+          owner_email: string | null
+          owner_name: string | null
+          owner_phone: string | null
+          ownership_status: string | null
+          parking: number | null
+          parking_type: string | null
+          payment_options: string[] | null
+          photos: string[] | null
+          price_amount: number
+          price_currency: string
+          price_negotiable: boolean | null
+          price_period: string
+          property_type: string
+          region: string
+          roi_percent: number | null
+          special_notes: string | null
+          tax_status: string | null
+          title: string
+          tour_3d_url: string | null
+          updated_at: string | null
+          video_tours: string[] | null
+          year_built: number | null
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[] | null
+          annual_rent?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          built_sqm?: number | null
+          city?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          deposit_amount?: number | null
+          description?: string | null
+          drone_footage?: string[] | null
+          encumbrances?: string | null
+          estate?: string | null
+          floor_plans?: string[] | null
+          hoa_fees?: number | null
+          hotspot?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          land_sqm?: number | null
+          latitude?: number | null
+          listing_start_date?: string | null
+          longitude?: number | null
+          maintenance_fees?: number | null
+          max_rental_months?: number | null
+          min_rental_months?: number | null
+          monthly_rent?: number | null
+          owner_email?: string | null
+          owner_name?: string | null
+          owner_phone?: string | null
+          ownership_status?: string | null
+          parking?: number | null
+          parking_type?: string | null
+          payment_options?: string[] | null
+          photos?: string[] | null
+          price_amount?: number
+          price_currency?: string
+          price_negotiable?: boolean | null
+          price_period?: string
+          property_type?: string
+          region: string
+          roi_percent?: number | null
+          special_notes?: string | null
+          tax_status?: string | null
+          title: string
+          tour_3d_url?: string | null
+          updated_at?: string | null
+          video_tours?: string[] | null
+          year_built?: number | null
+        }
+        Update: {
+          address?: string | null
+          amenities?: string[] | null
+          annual_rent?: number | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          built_sqm?: number | null
+          city?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          deposit_amount?: number | null
+          description?: string | null
+          drone_footage?: string[] | null
+          encumbrances?: string | null
+          estate?: string | null
+          floor_plans?: string[] | null
+          hoa_fees?: number | null
+          hotspot?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          land_sqm?: number | null
+          latitude?: number | null
+          listing_start_date?: string | null
+          longitude?: number | null
+          maintenance_fees?: number | null
+          max_rental_months?: number | null
+          min_rental_months?: number | null
+          monthly_rent?: number | null
+          owner_email?: string | null
+          owner_name?: string | null
+          owner_phone?: string | null
+          ownership_status?: string | null
+          parking?: number | null
+          parking_type?: string | null
+          payment_options?: string[] | null
+          photos?: string[] | null
+          price_amount?: number
+          price_currency?: string
+          price_negotiable?: boolean | null
+          price_period?: string
+          property_type?: string
+          region?: string
+          roi_percent?: number | null
+          special_notes?: string | null
+          tax_status?: string | null
+          title?: string
+          tour_3d_url?: string | null
+          updated_at?: string | null
+          video_tours?: string[] | null
+          year_built?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           email: string
