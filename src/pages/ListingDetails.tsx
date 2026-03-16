@@ -94,7 +94,7 @@ const ListingDetails = () => {
               </>
             )}
             <div className="absolute top-3 left-3 flex gap-2">
-              {listing.is_featured && <Badge className="bg-amber-500 text-white"><Star className="w-3 h-3 mr-1" />Featured</Badge>}
+              {listing.is_featured && <Badge className="bg-accent text-accent-foreground"><Star className="w-3 h-3 mr-1" />Featured</Badge>}
               <Badge className="bg-primary text-primary-foreground capitalize">{listing.price_period}</Badge>
               <Badge variant="secondary">{listing.property_type}</Badge>
             </div>
