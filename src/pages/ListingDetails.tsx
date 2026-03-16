@@ -211,7 +211,7 @@ const ListingDetails = () => {
                   rel="noopener noreferrer"
                   className="w-full"
                 >
-                  <Button variant="secondary" className="w-full bg-green-600 hover:bg-green-700 text-white" size="lg">WhatsApp</Button>
+                  <Button variant="secondary" className="w-full" size="lg">WhatsApp</Button>
                 </a>
               </div>
 
