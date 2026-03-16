@@ -43,6 +43,8 @@ import Sitemap from '@/pages/Sitemap';
 import BridgefortMails from '@/pages/BridgefortMails';
 import AdminAuth from '@/pages/AdminAuth';
 import AdminConsole from '@/pages/AdminConsole';
+import Listings from '@/pages/Listings';
+import ListingDetails from '@/pages/ListingDetails';
 
 import './App.css';
 
