@@ -77,6 +77,8 @@ function App() {
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/auth/otp-reset" element={<OTPResetPassword />} />
+                <Route path="/listings" element={<Listings />} />
+                <Route path="/listings/:id" element={<ListingDetails />} />
                 <Route path="/buy2sell" element={<Buy2Sell />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
