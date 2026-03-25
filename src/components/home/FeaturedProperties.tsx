@@ -43,6 +43,13 @@ const FeaturedProperties = () => {
             View all properties 
             <ArrowRight size={18} className="ml-2" />
           </Link>
+          <Link 
+            to="/properties" 
+            className="inline-flex items-center text-estate-blue font-medium hover:text-estate-darkBlue transition duration-200 hover:scale-105 focus-box-in"
+          >
+            View all properties 
+            <ArrowRight size={18} className="ml-2" />
+          </Link>
         </div>
       </div>
     </section>
