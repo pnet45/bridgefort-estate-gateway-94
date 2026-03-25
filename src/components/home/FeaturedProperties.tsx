@@ -43,7 +43,7 @@ const FeaturedProperties = () => {
             View all properties 
             <ArrowRight size={18} className="ml-2" />
           </Link>
-          <div>||
+          <div>||||
           </div>
           <Link 
             to="https://forms.gle/AdJt5YcxiG118Bo56" 
