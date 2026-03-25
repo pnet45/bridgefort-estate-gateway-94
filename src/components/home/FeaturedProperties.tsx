@@ -44,10 +44,10 @@ const FeaturedProperties = () => {
             <ArrowRight size={18} className="ml-2" />
           </Link>
           <Link 
-            to="/properties" 
+            to="https://forms.gle/AdJt5YcxiG118Bo56" 
             className="inline-flex items-center text-estate-blue font-medium hover:text-estate-darkBlue transition duration-200 hover:scale-105 focus-box-in"
           >
-            View all properties 
+            Land Purchase Inquiry 
             <ArrowRight size={18} className="ml-2" />
           </Link>
         </div>
