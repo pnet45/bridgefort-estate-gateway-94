@@ -433,6 +433,7 @@ export default function AdminEmailCenter() {
           <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={loading || receivedLoading}>
             <RefreshCw className={`h-4 w-4 ${loading || receivedLoading ? 'animate-spin' : ''}`} />
           </Button>
+          <AdminEmailSettings />
           {counts.unread > 0 && (
             <Badge variant="destructive" className="text-xs">{counts.unread} unread</Badge>
           )}
