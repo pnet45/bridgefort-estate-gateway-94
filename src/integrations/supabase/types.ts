@@ -1786,6 +1786,115 @@ export type Database = {
         }
         Relationships: []
       }
+      property_reviews: {
+        Row: {
+          created_at: string | null
+          dislikes: number | null
+          id: string
+          likes: number | null
+          parent_id: string | null
+          property_id: string
+          property_type: string
+          rating: number
+          review_text: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dislikes?: number | null
+          id?: string
+          likes?: number | null
+          parent_id?: string | null
+          property_id: string
+          property_type?: string
+          rating: number
+          review_text: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dislikes?: number | null
+          id?: string
+          likes?: number | null
+          parent_id?: string | null
+          property_id?: string
+          property_type?: string
+          rating?: number
+          review_text?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_reviews_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "property_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_views: {
+        Row: {
+          id: string
+          ip_hash: string | null
+          property_id: string
+          property_type: string
+          viewed_at: string | null
+          viewer_id: string | null
+        }
+        Insert: {
+          id?: string
+          ip_hash?: string | null
+          property_id: string
+          property_type?: string
+          viewed_at?: string | null
+          viewer_id?: string | null
+        }
+        Update: {
+          id?: string
+          ip_hash?: string | null
+          property_id?: string
+          property_type?: string
+          viewed_at?: string | null
+          viewer_id?: string | null
+        }
+        Relationships: []
+      }
+      review_reactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          reaction: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          reaction: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          reaction?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_reactions_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "property_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           created_at: string
