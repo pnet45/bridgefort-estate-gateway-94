@@ -17,6 +17,9 @@ const ListingDetails = () => {
   const [loading, setLoading] = useState(true);
   const [activePhoto, setActivePhoto] = useState(0);
 
+  // Track view
+  usePropertyView(id || '', 'listing');
+
   useEffect(() => {
     if (id) fetchListing(id);
   }, [id]);
