@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Download, MapPin, ShoppingCart, X, Building2, Calendar, Phone, Mail, MapIcon, Clock, Shield, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import PropertyReviews from './reviews/PropertyReviews';
+import { usePropertyView } from '@/hooks/usePropertyViews';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
 import { Dialog, DialogContent } from "./ui/dialog";
