@@ -19,6 +19,7 @@ import {
   Mail, Search, RefreshCw, Trash2, Archive, MailOpen,
   CheckSquare, Star, Users, User, Inbox, GripVertical
 } from 'lucide-react';
+import AdminEmailSettings from './AdminEmailSettings';
 
 export default function AdminEmailCenter() {
   const { user } = useAuth();
