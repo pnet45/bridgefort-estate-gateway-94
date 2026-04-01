@@ -91,21 +91,17 @@ const ClientDashboard = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-4 md:grid-cols-13' : canCreatePosts ? 'grid-cols-3 md:grid-cols-7' : 'grid-cols-3 md:grid-cols-6'} gap-1`}>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="properties">Properties</TabsTrigger>
-          <TabsTrigger value="documentation" className="text-xs md:text-sm">
-            Documentation
-          </TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="inspections" className="text-xs md:text-sm">
-            Inspections
-          </TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          {canCreatePosts && <TabsTrigger value="blog">Blog Posts</TabsTrigger>}
+        <TabsList className="flex flex-wrap h-auto gap-1 p-1 bg-muted/50 rounded-lg mb-4">
+          <TabsTrigger value="overview" className="text-xs md:text-sm">Overview</TabsTrigger>
+          <TabsTrigger value="properties" className="text-xs md:text-sm">Properties</TabsTrigger>
+          <TabsTrigger value="documentation" className="text-xs md:text-sm">Documentation</TabsTrigger>
+          <TabsTrigger value="orders" className="text-xs md:text-sm">Orders</TabsTrigger>
+          <TabsTrigger value="inspections" className="text-xs md:text-sm">Inspections</TabsTrigger>
+          <TabsTrigger value="payments" className="text-xs md:text-sm">Payments</TabsTrigger>
+          {canCreatePosts && <TabsTrigger value="blog" className="text-xs md:text-sm">Blog Posts</TabsTrigger>}
           {isAdmin && (
             <>
-              <TabsTrigger value="training">Training</TabsTrigger>
+              <TabsTrigger value="training" className="text-xs md:text-sm">Training</TabsTrigger>
               <TabsTrigger value="attendance" className="text-xs md:text-sm">Attendance</TabsTrigger>
               <TabsTrigger value="analytics" className="text-xs md:text-sm">Analytics</TabsTrigger>
               <TabsTrigger value="profiles" className="text-xs md:text-sm">Profiles</TabsTrigger>

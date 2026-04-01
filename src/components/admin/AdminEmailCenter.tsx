@@ -392,7 +392,7 @@ export default function AdminEmailCenter() {
   const isToolView = ['contacts', 'templates', 'bulk'].includes(activeFolder);
 
   return (
-    <div className={`flex h-[calc(100vh-12rem)] gap-0 rounded-xl border border-border overflow-hidden bg-background ${isResizing ? 'select-none' : ''}`}>
+    <div className={`flex h-[calc(100vh-8rem)] gap-0 rounded-xl border border-border overflow-hidden bg-background ${isResizing ? 'select-none' : ''}`}>
       {/* Sidebar */}
       <div className="border-r border-border p-3 hidden md:block">
         <GmailSidebar

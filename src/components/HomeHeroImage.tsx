@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface HeroSlide {
@@ -19,12 +18,20 @@ const FALLBACK_SLIDES = [
 const FALLBACK_TITLE = "PWAN Bridgefort. ...Rebuilding the Future!";
 const FALLBACK_SUBTITLE = "At PWAN Bridgefort, we're not just selling properties—we're building legacies.";
 
+const TEXT_EFFECTS = [
+  'animate-fade-in',
+  'animate-slide-in-right',
+  'animate-scale-in',
+  'animate-blur-in',
+];
+
 const HomeHeroImage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [loading, setLoading] = useState(true);
+  const [textEffect, setTextEffect] = useState(TEXT_EFFECTS[0]);
+  const [textKey, setTextKey] = useState(0);
 
-  // Fetch hero slides from DB
   useEffect(() => {
     const fetchSlides = async () => {
       const { data, error } = await supabase
@@ -32,57 +39,46 @@ const HomeHeroImage = () => {
         .select('*')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
-
-      if (!error && data && data.length > 0) {
-        setSlides(data);
-      }
+      if (!error && data && data.length > 0) setSlides(data);
       setLoading(false);
     };
     fetchSlides();
   }, []);
 
-  const heroImages = slides.length > 0
-    ? slides.map(s => s.image_url)
-    : FALLBACK_SLIDES;
-
+  const heroImages = slides.length > 0 ? slides.map(s => s.image_url) : FALLBACK_SLIDES;
   const currentSlideData = slides[currentSlide];
   const heroTitle = currentSlideData?.title || FALLBACK_TITLE;
   const heroSubtitle = currentSlideData?.subtitle || FALLBACK_SUBTITLE;
 
-  // Auto-slide every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+      setTextEffect(TEXT_EFFECTS[Math.floor(Math.random() * TEXT_EFFECTS.length)]);
+      setTextKey(k => k + 1);
     }, 5000);
     return () => clearInterval(interval);
   }, [heroImages.length]);
 
   return (
     <section className="relative w-full h-[35vh] md:h-[70vh] lg:h-[80vh]">
-      <div className="h-full">
-        <div className="h-full relative overflow-hidden">
-          <img 
-            src={heroImages[currentSlide]} 
-            alt={`PWAN Bridgefort Hero Image ${currentSlide + 1}`}
-            className="w-full h-[35vh] md:h-[70vh] lg:h-[80vh] object-cover transition-all duration-1000 ease-in-out"
-            loading="lazy"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/lovable-uploads/PropertyHero.png';
-            }}
-          />
-          {/* Dark overlay for better text visibility */}
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end pb-16 md:items-center md:pb-0">
-            <div className="container-custom text-white px-4 pt-20">
-              <h1 className="text-lg md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-6 max-w-3xl leading-snug md:leading-tight animate-fade-in">
+      <div className="h-full relative overflow-hidden">
+        <img 
+          src={heroImages[currentSlide]} 
+          alt={`PWAN Bridgefort Hero Image ${currentSlide + 1}`}
+          className="w-full h-full object-cover transition-all duration-1000 ease-in-out"
+          loading="lazy"
+          onError={(e) => { (e.target as HTMLImageElement).src = '/lovable-uploads/PropertyHero.png'; }}
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end pb-16 md:items-center md:pb-0">
+          <div className="container-custom text-white px-4 pt-20 flex justify-end">
+            <div key={textKey} className={`max-w-3xl text-right ${textEffect}`} style={{ animationDuration: '0.8s' }}>
+              <h1 className="text-lg md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-6 leading-snug md:leading-tight">
                 {heroTitle}
               </h1>
-              <p className="text-sm md:text-lg lg:text-xl xl:text-2xl mb-3 md:mb-8 max-w-2xl animate-fade-in" style={{
-                animationDelay: '200ms'
-              }}>
+              <p className="text-sm md:text-lg lg:text-xl xl:text-2xl mb-3 md:mb-8 max-w-2xl ml-auto" style={{ animationDelay: '200ms' }}>
                 {heroSubtitle}
               </p>
-              <div className="flex w-full justify-between animate-fade-in" style={{ animationDelay: '400ms' }}>
+              <div className="flex w-full justify-end gap-4" style={{ animationDelay: '400ms' }}>
                 <a href="/properties" className="inline-flex items-center bg-primary text-primary-foreground font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg transition-all duration-300 ease-out hover:bg-primary/90 hover:scale-110 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1 active:scale-95 text-sm md:text-base group">
                   <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary-foreground after:transition-all after:duration-300 group-hover:after:w-full">Browse Properties</span>
                 </a>
@@ -95,15 +91,12 @@ const HomeHeroImage = () => {
         </div>
       </div>
       
-      {/* Slide indicators */}
       <div className="absolute bottom-4 left-0 right-0 flex justify-center">
         {heroImages.map((_, index) => (
           <button
             key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`h-2 w-6 md:w-8 mx-1 rounded-full transition-colors duration-300 ${
-              currentSlide === index ? 'bg-white' : 'bg-white/50'
-            }`}
+            onClick={() => { setCurrentSlide(index); setTextEffect(TEXT_EFFECTS[Math.floor(Math.random() * TEXT_EFFECTS.length)]); setTextKey(k => k + 1); }}
+            className={`h-2 w-6 md:w-8 mx-1 rounded-full transition-colors duration-300 ${currentSlide === index ? 'bg-white' : 'bg-white/50'}`}
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
