@@ -380,6 +380,15 @@ const PropertyDetailsDialogFullscreen = ({
                             </CardContent>
                           </Card>
                         </TabsContent>
+
+                        <TabsContent value="reviews" className="space-y-4">
+                          <Card>
+                            <CardHeader><CardTitle>Reviews & Ratings</CardTitle></CardHeader>
+                            <CardContent>
+                              <PropertyReviews propertyId={property.id} propertyType="estate" />
+                            </CardContent>
+                          </Card>
+                        </TabsContent>
                       </Tabs>
                     ) : (
                       <Card>
