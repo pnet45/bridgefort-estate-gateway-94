@@ -239,6 +239,12 @@ const ListingDetails = () => {
               </div>
             </div>
           </div>
+
+          {/* Reviews Section */}
+          <div className="max-w-4xl mx-auto px-4 py-12">
+            <h2 className="text-2xl font-bold text-foreground mb-6">Reviews & Ratings</h2>
+            <PropertyReviews propertyId={id!} propertyType="listing" />
+          </div>
         </div>
       </main>
       <Footer />
