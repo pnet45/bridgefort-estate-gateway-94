@@ -269,11 +269,12 @@ const PropertyDetailsDialogFullscreen = ({
                   <div className="space-y-6">
                     {estateDetails ? (
                       <Tabs defaultValue="overview" className="w-full">
-                        <TabsList className="grid w-full grid-cols-4">
+                        <TabsList className="grid w-full grid-cols-5">
                           <TabsTrigger value="overview">Overview</TabsTrigger>
                           <TabsTrigger value="pricing">Docs</TabsTrigger>
                           <TabsTrigger value="company">Company</TabsTrigger>
                           <TabsTrigger value="terms">Terms</TabsTrigger>
+                          <TabsTrigger value="reviews">Reviews</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="overview" className="space-y-4">
