@@ -41,6 +41,9 @@ const PropertyDetailsDialogFullscreen = ({
   const [fullscreenIndex, setFullscreenIndex] = useState(0);
   const [estateData, setEstateData] = useState<any>(null);
 
+  // Track property view
+  usePropertyView(isOpen ? property.id : '', 'estate');
+
   useEffect(() => {
     if (user) checkProfileCompletion();
   }, [user]);
