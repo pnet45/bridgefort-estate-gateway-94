@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Reply, ReplyAll, Forward, Star, Archive, Trash2, ArrowLeft,
   Clock, Paperclip, User, Send, RefreshCw, MailOpen, Download,
