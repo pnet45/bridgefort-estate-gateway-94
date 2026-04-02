@@ -188,6 +188,7 @@ const AdminConsole = () => {
           <TabsContent value="properties"><AdminPropertyManagement /></TabsContent>
 
           <TabsContent value="crm" className="space-y-6">
+            <AdminCRMLeads />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <AdminTaskManager />
               <AdminCalendar />
