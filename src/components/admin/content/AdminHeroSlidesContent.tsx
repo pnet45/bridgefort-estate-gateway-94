@@ -111,10 +111,13 @@ const AdminHeroSlidesContent = () => {
       {showAdd && (
         <Card className="bg-slate-700 border-slate-600">
           <CardContent className="p-4 space-y-3">
-            <div>
-              <Label className="text-slate-300">Image URL *</Label>
-              <Input value={newSlide.image_url} onChange={e => setNewSlide(p => ({ ...p, image_url: e.target.value }))} placeholder="/lovable-uploads/image.png or https://..." className="bg-slate-800 border-slate-600 text-white" />
-            </div>
+            <ImageUploadField
+              label="Image *"
+              value={newSlide.image_url}
+              onChange={url => setNewSlide(p => ({ ...p, image_url: url }))}
+              bucket="media-files"
+              folder="hero-slides"
+            />
             <div>
               <Label className="text-slate-300">Title</Label>
               <Input value={newSlide.title} onChange={e => setNewSlide(p => ({ ...p, title: e.target.value }))} placeholder="Hero title text" className="bg-slate-800 border-slate-600 text-white" />
