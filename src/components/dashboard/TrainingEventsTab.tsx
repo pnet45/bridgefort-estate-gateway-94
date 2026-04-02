@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Pencil, Trash2, Plus, X } from 'lucide-react';
+import ImageUploadField from '@/components/ui/ImageUploadField';
 
 interface TrainingEvent {
   id: string;
