@@ -29,6 +29,7 @@ import AdminPropertyAnalytics from '@/components/admin/AdminPropertyAnalytics';
 import AdminContentManagement from '@/components/admin/AdminContentManagement';
 import AdminOtherPayments from '@/components/admin/AdminOtherPayments';
 import AdminRolePermissions from '@/components/admin/AdminRolePermissions';
+import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
