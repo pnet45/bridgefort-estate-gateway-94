@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Trash2, GripVertical, Pencil, Save, X } from 'lucide-react';
+import ImageUploadField from '@/components/ui/ImageUploadField';
 
 interface HeroSlide {
   id: string;
