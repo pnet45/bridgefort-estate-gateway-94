@@ -143,7 +143,7 @@ const AdminHeroSlidesContent = () => {
 
               {editingId === slide.id ? (
                 <div className="flex-1 space-y-2">
-                  <Input value={editForm.image_url} onChange={e => setEditForm(p => ({ ...p, image_url: e.target.value }))} className="bg-slate-800 border-slate-600 text-white text-xs" placeholder="Image URL" />
+                  <ImageUploadField value={editForm.image_url} onChange={url => setEditForm(p => ({ ...p, image_url: url }))} bucket="media-files" folder="hero-slides" />
                   <Input value={editForm.title} onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))} className="bg-slate-800 border-slate-600 text-white text-xs" placeholder="Title" />
                   <Input value={editForm.subtitle} onChange={e => setEditForm(p => ({ ...p, subtitle: e.target.value }))} className="bg-slate-800 border-slate-600 text-white text-xs" placeholder="Subtitle" />
                   <div className="flex gap-1">
