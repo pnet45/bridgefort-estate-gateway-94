@@ -246,12 +246,12 @@ const TrainingEventsTab = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="image">Image URL</Label>
-                  <Input
-                    id="image"
+                  <ImageUploadField
+                    label="Event Image"
                     value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    placeholder="/lovable-uploads/..."
+                    onChange={url => setFormData({ ...formData, image: url })}
+                    bucket="media-files"
+                    folder="training-events"
                   />
                 </div>
               </div>
