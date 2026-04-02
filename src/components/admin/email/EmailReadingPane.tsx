@@ -101,22 +101,67 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
   const attachments = email._original?.attachments || [];
 
   const handleDownloadAttachment = async (attachment: any) => {
-    if (attachment.url) {
-      try {
-        const response = await fetch(attachment.url);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = attachment.filename || 'attachment';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } catch (error) {
-        // Fallback: open in new tab
-        window.open(attachment.url, '_blank');
+    const url = attachment.url || attachment.content_url;
+    if (!url) {
+      toast({ title: 'No download URL available', variant: 'destructive' } as any);
+      return;
+    }
+    
+    try {
+      // Use the Resend edge function to fetch attachment if it's a Resend attachment
+      if (attachment.id && email.source === 'resend') {
+        const emailId = email._original?.id;
+        if (emailId) {
+          const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
+            body: { action: 'get-attachment', emailId, attachmentId: attachment.id },
+          });
+          if (!error && data?.data) {
+            // data.data should contain the attachment content
+            const content = data.data.content || data.data;
+            if (typeof content === 'string') {
+              // Base64 encoded content
+              const byteChars = atob(content);
+              const byteNumbers = new Array(byteChars.length);
+              for (let i = 0; i < byteChars.length; i++) {
+                byteNumbers[i] = byteChars.charCodeAt(i);
+              }
+              const byteArray = new Uint8Array(byteNumbers);
+              const blob = new Blob([byteArray], { type: attachment.content_type || 'application/octet-stream' });
+              const blobUrl = window.URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = blobUrl;
+              link.download = attachment.filename || 'attachment';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              window.URL.revokeObjectURL(blobUrl);
+              return;
+            }
+          }
+        }
       }
+      
+      // Direct URL download with blob approach for proper filename
+      const response = await fetch(url, { mode: 'cors' });
+      if (!response.ok) throw new Error('Download failed');
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = attachment.filename || attachment.name || 'attachment';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup after a short delay to ensure download starts
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      }, 1000);
+    } catch (error) {
+      console.error('Download error:', error);
+      // Fallback: open in new tab
+      window.open(url, '_blank');
     }
   };
 
