@@ -128,7 +128,7 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
 
     try {
       // For Resend inbound emails, fetch via edge function
-      const emailId = email._original?.id || email.external_ref;
+      const emailId = email._original?.id;
       if (attachment.id && emailId) {
         toast({ title: 'Downloading attachment...' } as any);
         const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
