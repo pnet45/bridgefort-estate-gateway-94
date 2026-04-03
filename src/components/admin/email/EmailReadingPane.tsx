@@ -102,68 +102,79 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
   // Extract attachments from original email data
   const attachments = email._original?.attachments || [];
 
-  const handleDownloadAttachment = async (attachment: any) => {
-    const url = attachment.url || attachment.content_url;
-    if (!url) {
-      toast({ title: 'No download URL available', variant: 'destructive' } as any);
-      return;
+  const downloadBlob = (base64: string, mimeType: string, filename: string) => {
+    const byteChars = atob(base64);
+    const byteNumbers = new Uint8Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) {
+      byteNumbers[i] = byteChars.charCodeAt(i);
     }
-    
+    const blob = new Blob([byteNumbers], { type: mimeType });
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    }, 1000);
+  };
+
+  const handleDownloadAttachment = async (attachment: any) => {
+    const filename = attachment.filename || attachment.name || 'attachment';
+    const mimeType = attachment.content_type || 'application/octet-stream';
+
     try {
-      // Use the Resend edge function to fetch attachment if it's a Resend attachment
-      if (attachment.id && email.source === 'resend') {
-        const emailId = email._original?.id;
-        if (emailId) {
-          const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
-            body: { action: 'get-attachment', emailId, attachmentId: attachment.id },
-          });
-          if (!error && data?.data) {
-            // data.data should contain the attachment content
-            const content = data.data.content || data.data;
-            if (typeof content === 'string') {
-              // Base64 encoded content
-              const byteChars = atob(content);
-              const byteNumbers = new Array(byteChars.length);
-              for (let i = 0; i < byteChars.length; i++) {
-                byteNumbers[i] = byteChars.charCodeAt(i);
-              }
-              const byteArray = new Uint8Array(byteNumbers);
-              const blob = new Blob([byteArray], { type: attachment.content_type || 'application/octet-stream' });
-              const blobUrl = window.URL.createObjectURL(blob);
-              const link = document.createElement('a');
-              link.href = blobUrl;
-              link.download = attachment.filename || 'attachment';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              window.URL.revokeObjectURL(blobUrl);
-              return;
-            }
+      // For Resend inbound emails, fetch via edge function
+      const emailId = email._original?.id;
+      if (attachment.id && emailId) {
+        toast({ title: 'Downloading attachment...' } as any);
+        const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
+          body: { action: 'get-attachment', emailId, attachmentId: attachment.id },
+        });
+        if (!error && data?.success && data?.data) {
+          const content = data.data.content || (typeof data.data === 'string' ? data.data : null);
+          if (content) {
+            downloadBlob(content, data.data.content_type || mimeType, filename);
+            return;
           }
         }
+        if (error) console.error('Edge function error:', error);
       }
-      
-      // Direct URL download with blob approach for proper filename
-      const response = await fetch(url, { mode: 'cors' });
-      if (!response.ok) throw new Error('Download failed');
-      const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = attachment.filename || attachment.name || 'attachment';
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      
-      // Cleanup after a short delay to ensure download starts
-      setTimeout(() => {
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(blobUrl);
-      }, 1000);
+
+      // Fallback: direct URL download
+      const url = attachment.url || attachment.content_url;
+      if (url) {
+        try {
+          const response = await fetch(url, { mode: 'cors' });
+          if (response.ok) {
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => {
+              document.body.removeChild(link);
+              window.URL.revokeObjectURL(blobUrl);
+            }, 1000);
+            return;
+          }
+        } catch {
+          // CORS failed, open in new tab
+        }
+        window.open(url, '_blank');
+        return;
+      }
+
+      toast({ title: 'No download source available for this attachment', variant: 'destructive' } as any);
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback: open in new tab
-      window.open(url, '_blank');
+      toast({ title: 'Download failed', variant: 'destructive' } as any);
     }
   };
 

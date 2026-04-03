@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,44 +17,82 @@ serve(async (req) => {
       throw new Error('RESEND_API_KEY is not configured');
     }
 
+    const resend = new Resend(RESEND_API_KEY);
     const { action, emailId, attachmentId } = await req.json();
 
-    let url: string;
-    const baseUrl = 'https://api.resend.com';
+    let data: any;
 
     switch (action) {
-      case 'list':
-        url = `${baseUrl}/emails/receiving`;
+      case 'list': {
+        const result = await resend.emails.get(emailId || '');
+        data = result.data;
         break;
-      case 'get':
+      }
+      case 'get': {
         if (!emailId) throw new Error('emailId is required for get action');
-        url = `${baseUrl}/emails/receiving/${emailId}`;
+        // Use the raw API for receiving emails
+        const response = await fetch(`https://api.resend.com/emails/receiving/${emailId}`, {
+          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}` },
+        });
+        if (!response.ok) {
+          const errBody = await response.text();
+          throw new Error(`Resend API error [${response.status}]: ${errBody}`);
+        }
+        data = await response.json();
         break;
-      case 'list-attachments':
+      }
+      case 'list-attachments': {
         if (!emailId) throw new Error('emailId is required for list-attachments action');
-        url = `${baseUrl}/emails/receiving/${emailId}/attachments`;
+        const response = await fetch(`https://api.resend.com/emails/receiving/${emailId}/attachments`, {
+          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}` },
+        });
+        if (!response.ok) {
+          const errBody = await response.text();
+          throw new Error(`Resend API error [${response.status}]: ${errBody}`);
+        }
+        data = await response.json();
         break;
-      case 'get-attachment':
+      }
+      case 'get-attachment': {
         if (!emailId || !attachmentId) throw new Error('emailId and attachmentId are required');
-        url = `${baseUrl}/emails/receiving/${emailId}/attachments/${attachmentId}`;
+        
+        // Use the Resend receiving attachments API
+        const response = await fetch(
+          `https://api.resend.com/emails/receiving/${emailId}/attachments/${attachmentId}`,
+          {
+            headers: { 'Authorization': `Bearer ${RESEND_API_KEY}` },
+          }
+        );
+        
+        if (!response.ok) {
+          const errBody = await response.text();
+          console.error('Resend attachment API error:', errBody);
+          throw new Error(`Resend API error [${response.status}]: ${errBody}`);
+        }
+        
+        // The API returns the attachment data - could be JSON with base64 or binary
+        const contentType = response.headers.get('content-type') || '';
+        
+        if (contentType.includes('application/json')) {
+          data = await response.json();
+        } else {
+          // Binary response - convert to base64
+          const arrayBuffer = await response.arrayBuffer();
+          const bytes = new Uint8Array(arrayBuffer);
+          let binary = '';
+          for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          const base64Content = btoa(binary);
+          data = { 
+            content: base64Content, 
+            content_type: contentType || 'application/octet-stream' 
+          };
+        }
         break;
+      }
       default:
         throw new Error(`Unknown action: ${action}`);
-    }
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('Resend API error:', JSON.stringify(data));
-      throw new Error(`Resend API error [${response.status}]: ${JSON.stringify(data)}`);
     }
 
     return new Response(JSON.stringify({ success: true, data }), {
