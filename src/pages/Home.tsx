@@ -69,6 +69,9 @@ const Home = () => {
       {/* Monday Motivation Animated Hero */}
       <MondayMotivationHero />
 
+      {/* Featured Center Seminar */}
+      <FeaturedCenterSeminar />
+
       {/* Seminar And Training (Upcoming Events) */}
       <SeminarAndTraining />
       
