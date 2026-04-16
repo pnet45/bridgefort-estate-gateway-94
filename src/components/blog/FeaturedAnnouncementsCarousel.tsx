@@ -6,6 +6,51 @@ import { X } from "lucide-react";
 
 const announcementItems = [
   {
+    id: "ode-omi-land-allocation-2026",
+    title: "PWAN Bridgefort Delivers Again: Successful Land Allocation at Ode-Omi Estates",
+    text: "PWAN Bridgefort proudly celebrates the successful physical allocation and handover of plots to clients at Precious Gardens Estate and The Ambassadors Parks and Gardens Estate, Ode-Omi, Ogun State.",
+    img: "/images/allocation-1.jpg",
+    fullContent: `
+      <h2>PWAN Bridgefort Delivers Again: Successful Land Allocation & Possession at Ode-Omi Estates</h2>
+
+      <p>PWAN Bridgefort Estates and Investment Ltd proudly celebrates the successful physical allocation and handover of plots to clients at two of its fast-rising developments — <strong>Precious Gardens Estate</strong> and <strong>The Ambassadors Parks and Gardens Estate</strong>, both strategically located at Ode-Omi, Ogun Waterside LGA, Ogun State, along the thriving Ibeju-Lekki Lagos–Calabar Coastal Road corridor.</p>
+
+      <img src="/images/allocation-1.jpg" alt="Client receiving allocation documents" style="width:100%;border-radius:8px;margin:16px 0" />
+
+      <p>The allocation event was filled with excitement, satisfaction, and a deep sense of fulfillment as clients physically stepped onto their lands, marking a major milestone in their investment journey. True to its promise, PWAN Bridgefort once again demonstrated reliability and integrity by delivering value exactly as assured.</p>
+
+      <img src="/images/allocation-3.jpg" alt="Happy land owner at Ode-Omi" style="width:100%;border-radius:8px;margin:16px 0" />
+
+      <p>These estates continue to gain remarkable attention and appreciation in value, driven by ongoing and projected infrastructural developments in the area. With the Lagos–Calabar Coastal Road running directly in front of the estates, improved access roads, and the unique positioning of the land between the Atlantic Ocean and the Lagos Lagoon, the location stands out as a prime investment destination with high future returns.</p>
+
+      <img src="/images/allocation-4.jpg" alt="Plot allocation at Precious Gardens" style="width:100%;border-radius:8px;margin:16px 0" />
+
+      <p>Representing the company at the event, the Admin/Inspection Officer, <strong>Emmanuel Etokakpan</strong>, officially presented the plots to their rightful owners, guiding them through the process and ensuring a smooth and transparent allocation experience.</p>
+
+      <img src="/images/allocation-5.jpg" alt="Successful allocation ceremony" style="width:100%;border-radius:8px;margin:16px 0" />
+
+      <h2>Client Testimonials</h2>
+
+      <p><em>"I am truly impressed. Seeing my plot physically today gives me so much confidence. PWAN Bridgefort has proven to be a company that keeps its word."</em> – <strong>Mr. Adebayo</strong></p>
+
+      <p><em>"This is a dream come true for me. The location is perfect, and I can already see the future value. I'm glad I invested early."</em> – <strong>Mrs. Okeke</strong></p>
+
+      <img src="/images/allocation-22.jpg" alt="Proud land owner with certificate" style="width:100%;border-radius:8px;margin:16px 0" />
+
+      <p><em>"The process was seamless from start to finish. Today's allocation has strengthened my trust in PWAN Bridgefort."</em> – <strong>Mr. Musa</strong></p>
+
+      <p><em>"I'm excited about what is coming here. With the coastal road and developments around, this is definitely a wise investment."</em> – <strong>Mrs. Daniels</strong></p>
+
+      <img src="/images/allocation-222.jpg" alt="Document handover at Ode-Omi" style="width:100%;border-radius:8px;margin:16px 0" />
+
+      <p>The successful allocation further reinforces PWAN Bridgefort's commitment to transparency, client satisfaction, and delivering premium real estate opportunities. As development continues to unfold within the Ode-Omi axis, investors can remain confident that their assets are positioned for significant growth.</p>
+
+      <p><strong>At PWAN Bridgefort Estates and Investment Ltd, we don't just sell land — we deliver value, security, and a future you can build on.</strong></p>
+
+      <p><em>"…Rebuilding the Future."</em></p>
+    `
+  },
+  {
     id: "customer-service-week-2025",
     title: "PWAN Bridgefort Celebrates Customer Service Week",
     text: "Exciting value-driven activities from October 6-10, 2025! Join us as we celebrate service excellence with client appreciation visits, recognition events, and special goodwill gestures to our valued investors.",
