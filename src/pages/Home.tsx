@@ -16,6 +16,7 @@ import YouTubeSection from '../components/home/YouTubeSection';
 import { PropertyProvider } from '../contexts/property';
 import MondayMotivationHero from '../components/home/MondayMotivationHero';
 import FeaturedAnnouncementsCarousel from '../components/blog/FeaturedAnnouncementsCarousel';
+import FeaturedCenterSeminar from '../components/home/FeaturedCenterSeminar';
 
 const Home = () => {
   // Wrap all property-dependent sections with the provider for shared data (for search, FeaturedProperties, etc)
