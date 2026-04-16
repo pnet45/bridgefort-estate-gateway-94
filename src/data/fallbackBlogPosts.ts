@@ -4,6 +4,15 @@ import { salesStrategyBlogPost } from "./salesStrategyBlogPost";
 
 export const fallbackPosts: BlogPost[] = [
   {
+    id: 'ode-omi-land-allocation-2026',
+    title: 'PWAN Bridgefort Delivers Again: Successful Land Allocation & Possession at Ode-Omi Estates',
+    excerpt: 'PWAN Bridgefort proudly celebrates the successful physical allocation and handover of plots to clients at Precious Gardens Estate and The Ambassadors Parks and Gardens Estate, Ode-Omi.',
+    image_path: '/images/allocation-1.jpg',
+    created_at: new Date().toISOString(),
+    category: 'Estate Allocation',
+    profiles: { first_name: 'Emmanuel', last_name: 'Etokakpan' }
+  },
+  {
     id: 'precious-gardens-physical-allocation-2025',
     title: 'Physical Allocation - Precious Gardens Estate Scheme 1',
     excerpt: 'We are excited to officially inform you that your plot has been successfully demarcated and ready for allocation at Precious Gardens Scheme 1, Ebute-Okun, Ode-Omi, Ogun Waterside LGA.',

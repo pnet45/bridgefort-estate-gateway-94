@@ -5,7 +5,7 @@ import { BlogPost } from "@/types/blog";
 import { fallbackPosts } from "@/data/fallbackBlogPosts";
 import { sortPostsByDate } from "@/utils/blogUtils";
 
-export function useBlogPosts(limit = 6) {
+export function useBlogPosts(limit = 20) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,7 +34,10 @@ export function useBlogPosts(limit = 6) {
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      if (error || !data || data.length === 0) {
+      if (error) {
+        console.error('Error fetching posts:', error);
+        setPosts(sortPostsByDate<BlogPost>(fallbackPosts));
+      } else if (!data || data.length === 0) {
         setPosts(sortPostsByDate<BlogPost>(fallbackPosts));
       } else {
         const transformedPosts: BlogPost[] = data.map((post: any) => {
