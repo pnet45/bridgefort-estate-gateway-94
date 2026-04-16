@@ -78,7 +78,7 @@ const HomeHeroImage = () => {
               <p className="text-sm md:text-lg lg:text-xl xl:text-2xl mb-3 md:mb-8 max-w-2xl text-left" style={{ animationDelay: '200ms' }}>
                 {heroSubtitle}
               </p>
-              <div className="flex gap-4" style={{ animationDelay: '400ms' }}>
+              <div className="flex gap-4 text-center" style={{ animationDelay: '400ms' }}>
                 <a href="/properties" className="inline-flex items-center bg-primary text-primary-foreground font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg transition-all duration-300 ease-out hover:bg-primary/90 hover:scale-110 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1 active:scale-95 text-sm md:text-base group">
                   <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary-foreground after:transition-all after:duration-300 group-hover:after:w-full">Browse Properties</span>
                 </a>
