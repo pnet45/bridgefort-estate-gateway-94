@@ -3,7 +3,7 @@ import React from 'react';
 
 const TrainingHero = () => {
   return (
-    <section className="relative">
+    <section className="relative pt-16 lg:pt-20">
       <div className="h-[40vh] bg-cover bg-center" style={{
         backgroundImage: 'url(/lovable-uploads/f4c5cb9d-d79d-419a-9577-444691d59b72.jpg)'
       }}>

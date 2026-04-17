@@ -1,6 +1,6 @@
 import React from 'react';
 const ServicesHero = () => {
-  return <section className="relative">
+  return <section className="relative pt-16 lg:pt-20">
       <div className="h-[40vh] md:h-[50vh] bg-cover bg-center" style={{
       backgroundImage: 'url(https://images.unsplash.com/photo-1487958449943-2429e8be8625?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80)'
     }}>
