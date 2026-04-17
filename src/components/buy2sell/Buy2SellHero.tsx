@@ -5,7 +5,7 @@ interface Buy2SellHeroProps {
 const Buy2SellHero: React.FC<Buy2SellHeroProps> = ({
   backgroundImage
 }) => {
-  return <section className="relative">
+  return <section className="relative pt-16 lg:pt-20">
       <div className="h-[50vh] bg-cover bg-center" style={{
       backgroundImage: `url(${backgroundImage})`
     }}>

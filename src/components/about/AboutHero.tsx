@@ -1,6 +1,6 @@
 import React from 'react';
 const AboutHero = () => {
-  return <section className="relative">
+  return <section className="relative pt-16 lg:pt-20">
       <div style={{
       backgroundImage: 'url(https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80)'
     }} className="h-[40vh] bg-cover bg-center bg-indigo-950">

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 const CareerHero = () => {
-  return <section className="relative">
+  return <section className="relative pt-16 lg:pt-20">
       <div className="h-[50vh] bg-cover bg-center" style={{
       backgroundImage: 'url(/lovable-uploads/b006d931-462b-4646-97c9-0b2f3bc1d210.jpg)'
     }}>
