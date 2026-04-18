@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
 import PropertyDetailsDialogFullscreen from './PropertyDetailsDialogFullscreen';
 import ProfileCheckDialog from './ecommerce/ProfileCheckDialog';
+import PropertyRatingBadge from './properties/PropertyRatingBadge';
 import { Property } from '@/contexts/property/types';
 
 interface PropertyCardProps {
@@ -247,6 +248,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           <h3 className="text-xl font-bold text-gray-900 mb-2 hover:text-estate-blue transition-colors">
             {property.title}
           </h3>
+          <PropertyRatingBadge propertyId={property.id} className="mb-2" />
           <div className="flex items-center text-gray-600 mb-3">
             <MapPin size={16} className="mr-2 text-estate-red" />
             <span className="text-sm">{property.location}</span>

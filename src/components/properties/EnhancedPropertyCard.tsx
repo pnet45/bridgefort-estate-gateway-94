@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import PropertyDetailsDialog from '../PropertyDetailsDialog';
+import PropertyRatingBadge from './PropertyRatingBadge';
 
 interface EnhancedPropertyCardProps {
   property: Property;
@@ -137,6 +138,8 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
           <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-estate-blue transition-colors duration-300">
             {property.title}
           </h3>
+
+          <PropertyRatingBadge propertyId={property.id} className="mb-2" />
 
           {/* Location */}
           <div className="flex items-center text-gray-600 mb-4">

@@ -30,6 +30,7 @@ import AdminContentManagement from '@/components/admin/AdminContentManagement';
 import AdminOtherPayments from '@/components/admin/AdminOtherPayments';
 import AdminRolePermissions from '@/components/admin/AdminRolePermissions';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
+import AdminEstateViewsLeaderboard from '@/components/admin/AdminEstateViewsLeaderboard';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
@@ -177,7 +178,10 @@ const AdminConsole = () => {
           <TabsContent value="overview" className="space-y-6">
             <AdminDashboardStats />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2"><AdminInbox /></div>
+              <div className="lg:col-span-2 space-y-6">
+                <AdminInbox />
+                <AdminEstateViewsLeaderboard />
+              </div>
               <div className="space-y-6">
                 <AdminOnlineUsers />
                 <AdminChat />
