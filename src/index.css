@@ -80,6 +80,15 @@
   }
   html {
     height: 100%;
+    zoom: 0.75;
+  }
+  @supports not (zoom: 1) {
+    body {
+      transform: scale(0.75);
+      transform-origin: top left;
+      width: 133.3333%;
+      height: 133.3333%;
+    }
   }
   body {
     min-height: 100%;
