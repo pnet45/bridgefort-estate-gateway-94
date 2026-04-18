@@ -85,9 +85,10 @@
   @supports not (zoom: 1) {
     body {
       transform: scale(0.75);
-      transform-origin: top left;
+      transform-origin: top center;
       width: 133.3333%;
       height: 133.3333%;
+      margin-left: -16.6667%;
     }
   }
   body {
