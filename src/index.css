@@ -80,6 +80,8 @@
   }
   html {
     height: 100%;
+  }
+  body {
     zoom: 0.75;
   }
   @supports not (zoom: 1) {
