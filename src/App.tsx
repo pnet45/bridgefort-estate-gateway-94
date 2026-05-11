@@ -45,6 +45,7 @@ import AdminAuth from '@/pages/AdminAuth';
 import AdminConsole from '@/pages/AdminConsole';
 import Listings from '@/pages/Listings';
 import ListingDetails from '@/pages/ListingDetails';
+import AnnouncementArticle from '@/pages/AnnouncementArticle';
 
 import './App.css';
 
@@ -79,6 +80,7 @@ function App() {
                 <Route path="/auth/otp-reset" element={<OTPResetPassword />} />
                 <Route path="/listings" element={<Listings />} />
                 <Route path="/listings/:id" element={<ListingDetails />} />
+                <Route path="/announcements/:id" element={<AnnouncementArticle />} />
                 <Route path="/buy2sell" element={<Buy2Sell />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
