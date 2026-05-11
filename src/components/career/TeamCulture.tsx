@@ -9,7 +9,7 @@ const TeamCulture = () => {
           <div>
             <h2 className="text-3xl font-bold mb-6">Our Team Culture</h2>
             <p className="text-gray-600 mb-6">
-              At PWAN Bridgefort, we foster a culture of excellence, integrity, and collaboration. 
+              At Bridgefort Homes Development Ltd, we foster a culture of excellence, integrity, and collaboration. 
               Our team is built around the TEAMWORK philosophy - Together Everyone Achieves More.
             </p>
             

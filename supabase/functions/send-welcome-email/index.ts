@@ -12,18 +12,18 @@ serve(async (req) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to PWAN Bridgefort</title>
+    <title>Welcome to Bridgefort Homes Development Ltd</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
     <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 10px; margin-bottom: 30px;">
-        <img src="https://xyvspvtdaacqfmfocvhw.supabase.co/storage/v1/object/public/public/lovable-uploads/pwanlogo.png" alt="PWAN Bridgefort Logo" style="max-width: 200px; height: auto; margin-bottom: 20px;">
-        <h1 style="color: #1e40af; margin: 0;">Welcome to PWAN Bridgefort!</h1>
+        <img src="https://xyvspvtdaacqfmfocvhw.supabase.co/storage/v1/object/public/public/lovable-uploads/pwanlogo.png" alt="Bridgefort Homes Development Ltd Logo" style="max-width: 200px; height: auto; margin-bottom: 20px;">
+        <h1 style="color: #1e40af; margin: 0;">Welcome to Bridgefort Homes Development Ltd!</h1>
     </div>
     
     <div style="padding: 0 20px;">
         <h2 style="color: #1e40af;">Dear ${firstName || ''} ${lastName || ''},</h2>
         
-        <p>Welcome to the PWAN Bridgefort family! We're thrilled to have you join our community of smart property investors and homeowners.</p>
+        <p>Welcome to the Bridgefort Homes Development Ltd family! We're thrilled to have you join our community of smart property investors and homeowners.</p>
         
         <p><strong>What's Next?</strong></p>
         <ul>
@@ -35,7 +35,7 @@ serve(async (req) => {
         </ul>
         
         <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1e40af;">
-            <h3 style="color: #1e40af; margin-top: 0;">Why Choose PWAN Bridgefort?</h3>
+            <h3 style="color: #1e40af; margin-top: 0;">Why Choose Bridgefort Homes Development Ltd?</h3>
             <ul style="margin: 0; padding-left: 20px;">
                 <li>✅ Verified and titled properties</li>
                 <li>✅ Flexible payment options</li>
@@ -57,17 +57,17 @@ serve(async (req) => {
             <a href="https://pwanbridgefort.com/properties" style="color: white; text-decoration: none; font-weight: bold; font-size: 18px;">🏡 Explore Properties Now</a>
         </div>
         
-        <p>Thank you for choosing PWAN Bridgefort. We look forward to helping you achieve your property investment goals!</p>
+        <p>Thank you for choosing Bridgefort Homes Development Ltd. We look forward to helping you achieve your property investment goals!</p>
         
         <p style="margin-top: 30px;">
             Best regards,<br>
-            <strong>The PWAN Bridgefort Team</strong><br>
+            <strong>The Bridgefort Homes Development Ltd Team</strong><br>
             <em>...Rebuilding the Future!</em>
         </p>
     </div>
     
     <footer style="text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">
-        <p><strong>PWAN Bridgefort Estates & Investment Ltd</strong></p>
+        <p><strong>Bridgefort Homes Development Ltd</strong></p>
         <p>Building Legacies, Creating Wealth</p>
         <p>📍 Lagos, Nigeria | 📞 +2348030624059</p>
         <p>💳 Zenith Bank - Account: 1310762860</p>
@@ -99,9 +99,9 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'PWAN Bridgefort <noreply@pwanbridgefort.ng>',
+        from: 'Bridgefort Homes Development Ltd <noreply@pwanbridgefort.ng>',
         to: [email],
-        subject: '🏡 Welcome to PWAN Bridgefort - Your Property Journey Starts Here!',
+        subject: '🏡 Welcome to Bridgefort Homes Development Ltd - Your Property Journey Starts Here!',
         html: welcomeEmailHtml,
       }),
     })

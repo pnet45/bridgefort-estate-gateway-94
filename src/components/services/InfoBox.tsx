@@ -43,7 +43,7 @@ const InfoBox = ({
       
       {checkPoints.length > 0 && (
         <>
-          <h4 className="font-bold text-lg mb-4">Why Choose PWAN Bridgefort?</h4>
+          <h4 className="font-bold text-lg mb-4">Why Choose Bridgefort Homes Development Ltd?</h4>
           
           <ul className="space-y-2 mb-6">
             {checkPoints.map((point, index) => (

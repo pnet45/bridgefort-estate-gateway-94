@@ -5,8 +5,8 @@ import { salesStrategyBlogPost } from "./salesStrategyBlogPost";
 export const fallbackPosts: BlogPost[] = [
   {
     id: 'ode-omi-land-allocation-2026',
-    title: 'PWAN Bridgefort Delivers Again: Successful Land Allocation & Possession at Ode-Omi Estates',
-    excerpt: 'PWAN Bridgefort proudly celebrates the successful physical allocation and handover of plots to clients at Precious Gardens Estate and The Ambassadors Parks and Gardens Estate, Ode-Omi.',
+    title: 'Bridgefort Homes Development Ltd Delivers Again: Successful Land Allocation & Possession at Ode-Omi Estates',
+    excerpt: 'Bridgefort Homes Development Ltd proudly celebrates the successful physical allocation and handover of plots to clients at Precious Gardens Estate and The Ambassadors Parks and Gardens Estate, Ode-Omi.',
     image_path: '/images/allocation-1.jpg',
     created_at: new Date().toISOString(),
     category: 'Estate Allocation',

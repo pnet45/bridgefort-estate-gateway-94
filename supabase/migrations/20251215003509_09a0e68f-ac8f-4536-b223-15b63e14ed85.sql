@@ -4,10 +4,10 @@ VALUES (
   'Social Media Marketing with AI - Weekly Session',
   '2025-12-09',
   '10:00 AM',
-  'Bridgefort PBO Realtors Centre (PWAN Bridgefort Estates), Suite 8, Right Wing, Gacoun Plaza, Opposite K Close, 23 Road, Festac Town, Lagos',
+  'Bridgefort PBO Realtors Centre (Bridgefort Homes Development Ltd Estates), Suite 8, Right Wing, Gacoun Plaza, Opposite K Close, 23 Road, Festac Town, Lagos',
   '100',
   'Training',
-  'Master the art of social media marketing powered by artificial intelligence! This comprehensive training covers tailored social media strategies, creative content that captivates your audience, targeted ads for maximum reach, and consistent engagement techniques for sustainable growth. Hosted by Dalvin Silva PhD (MD/CEO, PWAN Bridgefort) with Emmanuel Etokakpan (IT/Admin Officer, PWAN Bridgefort) as speaker. Perfect for real estate professionals, marketers, and business owners looking to leverage AI for their social media presence.',
+  'Master the art of social media marketing powered by artificial intelligence! This comprehensive training covers tailored social media strategies, creative content that captivates your audience, targeted ads for maximum reach, and consistent engagement techniques for sustainable growth. Hosted by Dalvin Silva PhD (MD/CEO, Bridgefort Homes Development Ltd) with Emmanuel Etokakpan (IT/Admin Officer, Bridgefort Homes Development Ltd) as speaker. Perfect for real estate professionals, marketers, and business owners looking to leverage AI for their social media presence.',
   true,
   'https://xyvspvtdaacqfmfocvhw.supabase.co/storage/v1/object/public/imagebucket/training-ai-dec-9.jpeg'
 );

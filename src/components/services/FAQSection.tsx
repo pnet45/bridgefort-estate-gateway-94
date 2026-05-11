@@ -7,7 +7,7 @@ const FAQSection = () => {
       <div className="container-custom">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">Find answers to common questions about real estate investments with PWAN Bridgefort.</p>
+          <p className="text-gray-600 max-w-2xl mx-auto">Find answers to common questions about real estate investments with Bridgefort Homes Development Ltd.</p>
         </div>
 
         <div className="max-w-3xl mx-auto space-y-6">
@@ -18,7 +18,7 @@ const FAQSection = () => {
 
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold mb-3">How secure are real estate investments in Nigeria?</h3>
-            <p className="text-gray-600">Real estate remains one of the most secure investment options in Nigeria. At PWAN Bridgefort, we ensure all properties have verified titles and necessary documentation to protect your investment.</p>
+            <p className="text-gray-600">Real estate remains one of the most secure investment options in Nigeria. At Bridgefort Homes Development Ltd, we ensure all properties have verified titles and necessary documentation to protect your investment.</p>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-md">

@@ -82,7 +82,7 @@ const AdminConsole = () => {
                 </div>
                 <div>
                   <h1 className="text-lg font-bold text-white">Admin Console</h1>
-                  <p className="text-xs text-slate-400">PWAN Bridgefort</p>
+                  <p className="text-xs text-slate-400">Bridgefort Homes Development Ltd</p>
                 </div>
               </div>
             </div>

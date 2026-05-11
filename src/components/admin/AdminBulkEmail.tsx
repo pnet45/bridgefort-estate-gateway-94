@@ -307,7 +307,7 @@ export default function AdminBulkEmail() {
                 ${personalizedBody.replace(/\n/g, '<br/>')}
                 <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;"/>
                 <p style="color: #666; font-size: 12px;">
-                  This email was sent by PWAN Bridgefort. 
+                  This email was sent by Bridgefort Homes Development Ltd. 
                   If you no longer wish to receive these emails, please contact us.
                 </p>
               </div>`,

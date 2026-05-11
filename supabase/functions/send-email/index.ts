@@ -78,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "PWAN Bridgefort <noreply@pwanbridgefort.ng>",
+      from: "Bridgefort Homes Development Ltd <noreply@pwanbridgefort.ng>",
       to: [to],
       subject: subject,
       html: html,

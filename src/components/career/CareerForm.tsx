@@ -92,7 +92,7 @@ const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
       <CardHeader>
         <CardTitle className="text-2xl text-center">Career Application</CardTitle>
         <CardDescription className="text-center">
-          Fill out the form below to apply for a position with PWAN Bridgefort
+          Fill out the form below to apply for a position with Bridgefort Homes Development Ltd
         </CardDescription>
       </CardHeader>
       <CardContent>

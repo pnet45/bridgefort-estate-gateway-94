@@ -18,8 +18,8 @@ interface Testimonial {
 const AdminTestimonialsContent = () => {
   // For now using local state - can be moved to DB later
   const [testimonials, setTestimonials] = useState<Testimonial[]>([
-    { id: '1', name: 'Mr. Adekunle Johnson', role: 'Property Owner', content: 'PWAN Bridgefort made my dream of owning land a reality. Their professionalism and transparency are unmatched.', rating: 5 },
-    { id: '2', name: 'Mrs. Chioma Okafor', role: 'Investor', content: 'I have invested in multiple properties with PWAN Bridgefort and the returns have been excellent. Highly recommended!', rating: 5 },
+    { id: '1', name: 'Mr. Adekunle Johnson', role: 'Property Owner', content: 'Bridgefort Homes Development Ltd made my dream of owning land a reality. Their professionalism and transparency are unmatched.', rating: 5 },
+    { id: '2', name: 'Mrs. Chioma Okafor', role: 'Investor', content: 'I have invested in multiple properties with Bridgefort Homes Development Ltd and the returns have been excellent. Highly recommended!', rating: 5 },
     { id: '3', name: 'Engr. Ibrahim Musa', role: 'Land Owner', content: 'The allocation process was seamless and the documentation was thorough. Great company to work with.', rating: 4 },
   ]);
   const [isCreating, setIsCreating] = useState(false);

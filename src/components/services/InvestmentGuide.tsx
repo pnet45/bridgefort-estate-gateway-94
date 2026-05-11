@@ -9,7 +9,7 @@ const InvestmentGuide = () => {
       <div className="container-custom">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Investment Guide</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">Follow our step-by-step process to start your real estate investment journey with PWAN Bridgefort.</p>
+          <p className="text-gray-600 max-w-2xl mx-auto">Follow our step-by-step process to start your real estate investment journey with Bridgefort Homes Development Ltd.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

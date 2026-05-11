@@ -23,7 +23,7 @@ What You''ll Learn:
 • Transform prospects into paying clients with ease
 • Elevate your real estate marketing approach
 
-Hosted by: Dalvin Silva, MD/CEO of PWAN Bridgefort
+Hosted by: Dalvin Silva, MD/CEO of Bridgefort Homes Development Ltd
 Expert Speaker: Ini Brain (MUMMYMAY), Real Estate Educator
 
 Contact: +234-807-071-0588 | +234-803-410-8432

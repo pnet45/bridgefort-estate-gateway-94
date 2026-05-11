@@ -92,7 +92,7 @@ const AdminInbox = () => {
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; text-align: center;">
-                <h1 style="color: #fff; margin: 0;">PWAN Bridgefort</h1>
+                <h1 style="color: #fff; margin: 0;">Bridgefort Homes Development Ltd</h1>
               </div>
               <div style="padding: 30px; background: #fff;">
                 <p>Dear ${selectedMessage.name},</p>
@@ -103,7 +103,7 @@ const AdminInbox = () => {
                 </p>
               </div>
               <div style="background: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-                <p>PWAN Bridgefort | 3 Isoko Drive, Off NTA Road, Asaba, Delta State</p>
+                <p>Bridgefort Homes Development Ltd | 3 Isoko Drive, Off NTA Road, Asaba, Delta State</p>
               </div>
             </div>
           `

@@ -23,7 +23,7 @@ const SummitDetailsContent: React.FC<SummitDetailsContentProps> = ({ onRegisterC
         <SpeakerProfile 
           image="/lovable-uploads/985da183-5e59-4f48-9f0f-35b5e841d5dd.png" 
           name="Dr. Dalvin Silva, PhD"
-          title="MD/CEO, PWAN Bridgefort"
+          title="MD/CEO, Bridgefort Homes Development Ltd"
           description="Renowned leadership expert, wealth strategist, and transformational speaker, Dr. Silva will be delivering deep, actionable insights to empower and reposition you for sustainable success."
         />
       </div>

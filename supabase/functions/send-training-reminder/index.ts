@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'PWAN Bridgefort Training <training@pwanbridgefort.ng>',
+              from: 'Bridgefort Homes Development Ltd Training <training@pwanbridgefort.ng>',
               to: [registration.email],
               subject: `Reminder: ${event.title} Tomorrow!`,
               html: `
@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
                         </p>
                       </div>
                       <div class="footer">
-                        <p><strong>PWAN Bridgefort</strong><br>
+                        <p><strong>Bridgefort Homes Development Ltd</strong><br>
                         ...Rebuilding the Future<br>
                         <a href="https://www.pwanbridgefort.ng">www.pwanbridgefort.ng</a></p>
                       </div>

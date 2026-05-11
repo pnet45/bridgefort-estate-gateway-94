@@ -7,6 +7,6 @@ VALUES (
   'Center Training',
   '100+',
   true,
-  'Special Center Training Seminar featuring Amb. Dalvin Silva, MD/CEO of PWAN Bridgefort Estates and Investment Ltd. This exclusive seminar at PWAN Bethel Home Center is designed to empower real estate professionals and aspiring investors with cutting-edge strategies for wealth creation through real estate investment. Learn directly from one of Nigeria''s most dynamic real estate leaders about property acquisition, investment planning, and building a successful career in real estate. Don''t miss this opportunity to network, learn, and grow your real estate portfolio with expert guidance from the MD/CEO himself.',
+  'Special Center Training Seminar featuring Amb. Dalvin Silva, MD/CEO of Bridgefort Homes Development Ltd. This exclusive seminar at PWAN Bethel Home Center is designed to empower real estate professionals and aspiring investors with cutting-edge strategies for wealth creation through real estate investment. Learn directly from one of Nigeria''s most dynamic real estate leaders about property acquisition, investment planning, and building a successful career in real estate. Don''t miss this opportunity to network, learn, and grow your real estate portfolio with expert guidance from the MD/CEO himself.',
   '/images/dalvin-silva-seminar.jpeg'
 );

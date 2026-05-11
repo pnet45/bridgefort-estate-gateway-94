@@ -45,7 +45,7 @@ const CareerApplication = () => {
               <div className="text-center mb-6">
                 <h2 className="text-3xl font-bold mb-3 animate-scale-in">Apply to Join Our Team</h2>
                 <p className="text-gray-600 max-w-2xl mx-auto animate-fade-in">
-                  Take the first step towards an exciting career with PWAN Bridgefort. Submit your application and we'll be in touch.
+                  Take the first step towards an exciting career with Bridgefort Homes Development Ltd. Submit your application and we'll be in touch.
                 </p>
               </div>
               <CareerForm defaultPosition={defaultPosition} />

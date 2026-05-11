@@ -83,7 +83,7 @@ export const salesStrategyBlogPost = {
     </div>
   `,
   category: 'Training & Events',
-  author: 'PWAN Bridgefort Team',
+  author: 'Bridgefort Homes Development Ltd Team',
   publishedAt: new Date().toISOString(),
   featured: true,
   image: '/lovable-uploads/8010a8f6-6f7b-4572-a872-da50579b5a14.png'

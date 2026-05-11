@@ -13,14 +13,14 @@ const PrivacyPolicy = () => {
             <h1 className="text-3xl md:text-4xl font-bold mb-6 text-estate-blue">Privacy Policy</h1>
             <p className="text-gray-600 mb-6">Effective Date: May 20, 2025</p>
             <p className="text-gray-600 mb-6">
-              Company Name: PWAN Bridgefort Estate and Investment Ltd<br />
+              Company Name: Bridgefort Homes Development Ltd<br />
               Website: www.pwanbridgefort.ng
             </p>
             <hr className="my-6" />
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">1. Introduction</h2>
               <p className="mb-4">
-                PWAN Bridgefort Estate & Investment Ltd ("we", "our", "us") is a fully corporate, Nigerian real estate and e-commerce company that provides innovative land banking, digital property sales, investment programs, training, and land trading services. This Privacy Policy describes how we collect, use, protect, and share your personal information.
+                Bridgefort Homes Development Ltd ("we", "our", "us") is a fully corporate, Nigerian real estate and e-commerce company that provides innovative land banking, digital property sales, investment programs, training, and land trading services. This Privacy Policy describes how we collect, use, protect, and share your personal information.
               </p>
               <p className="mb-4">
                 By using our website or any of our platforms, you agree to this policy and our data practices.
@@ -45,7 +45,7 @@ const PrivacyPolicy = () => {
                 <li>Facilitate land/property transactions, cart/e-commerce management, and delivery of e-contracts and documents.</li>
                 <li>Verify identity for regulatory compliance (anti-money laundering, KYC).</li>
                 <li>Investments: Analyze risk, calculate returns, and optimize land banking and trading products.</li>
-                <li>To process secure payments through trusted providers. PWAN Bridgefort does not store customers’ card details.</li>
+                <li>To process secure payments through trusted providers. Bridgefort Homes Development Ltd does not store customers’ card details.</li>
                 <li>Marketing, service updates, and industry insights/education by email or SMS (opt-out any time).</li>
                 <li>Customer support and dispute resolution.</li>
                 <li>Site and investment security, including fraud prevention.</li>
@@ -120,7 +120,7 @@ const PrivacyPolicy = () => {
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">13. Contact Us</h2>
               <div className="bg-gray-50 p-4 rounded">
-                <p><strong>PWAN Bridgefort Estate and Investment Ltd</strong></p>
+                <p><strong>Bridgefort Homes Development Ltd</strong></p>
                 <p>
                   📍 Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate,<br />
                   VGC Bus Stop, Lekki-Ajah, Lagos
@@ -130,7 +130,7 @@ const PrivacyPolicy = () => {
               </div>
             </section>
             <footer className="text-center text-gray-600 mt-10">
-              © 2025 PWAN Bridgefort Estate and Investment Ltd. All rights reserved. <br />
+              © 2025 Bridgefort Homes Development Ltd. All rights reserved. <br />
               This platform and all data are protected under Nigerian law and global privacy standards.
             </footer>
           </div>

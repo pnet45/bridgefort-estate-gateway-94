@@ -6,7 +6,7 @@ const WhyChooseUs = () => {
     <section className="section-padding bg-estate-blue text-white">
       <div className="container-custom">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Why Choose PWAN Bridgefort</h2>
+          <h2 className="text-3xl font-bold mb-4">Why Choose Bridgefort Homes Development Ltd</h2>
           <p className="max-w-2xl mx-auto opacity-90 text-white">We are committed to providing exceptional service and investment opportunities.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

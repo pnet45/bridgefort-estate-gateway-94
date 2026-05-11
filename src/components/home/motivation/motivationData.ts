@@ -2,21 +2,21 @@
 export const motivationData = [
   {
     title: "Valentine 2026: Gift Love That Lasts — Choose Land Over Liabilities",
-    text: "This Valentine, express love the smartest way — gift real estate! Unlike chocolates and flowers that fade, land appreciates in value and secures your loved one's future. At PWAN Bridgefort, we help you turn love into lasting wealth. Gift a plot, build a legacy. ❤️",
-    author: "PWAN Bridgefort Team",
+    text: "This Valentine, express love the smartest way — gift real estate! Unlike chocolates and flowers that fade, land appreciates in value and secures your loved one's future. At Bridgefort Homes Development Ltd, we help you turn love into lasting wealth. Gift a plot, build a legacy. ❤️",
+    author: "Bridgefort Homes Development Ltd Team",
     image: "/lovable-uploads/valentine-2026.jpeg",
     link: "/blog/valentine-2026-gift-of-land"
   },
   {
     title: "Welcome to December: The Month of Decision",
-    text: "Happy New Month! December is here - a month of reflection, celebration, and most importantly, decision-making. At PWAN Bridgefort, we believe this is the perfect time to make that life-changing property investment. Start the new year as a property owner. Your dream home or investment property awaits - let's make December count!",
-    author: "PWAN Bridgefort Team",
+    text: "Happy New Month! December is here - a month of reflection, celebration, and most importantly, decision-making. At Bridgefort Homes Development Ltd, we believe this is the perfect time to make that life-changing property investment. Start the new year as a property owner. Your dream home or investment property awaits - let's make December count!",
+    author: "Bridgefort Homes Development Ltd Team",
     image: "/lovable-uploads/december-motivation.jpg"
   },
   {
     title: "Monday Motivation: Your Dream Home Awaits!",
-    text: "Every Monday is a fresh start to make your property dreams come true. At PWAN Bridgefort, we believe that success starts with taking the first step. Whether you're looking to invest, buy your first home, or expand your portfolio - today is the perfect day to begin your journey to property ownership!",
-    author: "PWAN Bridgefort Team",
+    text: "Every Monday is a fresh start to make your property dreams come true. At Bridgefort Homes Development Ltd, we believe that success starts with taking the first step. Whether you're looking to invest, buy your first home, or expand your portfolio - today is the perfect day to begin your journey to property ownership!",
+    author: "Bridgefort Homes Development Ltd Team",
     image: "/lovable-uploads/Happy new week.png"
   },
   {
@@ -27,8 +27,8 @@ export const motivationData = [
   },
   {
     title: "New Week, Fresh Listings, Fresh Leads",
-    text: "The hustle never stops at PWAN Bridgefort! This week brings new opportunities, new properties, and new chances to secure your financial future. Our fresh listings are ready for serious investors who understand that wealth is built one smart decision at a time.",
-    author: "PWAN Bridgefort Sales Team",
+    text: "The hustle never stops at Bridgefort Homes Development Ltd! This week brings new opportunities, new properties, and new chances to secure your financial future. Our fresh listings are ready for serious investors who understand that wealth is built one smart decision at a time.",
+    author: "Bridgefort Homes Development Ltd Sales Team",
     image: "/lovable-uploads/Happy new week.png"
   }
 ];

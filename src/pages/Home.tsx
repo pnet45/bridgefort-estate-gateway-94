@@ -45,7 +45,7 @@ const Home = () => {
           <div className="container-custom text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Luxury Homes & Apartments</h2>
             <p className="text-lg text-gray-300 max-w-3xl mx-auto mb-4">
-              At PWAN Bridgefort, we don't just sell land — we also deliver premium residential properties. 
+              At Bridgefort Homes Development Ltd, we don't just sell land — we also deliver premium residential properties. 
               From modern apartments to fully detached luxury homes, our developments span prime locations 
               across Lagos, Asaba, and Ogun State.
             </p>

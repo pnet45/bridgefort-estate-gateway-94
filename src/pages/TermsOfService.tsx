@@ -13,7 +13,7 @@ const TermsOfService = () => {
           <div className="bg-white rounded-lg shadow-md p-6 md:p-10">
             <h1 className="text-3xl md:text-4xl font-bold mb-6 text-estate-blue">Terms and Conditions of Use</h1>
             <p className="text-gray-600 mb-6">Effective Date: May 20, 2025</p>
-            <p className="text-gray-600 mb-6">Company Name: PWAN Bridgefort Estate and Investment Ltd<br />
+            <p className="text-gray-600 mb-6">Company Name: Bridgefort Homes Development Ltd<br />
             Website: www.pwanbridgefort.ng</p>
             <hr className="my-6" />
             <section className="mb-8">
@@ -79,7 +79,7 @@ const TermsOfService = () => {
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">8. Intellectual Property</h2>
               <p>
-                All Site content (text, photos, documents, calculators, videos) remains the property of PWAN Bridgefort unless explicitly licensed separately. Use of content for personal research/decision is permitted; publishing or copying is prohibited without written permission.
+                All Site content (text, photos, documents, calculators, videos) remains the property of Bridgefort Homes Development Ltd unless explicitly licensed separately. Use of content for personal research/decision is permitted; publishing or copying is prohibited without written permission.
               </p>
             </section>
             <section className="mb-8">
@@ -91,7 +91,7 @@ const TermsOfService = () => {
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">10. Limitation of Liability</h2>
               <ul className="list-disc pl-6 mb-4 space-y-1">
-                <li>PWAN Bridgefort is not liable for indirect, incidental, or consequential losses resulting from use of the platform.</li>
+                <li>Bridgefort Homes Development Ltd is not liable for indirect, incidental, or consequential losses resulting from use of the platform.</li>
                 <li>No guarantees are made for future price appreciation of any property, investment, or land banking package.</li>
                 <li>Platform reliability cannot be guaranteed during scheduled maintenance or uncontrollable external downtime.</li>
               </ul>
@@ -117,7 +117,7 @@ const TermsOfService = () => {
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">14. Contact Information & Regulatory Address</h2>
               <div className="bg-gray-50 p-4 rounded">
-                <p><strong>PWAN Bridgefort Estate and Investment Ltd</strong></p>
+                <p><strong>Bridgefort Homes Development Ltd</strong></p>
                 <p>Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate,<br />
                   VGC Bus Stop, Lekki-Ajah, Lagos, Nigeria</p>
                 <p>📞 <a href="tel:+2348030624059" className="text-estate-blue hover:underline">+234 803 062 4059</a></p>
@@ -125,7 +125,7 @@ const TermsOfService = () => {
               </div>
             </section>
             <footer className="text-center text-gray-600 mt-10">
-              © 2025 PWAN Bridgefort Estate and Investment Ltd. E-commerce, digital real estate and land investment platform. Regulated and protected under Nigerian law.
+              © 2025 Bridgefort Homes Development Ltd. E-commerce, digital real estate and land investment platform. Regulated and protected under Nigerian law.
             </footer>
           </div>
         </div>

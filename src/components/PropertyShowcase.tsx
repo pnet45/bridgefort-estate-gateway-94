@@ -95,11 +95,11 @@ const PropertyShowcase = () => {
 
             <div className="bg-estate-blue bg-opacity-5 p-4 rounded-lg space-y-4">
               <p className="font-semibold">📢 Don't Miss This Opportunity!</p>
-              <p>Secure your dream property now with PWAN Bridgefort Estates & Investment Ltd.</p>
+              <p>Secure your dream property now with Bridgefort Homes Development Ltd.</p>
               
               <div>
                 <p className="font-medium">📞 Call/WhatsApp: For Further Inquiries & Site Inspection</p>
-                <p className="font-medium">💳 Payments To: Zenith Bank – PWAN Bridgefort Estates & Investment Ltd</p>
+                <p className="font-medium">💳 Payments To: Zenith Bank – Bridgefort Homes Development Ltd</p>
                 <p className="font-medium">Account Number: 1310702860</p>
               </div>
               
