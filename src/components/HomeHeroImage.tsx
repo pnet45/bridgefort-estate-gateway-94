@@ -15,7 +15,7 @@ const FALLBACK_SLIDES = [
   '/lovable-uploads/PropertyHero.png',
 ];
 
-const FALLBACK_TITLE = "Bridgefort Homes Development Ltd. ...Rebuilding the Future!";
+const FALLBACK_TITLE = "Bridgefort Homes Development Ltd. ...Bringing your dreams home!";
 const FALLBACK_SUBTITLE = "At Bridgefort Homes Development Ltd, we're not just selling properties—we're building legacies.";
 
 const TEXT_EFFECTS = [
