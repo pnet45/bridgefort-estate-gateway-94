@@ -2,11 +2,11 @@ import React from 'react';
 const coreValues = [{
   letter: 'P',
   value: 'Purpose-Driven',
-  description: 'At the heart of PWAN Bridgefort is a deeper sense of purpose. We do not merely sell land; we ignite dreams, deliver dignity, and drive socioeconomic change through ownership and empowerment.'
+  description: 'At the heart of Bridgefort Homes Development Ltd is a deeper sense of purpose. We do not merely sell land; we ignite dreams, deliver dignity, and drive socioeconomic change through ownership and empowerment.'
 }, {
   letter: 'W',
   value: 'Wealth Creation',
-  description: 'Our business is a platform for generational wealth. Whether you\'re a client, investor, or realtor, PWAN Bridgefort is your gateway to building sustainable wealth through property and partnerships.'
+  description: 'Our business is a platform for generational wealth. Whether you\'re a client, investor, or realtor, Bridgefort Homes Development Ltd is your gateway to building sustainable wealth through property and partnerships.'
 }, {
   letter: 'A',
   value: 'Accountability',
@@ -22,7 +22,7 @@ const coreValues = [{
 }, {
   letter: 'R',
   value: 'Reliability',
-  description: 'Trust is earned over time, and we guard it fiercely. PWAN Bridgefort is a name you can count on—dependable, consistent, and committed to doing right by all stakeholders.'
+  description: 'Trust is earned over time, and we guard it fiercely. Bridgefort Homes Development Ltd is a name you can count on—dependable, consistent, and committed to doing right by all stakeholders.'
 }, {
   letter: 'I',
   value: 'Integrity',
@@ -62,7 +62,7 @@ const CoreValues = () => {
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold mb-4">OUR CORE VALUES</h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
-            Each letter in PWAN BRIDGEFORT symbolizes the pillars upon which our company stands—principles that guide our actions, influence our culture, and define how we deliver value across the real estate ecosystem.
+            Each letter in BRIDGEFORT HOMES DEVELOPMENT LTD symbolizes the pillars upon which our company stands—principles that guide our actions, influence our culture, and define how we deliver value across the real estate ecosystem.
           </p>
         </div>
 

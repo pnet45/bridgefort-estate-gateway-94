@@ -164,11 +164,11 @@ Deno.serve(async (req) => {
             <div class="signature">
               <div class="signature-line">
                 <div style="font-weight: bold; margin-bottom: 5px;">Training Coordinator</div>
-                <div style="font-size: 14px; color: #6b7280;">PWAN Bridgefort</div>
+                <div style="font-size: 14px; color: #6b7280;">Bridgefort Homes Development Ltd</div>
               </div>
               <div class="signature-line">
                 <div style="font-weight: bold; margin-bottom: 5px;">Managing Director</div>
-                <div style="font-size: 14px; color: #6b7280;">PWAN Bridgefort</div>
+                <div style="font-size: 14px; color: #6b7280;">Bridgefort Homes Development Ltd</div>
               </div>
             </div>
             <div style="margin-top: 40px; font-size: 14px; color: #6b7280;">

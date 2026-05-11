@@ -14,15 +14,15 @@ const boardOfDirectors = [{
   imageUrl: '/lovable-uploads/2ef7dd06-9cf0-458d-b8a2-9e82f2a5cf26.png'
 }, {
   name: 'Dr. Michael Akhuetie',
-  role: 'Chairman, PWAN Bridgefort',
+  role: 'Chairman, Bridgefort Homes Development Ltd',
   imageUrl: '/lovable-uploads/DR-MICHAEL-AKHUETIE.png'
 }, {
   name: 'Dr. Dalvin Silva, PhD',
-  role: 'Managing Director, PWAN Bridgefort',
+  role: 'Managing Director, Bridgefort Homes Development Ltd',
   imageUrl: '/lovable-uploads/Dalvin-Silva-MD.png'
 }, {
   name: 'Precious Silva',
-  role: 'Executive Director, PWAN Bridgefort',
+  role: 'Executive Director, Bridgefort Homes Development Ltd',
   imageUrl: '/lovable-uploads/Precious.png'
 }];
 const BoardOfDirectors = () => {

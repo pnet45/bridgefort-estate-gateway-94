@@ -45,9 +45,9 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         const emailResponse = await resend.emails.send({
-          from: "PWAN Bridgefort <noreply@pwanbridgefort.ng>",
+          from: "Bridgefort Homes Development Ltd <noreply@pwanbridgefort.ng>",
           to: [profile.email],
-          subject: "Complete Your Profile - Unlock Full Access to PWAN Bridgefort",
+          subject: "Complete Your Profile - Unlock Full Access to Bridgefort Homes Development Ltd",
           html: `
             <!DOCTYPE html>
             <html>
@@ -69,12 +69,12 @@ const handler = async (req: Request): Promise<Response> => {
               <body>
                 <div class="container">
                   <div class="header">
-                    <h1>🏡 Complete Your PWAN Bridgefort Profile</h1>
+                    <h1>🏡 Complete Your Bridgefort Homes Development Ltd Profile</h1>
                   </div>
                   <div class="content">
                     <p>Dear ${firstName},</p>
                     
-                    <p>We noticed that your profile is currently <strong>${percentage}% complete</strong>. You're so close to unlocking the full benefits of your PWAN Bridgefort account!</p>
+                    <p>We noticed that your profile is currently <strong>${percentage}% complete</strong>. You're so close to unlocking the full benefits of your Bridgefort Homes Development Ltd account!</p>
                     
                     <div class="progress-bar">
                       <div class="progress-fill" style="width: ${percentage}%">
@@ -105,13 +105,13 @@ const handler = async (req: Request): Promise<Response> => {
                     
                     <p style="margin-top: 20px;">
                       Best regards,<br>
-                      <strong>The PWAN Bridgefort Team</strong><br>
+                      <strong>The Bridgefort Homes Development Ltd Team</strong><br>
                       <em>Rebuilding the future, one property at a time</em>
                     </p>
                   </div>
                   <div class="footer">
-                    <p>© 2025 PWAN Bridgefort. All rights reserved.</p>
-                    <p>You received this email because you have an account with PWAN Bridgefort.</p>
+                    <p>© 2025 Bridgefort Homes Development Ltd. All rights reserved.</p>
+                    <p>You received this email because you have an account with Bridgefort Homes Development Ltd.</p>
                   </div>
                 </div>
               </body>

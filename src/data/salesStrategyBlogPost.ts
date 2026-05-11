@@ -13,10 +13,10 @@ export const salesStrategyBlogPost = {
       <h3>🔥 STRATEGY FOR CLOSING DEALS IN MILLIONS</h3>
       <p><strong>Theme:</strong> The Irrefutable Methods of Sales Master Exposed!</p>
       
-      <p>Join Dr. Dalvin Silva, the dynamic MD/CEO of PWAN BRIDGEFORT and a proven Sales Master, as he unveils game-changing strategies that have helped thousands generate millions in real estate and business deals.</p>
+      <p>Join Dr. Dalvin Silva, the dynamic MD/CEO of BRIDGEFORT HOMES DEVELOPMENT LTD and a proven Sales Master, as he unveils game-changing strategies that have helped thousands generate millions in real estate and business deals.</p>
       
       <h4>🎙 SPEAKER:</h4>
-      <p>Dr. Dalvin Silva – MD/CEO, PWAN BRIDGEFORT<br/>
+      <p>Dr. Dalvin Silva – MD/CEO, BRIDGEFORT HOMES DEVELOPMENT LTD<br/>
       Renowned Sales Coach | Real Estate Titan | Leadership Strategist</p>
       
       <h4>🎤 HOST:</h4>
@@ -77,13 +77,13 @@ export const salesStrategyBlogPost = {
       <p>Limited slots available. Secure your seat today and take the first step toward your next million-naira deal!</p>
       
       <p><strong>PWAN AMAZON NETWORK<br/>
-      PWAN BRIDGEFORT – Rebuilding the Future</strong></p>
+      BRIDGEFORT HOMES DEVELOPMENT LTD – Rebuilding the Future</strong></p>
       
       <p><em>#SalesMastery #PWANBridgefort #ClosingDeals #RealEstateSuccess #MillionNairaDeals #BusinessMasterclass #SalesLeadership #WealthStrategies</em></p>
     </div>
   `,
   category: 'Training & Events',
-  author: 'PWAN Bridgefort Team',
+  author: 'Bridgefort Homes Development Ltd Team',
   publishedAt: new Date().toISOString(),
   featured: true,
   image: '/lovable-uploads/8010a8f6-6f7b-4572-a872-da50579b5a14.png'

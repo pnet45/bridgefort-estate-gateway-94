@@ -235,7 +235,7 @@ const PropertyDetailsDialog = ({
                     <p className="font-semibold text-zinc-50">📢 Don't Miss This Opportunity!</p>
                     <div>
                       <p className="font-medium text-zinc-50">📞 Call/WhatsApp: +2348030624059 For Further Inquiries & Site Inspection</p>
-                      <p className="font-medium text-zinc-50">💳 Payments To: Zenith Bank – PWAN Bridgefort Estates & Investment Ltd</p>
+                      <p className="font-medium text-zinc-50">💳 Payments To: Zenith Bank – Bridgefort Homes Development Ltd</p>
                       <p className="font-medium text-zinc-50">Account Number: 1310762860</p>
                     </div>
                   </div>

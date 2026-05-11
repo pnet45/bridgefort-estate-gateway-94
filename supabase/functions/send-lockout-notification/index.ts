@@ -48,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification to admin
     const emailResponse = await resend.emails.send({
-      from: "PWAN Bridgefort Security <noreply@pwanbridgefort.ng>",
+      from: "Bridgefort Homes Development Ltd Security <noreply@pwanbridgefort.ng>",
       to: [adminEmail],
       subject: `🔒 Account Locked: ${lockedEmail}`,
       html: `
@@ -71,7 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div class="container">
             <div class="header">
               <h1>🔒 Account Lockout Alert</h1>
-              <p>PWAN Bridgefort Admin Security</p>
+              <p>Bridgefort Homes Development Ltd Admin Security</p>
             </div>
             <div class="content">
               <div class="alert-box">
@@ -109,7 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
               </p>
             </div>
             <div class="footer">
-              <p>© ${new Date().getFullYear()} PWAN Bridgefort Estate and Investment Ltd.</p>
+              <p>© ${new Date().getFullYear()} Bridgefort Homes Development Ltd.</p>
               <p>This is an automated security notification.</p>
             </div>
           </div>

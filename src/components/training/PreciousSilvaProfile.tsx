@@ -11,7 +11,7 @@ const PreciousSilvaProfile = () => {
       </Avatar>
       <div>
         <h3 className="text-xl font-bold">Dr. Dalvin Silva</h3>
-        <p className="text-gray-600">MD/CEO, PWAN Bridgefort</p>
+        <p className="text-gray-600">MD/CEO, Bridgefort Homes Development Ltd</p>
       </div>
       <p className="text-gray-700 max-w-sm">
         Renowned leadership expert, wealth strategist, and transformational speaker

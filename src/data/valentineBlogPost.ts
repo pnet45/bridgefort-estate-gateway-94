@@ -1,10 +1,10 @@
 export const valentineBlogPost = {
   id: 'valentine-2026-gift-of-land',
   title: 'Valentine 2026: Express Love by Gifting Value — Land Over Liabilities',
-  excerpt: 'This Valentine, go beyond chocolates and flowers. Show true love by gifting assets that appreciate — real estate. Discover why land is the ultimate expression of love and how PWAN Bridgefort can help you gift lasting value.',
+  excerpt: 'This Valentine, go beyond chocolates and flowers. Show true love by gifting assets that appreciate — real estate. Discover why land is the ultimate expression of love and how Bridgefort Homes Development Ltd can help you gift lasting value.',
   content: `
     <div class="blog-post-content">
-      <img src="/lovable-uploads/valentine-2026.jpeg" alt="Happy Valentine's Day 2026 from PWAN Bridgefort" class="w-full rounded-lg my-6 shadow-lg" />
+      <img src="/lovable-uploads/valentine-2026.jpeg" alt="Happy Valentine's Day 2026 from Bridgefort Homes Development Ltd" class="w-full rounded-lg my-6 shadow-lg" />
 
       <h2>❤️ Happy Valentine's Day 2026!</h2>
 
@@ -12,7 +12,7 @@ export const valentineBlogPost = {
         "Mark 12:30–31 — Love God completely and love your neighbour as yourself — 'There is none other commandment greater than these.'"
       </blockquote>
 
-      <p>From all of us at <strong>PWAN Bridgefort</strong>, we wish you a love-filled Valentine's season. But beyond the celebrations, we want to challenge you to think differently about how you express love.</p>
+      <p>From all of us at <strong>Bridgefort Homes Development Ltd</strong>, we wish you a love-filled Valentine's season. But beyond the celebrations, we want to challenge you to think differently about how you express love.</p>
 
       <h3>💝 Love Is Best Expressed in Value</h3>
       <p>Every Valentine's Day, millions of naira are spent on gifts that lose value the moment they're unwrapped — perfumes that run out, chocolates that melt, flowers that wilt, and gadgets that depreciate. While these gestures are sweet, they are <strong>liabilities</strong> — they consume money without generating returns.</p>
@@ -47,8 +47,8 @@ export const valentineBlogPost = {
         </tbody>
       </table>
 
-      <h3>💎 PWAN Bridgefort: Making Love Tangible</h3>
-      <p>At PWAN Bridgefort, we make it easy and affordable for you to gift the ultimate Valentine's present — <strong>real estate</strong>. With our flexible payment plans, verified estate locations, and trusted documentation, you can:</p>
+      <h3>💎 Bridgefort Homes Development Ltd: Making Love Tangible</h3>
+      <p>At Bridgefort Homes Development Ltd, we make it easy and affordable for you to gift the ultimate Valentine's present — <strong>real estate</strong>. With our flexible payment plans, verified estate locations, and trusted documentation, you can:</p>
       <ul>
         <li>🔹 Buy a plot of land for your spouse, parent, or loved one</li>
         <li>🔹 Start a joint investment with your partner</li>
@@ -60,14 +60,14 @@ export const valentineBlogPost = {
       <p>We have verified estates across <strong>Lagos, Ogun, and Asaba</strong> with properties starting from as low as <strong>₦500,000</strong>. Whether you're a first-time buyer or a seasoned investor, there's something for everyone.</p>
 
       <h3>🗣 Real Stories of Love Through Land</h3>
-      <p><em>"Last Valentine, my husband surprised me with a plot in one of PWAN Bridgefort's estates. Today, that land has doubled in value. It's the best gift I've ever received."</em> — Mrs. Adaeze O.</p>
-      <p><em>"I bought land for my mother as a birthday gift through PWAN Bridgefort. She cried tears of joy. That's what real love looks like."</em> — Mr. Chukwuemeka N.</p>
+      <p><em>"Last Valentine, my husband surprised me with a plot in one of Bridgefort Homes Development Ltd's estates. Today, that land has doubled in value. It's the best gift I've ever received."</em> — Mrs. Adaeze O.</p>
+      <p><em>"I bought land for my mother as a birthday gift through Bridgefort Homes Development Ltd. She cried tears of joy. That's what real love looks like."</em> — Mr. Chukwuemeka N.</p>
 
       <h3>💕 This Valentine, Choose Love That Lasts</h3>
       <p>Don't just tell them you love them — <strong>show them with value</strong>. A gift of land is a gift of security, wealth, and a future. Let this Valentine be the one where you made the smartest, most loving decision of your life.</p>
 
       <h3>📞 Take Action Today</h3>
-      <p>Contact PWAN Bridgefort to explore our Valentine property packages:</p>
+      <p>Contact Bridgefort Homes Development Ltd to explore our Valentine property packages:</p>
       <ul>
         <li>📱 Phone: +234-803-410-8432, +234-807-071-0688</li>
         <li>📧 Email: info@pwanbridgefort.ng</li>
@@ -75,13 +75,13 @@ export const valentineBlogPost = {
       </ul>
 
       <p class="text-center text-xl font-bold mt-8">❤️ Love Smart. Gift Land. Build Legacy. ❤️</p>
-      <p class="text-center"><strong>PWAN Bridgefort — Rebuilding the Future</strong></p>
+      <p class="text-center"><strong>Bridgefort Homes Development Ltd — Rebuilding the Future</strong></p>
 
       <p class="text-center text-sm mt-4"><em>#Valentine2026 #GiftOfLand #LoveInRealEstate #PWANBridgefort #AssetOverLiability #RealEstateLove #BuildWealth #LandIsLove</em></p>
     </div>
   `,
   category: 'Motivation',
-  author: 'PWAN Bridgefort Team',
+  author: 'Bridgefort Homes Development Ltd Team',
   publishedAt: new Date().toISOString(),
   featured: true,
   image: '/lovable-uploads/valentine-2026.jpeg'

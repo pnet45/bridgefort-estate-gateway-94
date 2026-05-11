@@ -19,10 +19,10 @@ const About = () => {
       <div className="py-8 bg-estate-blue bg-opacity-5 rounded-3xl my-[21px]">
         <div className="container-custom">
           <div className="text-center text-zinc-50">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">PWAN Bridgefort: Redefining Property Investment with Integrity, Expertise, and Lasting Value</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Bridgefort Homes Development Ltd: Redefining Property Investment with Integrity, Expertise, and Lasting Value</h2>
             <div className="w-20 h-1 bg-estate-red mx-auto mb-6"></div>
             <p className="text-lg text-white max-w-3xl mx-auto">
-              PWAN Bridgefort is one of Nigeria's leading real estate investment companies, 
+              Bridgefort Homes Development Ltd is one of Nigeria's leading real estate investment companies, 
               providing affordable land and housing solutions while helping individuals 
               build sustainable wealth through property ownership.
             </p>

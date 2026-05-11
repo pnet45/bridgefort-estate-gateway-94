@@ -29,7 +29,7 @@ const BlogHeader = () => {
       }}>
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/50 flex items-center">
           <div className="container-custom text-white">
-            <h1 className="text-3xl md:text-5xl font-bold mb-4">PWAN Bridgefort Blog</h1>
+            <h1 className="text-3xl md:text-5xl font-bold mb-4">Bridgefort Homes Development Ltd Blog</h1>
             <p className="text-xl max-w-2xl">
               Stay updated with the latest trends, events, and opportunities in Nigerian real estate.
             </p>

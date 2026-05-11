@@ -5,11 +5,11 @@ export const realEstateArticles = [
     excerpt: 'We are excited to officially inform you that your plot has been successfully demarcated and ready for allocation at Precious Gardens Scheme 1, Ebute-Okun, Ode-Omi, Ogun Waterside LGA.',
     content: `# 📍 Physical Allocation - Precious Gardens Estate Scheme 1
 
-*By Emmanuel Etokakpan | Admin Officer | PWAN Bridgefort Estates & Investment Ltd*
+*By Emmanuel Etokakpan | Admin Officer | Bridgefort Homes Development Ltd*
 
 Dear Valued Investors,
 
-We sincerely appreciate your trust and confidence in us at PWAN Bridgefort Estates and Investment Ltd. Thank you for choosing us as your real estate investment partner. Your patronage means a lot to us, and we are committed to serving you in your best interest.
+We sincerely appreciate your trust and confidence in us at Bridgefort Homes Development Ltd. Thank you for choosing us as your real estate investment partner. Your patronage means a lot to us, and we are committed to serving you in your best interest.
 
 ## 🎉 Your Plot is Ready for Allocation!
 
@@ -45,13 +45,13 @@ Located in the serene community of Ebute-Okun, Ode-Omi, in Ogun Waterside LGA, O
 
 ## 🎊 Congratulations on Your New Land Ownership!
 
-Once again, we congratulate you on your new land ownership and we look forward to celebrating this milestone achievement with you. Thank you for being a valued member of the PWAN Bridgefort family.
+Once again, we congratulate you on your new land ownership and we look forward to celebrating this milestone achievement with you. Thank you for being a valued member of the Bridgefort Homes Development Ltd family.
 
 ### 📞 Contact Information
 
 **Emmanuel Etokakpan**  
 Admin Officer  
-PWAN Bridgefort Estates & Investment Ltd  
+Bridgefort Homes Development Ltd  
 📱 07067318720 | 08083209655
 
 ---
@@ -59,7 +59,7 @@ PWAN Bridgefort Estates & Investment Ltd
 *...Rebuilding the future.*
 
 **Warm regards,**  
-The PWAN Bridgefort Team`,
+The Bridgefort Homes Development Ltd Team`,
     category: 'Estate Allocation',
     image: '/lovable-uploads/9979be2c-1112-4567-bbf9-d036d65b9a61.png',
     date: new Date().toISOString().split('T')[0],
@@ -99,7 +99,7 @@ These areas are not just "upcoming" — they are transforming before our eyes.
 
 ## 💬 A Call to Aspiring Investors
 
-If you've ever dreamed of owning a property in Lagos — the time is now. Delaying could mean watching prices slip beyond your reach. At PWAN Bridgefort Estates and Investment Ltd, we are helping individuals and families break free from rent traps by offering flexible daily, weekly, and monthly savings plans tailored to make land ownership stress-free and achievable.
+If you've ever dreamed of owning a property in Lagos — the time is now. Delaying could mean watching prices slip beyond your reach. At Bridgefort Homes Development Ltd, we are helping individuals and families break free from rent traps by offering flexible daily, weekly, and monthly savings plans tailored to make land ownership stress-free and achievable.
 
 Whether you're a first-time buyer or a seasoned investor, our mission is to make your journey smooth, transparent, and rewarding. Because in Lagos, owning property is not just a dream — it's a decision. One that pays for a lifetime.
 
@@ -154,7 +154,7 @@ Early investors are watching their plots double and triple in value. The future 
 9. They keep an eye on government infrastructure projects.
 10. They act — not wait.
 
-At PWAN Bridgefort Estates and Investment Ltd, we are helping hundreds of everyday Nigerians — salaried workers, small business owners, and young professionals — own land through our flexible Daily, Weekly, and Monthly Savings Plans. With just a 20% initial deposit, you can begin your journey toward true ownership and generational wealth.
+At Bridgefort Homes Development Ltd, we are helping hundreds of everyday Nigerians — salaried workers, small business owners, and young professionals — own land through our flexible Daily, Weekly, and Monthly Savings Plans. With just a 20% initial deposit, you can begin your journey toward true ownership and generational wealth.
 
 ## 📣 Final Word: Land Is the New Legacy
 
@@ -167,7 +167,7 @@ If there's one thing the rich understand, it's this: **Buy land. Wait. Let time 
 **🌐** Website: www.pwanbridgefort.ng  
 **📩** Email: info@pwanbridgefort.ng
 
-*PWAN Bridgefort — Rebuilding the Future, One Plot at a Time.*`,
+*Bridgefort Homes Development Ltd — Rebuilding the Future, One Plot at a Time.*`,
     category: 'Market Analysis',
     image: '/lovable-uploads/Homeslider2.png',
     date: '2025-07-23',
@@ -217,11 +217,11 @@ The fusion of technology and real estate is creating new windows of opportunity 
 But to fully tap into these opportunities, we need collaboration:
 - Between developers and tech startups
 - Between African talent and international capital
-- Between investors like you and trusted real estate brands like PWAN Bridgefort Estates and Investment Ltd
+- Between investors like you and trusted real estate brands like Bridgefort Homes Development Ltd
 
 ## 🚀 The Time to Own the Future Is Now
 
-At PWAN Bridgefort, we understand where the market is going. That's why we offer flexible subscription plans — daily, weekly, and monthly — to help everyday Nigerians and diaspora investors secure plots in fast-growing, infrastructure-rich locations.
+At Bridgefort Homes Development Ltd, we understand where the market is going. That's why we offer flexible subscription plans — daily, weekly, and monthly — to help everyday Nigerians and diaspora investors secure plots in fast-growing, infrastructure-rich locations.
 
 We are also adopting digital systems that simplify documentation, reduce fraud, and ensure full transparency in every transaction.
 
@@ -311,7 +311,7 @@ Government infrastructure projects significantly increase land values in surroun
 ### Limited Supply
 Prime developable land is finite, especially in major cities like Lagos, Abuja, and Port Harcourt.
 
-## PWAN Bridgefort's Land Banking Program
+## Bridgefort Homes Development Ltd's Land Banking Program
 
 ### Buy and Resell Model
 Our innovative Buy and Resell program offers:
@@ -375,7 +375,7 @@ Our clients have achieved remarkable returns through strategic land banking:
 4. **Partner with experienced professionals**
 5. **Start with smaller parcels for experience**
 
-Contact PWAN Bridgefort to explore land banking opportunities tailored to your investment goals.
+Contact Bridgefort Homes Development Ltd to explore land banking opportunities tailored to your investment goals.
     `,
     category: 'Investment Guide',
     date: '2025-01-05',
@@ -503,7 +503,7 @@ All our systems are optimized for mobile access, enabling business building anyw
 ### Return Projections
 Conservative estimates show potential for ₦100,000-₦500,000 monthly income within first year for dedicated participants.
 
-Ready to start your real estate network marketing journey? Join PWAN Bridgefort today and begin building generational wealth.
+Ready to start your real estate network marketing journey? Join Bridgefort Homes Development Ltd today and begin building generational wealth.
     `,
     category: 'Network Marketing',
     date: '2025-01-04',

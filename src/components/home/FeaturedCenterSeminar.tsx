@@ -30,12 +30,12 @@ const FeaturedCenterSeminar = () => {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 max-w-md">
                 <img
                   src="/images/dalvin-silva-seminar.jpeg"
-                  alt="Amb. Dalvin Silva - MD/CEO PWAN Bridgefort"
+                  alt="Amb. Dalvin Silva - MD/CEO Bridgefort Homes Development Ltd"
                   className="w-full h-auto object-cover"
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                   <p className="font-bold text-lg">Amb. Dalvin Silva</p>
-                  <p className="text-sm text-gray-300">MD/CEO, PWAN Bridgefort Estates & Investment Ltd.</p>
+                  <p className="text-sm text-gray-300">MD/CEO, Bridgefort Homes Development Ltd.</p>
                 </div>
               </div>
             </div>
@@ -125,7 +125,7 @@ const FeaturedCenterSeminar = () => {
                 <img src="/images/dalvin-silva-seminar.jpeg" alt="Dalvin Silva" className="w-16 h-16 rounded-full object-cover border-2 border-estate-red" />
                 <div>
                   <p className="font-bold text-lg">Amb. Dalvin Silva</p>
-                  <p className="text-muted-foreground">MD/CEO, PWAN Bridgefort Estates & Investment Ltd.</p>
+                  <p className="text-muted-foreground">MD/CEO, Bridgefort Homes Development Ltd.</p>
                 </div>
               </div>
             </div>

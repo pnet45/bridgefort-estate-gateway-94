@@ -153,7 +153,7 @@ export default function AdminEmailCenter() {
     const fromEmailLogs: UnifiedEmail[] = sentEmails.map(e => ({
       id: `log-${e.id}`,
       from_email: 'noreply@pwanbridgefort.ng',
-      from_name: 'PWAN Bridgefort',
+      from_name: 'Bridgefort Homes Development Ltd',
       to_email: e.recipient_email,
       to_name: e.recipient_name || '',
       subject: e.subject,
@@ -301,7 +301,7 @@ export default function AdminEmailCenter() {
     if (result.success) {
       await supabase.from('admin_emails').insert({
         from_email: 'noreply@pwanbridgefort.ng',
-        from_name: 'PWAN Bridgefort',
+        from_name: 'Bridgefort Homes Development Ltd',
         to_email: to,
         to_name: name || null,
         subject: subj,
@@ -334,7 +334,7 @@ export default function AdminEmailCenter() {
   const handleSaveDraft = async (to: string, name: string, subj: string, body: string) => {
     await supabase.from('admin_emails').insert({
       from_email: 'noreply@pwanbridgefort.ng',
-      from_name: 'PWAN Bridgefort',
+      from_name: 'Bridgefort Homes Development Ltd',
       to_email: to || 'draft',
       to_name: name || null,
       subject: subj || '(No Subject)',

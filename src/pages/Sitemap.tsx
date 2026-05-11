@@ -105,7 +105,7 @@ const Sitemap = () => {
               ))}
             </div>
             <div className="mt-10 text-xs text-center text-gray-400">
-              <p>PWAN Bridgefort Estate & Investment Ltd is a fully corporate e-commerce platform providing digital real estate, land banking, investment and education, fully compliant with Nigerian regulations and best global practice.</p>
+              <p>Bridgefort Homes Development Ltd is a fully corporate e-commerce platform providing digital real estate, land banking, investment and education, fully compliant with Nigerian regulations and best global practice.</p>
             </div>
           </div>
         </div>

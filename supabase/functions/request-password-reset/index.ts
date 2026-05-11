@@ -69,9 +69,9 @@ serve(async (req: Request) => {
 
     // Send OTP email
     await resend.emails.send({
-      from: "PWAN Bridgefort <noreply@pwanbridgefort.ng>",
+      from: "Bridgefort Homes Development Ltd <noreply@pwanbridgefort.ng>",
       to: [email],
-      subject: "Your Password Reset Code - PWAN Bridgefort",
+      subject: "Your Password Reset Code - Bridgefort Homes Development Ltd",
       html: `
         <!DOCTYPE html>
         <html>
@@ -81,7 +81,7 @@ serve(async (req: Request) => {
             </div>
             <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
               <p>Hello,</p>
-              <p>We received a request to reset your PWAN Bridgefort account password. Use the code below:</p>
+              <p>We received a request to reset your Bridgefort Homes Development Ltd account password. Use the code below:</p>
               <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; border: 2px dashed #1e40af;">
                 <p style="margin: 0 0 10px 0; color: #6b7280;">Your verification code is:</p>
                 <div style="font-size: 36px; font-weight: bold; color: #1e40af; letter-spacing: 8px;">${otpCode}</div>
@@ -95,7 +95,7 @@ serve(async (req: Request) => {
               </div>
               <p>If you didn't request this, please ignore this email.</p>
               <div style="text-align: center; padding: 20px; color: #a0aec0; font-size: 12px; border-top: 1px solid #e5e7eb; margin-top: 30px;">
-                <p><strong>PWAN Bridgefort</strong></p>
+                <p><strong>Bridgefort Homes Development Ltd</strong></p>
               </div>
             </div>
           </body>

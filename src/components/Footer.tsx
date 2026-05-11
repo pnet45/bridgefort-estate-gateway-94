@@ -11,8 +11,8 @@ const Footer = () => {
           {/* Company Info */}
           <div className="animate-fade-in text-left">
             <div className="mb-4">
-              <span className="text-2xl font-bold text-white font-montserrat">PWAN</span>
-              <span className="text-xl font-semibold text-estate-lightBlue font-montserrat ml-2">Bridgefort</span>
+              <span className="text-2xl font-bold text-white font-montserrat">Bridgefort</span>
+              <span className="text-xl font-semibold text-estate-lightBlue font-montserrat ml-2">Homes Development Ltd</span>
             </div>
             <p className="text-gray-300 mb-4">Your Gateway to Premium Real Estate Investments</p>
             <div className="flex space-x-4">
@@ -97,7 +97,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-800 mt-12 pt-8 animate-fade-in">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">© {new Date().getFullYear()} PWAN Bridgefort Estate and Investment Ltd. All rights reserved.</p>
+            <p className="text-gray-400 text-sm">© {new Date().getFullYear()} Bridgefort Homes Development Ltd. All rights reserved.</p>
             <div className="mt-4 md:mt-0 flex flex-wrap gap-4">
               <Link to="/privacy-policy" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">Privacy Policy</Link>
               <Link to="/terms-of-service" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">Terms of Service</Link>

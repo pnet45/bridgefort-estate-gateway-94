@@ -437,7 +437,7 @@ const AdminAuth = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Admin Portal</h1>
-              <p className="text-sm text-slate-400">PWAN Bridgefort Management</p>
+              <p className="text-sm text-slate-400">Bridgefort Homes Development Ltd Management</p>
             </div>
           </div>
           <Button
@@ -703,7 +703,7 @@ const AdminAuth = () => {
 
       {/* Footer */}
       <div className="py-4 text-center text-slate-500 text-sm">
-        <p>© {new Date().getFullYear()} PWAN Bridgefort Estate and Investment Ltd.</p>
+        <p>© {new Date().getFullYear()} Bridgefort Homes Development Ltd.</p>
       </div>
       
       <Toaster />

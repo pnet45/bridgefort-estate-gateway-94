@@ -4,9 +4,9 @@ const WhyJoinUs = () => {
   return <section className="bg-white py-[27px]">
       <div className="container-custom">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Why Join PWAN Bridgefort</h2>
+          <h2 className="text-3xl font-bold mb-4">Why Join Bridgefort Homes Development Ltd</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            We're more than just a real estate company. At PWAN Bridgefort, we're building communities 
+            We're more than just a real estate company. At Bridgefort Homes Development Ltd, we're building communities 
             and creating opportunities for people to thrive both professionally and personally.
           </p>
         </div>

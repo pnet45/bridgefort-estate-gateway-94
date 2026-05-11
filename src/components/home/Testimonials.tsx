@@ -7,7 +7,7 @@ const testimonials = [
   {
     name: 'Solomon Innocent',
     role: 'Property Investor',
-    testimonial: 'Working with PWAN Bridgefort has been an excellent experience. They helped me find the perfect investment property with great ROI potential.',
+    testimonial: 'Working with Bridgefort Homes Development Ltd has been an excellent experience. They helped me find the perfect investment property with great ROI potential.',
     rating: 5,
     imageUrl: '/lovable-uploads/b752dea1-17e7-4589-a41f-cf145beb29aa.png'
   },
@@ -21,7 +21,7 @@ const testimonials = [
   {
     name: 'Jacob Oluwaseun',
     role: 'PWAN Business Owner',
-    testimonial: 'I purchased a commercial property through PWAN Bridgefort and the return on investment has been incredible. Their market knowledge is outstanding.',
+    testimonial: 'I purchased a commercial property through Bridgefort Homes Development Ltd and the return on investment has been incredible. Their market knowledge is outstanding.',
     rating: 4,
     imageUrl: '/lovable-uploads/f27b5aee-88b8-457a-ba3a-45bff68f8d85.png'
   }
@@ -33,7 +33,7 @@ const Testimonials = () => {
       <div className="container-custom">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Client Testimonials</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">Hear what our satisfied clients have to say about their experience with PWAN Bridgefort.</p>
+          <p className="text-gray-600 max-w-2xl mx-auto">Hear what our satisfied clients have to say about their experience with Bridgefort Homes Development Ltd.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

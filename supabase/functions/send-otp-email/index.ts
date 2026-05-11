@@ -24,9 +24,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending OTP to ${email}`);
 
     const emailResponse = await resend.emails.send({
-      from: "PWAN Bridgefort <noreply@pwanbridgefort.ng>",
+      from: "Bridgefort Homes Development Ltd <noreply@pwanbridgefort.ng>",
       to: [email],
-      subject: "Your Password Reset Code - PWAN Bridgefort",
+      subject: "Your Password Reset Code - Bridgefort Homes Development Ltd",
       html: `
         <!DOCTYPE html>
         <html>
@@ -90,7 +90,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div class="content">
               <p>Hello,</p>
               
-              <p>We received a request to reset your PWAN Bridgefort account password. Use the code below to complete the process:</p>
+              <p>We received a request to reset your Bridgefort Homes Development Ltd account password. Use the code below to complete the process:</p>
               
               <div class="otp-box">
                 <p style="margin: 0 0 10px 0; color: #6b7280;">Your verification code is:</p>
@@ -102,14 +102,14 @@ const handler = async (req: Request): Promise<Response> => {
                 <ul style="margin: 10px 0 0 0; padding-left: 20px;">
                   <li>This code expires in 10 minutes</li>
                   <li>Never share this code with anyone</li>
-                  <li>PWAN Bridgefort staff will never ask for this code</li>
+                  <li>Bridgefort Homes Development Ltd staff will never ask for this code</li>
                 </ul>
               </div>
               
               <p>If you didn't request this password reset, please ignore this email or contact our support team immediately.</p>
               
               <div class="footer">
-                <p><strong>PWAN Bridgefort</strong></p>
+                <p><strong>Bridgefort Homes Development Ltd</strong></p>
                 <p>...Rebuilding the Future</p>
                 <p style="margin-top: 10px;">
                   Need help? Contact us at <a href="mailto:support@pwanbridgefort.ng" style="color: #1e40af;">support@pwanbridgefort.ng</a>

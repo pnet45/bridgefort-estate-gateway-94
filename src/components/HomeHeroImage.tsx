@@ -15,8 +15,8 @@ const FALLBACK_SLIDES = [
   '/lovable-uploads/PropertyHero.png',
 ];
 
-const FALLBACK_TITLE = "PWAN Bridgefort. ...Rebuilding the Future!";
-const FALLBACK_SUBTITLE = "At PWAN Bridgefort, we're not just selling properties—we're building legacies.";
+const FALLBACK_TITLE = "Bridgefort Homes Development Ltd. ...Rebuilding the Future!";
+const FALLBACK_SUBTITLE = "At Bridgefort Homes Development Ltd, we're not just selling properties—we're building legacies.";
 
 const TEXT_EFFECTS = [
   'animate-fade-in',
@@ -64,7 +64,7 @@ const HomeHeroImage = () => {
       <div className="h-full relative overflow-hidden">
         <img 
           src={heroImages[currentSlide]} 
-          alt={`PWAN Bridgefort Hero Image ${currentSlide + 1}`}
+          alt={`Bridgefort Homes Development Ltd Hero Image ${currentSlide + 1}`}
           className="w-full h-full object-cover transition-all duration-1000 ease-in-out"
           loading="lazy"
           onError={(e) => { (e.target as HTMLImageElement).src = '/lovable-uploads/PropertyHero.png'; }}

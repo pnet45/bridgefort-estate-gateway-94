@@ -11,7 +11,7 @@ INSERT INTO training_events (
   featured
 ) VALUES (
   'SALES MASTER CLASS 2025',
-  '10 Strategies for Generating Leads, Prospects & Customers - Come and learn the strategies for converting leads to customers and closing consistent deals. Speaker: Dalvin Silva, PhD (MD/CEO PWAN Bridgefort). Hosts: Ambassador Emeka Nwalozie, Ambassador Leonard Izuegbu.',
+  '10 Strategies for Generating Leads, Prospects & Customers - Come and learn the strategies for converting leads to customers and closing consistent deals. Speaker: Dalvin Silva, PhD (MD/CEO Bridgefort Homes Development Ltd). Hosts: Ambassador Emeka Nwalozie, Ambassador Leonard Izuegbu.',
   '2025-11-25',
   '10:00 AM',
   'BRIDGEFORT PBO REALTORS CENTRE (PWAN BRIDGEFORT ESTATES), SUITE B, RIGHT WING, GACOUN PLAZA, OPPOSITE K CLOSE, 23 ROAD, FESTAC TOWN, LAGOS',

@@ -5,13 +5,13 @@ const WhyRealEstate = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
             <h2 className="text-3xl font-bold mb-6 text-estate-blue">
-              Unlock the Future with PWAN Bridgefort Estates & Investment Ltd
+              Unlock the Future with Bridgefort Homes Development Ltd
             </h2>
             <p className="text-gray-700 mb-6">
               Did you know that over 90% of the world's millionaires have built wealth through real estate? In Nigeria, real estate is not just a wealth creation tool; it's a hedge against inflation, a symbol of generational wealth, and a cornerstone of economic growth. With Nigeria's urban population set to double by 2050, the demand for quality housing and strategically located properties has never been higher.
             </p>
             <p className="text-gray-700 mb-6">
-              At PWAN Bridgefort Estates & Investment Ltd, we're not just selling properties—we're building legacies. We provide secure, affordable, and strategically located real estate solutions designed to help you achieve financial freedom and secure your future.
+              At Bridgefort Homes Development Ltd, we're not just selling properties—we're building legacies. We provide secure, affordable, and strategically located real estate solutions designed to help you achieve financial freedom and secure your future.
             </p>
 
             <h3 className="text-2xl font-bold mb-4">Why Real Estate, Why Now?</h3>
@@ -41,9 +41,9 @@ const WhyRealEstate = () => {
           </div>
           <div>
             <img alt="Real Estate Investment" className="w-full h-auto rounded-lg shadow-lg mb-8 hover:scale-[1.02] transition-transform duration-300 object-scale-down" src="/lovable-uploads/0894eeae-21d6-4870-ada2-1d871b045dee.jpg" />
-            <h3 className="text-2xl font-bold mb-4">Why Choose PWAN Bridgefort?</h3>
+            <h3 className="text-2xl font-bold mb-4">Why Choose Bridgefort Homes Development Ltd?</h3>
             <p className="text-gray-700 mb-6">
-              At PWAN Bridgefort, we stand out because of our unwavering commitment to excellence, transparency, and customer satisfaction. With estates strategically located in high-demand areas, we ensure our clients get maximum returns on investment (ROI) while enjoying the peace of mind that comes with secure land ownership.
+              At Bridgefort Homes Development Ltd, we stand out because of our unwavering commitment to excellence, transparency, and customer satisfaction. With estates strategically located in high-demand areas, we ensure our clients get maximum returns on investment (ROI) while enjoying the peace of mind that comes with secure land ownership.
             </p>
 
             <h3 className="text-2xl font-bold mb-4">Our Unique Offerings:</h3>

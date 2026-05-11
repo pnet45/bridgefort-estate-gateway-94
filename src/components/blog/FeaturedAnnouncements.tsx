@@ -1,7 +1,7 @@
 import React from "react";
 const announcementItems = [
   {
-    title: "PWAN Bridgefort Delivers Again: Land Allocation at Ode-Omi Estates",
+    title: "Bridgefort Homes Development Ltd Delivers Again: Land Allocation at Ode-Omi Estates",
     text: "Successful physical allocation and handover of plots at Precious Gardens Estate and The Ambassadors Parks and Gardens Estate, Ode-Omi, Ogun State. Clients stepped onto their lands with excitement!",
     img: "/images/allocation-1.jpg",
     cta: {
@@ -10,7 +10,7 @@ const announcementItems = [
     }
   },
   {
-  title: "PWAN Bridgefort Celebrates Customer Service Week",
+  title: "Bridgefort Homes Development Ltd Celebrates Customer Service Week",
   text: "Exciting value-driven activities from October 6-10, 2025! Join us as we celebrate service excellence with client appreciation visits, recognition events, and special goodwill gestures to our valued investors.",
   img: "/lovable-uploads/Happy new week.png",
   cta: {
@@ -34,7 +34,7 @@ const announcementItems = [
     url: "/career"
   }
 }, {
-  title: "PWAN Bridgefort Company News",
+  title: "Bridgefort Homes Development Ltd Company News",
   text: "Congratulations to our outstanding staff and partners for record-breaking property sales in 2025!",
   img: "/lovable-uploads/Bridgefort County - Ikota .jpg",
   cta: null
