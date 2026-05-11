@@ -62,7 +62,7 @@ const CoreValues = () => {
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold mb-4">OUR CORE VALUES</h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
-            Each letter in PWAN BRIDGEFORT symbolizes the pillars upon which our company stands—principles that guide our actions, influence our culture, and define how we deliver value across the real estate ecosystem.
+            Each letter in BRIDGEFORT HOMES DEVELOPMENT LTD symbolizes the pillars upon which our company stands—principles that guide our actions, influence our culture, and define how we deliver value across the real estate ecosystem.
           </p>
         </div>
 

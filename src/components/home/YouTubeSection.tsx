@@ -18,7 +18,7 @@ const YouTubeSection = () => {
               width="100%" 
               height="100%" 
               src="https://www.youtube.com/embed/MJE8Xf-4NrI" 
-              title="PWAN BRIDGEFORT TV - Precious Gardens Scheme 1 Ext" 
+              title="BRIDGEFORT HOMES DEVELOPMENT LTD TV - Precious Gardens Scheme 1 Ext" 
               frameBorder="0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
               referrerPolicy="strict-origin-when-cross-origin" 

@@ -119,7 +119,7 @@ const PropertyDetailsDialogFullscreen = ({
   const getEstateDetails = (propertyTitle: string) => {
     if (propertyTitle === "Hampton Court Estate – Phase 3") {
       return {
-        companyInfo: { name: "PWAN BRIDGEFORT ESTATES & INVESTMENT LTD", rc: "RC 7150756", address: "Plot 117, W. O. Seriki Street, Eleganza Gardens Estate, VGC Bus Stop, Lekki-Epe Expressway, Ajah, Lagos State", vision: "To make land and home ownership dream a reality for all and rebuilding the future of real estate services", awards: ["MOST IMPACTFUL CEO AWARD", "UPCOMING REAL ESTATE FIRM OF THE YEAR", "CUSTOMER SERVICE PROFESSIONAL OF THE YEAR", "MOST SOLUTION DRIVEN COMPANY"], estates: ["Precious Gardens", "Fortress Hills", "Hampton Ville", "Fountain Springs", "The Ambassadors", "Big League", "Bridgefort Luxury", "Olanma Gardens", "Akuchi Luxury", "Afaoma Estate Series", "Hampton Court"] },
+        companyInfo: { name: "BRIDGEFORT HOMES DEVELOPMENT LTD", rc: "RC 7150756", address: "Plot 117, W. O. Seriki Street, Eleganza Gardens Estate, VGC Bus Stop, Lekki-Epe Expressway, Ajah, Lagos State", vision: "To make land and home ownership dream a reality for all and rebuilding the future of real estate services", awards: ["MOST IMPACTFUL CEO AWARD", "UPCOMING REAL ESTATE FIRM OF THE YEAR", "CUSTOMER SERVICE PROFESSIONAL OF THE YEAR", "MOST SOLUTION DRIVEN COMPANY"], estates: ["Precious Gardens", "Fortress Hills", "Hampton Ville", "Fountain Springs", "The Ambassadors", "Big League", "Bridgefort Luxury", "Olanma Gardens", "Akuchi Luxury", "Afaoma Estate Series", "Hampton Court"] },
         location: "Omilende Community, Via Edu Town, Agbara, Ogun State",
         coordinates: "Represented on each survey plan",
         landmarks: ["Lagos - Badagry Expressway", "Crown City Resort", "Agbara Industrial Estate", "Loral International Schools", "Unilever Nigeria Plc", "Nestle Nigeria Plc", "Chinese Free Trade Zone", "Crawford University", "Opic Estate", "Idioke Palace", "Magistrate & High Court", "Lagos State University College of Education"],
@@ -133,7 +133,7 @@ const PropertyDetailsDialogFullscreen = ({
     }
     if (propertyTitle === "Akuchi Luxury Estate") {
       return {
-        companyInfo: { name: "PWAN BRIDGEFORT ESTATES & INVESTMENT LTD", rc: "RC 7150756", address: "Plot 117, W. O. Seriki Street, Eleganza Gardens Estate, VGC Bus Stop, Lekki-Epe Expressway, Ajah, Lagos State", vision: "To make land and home ownership dream a reality for all", awards: ["MOST IMPACTFUL CEO AWARD", "UPCOMING REAL ESTATE FIRM OF THE YEAR"], estates: ["Precious Gardens", "Fortress Hills", "Hampton Ville", "Fountain Springs", "Akuchi Luxury"] },
+        companyInfo: { name: "BRIDGEFORT HOMES DEVELOPMENT LTD", rc: "RC 7150756", address: "Plot 117, W. O. Seriki Street, Eleganza Gardens Estate, VGC Bus Stop, Lekki-Epe Expressway, Ajah, Lagos State", vision: "To make land and home ownership dream a reality for all", awards: ["MOST IMPACTFUL CEO AWARD", "UPCOMING REAL ESTATE FIRM OF THE YEAR"], estates: ["Precious Gardens", "Fortress Hills", "Hampton Ville", "Fountain Springs", "Akuchi Luxury"] },
         location: "Ifite, Awka - Egbagu Road Community, Awka, Anambra State",
         coordinates: "6.280997, 7.114474",
         landmarks: ["NYSC Anambra Permanent Orientation Camp", "Nnamdi Azikiwe University Back Gate", "Wintess Garden Hotel & Suites", "Government Reserved Area (GRA)"],
