@@ -11,8 +11,8 @@ const Footer = () => {
           {/* Company Info */}
           <div className="animate-fade-in text-left">
             <div className="mb-4">
-              <span className="text-2xl font-bold text-white font-montserrat">PWAN</span>
-              <span className="text-xl font-semibold text-estate-lightBlue font-montserrat ml-2">Bridgefort</span>
+              <span className="text-2xl font-bold text-white font-montserrat">Bridgefort</span>
+              <span className="text-xl font-semibold text-estate-lightBlue font-montserrat ml-2">Homes Development Ltd</span>
             </div>
             <p className="text-gray-300 mb-4">Your Gateway to Premium Real Estate Investments</p>
             <div className="flex space-x-4">
