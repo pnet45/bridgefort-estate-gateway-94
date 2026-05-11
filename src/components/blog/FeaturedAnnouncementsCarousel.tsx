@@ -260,13 +260,13 @@ const FeaturedAnnouncementsCarousel = () => {
             {currentItems.map((item, i) => (
               <div 
                 key={item.id} 
-                className={`rounded-lg overflow-hidden shadow bg-gray-50 flex flex-col transition-all ${animations[Math.floor(Math.random() * animations.length)]}`}
+                className={`rounded-lg overflow-hidden shadow bg-gray-50 flex flex-col sm:flex-row transition-all ${animations[Math.floor(Math.random() * animations.length)]}`}
               >
-                <div className="h-44 overflow-hidden">
+                <div className="sm:w-2/5 h-56 sm:h-auto sm:min-h-[280px] bg-gray-100 flex items-center justify-center overflow-hidden">
                   <img 
                     src={item.img} 
                     alt={item.title} 
-                    className="w-full h-full object-cover" 
+                    className="w-full h-full object-contain" 
                     loading="lazy"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -274,7 +274,7 @@ const FeaturedAnnouncementsCarousel = () => {
                     }}
                   />
                 </div>
-                <div className="p-6 flex flex-col flex-grow">
+                <div className="sm:w-3/5 p-6 flex flex-col flex-grow">
                   <h3 className="font-bold text-xl text-estate-blue mb-2">{item.title}</h3>
                   <p className="text-gray-700 mb-3 flex-grow">{item.text}</p>
                   <button 
