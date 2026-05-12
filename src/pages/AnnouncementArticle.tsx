@@ -19,6 +19,24 @@ const setMeta = (name: string, content: string, attr: 'name' | 'property' = 'nam
   el.setAttribute('content', content);
 };
 
+const setJsonLd = (data: object) => {
+  const id = 'announcement-article-jsonld';
+  let el = document.head.querySelector<HTMLScriptElement>(`script[id="${id}"]`);
+  if (!el) {
+    el = document.createElement('script');
+    el.type = 'application/ld+json';
+    el.id = id;
+    document.head.appendChild(el);
+  }
+  el.textContent = JSON.stringify(data);
+};
+
+const removeJsonLd = () => {
+  const id = 'announcement-article-jsonld';
+  const el = document.head.querySelector<HTMLScriptElement>(`script[id="${id}"]`);
+  if (el) el.remove();
+};
+
 const AnnouncementArticle = () => {
   const { id } = useParams<{ id: string }>();
   const article = id ? getAnnouncementById(id) : undefined;
@@ -26,6 +44,7 @@ const AnnouncementArticle = () => {
   useEffect(() => {
     if (!article) {
       document.title = 'Announcement Not Found | Bridgefort Homes Development Ltd';
+      removeJsonLd();
       return;
     }
     const url = typeof window !== 'undefined' ? window.location.href : '';
@@ -50,6 +69,36 @@ const AnnouncementArticle = () => {
       document.head.appendChild(canonical);
     }
     canonical.href = url;
+
+    setJsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: article.title,
+      description: desc,
+      image: article.img,
+      url: url,
+      author: {
+        '@type': 'Organization',
+        name: 'Bridgefort Homes Development Ltd',
+        url: 'https://pwanbridgefort.ng',
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Bridgefort Homes Development Ltd',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://pwanbridgefort.ng/lovable-uploads/PropertyHero.png',
+        },
+      },
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': url,
+      },
+    });
+
+    return () => {
+      removeJsonLd();
+    };
   }, [article]);
 
   const handleShare = async () => {
