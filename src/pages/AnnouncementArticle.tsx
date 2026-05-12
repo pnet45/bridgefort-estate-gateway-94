@@ -47,11 +47,17 @@ const AnnouncementArticle = () => {
   useEffect(() => {
     if (!article) {
       document.title = 'Announcement Not Found | Bridgefort Homes Development Ltd';
-      removeJsonLd();
+      removeJsonLd(ARTICLE_LD_ID);
+      removeJsonLd(BREADCRUMB_LD_ID);
       return;
     }
     const url = typeof window !== 'undefined' ? window.location.href : '';
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const desc = article.text.slice(0, 158);
+    const plainText = stripHtml(article.fullContent);
+    const wordCount = plainText ? plainText.split(/\s+/).length : 0;
+    const datePublished = article.datePublished || new Date().toISOString().slice(0, 10);
+    const dateModified = article.dateModified || datePublished;
 
     document.title = `${article.title} | Bridgefort Homes Development Ltd`;
     setMeta('description', desc);
@@ -60,6 +66,9 @@ const AnnouncementArticle = () => {
     setMeta('og:type', 'article', 'property');
     setMeta('og:image', article.img, 'property');
     setMeta('og:url', url, 'property');
+    setMeta('og:site_name', 'Bridgefort Homes Development Ltd', 'property');
+    setMeta('article:published_time', datePublished, 'property');
+    setMeta('article:modified_time', dateModified, 'property');
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', article.title);
     setMeta('twitter:description', desc);
@@ -73,13 +82,16 @@ const AnnouncementArticle = () => {
     }
     canonical.href = url;
 
-    setJsonLd({
+    setJsonLd(ARTICLE_LD_ID, {
       '@context': 'https://schema.org',
       '@type': 'Article',
       headline: article.title,
       description: desc,
       image: article.img,
       url: url,
+      datePublished,
+      dateModified,
+      wordCount,
       author: {
         '@type': 'Organization',
         name: 'Bridgefort Homes Development Ltd',
@@ -99,8 +111,19 @@ const AnnouncementArticle = () => {
       },
     });
 
+    setJsonLd(BREADCRUMB_LD_ID, {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: origin || '/' },
+        { '@type': 'ListItem', position: 2, name: 'Announcements', item: `${origin}/#announcements` },
+        { '@type': 'ListItem', position: 3, name: article.title, item: url },
+      ],
+    });
+
     return () => {
-      removeJsonLd();
+      removeJsonLd(ARTICLE_LD_ID);
+      removeJsonLd(BREADCRUMB_LD_ID);
     };
   }, [article]);
 
