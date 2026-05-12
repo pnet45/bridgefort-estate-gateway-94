@@ -4,6 +4,8 @@ export interface AnnouncementItem {
   text: string;
   img: string;
   fullContent: string;
+  datePublished?: string;
+  dateModified?: string;
 }
 
 export const announcementItems: AnnouncementItem[] = [
