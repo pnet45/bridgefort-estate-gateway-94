@@ -19,8 +19,7 @@ const setMeta = (name: string, content: string, attr: 'name' | 'property' = 'nam
   el.setAttribute('content', content);
 };
 
-const setJsonLd = (data: object) => {
-  const id = 'announcement-article-jsonld';
+const setJsonLd = (id: string, data: object) => {
   let el = document.head.querySelector<HTMLScriptElement>(`script[id="${id}"]`);
   if (!el) {
     el = document.createElement('script');
@@ -31,11 +30,15 @@ const setJsonLd = (data: object) => {
   el.textContent = JSON.stringify(data);
 };
 
-const removeJsonLd = () => {
-  const id = 'announcement-article-jsonld';
+const removeJsonLd = (id: string) => {
   const el = document.head.querySelector<HTMLScriptElement>(`script[id="${id}"]`);
   if (el) el.remove();
 };
+
+const ARTICLE_LD_ID = 'announcement-article-jsonld';
+const BREADCRUMB_LD_ID = 'announcement-breadcrumb-jsonld';
+
+const stripHtml = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
 const AnnouncementArticle = () => {
   const { id } = useParams<{ id: string }>();
