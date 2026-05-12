@@ -8,6 +8,19 @@ import Footer from '@/components/Footer';
 import BlogDetail from '@/components/blog/BlogDetail';
 import BlogNewsletter from '@/components/blog/BlogNewsletter';
 import PhoneContactBar from '@/components/PhoneContactBar';
+import { realEstateArticles } from '@/data/realEstateContent';
+
+// Convert markdown-ish content to basic HTML for rendering in BlogDetail
+const markdownToHtml = (content: string) =>
+  content
+    .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mb-2 text-estate-brown mt-6">$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mb-3 text-estate-blue mt-8">$1</h2>')
+    .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mb-4 text-estate-blue">$1</h1>')
+    .replace(/^\s*[-*] (.*)$/gm, '<li class="mb-1">$1</li>')
+    .replace(/(<li[\s\S]*?<\/li>)(\n(?!<li))/g, '<ul class="list-disc pl-7 my-4">$1</ul>$2')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n\n/g, '</p><p class="mb-4">');
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +34,25 @@ const BlogPost = () => {
       try {
         setLoading(true);
 
-        // 1. Fetch the post itself (NO join)
+        // 1. First check static realEstateArticles by id
+        const staticArticle = realEstateArticles.find((a: any) => a.id === id);
+        if (staticArticle) {
+          setPost({
+            id: staticArticle.id,
+            title: staticArticle.title,
+            excerpt: staticArticle.excerpt,
+            content: `<p class="mb-4">${markdownToHtml(staticArticle.content)}</p>`,
+            category: staticArticle.category,
+            image_path: staticArticle.image,
+            created_at: staticArticle.date,
+          });
+          setAuthorProfile({ first_name: 'Bridgefort', last_name: 'Homes' });
+          setError(null);
+          setLoading(false);
+          return;
+        }
+
+        // 2. Fall back to Supabase posts table
         const { data, error } = await supabase
           .from('posts')
           .select('*')
@@ -37,7 +68,6 @@ const BlogPost = () => {
         } else {
           setPost(data);
           setError(null);
-          // 2. Optionally fetch author profile if author_id exists
           if (data.author_id) {
             const { data: profile, error: profileError } = await supabase
               .from('profiles')
