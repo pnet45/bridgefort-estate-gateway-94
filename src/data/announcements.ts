@@ -4,11 +4,14 @@ export interface AnnouncementItem {
   text: string;
   img: string;
   fullContent: string;
+  datePublished?: string;
+  dateModified?: string;
 }
 
 export const announcementItems: AnnouncementItem[] = [
   {
     id: "ode-omi-land-allocation-2026",
+    datePublished: "2026-01-15",
     title: "Bridgefort Homes Development Ltd Delivers Again: Successful Land Allocation at Ode-Omi Estates",
     text: "Bridgefort Homes Development Ltd proudly celebrates the successful physical allocation and handover of plots to clients at Precious Gardens Estate and The Ambassadors Parks and Gardens Estate, Ode-Omi, Ogun State.",
     img: "/images/allocation-1.jpg",
@@ -54,6 +57,7 @@ export const announcementItems: AnnouncementItem[] = [
   },
   {
     id: "customer-service-week-2025",
+    datePublished: "2025-10-06",
     title: "Bridgefort Homes Development Ltd Celebrates Customer Service Week",
     text: "Exciting value-driven activities from October 6-10, 2025! Join us as we celebrate service excellence with client appreciation visits, recognition events, and special goodwill gestures to our valued investors.",
     img: "/lovable-uploads/Happy new week.png",
@@ -91,6 +95,7 @@ export const announcementItems: AnnouncementItem[] = [
   },
   {
     id: "fortress-hills-allocation-october-2025",
+    datePublished: "2025-10-01",
     title: "Fortress Hills Allocation - This October 2025",
     text: "Exciting news! Physical allocation for Fortress Hills Estate is happening this October 2025. All subscribers who have completed their payments are invited to the allocation ceremony.",
     img: "/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf",
@@ -134,6 +139,7 @@ export const announcementItems: AnnouncementItem[] = [
   },
   {
     id: "precious-gardens-allocation",
+    datePublished: "2025-09-01",
     title: "Physical Allocation - Precious Gardens Estate Scheme 1",
     text: "Your plot has been successfully demarcated and ready for allocation! Allocation Day: Saturday, 20th September 2025 at 9:00 AM. Documents ready for pickup on the same day.",
     img: "/lovable-uploads/9979be2c-1112-4567-bbf9-d036d65b9a61.png",
@@ -160,6 +166,7 @@ export const announcementItems: AnnouncementItem[] = [
   },
   {
     id: "hiring-executives",
+    datePublished: "2025-08-01",
     title: "Join Our Team: We're Hiring Marketing & Sales Executives",
     text: "We are recruiting goal-driven and passionate Marketing and Sales Executives for immediate employment (remuneration is very attractive: basic salary and commissions).",
     img: "/lovable-uploads/e36d5fd8-2846-41e4-a03b-16f1a93f04df.png",

@@ -45,10 +45,13 @@ const HomeHeroImage = () => {
     fetchSlides();
   }, []);
 
+  const sanitizeBrand = (s: string | null | undefined) =>
+    (s || '').replace(/PWAN\s*Bridgefort(?:\s+Estates?\s*&\s*Investment\s*Ltd\.?)?/gi, 'Bridgefort Homes');
+
   const heroImages = slides.length > 0 ? slides.map(s => s.image_url) : FALLBACK_SLIDES;
   const currentSlideData = slides[currentSlide];
-  const heroTitle = currentSlideData?.title || FALLBACK_TITLE;
-  const heroSubtitle = currentSlideData?.subtitle || FALLBACK_SUBTITLE;
+  const heroTitle = sanitizeBrand(currentSlideData?.title) || FALLBACK_TITLE;
+  const heroSubtitle = sanitizeBrand(currentSlideData?.subtitle) || FALLBACK_SUBTITLE;
 
   useEffect(() => {
     const interval = setInterval(() => {
