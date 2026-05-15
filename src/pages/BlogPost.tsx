@@ -103,6 +103,93 @@ const BlogPost = () => {
     mergedPost = { ...post, profiles: authorProfile };
   }
 
+  // SEO + JSON-LD (Article + BreadcrumbList) injection
+  useEffect(() => {
+    if (!mergedPost) return;
+
+    const ARTICLE_LD_ID = 'blog-article-jsonld';
+    const BREADCRUMB_LD_ID = 'blog-breadcrumb-jsonld';
+    const url = `${window.location.origin}/blog/${mergedPost.id}`;
+    const authorName = authorProfile
+      ? `${authorProfile.first_name ?? ''} ${authorProfile.last_name ?? ''}`.trim() || 'Bridgefort Homes Development Ltd'
+      : 'Bridgefort Homes Development Ltd';
+
+    // Strip HTML to compute wordCount
+    const plain = (mergedPost.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const wordCount = plain ? plain.split(' ').length : 0;
+
+    document.title = `${mergedPost.title} | Bridgefort Homes Development Ltd`;
+
+    const setMeta = (key: string, value: string, attr: 'name' | 'property' = 'name') => {
+      let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', value);
+    };
+
+    setMeta('description', mergedPost.excerpt || mergedPost.title);
+    setMeta('og:title', mergedPost.title, 'property');
+    setMeta('og:description', mergedPost.excerpt || mergedPost.title, 'property');
+    setMeta('og:image', mergedPost.image_path || '', 'property');
+    setMeta('og:url', url, 'property');
+    setMeta('og:type', 'article', 'property');
+    setMeta('article:published_time', mergedPost.created_at, 'property');
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', mergedPost.title);
+    setMeta('twitter:description', mergedPost.excerpt || mergedPost.title);
+    if (mergedPost.image_path) setMeta('twitter:image', mergedPost.image_path);
+
+    const setJsonLd = (id: string, data: object) => {
+      let el = document.getElementById(id) as HTMLScriptElement | null;
+      if (!el) {
+        el = document.createElement('script');
+        el.id = id;
+        el.type = 'application/ld+json';
+        document.head.appendChild(el);
+      }
+      el.text = JSON.stringify(data);
+    };
+
+    setJsonLd(ARTICLE_LD_ID, {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: mergedPost.title,
+      description: mergedPost.excerpt,
+      image: mergedPost.image_path ? [mergedPost.image_path] : undefined,
+      datePublished: mergedPost.created_at,
+      dateModified: mergedPost.updated_at || mergedPost.created_at,
+      wordCount,
+      author: { '@type': 'Person', name: authorName },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Bridgefort Homes Development Ltd',
+        logo: {
+          '@type': 'ImageObject',
+          url: `${window.location.origin}/placeholder.svg`,
+        },
+      },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    });
+
+    setJsonLd(BREADCRUMB_LD_ID, {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: window.location.origin },
+        { '@type': 'ListItem', position: 2, name: 'Blog', item: `${window.location.origin}/blog` },
+        { '@type': 'ListItem', position: 3, name: mergedPost.title, item: url },
+      ],
+    });
+
+    return () => {
+      document.getElementById(ARTICLE_LD_ID)?.remove();
+      document.getElementById(BREADCRUMB_LD_ID)?.remove();
+    };
+  }, [mergedPost, authorProfile]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
