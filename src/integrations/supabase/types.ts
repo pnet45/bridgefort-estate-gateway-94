@@ -2310,9 +2310,7 @@ export type Database = {
               last_name: string
             }[]
           }
-      has_role:
-        | { Args: { _role: string; _user_id: string }; Returns: boolean }
-        | { Args: { role_name: string }; Returns: boolean }
+      has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_account_locked: {
         Args: {
           check_email: string
