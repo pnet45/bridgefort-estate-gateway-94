@@ -19,7 +19,7 @@ const LogoSlideIn = () => {
       <img
         src="/lovable-uploads/BridgefortHomesLogo.png"
         alt="Bridgefort Homes Development Ltd Logo"
-        className={`h-13 w-auto transition-all duration-2000 ease-out ${
+        className={`h-10 w-auto transition-all duration-2000 ease-out ${
           isVisible 
             ? 'transform translate-x-0 opacity-100' 
             : 'transform -translate-x-full opacity-0'
