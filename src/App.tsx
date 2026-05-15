@@ -46,6 +46,8 @@ import AdminConsole from '@/pages/AdminConsole';
 import Listings from '@/pages/Listings';
 import ListingDetails from '@/pages/ListingDetails';
 import AnnouncementArticle from '@/pages/AnnouncementArticle';
+import LocationsIndex from '@/pages/LocationsIndex';
+import LocationLanding from '@/pages/LocationLanding';
 
 import './App.css';
 
@@ -81,6 +83,8 @@ function App() {
                 <Route path="/listings" element={<Listings />} />
                 <Route path="/listings/:id" element={<ListingDetails />} />
                 <Route path="/announcements/:id" element={<AnnouncementArticle />} />
+                <Route path="/locations" element={<LocationsIndex />} />
+                <Route path="/locations/:slug" element={<LocationLanding />} />
                 <Route path="/buy2sell" element={<Buy2Sell />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
