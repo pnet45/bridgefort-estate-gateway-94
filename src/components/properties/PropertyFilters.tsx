@@ -1,6 +1,7 @@
 
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, MapPin } from 'lucide-react';
 import { usePropertyContext } from '../../contexts/property';
+import { locations } from '@/data/locations';
 
 const PropertyFilters = () => {
   const {
