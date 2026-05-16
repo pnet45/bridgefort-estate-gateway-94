@@ -85,7 +85,7 @@ const LocationLanding = () => {
             <p className="text-lg md:text-xl opacity-90 max-w-3xl mb-6">{loc.intro}</p>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-white text-estate-blue hover:bg-gray-100">
-                <Link to="/properties">Browse Available Plots</Link>
+                <Link to={`/properties?q=${encodeURIComponent(loc.name)}`}>Browse {loc.name} Plots</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
                 <Link to="/contact">Speak to an Advisor</Link>

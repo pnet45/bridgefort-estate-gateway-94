@@ -1,6 +1,7 @@
 
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, MapPin } from 'lucide-react';
 import { usePropertyContext } from '../../contexts/property';
+import { locations } from '@/data/locations';
 
 const PropertyFilters = () => {
   const {
@@ -33,8 +34,28 @@ const PropertyFilters = () => {
           />
           <Search size={18} className="absolute left-3 top-3 text-gray-400 transition-colors duration-300" />
         </div>
-        
-        <button 
+
+        <div className="relative md:w-64">
+          <MapPin size={18} className="absolute left-3 top-3 text-gray-400 pointer-events-none" />
+          <select
+            aria-label="Filter by location"
+            className="input-field w-full pl-10 pr-3 appearance-none bg-white transition-all duration-300 focus:ring-2 focus:ring-estate-blue"
+            value={locations.find(l => l.name.toLowerCase() === searchQuery.toLowerCase())?.slug || ''}
+            onChange={(e) => {
+              const sel = locations.find(l => l.slug === e.target.value);
+              setSearchQuery(sel ? sel.name : '');
+            }}
+          >
+            <option value="">All Locations</option>
+            {locations.map((l) => (
+              <option key={l.slug} value={l.slug}>
+                {l.name}, {l.state}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
           onClick={toggleFilters}
           className="flex items-center justify-center py-2 px-4 border border-estate-blue text-estate-blue rounded hover:bg-estate-blue hover:text-white transition-all duration-300 transform hover:scale-105"
         >
