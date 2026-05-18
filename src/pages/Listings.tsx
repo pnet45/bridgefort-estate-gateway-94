@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/auth';
 import { Listing } from '@/types/listing';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ListingCard from '@/components/listings/ListingCard';
 import ListingFilters, { ListingFilterState } from '@/components/listings/ListingFilters';
 import RegionSpotlightCards from '@/components/listings/RegionSpotlightCards';
-import { LayoutGrid, List, Loader2 } from 'lucide-react';
+import { LayoutGrid, List, Loader2, Plus, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const defaultFilters: ListingFilterState = {
