@@ -83,6 +83,9 @@ function App() {
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/auth/otp-reset" element={<OTPResetPassword />} />
                 <Route path="/listings" element={<Listings />} />
+                <Route path="/listings/my" element={<PrivateRoute><MyListings /></PrivateRoute>} />
+                <Route path="/listings/new" element={<PrivateRoute><ListingFormPage /></PrivateRoute>} />
+                <Route path="/listings/edit/:id" element={<PrivateRoute><ListingFormPage /></PrivateRoute>} />
                 <Route path="/listings/:id" element={<ListingDetails />} />
                 <Route path="/announcements/:id" element={<AnnouncementArticle />} />
                 <Route path="/locations" element={<LocationsIndex />} />
