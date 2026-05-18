@@ -22,6 +22,7 @@ const defaultFilters: ListingFilterState = {
 };
 
 const Listings = () => {
+  const { user } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<ListingFilterState>(defaultFilters);
