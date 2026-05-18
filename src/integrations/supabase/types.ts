@@ -1339,6 +1339,7 @@ export type Database = {
           maintenance_fees: number | null
           max_rental_months: number | null
           min_rental_months: number | null
+          moderation_status: string
           monthly_rent: number | null
           owner_email: string | null
           owner_name: string | null
@@ -1354,8 +1355,10 @@ export type Database = {
           price_period: string
           property_type: string
           region: string
+          rejection_reason: string | null
           roi_percent: number | null
           special_notes: string | null
+          submitted_at: string | null
           tax_status: string | null
           title: string
           tour_3d_url: string | null
@@ -1391,6 +1394,7 @@ export type Database = {
           maintenance_fees?: number | null
           max_rental_months?: number | null
           min_rental_months?: number | null
+          moderation_status?: string
           monthly_rent?: number | null
           owner_email?: string | null
           owner_name?: string | null
@@ -1406,8 +1410,10 @@ export type Database = {
           price_period?: string
           property_type?: string
           region: string
+          rejection_reason?: string | null
           roi_percent?: number | null
           special_notes?: string | null
+          submitted_at?: string | null
           tax_status?: string | null
           title: string
           tour_3d_url?: string | null
@@ -1443,6 +1449,7 @@ export type Database = {
           maintenance_fees?: number | null
           max_rental_months?: number | null
           min_rental_months?: number | null
+          moderation_status?: string
           monthly_rent?: number | null
           owner_email?: string | null
           owner_name?: string | null
@@ -1458,8 +1465,10 @@ export type Database = {
           price_period?: string
           property_type?: string
           region?: string
+          rejection_reason?: string | null
           roi_percent?: number | null
           special_notes?: string | null
+          submitted_at?: string | null
           tax_status?: string | null
           title?: string
           tour_3d_url?: string | null
