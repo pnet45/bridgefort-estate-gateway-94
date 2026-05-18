@@ -45,6 +45,8 @@ import AdminAuth from '@/pages/AdminAuth';
 import AdminConsole from '@/pages/AdminConsole';
 import Listings from '@/pages/Listings';
 import ListingDetails from '@/pages/ListingDetails';
+import MyListings from '@/pages/MyListings';
+import ListingFormPage from '@/pages/ListingFormPage';
 import AnnouncementArticle from '@/pages/AnnouncementArticle';
 import LocationsIndex from '@/pages/LocationsIndex';
 import LocationLanding from '@/pages/LocationLanding';
