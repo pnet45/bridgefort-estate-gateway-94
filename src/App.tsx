@@ -45,6 +45,8 @@ import AdminAuth from '@/pages/AdminAuth';
 import AdminConsole from '@/pages/AdminConsole';
 import Listings from '@/pages/Listings';
 import ListingDetails from '@/pages/ListingDetails';
+import MyListings from '@/pages/MyListings';
+import ListingFormPage from '@/pages/ListingFormPage';
 import AnnouncementArticle from '@/pages/AnnouncementArticle';
 import LocationsIndex from '@/pages/LocationsIndex';
 import LocationLanding from '@/pages/LocationLanding';
@@ -81,6 +83,9 @@ function App() {
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/auth/otp-reset" element={<OTPResetPassword />} />
                 <Route path="/listings" element={<Listings />} />
+                <Route path="/listings/my" element={<PrivateRoute><MyListings /></PrivateRoute>} />
+                <Route path="/listings/new" element={<PrivateRoute><ListingFormPage /></PrivateRoute>} />
+                <Route path="/listings/edit/:id" element={<PrivateRoute><ListingFormPage /></PrivateRoute>} />
                 <Route path="/listings/:id" element={<ListingDetails />} />
                 <Route path="/announcements/:id" element={<AnnouncementArticle />} />
                 <Route path="/locations" element={<LocationsIndex />} />

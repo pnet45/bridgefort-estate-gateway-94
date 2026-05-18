@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/auth';
 import { Listing } from '@/types/listing';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ListingCard from '@/components/listings/ListingCard';
 import ListingFilters, { ListingFilterState } from '@/components/listings/ListingFilters';
 import RegionSpotlightCards from '@/components/listings/RegionSpotlightCards';
-import { LayoutGrid, List, Loader2 } from 'lucide-react';
+import { LayoutGrid, List, Loader2, Plus, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const defaultFilters: ListingFilterState = {
@@ -20,6 +22,7 @@ const defaultFilters: ListingFilterState = {
 };
 
 const Listings = () => {
+  const { user } = useAuth();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<ListingFilterState>(defaultFilters);
@@ -78,11 +81,27 @@ const Listings = () => {
       <main className="flex-1 pt-16 lg:pt-20">
         {/* Hero */}
         <section className="bg-gradient-to-br from-primary/10 via-background to-accent/10 py-10 lg:py-16">
-          <div className="container-custom">
-            <h1 className="text-3xl lg:text-5xl font-bold text-foreground mb-2">Premium Property Listings</h1>
-            <p className="text-muted-foreground text-lg max-w-2xl">
-              Explore verified luxury properties across Lagos, Asaba, Port Harcourt, and Ogun. Filter by region, type, and budget.
-            </p>
+          <div className="container-custom flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div>
+              <h1 className="text-3xl lg:text-5xl font-bold text-foreground mb-2">Premium Property Listings</h1>
+              <p className="text-muted-foreground text-lg max-w-2xl">
+                Explore verified luxury properties across Lagos, Asaba, Port Harcourt, and Ogun. Filter by region, type, and budget.
+              </p>
+            </div>
+            <div className="flex gap-3 flex-wrap">
+              <Button asChild size="lg">
+                <Link to={user ? '/listings/new' : '/auth'}>
+                  <Plus className="w-4 h-4 mr-2" /> Post a Listing
+                </Link>
+              </Button>
+              {user && (
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/listings/my">
+                    <ClipboardList className="w-4 h-4 mr-2" /> My Listings
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </section>
 
