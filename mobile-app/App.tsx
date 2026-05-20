@@ -2,7 +2,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthScreen from './screens/AuthScreen';
+import HomeScreen from './screens/HomeScreen';
 import DashboardScreen from './screens/DashboardScreen';
+import ReferralHistoryScreen from './screens/ReferralHistoryScreen';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import type { RootStackParamList } from './types';
 
@@ -23,7 +25,11 @@ function RootNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
-          <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            <Stack.Screen name="ReferralHistory" component={ReferralHistoryScreen} />
+          </>
         ) : (
           <Stack.Screen name="Auth" component={AuthScreen} />
         )}

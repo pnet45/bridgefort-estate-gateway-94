@@ -1,7 +1,11 @@
 import { Share, StyleSheet, Text, View, Button } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../types';
 
 export default function DashboardScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, profile, signOut } = useAuth();
 
   const handleShare = async () => {
@@ -38,6 +42,10 @@ export default function DashboardScreen() {
 
       <View style={styles.buttonRow}>
         <Button title="Share Referral Link" onPress={handleShare} />
+      </View>
+
+      <View style={styles.buttonRow}>
+        <Button title="View Referral History" onPress={() => navigation.navigate('ReferralHistory')} />
       </View>
 
       <View style={styles.buttonRow}>
