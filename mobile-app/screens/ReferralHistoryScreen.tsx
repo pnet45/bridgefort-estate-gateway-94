@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { supabase } from '../supabase';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/authContext';
 
 type ReferralItem = {
   id: string;
