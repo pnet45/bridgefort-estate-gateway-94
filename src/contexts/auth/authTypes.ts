@@ -13,6 +13,14 @@ export interface UserProfile {
   profile_completed?: boolean;
   pbo_referral_code?: string;
   is_pbo?: boolean;
+  current_rank?: string;
+  current_package?: string;
+  total_personal_volume?: number;
+  wallet_balance?: number;
+  total_commissions?: number;
+  personally_sponsored_count?: number;
+  team_size?: number;
+  is_active?: boolean;
   date_of_birth?: string;
   gender?: string;
   marital_status?: string;

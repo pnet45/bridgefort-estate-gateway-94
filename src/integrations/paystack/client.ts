@@ -4,7 +4,7 @@ export const PAYSTACK_PUBLIC_KEY = 'pk_live_6d09681e7719b416bced07927ea4855f5b9f
 
 export interface PaystackPaymentData {
   email: string;
-  amount: number; // Amount in kobo (multiply by 100)
+  amount: number; // Amount in NGN; Paystack initialization multiplies by 100 internally
   currency?: string;
   reference?: string;
   callback_url?: string;

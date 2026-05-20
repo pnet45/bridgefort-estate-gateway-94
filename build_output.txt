@@ -1,0 +1,29 @@
+
+> vite_react_shadcn_ts@0.0.0 build
+> vite build
+
+[36mvite v5.4.10 [32mbuilding for production...[36m[39m
+transforming...
+Browserslist: browsers data (caniuse-lite) is 19 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[32m✓[39m 4548 modules transformed.
+rendering chunks...
+[1m[33m[plugin:vite:reporter][39m[22m [33m[plugin vite:reporter] 
+(!) C:/Users/User/Documents/WORK DOCS/WEBSITE/GitHub/BridgefortHomes/bridgefort-estate-gateway-94/node_modules/@supabase/supabase-js/dist/module/index.js is dynamically imported by C:/Users/User/Documents/WORK DOCS/WEBSITE/GitHub/BridgefortHomes/bridgefort-estate-gateway-94/src/integrations/paystack/client.ts, C:/Users/User/Documents/WORK DOCS/WEBSITE/GitHub/BridgefortHomes/bridgefort-estate-gateway-94/src/integrations/paystack/client.ts but also statically imported by C:/Users/User/Documents/WORK DOCS/WEBSITE/GitHub/BridgefortHomes/bridgefort-estate-gateway-94/src/integrations/supabase/client.ts, dynamic import will not move module into another chunk.
+[39m
+computing gzip size...
+[2mdist/[22m[32mindex.html                                 [39m[1m[2m    2.06 kB[22m[1m[22m[2m │ gzip:   0.90 kB[22m
+[2mdist/[22m[32massets/luxury-3bedroom-lagos-DWw_zz37.jpg  [39m[1m[2m   73.45 kB[22m[1m[22m
+[2mdist/[22m[32massets/luxury-4bedroom-asaba-BmjWsSAh.jpg  [39m[1m[2m   73.75 kB[22m[1m[22m
+[2mdist/[22m[32massets/luxury-rental-ogun-CaTJyNad.jpg     [39m[1m[2m   74.77 kB[22m[1m[22m
+[2mdist/[22m[35massets/index-D30JmSkj.css                  [39m[1m[2m  119.30 kB[22m[1m[22m[2m │ gzip:  19.35 kB[22m
+[2mdist/[22m[36massets/browser-BhTEEuhL.js                 [39m[1m[2m    0.30 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
+[2mdist/[22m[36massets/index.es-CzIv6Zp7.js                [39m[1m[2m  150.55 kB[22m[1m[22m[2m │ gzip:  51.51 kB[22m
+[2mdist/[22m[36massets/index-C2qMLtvU.js                   [39m[1m[33m2,852.36 kB[39m[22m[2m │ gzip: 794.55 kB[22m
+[33m
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[32m✓ built in 1m 38s[39m

@@ -97,6 +97,19 @@ serve(async (req) => {
         user_id: authenticatedUserId, // Use authenticated user, not client-supplied
       }]);
       console.log('Inserted payment to supabase:', paymentInsertResult);
+
+      const isMembership = metadata?.purchase_type === 'membership';
+      if (isMembership) {
+        const purchaseInsertResult = await supabaseAdmin.from('mlm_membership_purchases').insert([{
+          user_id: authenticatedUserId,
+          package_code: metadata?.package_code,
+          amount: amount,
+          status: 'pending',
+          paystack_reference: paystackData.data.reference,
+          purchase_type: 'membership',
+        }]);
+        console.log('Inserted MLM membership purchase:', purchaseInsertResult);
+      }
     }
 
     return new Response(

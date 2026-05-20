@@ -11,6 +11,14 @@ export interface Profile {
   is_pbo?: boolean;
   pbo_referral_code?: string;
   referred_by_code?: string;
+  current_rank?: string;
+  current_package?: string;
+  total_personal_volume?: number;
+  wallet_balance?: number;
+  total_commissions?: number;
+  personally_sponsored_count?: number;
+  team_size?: number;
+  is_active?: boolean;
 }
 
 type AuthContextType = {
@@ -44,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, email, is_pbo, pbo_referral_code, referred_by_code')
+.select('id, first_name, last_name, email, is_pbo, pbo_referral_code, referred_by_code, current_rank, current_package, total_personal_volume, wallet_balance, total_commissions, personally_sponsored_count, team_size, is_active')
         .eq('id', userId)
         .single();
 
