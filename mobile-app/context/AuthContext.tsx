@@ -1,46 +1,13 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabase';
+import { AuthContext } from './authContext';
 import type { ReactNode } from 'react';
+import type { AuthContextType, Profile, SignUpOptions } from './authTypes';
 import type { Session, User } from '@supabase/supabase-js';
 
-export interface Profile {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  is_pbo?: boolean;
-  pbo_referral_code?: string;
-  referred_by_code?: string;
-  current_rank?: string;
-  current_package?: string;
-  total_personal_volume?: number;
-  wallet_balance?: number;
-  total_commissions?: number;
-  personally_sponsored_count?: number;
-  team_size?: number;
-  is_active?: boolean;
-}
-
-type AuthContextType = {
-  user: User | null;
-  session: Session | null;
-  profile: Profile | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (options: {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    registerAsPBO: boolean;
-    pboCode?: string;
-    sponsorCode?: string;
-  }) => Promise<{ error: Error | null }>;
-  signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
+type AuthProviderProps = {
+  children: ReactNode;
 };
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -111,15 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: error ?? null };
   };
 
-  const signUp = async ({ email, password, firstName, lastName, registerAsPBO, pboCode, sponsorCode }: {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    registerAsPBO: boolean;
-    pboCode?: string;
-    sponsorCode?: string;
-  }) => {
+  const signUp = async ({ email, password, firstName, lastName, registerAsPBO, pboCode, sponsorCode }: SignUpOptions) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -193,12 +152,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
 };
