@@ -19,8 +19,9 @@ const Navbar = () => {
   const [profile, setProfile] = useState<any>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  // Control when to show login button (not on auth page)
-  const shouldShowLogin = !window.location.pathname.includes('/auth');
+  // Control when to show login button (not on auth page or on Realtor login page)
+  const authPaths = ['/auth', '/bridgefort-realtors-login'];
+  const shouldShowLogin = !authPaths.some((path) => window.location.pathname.includes(path));
 
   useEffect(() => {
     if (user) {

@@ -222,8 +222,8 @@ const MLM = () => {
                     Sign in or register to access your MLM referral dashboard. This page will still use the same shared
                     Supabase database as the rest of the app.
                   </p>
-                  <Link to="/auth">
-                    <Button className="inline-flex items-center gap-2">Go to Auth</Button>
+                  <Link to="/bridgefort-realtors-login">
+                    <Button className="inline-flex items-center gap-2">Go to Bridgefort Realtors Login</Button>
                   </Link>
                 </div>
               )}

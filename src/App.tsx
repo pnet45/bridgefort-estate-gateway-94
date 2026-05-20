@@ -47,6 +47,7 @@ import Listings from '@/pages/Listings';
 import ListingDetails from '@/pages/ListingDetails';
 import MyListings from '@/pages/MyListings';
 import ListingFormPage from '@/pages/ListingFormPage';
+import BridgefortRealtorsAuth from '@/pages/BridgefortRealtorsAuth';
 import AnnouncementArticle from '@/pages/AnnouncementArticle';
 import LocationsIndex from '@/pages/LocationsIndex';
 import LocationLanding from '@/pages/LocationLanding';
@@ -80,6 +81,7 @@ function App() {
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:id" element={<BlogPost />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/bridgefort-realtors-login" element={<BridgefortRealtorsAuth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 <Route path="/auth/otp-reset" element={<OTPResetPassword />} />

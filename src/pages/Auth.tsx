@@ -11,7 +11,17 @@ import { Toaster } from '@/components/ui/toaster';
 import ReCaptcha from '@/components/ui/ReCaptcha';
 import { supabase } from '@/integrations/supabase/client';
 
-const Auth = () => {
+type AuthProps = {
+  pageTitle?: string;
+  redirectAfterSignIn?: string;
+  redirectAfterSignUp?: string;
+};
+
+const Auth = ({
+  pageTitle,
+  redirectAfterSignIn = '/dashboard',
+  redirectAfterSignUp = '/profile',
+}: AuthProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isPBO, setIsPBO] = useState(false);
   const [email, setEmail] = useState('');
@@ -148,7 +158,7 @@ const Auth = () => {
           title: "Login successful",
           description: "Welcome back!"
         });
-        navigate('/dashboard');
+        navigate(redirectAfterSignIn);
       }
     } catch (error) {
       toast({
@@ -280,7 +290,7 @@ const Auth = () => {
           title: "Registration successful!",
           description: "Please check your email to verify your account."
         });
-        navigate('/profile');
+        navigate(redirectAfterSignUp);
       }
     } catch (error: any) {
       if (error.code === 'auth/email-already-in-use') {
@@ -306,12 +316,16 @@ const Auth = () => {
     }
   };
 
+  const resolvedTitle = pageTitle
+    ? `${pageTitle} ${isLogin ? 'Sign In' : 'Register'}`
+    : isLogin
+      ? (isPBO ? 'PBO Login' : 'Client Login')
+      : 'Create Account';
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="bg-estate-blue py-4 text-center text-white">
-        <h1 className="text-2xl font-bold">
-          {isLogin ? (isPBO ? 'PBO Login' : 'Client Login') : 'Create Account'}
-        </h1>
+        <h1 className="text-2xl font-bold">{resolvedTitle}</h1>
       </div>
       
       {/* Go Back Home button: aligned to left, directly under header */}
