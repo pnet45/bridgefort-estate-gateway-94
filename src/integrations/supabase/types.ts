@@ -1310,6 +1310,41 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_contacts: {
+        Row: {
+          created_at: string
+          listing_id: string
+          owner_email: string | null
+          owner_name: string | null
+          owner_phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          listing_id: string
+          owner_email?: string | null
+          owner_name?: string | null
+          owner_phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          listing_id?: string
+          owner_email?: string | null
+          owner_name?: string | null
+          owner_phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_contacts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           address: string | null
@@ -1341,9 +1376,6 @@ export type Database = {
           min_rental_months: number | null
           moderation_status: string
           monthly_rent: number | null
-          owner_email: string | null
-          owner_name: string | null
-          owner_phone: string | null
           ownership_status: string | null
           parking: number | null
           parking_type: string | null
@@ -1396,9 +1428,6 @@ export type Database = {
           min_rental_months?: number | null
           moderation_status?: string
           monthly_rent?: number | null
-          owner_email?: string | null
-          owner_name?: string | null
-          owner_phone?: string | null
           ownership_status?: string | null
           parking?: number | null
           parking_type?: string | null
@@ -1451,9 +1480,6 @@ export type Database = {
           min_rental_months?: number | null
           moderation_status?: string
           monthly_rent?: number | null
-          owner_email?: string | null
-          owner_name?: string | null
-          owner_phone?: string | null
           ownership_status?: string | null
           parking?: number | null
           parking_type?: string | null
