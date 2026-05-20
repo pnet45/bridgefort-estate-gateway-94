@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Edit, Trash2, Loader2, Eye, ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, Loader2, Eye, ImageIcon, Images } from 'lucide-react';
 import { toast } from 'sonner';
+import ListingNotifications from '@/components/listings/ListingNotifications';
 
 const statusVariant = (s: string) =>
   s === 'approved' ? 'default' : s === 'rejected' ? 'destructive' : 'secondary';
@@ -59,6 +60,8 @@ const MyListings = () => {
             </Button>
           </div>
 
+          <ListingNotifications />
+
           {loading ? (
             <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
           ) : listings.length === 0 ? (
@@ -71,11 +74,23 @@ const MyListings = () => {
             <div className="grid gap-4">
               {listings.map(l => (
                 <Card key={l.id} className="p-4 flex flex-col sm:flex-row gap-4">
-                  <div className="w-full sm:w-40 h-32 bg-muted rounded flex items-center justify-center overflow-hidden shrink-0">
-                    {l.photos?.[0] ? (
-                      <img src={l.photos[0]} alt={l.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                  <div className="w-full sm:w-48 shrink-0 space-y-2">
+                    <div className="w-full h-32 bg-muted rounded flex items-center justify-center overflow-hidden">
+                      {l.photos?.[0] ? (
+                        <img src={l.photos[0]} alt={l.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                      )}
+                    </div>
+                    {l.photos?.length > 1 && (
+                      <div className="grid grid-cols-4 gap-1">
+                        {l.photos.slice(1, 5).map((p: string, i: number) => (
+                          <img key={i} src={p} alt={`${l.title} ${i + 2}`} className="w-full h-10 object-cover rounded border" />
+                        ))}
+                      </div>
+                    )}
+                    {l.photos?.length > 0 && (
+                      <p className="text-[10px] text-muted-foreground flex items-center gap-1"><Images className="w-3 h-3" /> {l.photos.length} photo{l.photos.length !== 1 ? 's' : ''}</p>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
