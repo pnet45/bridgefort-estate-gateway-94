@@ -1828,6 +1828,8 @@ export type Database = {
           next_of_kin_relationship: string | null
           occupation: string | null
           pbo_referral_code: string | null
+          referred_by_id: string | null
+          referred_by_code: string | null
           phone_number: string | null
           profile_completed: boolean | null
           profile_completion_percentage: number | null
@@ -1874,6 +1876,8 @@ export type Database = {
           next_of_kin_relationship?: string | null
           occupation?: string | null
           pbo_referral_code?: string | null
+          referred_by_id?: string | null
+          referred_by_code?: string | null
           phone_number?: string | null
           profile_completed?: boolean | null
           profile_completion_percentage?: number | null
@@ -1920,6 +1924,8 @@ export type Database = {
           next_of_kin_relationship?: string | null
           occupation?: string | null
           pbo_referral_code?: string | null
+          referred_by_id?: string | null
+          referred_by_code?: string | null
           phone_number?: string | null
           profile_completed?: boolean | null
           profile_completion_percentage?: number | null

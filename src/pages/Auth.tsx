@@ -207,6 +207,10 @@ const Auth = () => {
       if (error) throw error;
       
       if (data.user) {
+        const profileUpdate: Record<string, any> = {
+          updated_at: new Date().toISOString(),
+        };
+
         if (isRegisteringAsPBO) {
           if (!pboCode.trim()) {
             toast({
@@ -236,17 +240,12 @@ const Auth = () => {
             return;
           }
 
-          await supabase
-            .from('profiles')
-            .update({
-              is_pbo: true,
-              pbo_referral_code: pboCode.trim()
-            })
-            .eq('id', data.user.id);
+          profileUpdate.is_pbo = true;
+          profileUpdate.pbo_referral_code = pboCode.trim();
         } else if (sponsorCode.trim()) {
           const { data: sponsorProfile, error: sponsorError } = await supabase
             .from('profiles')
-            .select('first_name, last_name, phone_number')
+            .select('id')
             .eq('pbo_referral_code', sponsorCode.trim())
             .eq('is_pbo', true)
             .single();
@@ -260,14 +259,22 @@ const Auth = () => {
             return;
           }
 
-          await supabase
-            .from('profiles')
-            .update({
-              referrer_name: `${sponsorProfile.first_name || ''} ${sponsorProfile.last_name || ''}`.trim(),
-              referrer_phone: sponsorProfile.phone_number || null
-            })
-            .eq('id', data.user.id);
+          profileUpdate.referred_by_id = sponsorProfile.id;
+          profileUpdate.referred_by_code = sponsorCode.trim();
         }
+
+        await supabase
+          .from('profiles')
+          .upsert(
+            {
+              id: data.user.id,
+              first_name: firstName,
+              last_name: lastName,
+              created_at: new Date().toISOString(),
+              ...profileUpdate
+            },
+            { onConflict: 'id' }
+          );
 
         toast({
           title: "Registration successful!",

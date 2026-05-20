@@ -13,6 +13,8 @@ const MLM = () => {
   const [shareLink, setShareLink] = useState('');
   const [memberCount, setMemberCount] = useState<number | null>(null);
   const [pboCount, setPboCount] = useState<number | null>(null);
+  const [directReferralCount, setDirectReferralCount] = useState<number | null>(null);
+  const [downlineMembers, setDownlineMembers] = useState<Array<any>>([]);
   const [copyStatus, setCopyStatus] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -51,6 +53,31 @@ const MLM = () => {
     };
 
     loadStats();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const loadDownline = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email, created_at, is_pbo, pbo_referral_code')
+          .eq('referred_by_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        setDownlineMembers(data || []);
+        setDirectReferralCount(data?.length ?? 0);
+      } catch (error) {
+        console.error('Error loading MLM downline:', error);
+      }
+    };
+
+    loadDownline();
   }, [user]);
 
   const handleCopyLink = async () => {
@@ -139,6 +166,43 @@ const MLM = () => {
                           </div>
                         </div>
                       </div>
+                    </div>
+
+                    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                      <h2 className="text-xl font-semibold text-estate-blue">Your direct referrals</h2>
+                      <p className="mt-2 text-slate-600">
+                        {profile?.is_pbo
+                          ? `You have ${directReferralCount ?? 0} direct referral${directReferralCount === 1 ? '' : 's'} from your PBO code.`
+                          : 'Only registered PBO members can generate referral downs and view their direct recruits.'}
+                      </p>
+                      {profile?.is_pbo && downlineMembers.length > 0 ? (
+                        <div className="mt-4 overflow-x-auto">
+                          <table className="w-full text-left text-sm text-slate-700">
+                            <thead>
+                              <tr>
+                                <th className="border-b px-3 py-2 text-slate-500">Name</th>
+                                <th className="border-b px-3 py-2 text-slate-500">Email</th>
+                                <th className="border-b px-3 py-2 text-slate-500">PBO</th>
+                                <th className="border-b px-3 py-2 text-slate-500">Joined</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {downlineMembers.map((member) => (
+                                <tr key={member.id} className="odd:bg-white even:bg-slate-50">
+                                  <td className="border-b px-3 py-3">
+                                    {member.first_name || member.last_name ? `${member.first_name || ''} ${member.last_name || ''}`.trim() : 'Unknown'}
+                                  </td>
+                                  <td className="border-b px-3 py-3">{member.email || 'N/A'}</td>
+                                  <td className="border-b px-3 py-3">{member.is_pbo ? 'Yes' : 'No'}</td>
+                                  <td className="border-b px-3 py-3">{member.created_at ? new Date(member.created_at).toLocaleDateString() : '—'}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : profile?.is_pbo ? (
+                        <p className="mt-4 text-slate-600">No direct referrals yet. Share your code to start building your network.</p>
+                      ) : null}
                     </div>
 
                     <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">

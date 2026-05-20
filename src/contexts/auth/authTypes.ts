@@ -22,6 +22,8 @@ export interface UserProfile {
   next_of_kin_phone?: string;
   next_of_kin_email?: string;
   kyc_docs?: any;
+  referred_by_id?: string | null;
+  referred_by_code?: string | null;
 }
 
 export interface AuthContextType {
