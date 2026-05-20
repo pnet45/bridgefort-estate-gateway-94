@@ -136,7 +136,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (data.user) {
-      const profileData: Record<string, any> = {
+      const profileData: Partial<Profile> & {
+        id: string;
+        first_name: string;
+        last_name: string;
+        email: string;
+        created_at: string;
+      } = {
         id: data.user.id,
         first_name: firstName,
         last_name: lastName,
