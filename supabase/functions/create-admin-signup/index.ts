@@ -81,7 +81,7 @@ serve(async (req) => {
             .update({
               first_name: firstName || null,
               last_name: lastName || null,
-              password_hash: 'REDACTED', // Never store plain text passwords
+              // password_hash column removed; credentials live in auth.users
               status: 'pending',
               requested_at: new Date().toISOString(),
               reviewed_at: null,
@@ -117,7 +117,7 @@ serve(async (req) => {
           email: email.toLowerCase(),
           first_name: firstName || null,
           last_name: lastName || null,
-          password_hash: 'REDACTED', // Never store plain text passwords
+          // password_hash column removed; credentials live in auth.users
           status: 'pending'
         });
 
