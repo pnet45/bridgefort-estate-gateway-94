@@ -17,6 +17,7 @@ const NavLinks = ({ className = '', onClick }: NavLinksProps) => {
     { to: '/buy2sell', label: 'Buy and Resell' },
     { to: '/blog', label: 'Blog' },
     { to: '/career', label: 'Career' },
+    { to: '/mlm', label: 'MLM' },
     { to: '/contact', label: 'Contact' }
   ];
 

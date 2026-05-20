@@ -50,6 +50,7 @@ import ListingFormPage from '@/pages/ListingFormPage';
 import AnnouncementArticle from '@/pages/AnnouncementArticle';
 import LocationsIndex from '@/pages/LocationsIndex';
 import LocationLanding from '@/pages/LocationLanding';
+import MLM from '@/pages/MLM';
 
 import './App.css';
 
@@ -111,6 +112,11 @@ function App() {
                 <Route path="/profile" element={
                   <PrivateRoute>
                     <Profile />
+                  </PrivateRoute>
+                } />
+                <Route path="/mlm" element={
+                  <PrivateRoute>
+                    <MLM />
                   </PrivateRoute>
                 } />
                 <Route path="/create-post" element={
