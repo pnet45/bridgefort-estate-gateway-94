@@ -1,21 +1,21 @@
 import React from 'react';
 const coreValues = [{
-  letter: 'P',
-  value: 'Purpose-Driven',
-  description: 'At the heart of Bridgefort Homes Development Ltd is a deeper sense of purpose. We do not merely sell land; we ignite dreams, deliver dignity, and drive socioeconomic change through ownership and empowerment.'
-}, {
-  letter: 'W',
-  value: 'Wealth Creation',
-  description: 'Our business is a platform for generational wealth. Whether you\'re a client, investor, or realtor, Bridgefort Homes Development Ltd is your gateway to building sustainable wealth through property and partnerships.'
-}, {
-  letter: 'A',
-  value: 'Accountability',
-  description: 'We take full responsibility for our commitments. Every promise we make is backed by measurable action, transparency, and consistency. We own our outcomes—good or great.'
-}, {
-  letter: 'N',
-  value: 'Nurturing People',
-  description: 'People are our greatest asset. We invest in growth, cultivate potential, and build a culture where everyone—from staff to PBOs to clients—feels valued, heard, and empowered.'
-}, {
+  //letter: 'P',
+  //value: 'Purpose-Driven',
+  //description: 'At the heart of Bridgefort Homes Development Ltd is a deeper sense of purpose. We do not merely sell land; we ignite dreams, deliver dignity, and drive socioeconomic change through ownership and empowerment.'
+//}, {
+  //letter: 'W',
+  //value: 'Wealth Creation',
+  //description: 'Our business is a platform for generational wealth. Whether you\'re a client, investor, or realtor, Bridgefort Homes Development Ltd is your gateway to building sustainable wealth through property and partnerships.'
+//}, {
+  //letter: 'A',
+  //value: 'Accountability',
+  //description: 'We take full responsibility for our commitments. Every promise we make is backed by measurable action, transparency, and consistency. We own our outcomes—good or great.'
+//}, {
+  //letter: 'N',
+  //value: 'Nurturing People',
+  //description: 'People are our greatest asset. We invest in growth, cultivate potential, and build a culture where everyone—from staff to PBOs to clients—feels valued, heard, and empowered.'
+//}, {
   letter: 'B',
   value: 'Bold Innovation',
   description: 'We don\'t follow trends—we set them. With boldness, we challenge the status quo, embrace fresh thinking, and deploy creative strategies that move the real estate industry forward.'
