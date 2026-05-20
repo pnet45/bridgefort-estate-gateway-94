@@ -1,7 +1,7 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PasswordInput } from '@/components/ui/PasswordInput';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,9 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [pboCode, setPboCode] = useState('');
+  const [sponsorCode, setSponsorCode] = useState('');
+  const [isRegisteringAsPBO, setIsRegisteringAsPBO] = useState(false);
+  const [referralMessage, setReferralMessage] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,6 +28,17 @@ const Auth = () => {
   const recaptchaRef = useRef<any>(null);
   const { signIn, signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const refCode = params.get('ref');
+
+    if (refCode) {
+      setSponsorCode(refCode);
+      setReferralMessage('Referral code loaded from link. It will be applied on signup.');
+    }
+  }, [location.search]);
 
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
@@ -193,12 +207,19 @@ const Auth = () => {
       if (error) throw error;
       
       if (data.user) {
-        // If PBO code is provided, check for duplicates and update profile
-        if (pboCode.trim()) {
-          // Check if PBO code already exists
+        if (isRegisteringAsPBO) {
+          if (!pboCode.trim()) {
+            toast({
+              title: "PBO Code Required",
+              description: "Please enter a unique PBO referral code to complete registration.",
+              variant: "destructive"
+            });
+            return;
+          }
+
           const { data: existingPBO, error: pboError } = await supabase
             .from('profiles')
-            .select('id, is_pbo, pbo_referral_code')
+            .select('id')
             .eq('pbo_referral_code', pboCode.trim())
             .single();
 
@@ -209,13 +230,12 @@ const Auth = () => {
           if (existingPBO) {
             toast({
               title: "PBO Code Already Used",
-              description: "This PBO referral code has already been used by another PBO. Please use a different code.",
+              description: "This PBO referral code has already been used by another PBO. Please choose a different code.",
               variant: "destructive"
             });
             return;
           }
 
-          // Update profile to mark as PBO with referral code
           await supabase
             .from('profiles')
             .update({
@@ -223,13 +243,36 @@ const Auth = () => {
               pbo_referral_code: pboCode.trim()
             })
             .eq('id', data.user.id);
+        } else if (sponsorCode.trim()) {
+          const { data: sponsorProfile, error: sponsorError } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, phone_number')
+            .eq('pbo_referral_code', sponsorCode.trim())
+            .eq('is_pbo', true)
+            .single();
+
+          if (sponsorError || !sponsorProfile) {
+            toast({
+              title: "Invalid referral code",
+              description: "The referral code provided is not valid. Please check and try again.",
+              variant: "destructive"
+            });
+            return;
+          }
+
+          await supabase
+            .from('profiles')
+            .update({
+              referrer_name: `${sponsorProfile.first_name || ''} ${sponsorProfile.last_name || ''}`.trim(),
+              referrer_phone: sponsorProfile.phone_number || null
+            })
+            .eq('id', data.user.id);
         }
-        
+
         toast({
           title: "Registration successful!",
           description: "Please check your email to verify your account."
         });
-        // Redirect to profile completion page
         navigate('/profile');
       }
     } catch (error: any) {
@@ -371,17 +414,44 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="pboReferralCode">PBO Referral Code (Required for PBO registration)</Label>
-                  <Input
-                    type="text"
-                    id="pboReferralCode"
-                    placeholder="Enter PBO referral code to register as PBO"
-                    value={pboCode}
-                    onChange={(e) => setPboCode(e.target.value)}
+                <div className="flex items-center gap-3">
+                  <input
+                    id="registerAsPBO"
+                    type="checkbox"
+                    checked={isRegisteringAsPBO}
+                    onChange={(e) => setIsRegisteringAsPBO(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Leave blank for Client registration</p>
+                  <Label htmlFor="registerAsPBO">Register as a PBO</Label>
                 </div>
+
+                {isRegisteringAsPBO ? (
+                  <div>
+                    <Label htmlFor="pboReferralCode">Create Your PBO Referral Code</Label>
+                    <Input
+                      type="text"
+                      id="pboReferralCode"
+                      placeholder="Enter a unique PBO code"
+                      value={pboCode}
+                      onChange={(e) => setPboCode(e.target.value)}
+                      required={isRegisteringAsPBO}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">This code will become your personal referral link identifier.</p>
+                  </div>
+                ) : (
+                  <div>
+                    <Label htmlFor="sponsorCode">Referral Code (Optional)</Label>
+                    <Input
+                      type="text"
+                      id="sponsorCode"
+                      placeholder="Enter the referral code you received"
+                      value={sponsorCode}
+                      onChange={(e) => setSponsorCode(e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">If you were referred by a PBO, enter their code here.</p>
+                    {referralMessage && <p className="text-xs text-emerald-600 mt-1">{referralMessage}</p>}
+                  </div>
+                )}
               </>
             )}
             

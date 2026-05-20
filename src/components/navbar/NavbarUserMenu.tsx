@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
-import { ChevronDown, User, LogOut, Eye } from 'lucide-react';
+import { ChevronDown, User, LogOut, Eye, Users } from 'lucide-react';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +81,10 @@ const NavbarUserMenu = ({ profile, userRole }: NavbarUserMenuProps) => {
           <DropdownMenuItem onClick={() => navigate('/dashboard')}>
             <User size={16} className="mr-2" />
             Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/mlm')}>
+            <Users size={16} className="mr-2" />
+            MLM
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowProfilePreview(true)}>
             <Eye size={16} className="mr-2" />
