@@ -157,10 +157,6 @@ const MLM = () => {
         callback_url: `${window.location.origin}/payment-success`,
         metadata: {
           customer_name: fullName || 'Bridgefort Member',
-          purchase_type: 'membership',
-          package_code: selectedPackage.package_code,
-          package_name: selectedPackage.package_name,
-          current_package: currentPackageCode,
           custom_fields: [
             {
               display_name: 'Purchase type',

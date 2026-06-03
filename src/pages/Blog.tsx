@@ -17,6 +17,7 @@ import InvestmentSpotlight from '../components/blog/InvestmentSpotlight';
 import SuccessStories from '../components/blog/SuccessStories';
 import MarketUpdates from '../components/blog/MarketUpdates';
 import IncentivePrograms from '../components/blog/IncentivePrograms';
+import CMSSection from '../components/cms/CMSSection';
 
 const Blog = () => {
   return (
@@ -54,6 +55,8 @@ const Blog = () => {
           <BlogPosts />
         </div>
       </section>
+
+      <CMSSection page="blog" title="From the Editorial Team" />
 
       <SuccessStories />
 
