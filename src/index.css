@@ -32,11 +32,11 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
 
-    /* Estate Blue Theme */
-    --estate-blue: 221 83% 20%;
-    --estate-dark-blue: 221 83% 15%;
-    --estate-red: 0 84% 60%;
-    --estate-brown: 20 97% 49%;
+    /* Estate Theme — derived from logo (indigo + silver) */
+    --estate-blue: 263 100% 44%;
+    --estate-dark-blue: 260 92% 21%;
+    --estate-red: 262 83% 58%;
+    --estate-brown: 0 0% 75%;
   }
 
   .dark {
