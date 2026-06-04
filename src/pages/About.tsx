@@ -22,7 +22,7 @@ const About = () => {
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Bridgefort Homes Development Ltd: Redefining Property Investment with Integrity, Expertise, and Lasting Value</h2>
             <div className="w-20 h-1 bg-estate-red mx-auto mb-6"></div>
             <p className="text-lg text-white max-w-3xl mx-auto">
-              Bridgefort Homes Development Ltd is one of Nigeria's leading real estate investment companies, 
+              Bridgefort Homes is one of Nigeria's leading real estate investment companies, 
               providing affordable land and housing solutions while helping individuals 
               build sustainable wealth through property ownership.
             </p>

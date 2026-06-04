@@ -64,19 +64,19 @@ const Contact = () => {
                     <div>
                       <h3 className="text-lg font-semibold mb-1">Email</h3>
                       <p className="text-gray-600">
-                        <a href="mailto:info@pwanbridgefort.ng" className="hover:text-estate-blue transition duration-200">info@pwanbridgefort.ng</a>
+                        <a href="mailto:info@bridgeforthomes.com" className="hover:text-estate-blue transition duration-200">info@bridgeforthomes.com</a>
                       </p>
                       <p className="text-gray-600">
-                        <a href="mailto:sales@pwanbridgefort.ng" className="hover:text-estate-blue transition duration-200">sales@pwanbridgefort.ng</a>
+                        <a href="mailto:sales@bridgeforthomes.com" className="hover:text-estate-blue transition duration-200">sales@bridgeforthomes.com</a>
                       </p>
                       <p className="text-gray-600">
-                        <a href="mailto:admin@pwanbridgefort.ng" className="hover:text-estate-blue transition duration-200">admin@pwanbridgefort.ng</a>
+                        <a href="mailto:admin@bridgeforthomes.com" className="hover:text-estate-blue transition duration-200">admin@bridgeforthomes.com</a>
                       </p>
                       <p className="text-gray-600">
-                        <a href="mailto:account@pwanbridgefort.ng" className="hover:text-estate-blue transition duration-200">account@pwanbridgefort.ng</a>
+                        <a href="mailto:account@bridgeforthomes.com" className="hover:text-estate-blue transition duration-200">account@bridgeforthomes.com</a>
                       </p>
                       <p className="text-gray-600">
-                        <a href="mailto:training@pwanbridgefort.ng" className="hover:text-estate-blue transition duration-200">training@pwanbridgefort.ng</a>
+                        <a href="mailto:training@bridgeforthomes.com" className="hover:text-estate-blue transition duration-200">training@bridgeforthomes.com</a>
                       </p>
                     </div>
                   </div>

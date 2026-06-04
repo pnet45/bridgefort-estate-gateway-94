@@ -13,7 +13,7 @@ const BuyAndResellFeature = () => {
             Your Path to Guaranteed Real Estate Returns
           </h2>
           <h3 className="text-3xl md:text-4xl font-semibold mb-8 text-white">
-            Introducing Buy to Sell
+            Introducing Buy and ReSell
           </h3>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
             A revolutionary investment model where you purchase land today and we guarantee 
