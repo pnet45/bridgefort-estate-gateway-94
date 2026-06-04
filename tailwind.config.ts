@@ -54,8 +54,10 @@ export default {
         },
       },
       fontFamily: {
-        montserrat: ['Montserrat', 'sans-serif'],
-        poppins: ['Poppins', 'sans-serif'],
+        sans: ['Manrope', 'system-ui', 'sans-serif'],
+        display: ['Sora', 'system-ui', 'sans-serif'],
+        montserrat: ['Sora', 'sans-serif'],
+        poppins: ['Manrope', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
