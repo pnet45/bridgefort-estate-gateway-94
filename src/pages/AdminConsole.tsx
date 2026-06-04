@@ -27,6 +27,7 @@ import AdminActivityLogs from '@/components/admin/AdminActivityLogs';
 import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
 import AdminPropertyAnalytics from '@/components/admin/AdminPropertyAnalytics';
 import AdminContentManagement from '@/components/admin/AdminContentManagement';
+import AdminContentHub from '@/components/admin/AdminContentHub';
 import AdminOtherPayments from '@/components/admin/AdminOtherPayments';
 import AdminRolePermissions from '@/components/admin/AdminRolePermissions';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
@@ -165,6 +166,10 @@ const AdminConsole = () => {
               <FileText className="h-4 w-4" />
               <span>Content</span>
             </TabsTrigger>
+            <TabsTrigger value="cms" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
+              <FileText className="h-4 w-4" />
+              <span>CMS Hub</span>
+            </TabsTrigger>
             <TabsTrigger value="other-payments" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
               <DollarSign className="h-4 w-4" />
               <span>Other Payments</span>
@@ -210,6 +215,7 @@ const AdminConsole = () => {
           <TabsContent value="analytics"><AdminPropertyAnalytics /></TabsContent>
           <TabsContent value="activity"><AdminActivityLogs /></TabsContent>
           <TabsContent value="content"><AdminContentManagement /></TabsContent>
+          <TabsContent value="cms"><AdminContentHub /></TabsContent>
           <TabsContent value="other-payments"><AdminOtherPayments /></TabsContent>
           <TabsContent value="permissions"><AdminRolePermissions /></TabsContent>
         </Tabs>

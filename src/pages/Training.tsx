@@ -16,6 +16,7 @@ import SuccessSummit from '../components/training/SuccessSummit';
 import UpcomingTrainingEvents from '../components/training/UpcomingTrainingEvents';
 import TrainingCalendar from '../components/training/TrainingCalendar';
 import PastEventsSection from '../components/training/PastEventsSection';
+import CMSSection from '../components/cms/CMSSection';
 
 const Training = () => {
   return (
@@ -54,6 +55,8 @@ const Training = () => {
       
       {/* Upcoming Events */}
       <UpcomingEvents />
+
+      <CMSSection page="training" title="More from Training" />
       
       {/* CTA Section */}
       <TrainingCTA />

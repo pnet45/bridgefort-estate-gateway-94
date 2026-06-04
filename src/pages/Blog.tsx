@@ -17,6 +17,7 @@ import InvestmentSpotlight from '../components/blog/InvestmentSpotlight';
 import SuccessStories from '../components/blog/SuccessStories';
 import MarketUpdates from '../components/blog/MarketUpdates';
 import IncentivePrograms from '../components/blog/IncentivePrograms';
+import CMSSection from '../components/cms/CMSSection';
 
 const Blog = () => {
   return (
@@ -39,7 +40,7 @@ const Blog = () => {
       <section className="py-16 bg-gradient-to-r from-primary/10 to-secondary/10">
         <div className="container-custom">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">🌟 Monday Motivation</h2>
+            <h2 className="text-3xl font-bold mb-4"> Monday Motivation</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Start your week with inspiration and insights from Nigeria's leading real estate experts
             </p>
@@ -54,6 +55,8 @@ const Blog = () => {
           <BlogPosts />
         </div>
       </section>
+
+      <CMSSection page="blog" title="From the Editorial Team" />
 
       <SuccessStories />
 

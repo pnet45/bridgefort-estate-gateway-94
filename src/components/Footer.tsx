@@ -78,11 +78,11 @@ const Footer = () => {
               <li className="flex items-start">
                 <Mail size={20} className="mr-2 mt-1 flex-shrink-0 text-estate-blue" />
                 <div className="flex flex-col">
-                  <a href="mailto:info@pwanbridgefort.ng" className="text-gray-300 hover:text-white hover:scale-105 transition-all duration-200">info@pwanbridgefort.ng</a>
-                  <a href="mailto:sales@pwanbridgefort.ng" className="text-gray-300 hover:text-white hover:scale-105 transition-all duration-200">sales@pwanbridgefort.ng</a>
-                  <a href="mailto:admin@pwanbridgefort.ng" className="text-gray-300 hover:text-white hover:scale-105 transition-all duration-200">admin@pwanbridgefort.ng</a>
-                  <a href="mailto:account@pwanbridgefort.ng" className="text-gray-300 hover:text-white hover:scale-105 transition-all duration-200">account@pwanbridgefort.ng</a>
-                  <a href="mailto:training@pwanbridgefort.ng" className="text-gray-300 hover:text-white hover:scale-105 transition-all duration-200">training@pwanbridgefort.ng</a>
+                  <a href="mailto:info@bridgeforthomes.com" className="text-gray-300 hover:text-white hover:scale-105 transition-all duration-200">info@bridgeforthomes.com</a>
+                  <a href="mailto:sales@bridgeforthomes.com" className="text-gray-300 hover:text-white hover:scale-105 transition-all duration-200">sales@bridgeforthomes.com</a>
+                  <a href="mailto:admin@bridgeforthomes.com" className="text-gray-300 hover:text-white hover:scale-105 transition-all duration-200">admin@bridgeforthomes.com</a>
+                  <a href="mailto:account@bridgeforthomes.com" className="text-gray-300 hover:text-white hover:scale-105 transition-all duration-200">account@bridgeforthomes.com</a>
+                  <a href="mailto:training@bridgeforthomes.com" className="text-gray-300 hover:text-white hover:scale-105 transition-all duration-200">training@bridgeforthomes.com</a>
                 </div>
               </li>
             </ul>
