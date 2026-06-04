@@ -202,8 +202,15 @@ const AdminContentHub: React.FC = () => {
               <div><Label>Subtitle</Label><Input value={editing.subtitle || ''} onChange={e => setEditing({ ...editing, subtitle: e.target.value })} /></div>
               <div><Label>Excerpt</Label><Textarea rows={2} value={editing.excerpt || ''} onChange={e => setEditing({ ...editing, excerpt: e.target.value })} /></div>
               <div><Label>Body / Content</Label><Textarea rows={8} value={editing.body || ''} onChange={e => setEditing({ ...editing, body: e.target.value })} /></div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label>Image URL</Label><Input value={editing.image_url || ''} onChange={e => setEditing({ ...editing, image_url: e.target.value })} /></div>
+              <div className="grid grid-cols-1 gap-3">
+                <ImageUploadField
+                  label="Image / Thumbnail"
+                  value={editing.image_url || ''}
+                  onChange={(url) => setEditing({ ...editing, image_url: url })}
+                  bucket="media-files"
+                  folder={`cms/${editing.page}`}
+                  maxSizeMB={5}
+                />
                 <div><Label>Link URL</Label><Input value={editing.link_url || ''} onChange={e => setEditing({ ...editing, link_url: e.target.value })} /></div>
               </div>
               <div className="grid grid-cols-3 gap-3">
