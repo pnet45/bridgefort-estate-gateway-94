@@ -51,7 +51,7 @@ import BridgefortRealtorsAuth from '@/pages/BridgefortRealtorsAuth';
 import AnnouncementArticle from '@/pages/AnnouncementArticle';
 import LocationsIndex from '@/pages/LocationsIndex';
 import LocationLanding from '@/pages/LocationLanding';
-import MLM from '@/pages/MLM';
+import BHRealtors from '@/pages/BHRealtors';
 
 import './App.css';
 
@@ -116,9 +116,9 @@ function App() {
                     <Profile />
                   </PrivateRoute>
                 } />
-                <Route path="/mlm" element={
+                <Route path="/bh-realtors" element={
                   <PrivateRoute>
-                    <MLM />
+                    <BHRealtors />
                   </PrivateRoute>
                 } />
                 <Route path="/create-post" element={
