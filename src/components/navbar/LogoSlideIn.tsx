@@ -15,13 +15,13 @@ const LogoSlideIn = () => {
   }, []);
 
   return (
-    <Link to="/" className="flex items-center">
+    <Link to="/" className="flex items-center group">
       <img
         src="/lovable-uploads/BridgefortHomesLogo.png"
         alt="Bridgefort Homes Development Ltd Logo"
-        className={`h-13 w-40 transition-all duration-2000 ease-out ${
-          isVisible 
-            ? 'transform translate-x-0 opacity-100' 
+        className={`h-16 lg:h-20 w-auto object-contain transition-all duration-700 ease-out group-hover:scale-105 dark:brightness-110 ${
+          isVisible
+            ? 'transform translate-x-0 opacity-100'
             : 'transform -translate-x-full opacity-0'
         }`}
       />
