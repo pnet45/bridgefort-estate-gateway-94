@@ -25,7 +25,7 @@ export default function HomeScreen() {
         <Text style={styles.subtitle}>Welcome back, {welcomeName}.</Text>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Your MLM overview</Text>
+          <Text style={styles.cardTitle}>Your BHRealtors overview</Text>
           <Text style={styles.cardLabel}>Referral code</Text>
           <Text style={styles.cardValue}>{referralCode}</Text>
           <Text style={styles.cardLabel}>PBO status</Text>

@@ -99,7 +99,7 @@ export default function AuthScreen() {
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.header}>Bridgefort Realtors</Text>
-        <Text style={styles.subtitle}>{isLogin ? 'Sign in to access your MLM dashboard.' : 'Register for a Bridgefort Realtors account.'}</Text>
+        <Text style={styles.subtitle}>{isLogin ? 'Sign in to access your BHRealtors dashboard.' : 'Register for a Bridgefort Realtors account.'}</Text>
 
         <View style={styles.toggleRow}>
           <TouchableOpacity

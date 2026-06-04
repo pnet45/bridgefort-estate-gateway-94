@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Clipboard, Share2, Users } from 'lucide-react';
 import { initializePayment } from '@/integrations/paystack/client';
-import { mlmPackages, type MlmPackage } from '@/data/mlmPackages';
+import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
 
 const packageRank: Record<string, number> = {
   associate: 1,
@@ -16,7 +16,7 @@ const packageRank: Record<string, number> = {
   classic_gold: 3,
 };
 
-const MLM = () => {
+const BHRealtors = () => {
   const { user, profile, loading } = useAuth();
   const [shareLink, setShareLink] = useState('');
   const [memberCount, setMemberCount] = useState<number | null>(null);
@@ -27,10 +27,10 @@ const MLM = () => {
   const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'pending' | 'error'>('idle');
   const [purchaseError, setPurchaseError] = useState('');
   const [commissionTotals, setCommissionTotals] = useState({ available: 0, locked: 0 });
-  const [selectedPackage, setSelectedPackage] = useState<MlmPackage>(mlmPackages[0]);
+  const [selectedPackage, setSelectedPackage] = useState<BhRealtorsPackage>(bhRealtorsPackages[0]);
 
   const currentPackageCode = profile?.current_package || 'associate';
-  const currentPackage = mlmPackages.find((pkg) => pkg.package_code === currentPackageCode) ?? mlmPackages[0];
+  const currentPackage = bhRealtorsPackages.find((pkg) => pkg.package_code === currentPackageCode) ?? bhRealtorsPackages[0];
   const currentPackageLabel = currentPackage.package_name;
   const currentPackagePrice = currentPackage.price;
   const walletBalance = Number(profile?.wallet_balance ?? 0);
@@ -85,8 +85,8 @@ const MLM = () => {
           setCommissionTotals(totals);
         }
       } catch (error) {
-        console.error('Error loading MLM stats:', error);
-        setErrorMessage('Unable to load MLM statistics right now.');
+        console.error('Error loading BHRealtors stats:', error);
+        setErrorMessage('Unable to load BHRealtors statistics right now.');
       }
     };
 
@@ -110,7 +110,7 @@ const MLM = () => {
 
         setDownlineMembers(data || []);
       } catch (error) {
-        console.error('Error loading MLM downline:', error);
+        console.error('Error loading BHRealtors downline:', error);
       }
     };
 
@@ -128,7 +128,7 @@ const MLM = () => {
     }
   };
 
-  const handlePackageSelection = (pkg: MlmPackage) => {
+  const handlePackageSelection = (pkg: BhRealtorsPackage) => {
     setSelectedPackage(pkg);
     setPurchaseError('');
   };
@@ -153,7 +153,7 @@ const MLM = () => {
         email: user.email ?? '',
         amount: amountDue,
         currency: 'NGN',
-        reference: `mlm-${user.id}-${Date.now()}`,
+        reference: `bh-realtors-${user.id}-${Date.now()}`,
         callback_url: `${window.location.origin}/payment-success`,
         metadata: {
           customer_name: fullName || 'Bridgefort Member',
@@ -218,9 +218,9 @@ const MLM = () => {
           <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr] items-start">
             <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
               <div className="mb-6">
-                <h1 className="text-3xl font-bold text-estate-blue">MLM Dashboard</h1>
+                <h1 className="text-3xl font-bold text-estate-blue">BHRealtors Dashboard</h1>
                 <p className="mt-3 text-gray-600 max-w-2xl">
-                  Manage your Bridgefort MLM membership packages, referral network, wallet, and upgrade path.
+                  Manage your Bridgefort Homes Realtors Center membership packages, referral network, wallet, and upgrade path.
                 </p>
               </div>
 
@@ -228,7 +228,7 @@ const MLM = () => {
                 <>
                   <div className="grid gap-4 md:grid-cols-2 mb-8">
                     <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-                      <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Current MLM rank</p>
+                      <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Current BHRealtors rank</p>
                       <p className="mt-2 text-2xl font-semibold text-estate-blue">{currentPackageLabel}</p>
                       <p className="mt-2 text-slate-600">Current package value: ₦{currentPackagePrice.toLocaleString()}</p>
                     </div>
@@ -251,7 +251,7 @@ const MLM = () => {
                     </div>
 
                     <div className="mt-6 grid gap-4 lg:grid-cols-3">
-                      {mlmPackages.map((pkg) => {
+                      {bhRealtorsPackages.map((pkg) => {
                         const isCurrentOrLower = packageRank[pkg.package_code] <= packageRank[currentPackageCode];
                         const upgradeAmount = Math.max(0, pkg.price - currentPackagePrice);
                         return (
@@ -339,7 +339,7 @@ const MLM = () => {
               ) : (
                 <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8">
                   <p className="text-gray-700 mb-6">
-                    Sign in or register to access your MLM referral dashboard. This page will still use the same shared
+                    Sign in or register to access your BHRealtors referral dashboard. This page will still use the same shared
                     Supabase database as the rest of the app.
                   </p>
                   <Link to="/bridgefort-realtors-login">
@@ -383,4 +383,4 @@ const MLM = () => {
   );
 };
 
-export default MLM;
+export default BHRealtors;

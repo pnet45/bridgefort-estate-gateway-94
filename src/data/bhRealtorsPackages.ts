@@ -1,4 +1,4 @@
-export type MlmPackage = {
+export type BhRealtorsPackage = {
   package_code: 'associate' | 'gold' | 'classic_gold';
   package_name: string;
   price: number;
@@ -8,7 +8,7 @@ export type MlmPackage = {
   description: string;
 };
 
-export const mlmPackages: MlmPackage[] = [
+export const bhRealtorsPackages: BhRealtorsPackage[] = [
   {
     package_code: 'associate',
     package_name: 'Associate',
