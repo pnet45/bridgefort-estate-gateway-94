@@ -655,6 +655,81 @@ export type Database = {
         }
         Relationships: []
       }
+      content_items: {
+        Row: {
+          body: string | null
+          category: string | null
+          content_type: string
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          display_order: number
+          event_date: string | null
+          event_location: string | null
+          excerpt: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean
+          is_published: boolean
+          link_url: string | null
+          metadata: Json
+          page: string
+          slug: string | null
+          subtitle: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          category?: string | null
+          content_type: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          display_order?: number
+          event_date?: string | null
+          event_location?: string | null
+          excerpt?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          is_published?: boolean
+          link_url?: string | null
+          metadata?: Json
+          page: string
+          slug?: string | null
+          subtitle?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          category?: string | null
+          content_type?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          display_order?: number
+          event_date?: string | null
+          event_location?: string | null
+          excerpt?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          is_published?: boolean
+          link_url?: string | null
+          metadata?: Json
+          page?: string
+          slug?: string | null
+          subtitle?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       crm_follow_ups: {
         Row: {
           action_type: string
@@ -1828,8 +1903,6 @@ export type Database = {
           next_of_kin_relationship: string | null
           occupation: string | null
           pbo_referral_code: string | null
-          referred_by_id: string | null
-          referred_by_code: string | null
           phone_number: string | null
           profile_completed: boolean | null
           profile_completion_percentage: number | null
@@ -1876,8 +1949,6 @@ export type Database = {
           next_of_kin_relationship?: string | null
           occupation?: string | null
           pbo_referral_code?: string | null
-          referred_by_id?: string | null
-          referred_by_code?: string | null
           phone_number?: string | null
           profile_completed?: boolean | null
           profile_completion_percentage?: number | null
@@ -1924,8 +1995,6 @@ export type Database = {
           next_of_kin_relationship?: string | null
           occupation?: string | null
           pbo_referral_code?: string | null
-          referred_by_id?: string | null
-          referred_by_code?: string | null
           phone_number?: string | null
           profile_completed?: boolean | null
           profile_completion_percentage?: number | null
