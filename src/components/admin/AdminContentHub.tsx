@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Eye, EyeOff, Star } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import ImageUploadField from '@/components/ui/ImageUploadField';
 import {
   ContentItem, ContentPage, ContentType,
   CONTENT_TYPE_LABELS, PAGE_TO_TYPES,
