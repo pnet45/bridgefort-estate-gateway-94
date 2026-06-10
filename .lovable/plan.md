@@ -1,32 +1,58 @@
 
-Investigating the two requests:
+# Bridgefort Travels — New Page & Services Integration
 
-1. **Featured Announcements Card layout** — Need to identify which component renders on the homepage. Memory says `FeaturedAnnouncementsCarousel` is the homepage one (single-row, two-column carousel). The user wants:
-   - Image fully visible (no crop) on the LEFT
-   - Text write-up on the RIGHT
-   - Currently uses `object-cover` which crops images
+Add a dedicated, richly designed **Bridgefort Travels** page at `/travels`, and surface it as a new service on the Services page and main navigation.
 
-2. **"PWAN Bridgefort Delivers Again" Read More** — Need to make this announcement open the full article view (likely via the existing dialog or route to the blog post). Looking at `FeaturedAnnouncementsCarousel`, it already has a dialog with `fullContent`. Need to verify the Ode-Omi item exists there with full content, and ensure clicking "Read More" opens it.
+## What gets built
 
-## Plan
+### 1. New page: `/travels` (Bridgefort Travels)
+A full marketing page using the existing logo-derived theme tokens (indigo/violet), `font-display` headings, and the site's Navbar/Footer chrome. Sections:
 
-### 1. Featured Announcements Card Redesign (`FeaturedAnnouncementsCarousel.tsx`)
-- Restructure each card to a horizontal split: **image left (40%)**, **text right (60%)**
-- Replace `object-cover` with `object-contain` on a neutral background so the full image shows without cropping
-- Use a fixed-height container (e.g., `h-64`) with `bg-gray-100` so varied image aspect ratios display fully
-- Keep the existing animations, indicators, and dialog open behavior
+- **Hero** — Full-width image background with gradient overlay, headline "Explore the World with Bridgefort Travels", subheadline, dual CTAs (Plan My Trip → Contact, Browse Packages → scroll).
+- **Intro / Value Props** — 4 cards: Visa Assistance, Flight Bookings, Hotel Reservations, Tour Packages. Icons from lucide-react (Plane, Hotel, MapPin, FileCheck).
+- **Featured Destinations** — Grid of 6 destinations (Dubai, London, Istanbul, Cape Town, Bali, New York) with image, country, "from ₦" price hint, hover lift.
+- **Travel Packages** — 3 tiered packages (Explorer / Premium / Luxury) with included perks and "Enquire" buttons.
+- **Visa Services** — Two-column section listing supported visa categories (Tourist, Business, Student, Medical, Pilgrimage) with checklist styling.
+- **How It Works** — 4-step process (Consult → Plan → Book → Travel) with numbered cards and framer-motion scroll reveals.
+- **Why Choose Bridgefort Travels** — 3-column trust block (Licensed, 24/7 Support, Best Price Guarantee).
+- **Testimonials** — 3 traveler quotes.
+- **FAQ** — Accordion with 5 common travel questions.
+- **CTA Section** — Gradient indigo→violet band with "Start Planning" button → `/contact`.
 
-### 2. Ode-Omi "Read More" Full Article
-- Verify the `announcementItems` array contains the Ode-Omi entry with rich `fullContent` HTML (including the uploaded allocation images)
-- If missing or thin, expand `fullContent` with the full press release text and embed the allocation images (`/lovable-uploads/ALLOCATION_*.jpg`)
-- Confirm the "Read Full Article" button calls `setSelectedArticle(item); setIsDialogOpen(true)` so the existing DOMPurify-sanitized dialog renders the full content
-- The dialog already supports scrollable HTML content via `ScrollArea` — no new route needed
+All sections use the existing `container-custom`, `section-padding`, `btn-cta`, `text-gradient`, and motion patterns already in the codebase (mirrors `Buy2Sell`/`Services` page composition).
 
-### Files to edit
-- `src/components/blog/FeaturedAnnouncementsCarousel.tsx` — layout restructure + ensure Ode-Omi `fullContent` is complete
+### 2. Services page integration
+- Add a **Travels** card to `src/components/home/InvestmentServices.tsx` services array (icon: `Plane`, link: `/travels`, flagged `isCallToAction`).
+- Add a **Bridgefort Travels** feature block to `src/pages/Services.tsx` (between `AdditionalServices` and `BuyAndResellFeature`) — short teaser card with image, 3 bullets, and "Visit Bridgefort Travels" button → `/travels`.
 
-### Technical notes
-- Layout: `flex flex-col md:flex-row` with image div `md:w-2/5` and text div `md:w-3/5`
-- Image container: `h-56 md:h-64 bg-gray-100 flex items-center justify-center` + `<img className="w-full h-full object-contain">`
-- Dialog open already wired via existing `onClick` handlers — just confirm both "Read More" buttons (button + indicator) trigger it
-- Preserve XSS safety: keep `DOMPurify.sanitize` with current `ALLOWED_TAGS`/`ALLOWED_ATTR`
+### 3. Navigation
+- Add `{ to: '/travels', label: 'Travels' }` to `src/components/navbar/AnimatedNavLinks.tsx` (placed after Training).
+- Add the same entry to `src/components/navbar/MobileMenu.tsx` and `NavLinks.tsx` for parity.
+
+### 4. Routing
+- Register `<Route path="/travels" element={<Travels />} />` in `src/App.tsx`.
+
+### 5. Imagery
+Generate 3 images via imagegen (fast tier, jpg):
+- `src/assets/travels-hero.jpg` — cinematic airplane wing over clouds at sunset.
+- `src/assets/travels-destinations.jpg` — collage-style world landmarks.
+- `src/assets/travels-feature.jpg` — passport + boarding pass flatlay for Services teaser.
+Destination cards use Unsplash-style stock URLs already used elsewhere or reuse generated hero crops to keep cost down.
+
+## Technical notes
+- Files created:
+  - `src/pages/Travels.tsx`
+  - `src/components/travels/TravelsHero.tsx`
+  - `src/components/travels/TravelValueProps.tsx`
+  - `src/components/travels/FeaturedDestinations.tsx`
+  - `src/components/travels/TravelPackages.tsx`
+  - `src/components/travels/VisaServices.tsx`
+  - `src/components/travels/HowItWorks.tsx`
+  - `src/components/travels/WhyChooseTravels.tsx`
+  - `src/components/travels/TravelsTestimonials.tsx`
+  - `src/components/travels/TravelsFAQ.tsx`
+  - `src/components/travels/TravelsCTA.tsx`
+  - `src/components/services/TravelsFeature.tsx`
+- Files edited: `src/App.tsx`, `src/pages/Services.tsx`, `src/components/home/InvestmentServices.tsx`, `src/components/navbar/AnimatedNavLinks.tsx`, `src/components/navbar/MobileMenu.tsx`, `src/components/navbar/NavLinks.tsx`.
+- SEO: page sets `<title>Bridgefort Travels — Flights, Visas & Tours</title>`, meta description, single H1, alt text on all images, JSON-LD `TravelAgency` schema.
+- No database or backend changes. Enquiry buttons route to existing `/contact` page.
