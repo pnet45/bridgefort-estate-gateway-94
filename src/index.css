@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,63 +7,86 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 260 30% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 260 30% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.75rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --popover-foreground: 260 30% 12%;
 
-    /* Estate Blue Theme */
-    --estate-blue: 221 83% 20%;
-    --estate-dark-blue: 221 83% 15%;
-    --estate-red: 0 84% 60%;
-    --estate-brown: 20 97% 49%;
+    /* Primary = logo indigo */
+    --primary: 263 100% 44%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary = soft indigo tint */
+    --secondary: 260 60% 96%;
+    --secondary-foreground: 260 92% 21%;
+
+    --muted: 260 20% 96%;
+    --muted-foreground: 260 12% 42%;
+
+    /* Accent = violet from logo family */
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 260 30% 90%;
+    --input: 260 30% 90%;
+    --ring: 263 100% 44%;
+    --radius: 0.75rem;
+
+    --chart-1: 263 100% 44%;
+    --chart-2: 262 83% 58%;
+    --chart-3: 260 92% 21%;
+    --chart-4: 0 0% 75%;
+    --chart-5: 260 30% 50%;
+
+    /* Estate Theme — derived from logo (indigo + silver) */
+    --estate-blue: 263 100% 44%;
+    --estate-dark-blue: 260 92% 21%;
+    --estate-red: 262 83% 58%;
+    --estate-brown: 0 0% 75%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 260 35% 6%;
+    --foreground: 260 15% 94%;
+    --card: 260 30% 9%;
+    --card-foreground: 260 15% 94%;
+    --popover: 260 30% 9%;
+    --popover-foreground: 260 15% 94%;
+
+    --primary: 262 90% 70%;
+    --primary-foreground: 260 40% 8%;
+
+    --secondary: 260 25% 16%;
+    --secondary-foreground: 260 15% 94%;
+
+    --muted: 260 25% 14%;
+    --muted-foreground: 260 10% 70%;
+
+    --accent: 262 83% 68%;
+    --accent-foreground: 260 40% 8%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 260 25% 20%;
+    --input: 260 25% 20%;
+    --ring: 262 90% 70%;
+
+    --chart-1: 262 90% 70%;
+    --chart-2: 262 83% 58%;
+    --chart-3: 263 100% 44%;
+    --chart-4: 0 0% 75%;
+    --chart-5: 260 30% 60%;
+
+    /* Lighter indigo for accessibility on dark surfaces */
+    --estate-blue: 262 90% 70%;
+    --estate-dark-blue: 260 30% 14%;
+    --estate-red: 262 83% 68%;
+    --estate-brown: 0 0% 75%;
   }
 }
 
@@ -72,23 +95,30 @@
     @apply border-border;
   }
   html, body {
-    @apply bg-background text-foreground font-sans;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground;
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-feature-settings: 'ss01', 'cv11';
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Sora', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  h1 { @apply text-4xl md:text-5xl lg:text-6xl; }
+  h2 { @apply text-3xl md:text-4xl; }
+  h3 { @apply text-2xl md:text-3xl; }
+  button { font-family: 'Sora', system-ui, sans-serif; letter-spacing: -0.01em; }
   html {
     height: 100%;
-    scroll-padding-top: 80px;
+    scroll-padding-top: 96px;
   }
   body {
     zoom: 0.75;
-  }
-  /* Global safety: ensure all page content starts below the fixed navbar.
-     Pages/heroes that already include pt-16 / pt-20 will simply align flush. */
-  #root > * {
-    /* no-op container */
   }
   @supports not (zoom: 1) {
     body {
@@ -118,135 +148,70 @@
   .container-custom {
     @apply w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8;
   }
-  
+
   .section-padding {
     @apply py-16 lg:py-24;
   }
-  
+
+  /* Primary CTA — logo indigo with violet hover glow */
   .btn-cta {
-    @apply bg-estate-red hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300 inline-block;
+    @apply inline-flex items-center justify-center gap-2 bg-estate-blue hover:bg-estate-red text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-[0_10px_30px_-10px_hsl(var(--estate-blue)/0.55)] hover:-translate-y-0.5;
   }
-  
+
+  /* Secondary CTA — outlined indigo, fills on hover */
+  .btn-cta-secondary {
+    @apply inline-flex items-center justify-center gap-2 border-2 border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300;
+  }
+
   .text-gradient {
     @apply bg-gradient-to-r from-estate-blue to-estate-red bg-clip-text text-transparent;
   }
-  
-  .estate-blue {
-    color: hsl(var(--estate-blue));
-  }
-  
-  /* Responsive image utilities */
-  .responsive-image {
-    @apply w-full h-auto object-cover;
-  }
-  
-  .hero-image {
-    @apply w-full h-full object-cover transition-transform duration-300;
-  }
-  
-  .property-card-image {
-    @apply w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105;
-  }
-  
-  .feature-card-image {
-    @apply w-full h-44 md:h-52 object-cover;
-  }
-  
-  .thumbnail-image {
-    @apply w-full h-full object-cover rounded-lg;
-  }
-  
-  .bg-estate-blue {
-    background-color: hsl(var(--estate-blue));
-  }
-  
-  .border-estate-blue {
-    border-color: hsl(var(--estate-blue));
-  }
-  
-  .bg-estate-darkBlue {
-    background-color: hsl(var(--estate-dark-blue));
-  }
-  
-  .estate-red {
-    color: hsl(var(--estate-red));
-  }
-  
-  .bg-estate-red {
-    background-color: hsl(var(--estate-red));
-  }
-  
-  .border-estate-red {
-    border-color: hsl(var(--estate-red));
-  }
 
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
+  .estate-blue { color: hsl(var(--estate-blue)); }
+  .bg-estate-blue { background-color: hsl(var(--estate-blue)); }
+  .border-estate-blue { border-color: hsl(var(--estate-blue)); }
+  .bg-estate-darkBlue { background-color: hsl(var(--estate-dark-blue)); }
+  .estate-red { color: hsl(var(--estate-red)); }
+  .bg-estate-red { background-color: hsl(var(--estate-red)); }
+  .border-estate-red { border-color: hsl(var(--estate-red)); }
+
+  .responsive-image { @apply w-full h-auto object-cover; }
+  .hero-image { @apply w-full h-full object-cover transition-transform duration-300; }
+  .property-card-image { @apply w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105; }
+  .feature-card-image { @apply w-full h-44 md:h-52 object-cover; }
+  .thumbnail-image { @apply w-full h-full object-cover rounded-lg; }
+
+  .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 
   @keyframes pulse-glow {
-    0%, 100% {
-      box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
-    }
-    50% {
-      box-shadow: 0 0 30px rgba(34, 197, 94, 0.8);
-    }
+    0%, 100% { box-shadow: 0 0 20px hsl(var(--estate-blue) / 0.4); }
+    50% { box-shadow: 0 0 30px hsl(var(--estate-blue) / 0.8); }
   }
 
   @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
   }
-
   @keyframes slideInLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-50px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(-50px); }
+    to { opacity: 1; transform: translateX(0); }
   }
-
-  .animate-slide-in-left {
-    animation: slideInLeft 0.7s ease-out forwards;
-  }
-
-  .animate-slide-in-right {
-    animation: slideInRight 0.7s ease-out forwards;
-  }
+  .animate-slide-in-left { animation: slideInLeft 0.7s ease-out forwards; }
+  .animate-slide-in-right { animation: slideInRight 0.7s ease-out forwards; }
 
   @keyframes scaleIn {
     from { opacity: 0; transform: scale(0.85); }
     to { opacity: 1; transform: scale(1); }
   }
-  .animate-scale-in {
-    animation: scaleIn 0.8s ease-out forwards;
-  }
+  .animate-scale-in { animation: scaleIn 0.8s ease-out forwards; }
 
   @keyframes blurIn {
     from { opacity: 0; filter: blur(12px); }
     to { opacity: 1; filter: blur(0); }
   }
-  .animate-blur-in {
-    animation: blurIn 0.8s ease-out forwards;
-  }
+  .animate-blur-in { animation: blurIn 0.8s ease-out forwards; }
 }

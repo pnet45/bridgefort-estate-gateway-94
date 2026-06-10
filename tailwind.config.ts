@@ -14,10 +14,10 @@ export default {
     extend: {
       colors: {
         estate: {
-          blue: '#2B2D7D',     // Primary navy blue
-          darkBlue: '#1B1464',  // Dark blue
-          red: '#E31E24',      // Brand red
-          brown: '#7d2c04',   //Brown
+          blue: '#4000E0',     // Logo indigo (primary)
+          darkBlue: '#1A0566',  // Deep logo indigo
+          red: '#7C3AED',      // Accent violet (complements logo)
+          brown: '#C0C0C0',    // Logo silver accent
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -54,8 +54,10 @@ export default {
         },
       },
       fontFamily: {
-        montserrat: ['Montserrat', 'sans-serif'],
-        poppins: ['Poppins', 'sans-serif'],
+        sans: ['Manrope', 'system-ui', 'sans-serif'],
+        display: ['Sora', 'system-ui', 'sans-serif'],
+        montserrat: ['Sora', 'sans-serif'],
+        poppins: ['Manrope', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
