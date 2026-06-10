@@ -15,7 +15,8 @@ import {
   LogIn,
   Landmark,
   GraduationCap,
-  Users
+  Users,
+  Plane
 } from 'lucide-react';
 import CartIcon from '../ecommerce/CartIcon';
 
@@ -43,6 +44,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
     { name: 'Apartments for Rent', icon: <Building size={20} />, path: '/properties/apartments' },
     { name: 'Services', icon: <Briefcase size={20} />, path: '/services' },
     { name: 'Training', icon: <GraduationCap size={20} />, path: '/training' },
+    { name: 'Travels', icon: <Plane size={20} />, path: '/travels' },
     { name: 'Buy and Resell', icon: <Landmark size={20} />, path: '/buy2sell' },
     { name: 'Blog', icon: <BookOpen size={20} />, path: '/blog' },
     { name: 'MLM', icon: <Users size={20} />, path: '/mlm' },
