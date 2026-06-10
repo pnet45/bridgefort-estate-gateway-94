@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { HomeIcon, Building, Wallet, ArrowRight, Construction, LandPlot, GraduationCap, BarChart, HeartHandshake, Scale } from 'lucide-react';
+import { HomeIcon, Building, Wallet, ArrowRight, Construction, LandPlot, GraduationCap, BarChart, HeartHandshake, Scale, Plane } from 'lucide-react';
 const services = [{
   icon: <HomeIcon size={28} />,
   title: 'Luxury Homes',
@@ -47,6 +47,12 @@ const services = [{
   title: 'Training & Education',
   description: 'Gain valuable insights into real estate investment strategies through our comprehensive educational programs and seminars.',
   link: '/training'
+}, {
+  icon: <Plane size={28} />,
+  title: 'Bridgefort Travels',
+  description: 'Visas, flights, hotels, and curated tour packages — your trusted partner for seamless journeys worldwide.',
+  link: '/travels',
+  isCallToAction: true
 }];
 const InvestmentServices = () => {
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);

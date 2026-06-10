@@ -14,6 +14,7 @@ const AnimatedNavLinks = ({ className = '', onClick }: AnimatedNavLinksProps) =>
     { to: '/about', label: 'About Us' },
     { to: '/services', label: 'Services' },
     { to: '/training', label: 'Training' },
+    { to: '/travels', label: 'Travels' },
     { to: '/listings', label: 'Listings' },
     { to: '/buy2sell', label: 'Buy & Resell' },
     { to: '/blog', label: 'Blog' },
