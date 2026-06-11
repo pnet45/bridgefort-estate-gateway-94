@@ -106,6 +106,32 @@ const Travels = () => {
     }
   }, []);
 
+  const [filters, setFilters] = useState<TravelFiltersState>({
+    query: '',
+    travelType: 'all',
+    priceRange: [PRICE_MIN, PRICE_MAX],
+  });
+  const [bookingPackage, setBookingPackage] = useState('');
+  const [bookingDestination, setBookingDestination] = useState('');
+
+  const filteredDestinations = useMemo(() => {
+    const q = filters.query.trim().toLowerCase();
+    return destinations.filter((d) => {
+      if (q && !`${d.city} ${d.country}`.toLowerCase().includes(q)) return false;
+      if (filters.travelType !== 'all' && !d.types.includes(filters.travelType as DestType)) return false;
+      if (d.price < filters.priceRange[0] || d.price > filters.priceRange[1]) return false;
+      return true;
+    });
+  }, [filters]);
+
+  const scrollToBooking = (pkg = '', dest = '') => {
+    setBookingPackage(pkg);
+    setBookingDestination(dest);
+    setTimeout(() => {
+      document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
