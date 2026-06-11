@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Plane, Hotel, MapPin, FileCheck, Shield, Headphones, BadgeDollarSign,
-  Compass, CalendarCheck, Ticket, Globe2, Check, Star, Briefcase, GraduationCap, Stethoscope, Heart
+  Compass, CalendarCheck, Ticket, Globe2, Check, Star, Briefcase, GraduationCap, Stethoscope, Heart, SearchX
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
+import TravelsFilters, { TravelFiltersState, TravelType } from '@/components/travels/TravelsFilters';
+import TravelsBookingForm from '@/components/travels/TravelsBookingForm';
 import heroImg from '@/assets/travels-hero.jpg';
 
 const valueProps = [
@@ -20,14 +22,22 @@ const valueProps = [
   { icon: MapPin, title: 'Tour Packages', desc: 'Curated leisure, group, and bespoke itineraries to dream destinations.' },
 ];
 
-const destinations = [
-  { city: 'Dubai', country: 'United Arab Emirates', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=900&q=80', from: '850,000' },
-  { city: 'London', country: 'United Kingdom', img: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=900&q=80', from: '1,450,000' },
-  { city: 'Istanbul', country: 'Türkiye', img: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=900&q=80', from: '780,000' },
-  { city: 'Cape Town', country: 'South Africa', img: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=900&q=80', from: '920,000' },
-  { city: 'Bali', country: 'Indonesia', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80', from: '1,250,000' },
-  { city: 'New York', country: 'United States', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=900&q=80', from: '1,890,000' },
+type DestType = Exclude<TravelType, 'all'>;
+interface Destination {
+  city: string; country: string; img: string; from: string; price: number; types: DestType[];
+}
+
+const destinations: Destination[] = [
+  { city: 'Dubai', country: 'United Arab Emirates', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=900&q=80', from: '850,000', price: 850000, types: ['tourist', 'business', 'luxury'] },
+  { city: 'London', country: 'United Kingdom', img: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=900&q=80', from: '1,450,000', price: 1450000, types: ['tourist', 'business', 'student', 'medical'] },
+  { city: 'Istanbul', country: 'Türkiye', img: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=900&q=80', from: '780,000', price: 780000, types: ['tourist', 'medical', 'pilgrimage'] },
+  { city: 'Cape Town', country: 'South Africa', img: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=900&q=80', from: '920,000', price: 920000, types: ['tourist', 'luxury'] },
+  { city: 'Bali', country: 'Indonesia', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80', from: '1,250,000', price: 1250000, types: ['tourist', 'luxury'] },
+  { city: 'New York', country: 'United States', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=900&q=80', from: '1,890,000', price: 1890000, types: ['tourist', 'business', 'student'] },
 ];
+
+const PRICE_MIN = 500000;
+const PRICE_MAX = 2000000;
 
 const packages = [
   {
@@ -96,6 +106,32 @@ const Travels = () => {
     }
   }, []);
 
+  const [filters, setFilters] = useState<TravelFiltersState>({
+    query: '',
+    travelType: 'all',
+    priceRange: [PRICE_MIN, PRICE_MAX],
+  });
+  const [bookingPackage, setBookingPackage] = useState('');
+  const [bookingDestination, setBookingDestination] = useState('');
+
+  const filteredDestinations = useMemo(() => {
+    const q = filters.query.trim().toLowerCase();
+    return destinations.filter((d) => {
+      if (q && !`${d.city} ${d.country}`.toLowerCase().includes(q)) return false;
+      if (filters.travelType !== 'all' && !d.types.includes(filters.travelType as DestType)) return false;
+      if (d.price < filters.priceRange[0] || d.price > filters.priceRange[1]) return false;
+      return true;
+    });
+  }, [filters]);
+
+  const scrollToBooking = (pkg = '', dest = '') => {
+    setBookingPackage(pkg);
+    setBookingDestination(dest);
+    setTimeout(() => {
+      document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -142,8 +178,8 @@ const Travels = () => {
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }}
             className="mt-10 flex flex-wrap gap-4"
           >
-            <Button asChild variant="cta" size="lg" className="text-base">
-              <Link to="/contact">Plan My Trip</Link>
+            <Button variant="cta" size="lg" className="text-base" onClick={() => scrollToBooking()}>
+              Plan My Trip
             </Button>
             <Button asChild variant="outline" size="lg" className="text-base bg-white/10 backdrop-blur-md border-white/40 text-white hover:bg-white hover:text-estate-darkBlue">
               <a href="#packages">Browse Packages</a>
@@ -180,45 +216,70 @@ const Travels = () => {
         </div>
       </section>
 
+      {/* FILTERS */}
+      <TravelsFilters
+        value={filters}
+        onChange={setFilters}
+        min={PRICE_MIN}
+        max={PRICE_MAX}
+        resultCount={filteredDestinations.length}
+      />
+
       {/* DESTINATIONS */}
-      <section className="section-padding bg-muted/40">
+      <section className="section-padding pt-6 bg-muted/40">
         <div className="container-custom">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
             <div>
               <h2 className="font-display text-3xl md:text-4xl font-bold mb-2">Featured Destinations</h2>
               <p className="text-muted-foreground">Trending getaways our travelers love right now.</p>
             </div>
-            <Link to="/contact" className="text-estate-blue font-semibold hover:underline">View all destinations →</Link>
+            <a href="#booking" className="text-estate-blue font-semibold hover:underline">Request a custom destination →</a>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {destinations.map((d, i) => (
-              <motion.div
-                key={d.city}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: i * 0.06 }}
-                className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-shadow"
-              >
-                <div className="aspect-[4/5] overflow-hidden">
-                  <img
-                    src={d.img}
-                    alt={`${d.city}, ${d.country}`}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <div className="text-sm font-medium opacity-80">{d.country}</div>
-                  <div className="font-display text-2xl font-bold">{d.city}</div>
-                  <div className="mt-2 text-sm">
-                    From <span className="text-estate-blue font-bold text-base">₦{d.from}</span>
+
+          {filteredDestinations.length === 0 ? (
+            <div className="text-center py-16 bg-card border rounded-2xl">
+              <SearchX className="mx-auto text-muted-foreground mb-3" size={40} />
+              <h3 className="font-display text-xl font-semibold mb-1">No destinations match your filters</h3>
+              <p className="text-muted-foreground mb-4">Try widening the price range or clearing the search.</p>
+              <Button variant="cta" onClick={() => scrollToBooking('Custom', filters.query)}>
+                Request a custom trip
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredDestinations.map((d, i) => (
+                <motion.div
+                  key={d.city}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: i * 0.06 }}
+                  className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-shadow cursor-pointer"
+                  onClick={() => scrollToBooking('', d.city)}
+                >
+                  <div className="aspect-[4/5] overflow-hidden">
+                    <img
+                      src={d.img}
+                      alt={`${d.city}, ${d.country}`}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      loading="lazy"
+                    />
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <div className="text-sm font-medium opacity-80">{d.country}</div>
+                    <div className="font-display text-2xl font-bold">{d.city}</div>
+                    <div className="mt-2 text-sm flex items-center justify-between">
+                      <span>From <span className="text-estate-blue font-bold text-base">₦{d.from}</span></span>
+                      <span className="text-xs font-semibold bg-white/15 backdrop-blur-md border border-white/20 rounded-full px-3 py-1">
+                        Book →
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -264,11 +325,11 @@ const Travels = () => {
                   ))}
                 </ul>
                 <Button
-                  asChild
                   className={`w-full ${p.featured ? 'bg-white text-estate-blue hover:bg-white/90' : ''}`}
                   variant={p.featured ? 'default' : 'cta'}
+                  onClick={() => scrollToBooking(p.name)}
                 >
-                  <Link to="/contact">Enquire Now</Link>
+                  Enquire Now
                 </Button>
               </motion.div>
             ))}
@@ -420,6 +481,10 @@ const Travels = () => {
           </Accordion>
         </div>
       </section>
+
+      {/* BOOKING / ENQUIRY FORM */}
+      <TravelsBookingForm initialPackage={bookingPackage} initialDestination={bookingDestination} />
+
 
       {/* CTA */}
       <section className="relative py-20 bg-gradient-to-r from-estate-blue via-estate-darkBlue to-estate-red text-white overflow-hidden">
