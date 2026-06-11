@@ -216,45 +216,70 @@ const Travels = () => {
         </div>
       </section>
 
+      {/* FILTERS */}
+      <TravelsFilters
+        value={filters}
+        onChange={setFilters}
+        min={PRICE_MIN}
+        max={PRICE_MAX}
+        resultCount={filteredDestinations.length}
+      />
+
       {/* DESTINATIONS */}
-      <section className="section-padding bg-muted/40">
+      <section className="section-padding pt-6 bg-muted/40">
         <div className="container-custom">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-10 gap-4">
             <div>
               <h2 className="font-display text-3xl md:text-4xl font-bold mb-2">Featured Destinations</h2>
               <p className="text-muted-foreground">Trending getaways our travelers love right now.</p>
             </div>
-            <Link to="/contact" className="text-estate-blue font-semibold hover:underline">View all destinations →</Link>
+            <a href="#booking" className="text-estate-blue font-semibold hover:underline">Request a custom destination →</a>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {destinations.map((d, i) => (
-              <motion.div
-                key={d.city}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: i * 0.06 }}
-                className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-shadow"
-              >
-                <div className="aspect-[4/5] overflow-hidden">
-                  <img
-                    src={d.img}
-                    alt={`${d.city}, ${d.country}`}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <div className="text-sm font-medium opacity-80">{d.country}</div>
-                  <div className="font-display text-2xl font-bold">{d.city}</div>
-                  <div className="mt-2 text-sm">
-                    From <span className="text-estate-blue font-bold text-base">₦{d.from}</span>
+
+          {filteredDestinations.length === 0 ? (
+            <div className="text-center py-16 bg-card border rounded-2xl">
+              <SearchX className="mx-auto text-muted-foreground mb-3" size={40} />
+              <h3 className="font-display text-xl font-semibold mb-1">No destinations match your filters</h3>
+              <p className="text-muted-foreground mb-4">Try widening the price range or clearing the search.</p>
+              <Button variant="cta" onClick={() => scrollToBooking('Custom', filters.query)}>
+                Request a custom trip
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredDestinations.map((d, i) => (
+                <motion.div
+                  key={d.city}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.45, delay: i * 0.06 }}
+                  className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-shadow cursor-pointer"
+                  onClick={() => scrollToBooking('', d.city)}
+                >
+                  <div className="aspect-[4/5] overflow-hidden">
+                    <img
+                      src={d.img}
+                      alt={`${d.city}, ${d.country}`}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      loading="lazy"
+                    />
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <div className="text-sm font-medium opacity-80">{d.country}</div>
+                    <div className="font-display text-2xl font-bold">{d.city}</div>
+                    <div className="mt-2 text-sm flex items-center justify-between">
+                      <span>From <span className="text-estate-blue font-bold text-base">₦{d.from}</span></span>
+                      <span className="text-xs font-semibold bg-white/15 backdrop-blur-md border border-white/20 rounded-full px-3 py-1">
+                        Book →
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
