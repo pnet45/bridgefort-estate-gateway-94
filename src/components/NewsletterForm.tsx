@@ -60,7 +60,7 @@ const NewsletterForm = () => {
       <Button 
         type="submit" 
         disabled={loading || !email} 
-        className="bg-estate-red hover:bg-red-600 text-white font-medium py-2 px-6 rounded transition duration-300"
+        className="bg-estate-red hover:bg-red-600 text-white font-medium py-2 px-6 rounded transition duration-300 hover:animate-focus-zoom hover:scale-105"
       >
         {loading ? 'Subscribing...' : 'Subscribe'}
       </Button>

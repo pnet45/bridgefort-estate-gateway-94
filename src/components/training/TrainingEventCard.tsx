@@ -45,7 +45,7 @@ const TrainingEventCard = ({
 
   return (
     <>
-      <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
+      <Card className="hover:shadow-lg transition-shadow h-full flex flex-col hover:animate-bounce-zoom hover:scale-105 cursor-pointer">
         <CardHeader>
           <div className="flex justify-between items-start gap-2">
             <CardTitle className="text-primary text-lg leading-tight">{title}</CardTitle>

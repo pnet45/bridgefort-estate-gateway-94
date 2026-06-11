@@ -59,7 +59,7 @@ const ServiceCard = ({
               <li key={index}>{point}</li>
             ))}
           </ul>
-          <Button className="bg-estate-blue hover:bg-estate-darkBlue text-white mt-2">
+          <Button className="bg-estate-blue hover:bg-estate-darkBlue text-white mt-2 hover:animate-focus-zoom hover:scale-105">
             {buttonText}
           </Button>
         </div>
