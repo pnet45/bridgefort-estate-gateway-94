@@ -156,15 +156,23 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   return (
     <>
       <div
-        className={`bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 animate-fade-in group cursor-pointer relative ${isSoldOut ? 'opacity-60' : ''}`}
+        className={`bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 animate-fade-in hover:animate-roll hover:scale-105 focus-visible:animate-focus-zoom focus-visible:scale-105 group cursor-pointer relative ${isSoldOut ? 'opacity-60' : ''}`}
         onClick={handleCardClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCardClick();
+          }
+        }}
       >
         {/* Image Container */}
         <div className="relative h-64 overflow-hidden">
           <img 
             src={images[currentImageIndex]} 
             alt={property.title}
-            className="w-full h-full object-contain bg-gray-100 transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-contain bg-gray-100 transition-transform duration-300 group-hover:scale-105 group-hover:animate-bounce-zoom"
             loading="lazy"
             onError={handleImageError}
           />

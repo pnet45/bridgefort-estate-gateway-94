@@ -12,7 +12,7 @@ const CartIcon: React.FC = () => {
     <Button
       variant="outline"
       size="sm"
-      className="relative hover:scale-105 transition-transform duration-300"
+      className="relative hover:scale-105 transition-transform duration-300 hover:animate-bounce-zoom"
       onClick={() => setIsCartOpen(true)}
     >
       <ShoppingCart size={20} />
