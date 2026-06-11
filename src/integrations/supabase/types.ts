@@ -2343,6 +2343,81 @@ export type Database = {
         }
         Relationships: []
       }
+      travel_bookings: {
+        Row: {
+          created_at: string
+          departure_date: string
+          destination: string | null
+          email: string
+          id: string
+          name: string
+          notes: string | null
+          package: string
+          phone: string
+          return_date: string
+          status: string
+          travelers: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          departure_date: string
+          destination?: string | null
+          email: string
+          id?: string
+          name: string
+          notes?: string | null
+          package: string
+          phone: string
+          return_date: string
+          status?: string
+          travelers: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          departure_date?: string
+          destination?: string | null
+          email?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          package?: string
+          phone?: string
+          return_date?: string
+          status?: string
+          travelers?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      travel_package_blackouts: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          package: string
+          reason: string | null
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          package: string
+          reason?: string | null
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          package?: string
+          reason?: string | null
+          start_date?: string
+        }
+        Relationships: []
+      }
       user_notifications: {
         Row: {
           created_at: string
