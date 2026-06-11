@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Plane, Hotel, MapPin, FileCheck, Shield, Headphones, BadgeDollarSign,
-  Compass, CalendarCheck, Ticket, Globe2, Check, Star, Briefcase, GraduationCap, Stethoscope, Heart
+  Compass, CalendarCheck, Ticket, Globe2, Check, Star, Briefcase, GraduationCap, Stethoscope, Heart, SearchX
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
+import TravelsFilters, { TravelFiltersState, TravelType } from '@/components/travels/TravelsFilters';
+import TravelsBookingForm from '@/components/travels/TravelsBookingForm';
 import heroImg from '@/assets/travels-hero.jpg';
 
 const valueProps = [
