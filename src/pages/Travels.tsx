@@ -482,6 +482,10 @@ const Travels = () => {
         </div>
       </section>
 
+      {/* BOOKING / ENQUIRY FORM */}
+      <TravelsBookingForm initialPackage={bookingPackage} initialDestination={bookingDestination} />
+
+
       {/* CTA */}
       <section className="relative py-20 bg-gradient-to-r from-estate-blue via-estate-darkBlue to-estate-red text-white overflow-hidden">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 30%, white 1px, transparent 1px), radial-gradient(circle at 70% 60%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
