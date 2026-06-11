@@ -325,11 +325,11 @@ const Travels = () => {
                   ))}
                 </ul>
                 <Button
-                  asChild
                   className={`w-full ${p.featured ? 'bg-white text-estate-blue hover:bg-white/90' : ''}`}
                   variant={p.featured ? 'default' : 'cta'}
+                  onClick={() => scrollToBooking(p.name)}
                 >
-                  <Link to="/contact">Enquire Now</Link>
+                  Enquire Now
                 </Button>
               </motion.div>
             ))}
