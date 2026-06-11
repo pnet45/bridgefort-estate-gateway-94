@@ -178,8 +178,8 @@ const Travels = () => {
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }}
             className="mt-10 flex flex-wrap gap-4"
           >
-            <Button asChild variant="cta" size="lg" className="text-base">
-              <Link to="/contact">Plan My Trip</Link>
+            <Button variant="cta" size="lg" className="text-base" onClick={() => scrollToBooking()}>
+              Plan My Trip
             </Button>
             <Button asChild variant="outline" size="lg" className="text-base bg-white/10 backdrop-blur-md border-white/40 text-white hover:bg-white hover:text-estate-darkBlue">
               <a href="#packages">Browse Packages</a>
