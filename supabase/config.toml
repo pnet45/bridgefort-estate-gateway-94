@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.resend-receive-emails]
 verify_jwt = false
+
+[functions.submit-travel-booking]
+verify_jwt = false
