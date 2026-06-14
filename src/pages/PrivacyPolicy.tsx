@@ -14,7 +14,7 @@ const PrivacyPolicy = () => {
             <p className="text-gray-600 mb-6">Effective Date: May 20, 2025</p>
             <p className="text-gray-600 mb-6">
               Company Name: Bridgefort Homes Development Ltd<br />
-              Website: www.pwanbridgefort.ng
+              Website: www.bridgeforthomes.com
             </p>
             <hr className="my-6" />
             <section className="mb-8">
@@ -79,7 +79,7 @@ const PrivacyPolicy = () => {
                 <li>Object to processing for marketing</li>
                 <li>Withdraw consent for marketing at any time</li>
               </ul>
-              <p>To exercise your rights, email <a href="mailto:info@pwanbridgefort.ng" className="text-estate-blue hover:underline">info@pwanbridgefort.ng</a>. Certain requests may take 14 business days and require verification for your protection.</p>
+              <p>To exercise your rights, email <a href="mailto:info@bridgeforthomes.com" className="text-estate-blue hover:underline">info@bridgeforthomes.com</a>. Certain requests may take 14 business days and require verification for your protection.</p>
             </section>
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">7. Data Retention</h2>
@@ -125,12 +125,12 @@ const PrivacyPolicy = () => {
                   📍 Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate,<br />
                   VGC Bus Stop, Lekki-Ajah, Lagos
                 </p>
-                <p>📧 <a href="mailto:info@pwanbridgefort.ng" className="text-estate-blue hover:underline">info@pwanbridgefort.ng</a></p>
-                <p>📞 <a href="tel:+2348030624059" className="text-estate-blue hover:underline">+234 803 062 4059</a></p>
+                <p>📧 <a href="mailto:info@bridgeforthomes.com" className="text-estate-blue hover:underline">info@bridgeforthomes.com</a></p>
+                <p>📞 <a href="tel:+2348030624059, +2348070710688" className="text-estate-blue hover:underline">+234 803 062 4059</a></p>
               </div>
             </section>
             <footer className="text-center text-gray-600 mt-10">
-              © 2025 Bridgefort Homes Development Ltd. All rights reserved. <br />
+              © 2026 Bridgefort Homes Development Ltd. All rights reserved. <br />
               This platform and all data are protected under Nigerian law and global privacy standards.
             </footer>
           </div>
