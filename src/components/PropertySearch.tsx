@@ -102,7 +102,11 @@ const PropertySearch = () => {
               <option value="abuja">Abuja</option>
               <option value="Port Harcourt">Port Harcourt</option>
               <option value="ibadan">Ibadan</option>
+              <option value="owerri">Owerri</option>
+              <option value="warri">Warri</option>
               <option value="imo">Imo State</option>
+              <option value="ondo">Ondo State</option>
+              <option value="enugu">Enugu State</option>
               <option value="abia">Abia State</option>
               <option value="anambra">Anambra State</option>
               <option value="delta">Delta State</option>
