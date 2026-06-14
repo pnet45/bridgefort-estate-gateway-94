@@ -8,8 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Shield, Users, FileText, Mail, LayoutDashboard, LogOut, Bell, Home,
   UserCheck, CheckSquare, Calendar, Building, Activity, TrendingUp,
-  DollarSign, Settings
+  DollarSign, Settings, Plane
 } from 'lucide-react';
+import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalTab from '@/components/admin/AdminApprovalTab';
 import AdminEmailCenter from '@/components/admin/AdminEmailCenter';
@@ -32,10 +33,12 @@ import AdminOtherPayments from '@/components/admin/AdminOtherPayments';
 import AdminRolePermissions from '@/components/admin/AdminRolePermissions';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
 import AdminEstateViewsLeaderboard from '@/components/admin/AdminEstateViewsLeaderboard';
+import AdminTravelDashboard from '@/components/admin/AdminTravelDashboard';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
   const { user, userRole, signOut } = useAuth();
+  const { isSuperAdmin } = useIsSuperAdmin();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -178,6 +181,13 @@ const AdminConsole = () => {
               <Settings className="h-4 w-4" />
               <span>Permissions</span>
             </TabsTrigger>
+            {isSuperAdmin && (
+              <TabsTrigger value="travels" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5 text-xs sm:text-sm">
+                <Plane className="h-4 w-4" />
+                <span>Travels</span>
+                <span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">Super</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -218,6 +228,7 @@ const AdminConsole = () => {
           <TabsContent value="cms"><AdminContentHub /></TabsContent>
           <TabsContent value="other-payments"><AdminOtherPayments /></TabsContent>
           <TabsContent value="permissions"><AdminRolePermissions /></TabsContent>
+          {isSuperAdmin && <TabsContent value="travels"><AdminTravelDashboard /></TabsContent>}
         </Tabs>
       </main>
 
