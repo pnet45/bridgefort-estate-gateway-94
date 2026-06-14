@@ -5,7 +5,7 @@ import NewsletterForm from './NewsletterForm';
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white pt-16 pb-8 animate-fade-in mt-auto">
+    <footer className="bg-estate-darkBlue text-white pt-16 pb-8 animate-fade-in mt-auto border-t-4 border-estate-blue">
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}

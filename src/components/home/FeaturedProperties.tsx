@@ -38,7 +38,7 @@ const FeaturedProperties = () => {
         <div className="text-center mt-12 animate-fade-in">
           <Link 
             to="/properties" 
-            className="inline-flex items-center text-estate-blue font-medium hover:text-estate-darkBlue transition duration-200 hover:scale-105 focus-box-in"
+            className="inline-flex items-center text-estate-blue font-medium hover:text-estate-darkBlue transition duration-200 hover:scale-105 hover:animate-bounce-zoom focus-box-in"
           >
             View all properties 
             <ArrowRight size={18} className="ml-2" />
@@ -47,7 +47,7 @@ const FeaturedProperties = () => {
           </div>
           <Link 
             to="https://forms.gle/AdJt5YcxiG118Bo56" 
-            className="inline-flex items-center text-estate-blue font-medium hover:text-estate-darkBlue transition duration-200 hover:scale-105 focus-box-in"
+            className="inline-flex items-center text-estate-blue font-medium hover:text-estate-darkBlue transition duration-200 hover:scale-105 hover:animate-bounce-zoom focus-box-in"
           >
             Land Purchase Inquiry 
             <ArrowRight size={18} className="ml-2" />

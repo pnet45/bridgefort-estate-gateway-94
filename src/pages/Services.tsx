@@ -11,6 +11,7 @@ import FAQSection from '../components/services/FAQSection';
 import ServicesCTA from '../components/services/ServicesCTA';
 import AdditionalServices from '../components/services/AdditionalServices';
 import BuyAndResellFeature from '../components/services/Buy2SellFeature';
+import TravelsFeature from '../components/services/TravelsFeature';
 import CMSSection from '../components/cms/CMSSection';
 
 const Services = () => {
@@ -28,6 +29,9 @@ const Services = () => {
       <AdditionalServices />
 
       <CMSSection page="services" title="More Services & Articles" />
+
+      {/* Bridgefort Travels Feature */}
+      <TravelsFeature />
 
       {/* Buy and Resell Feature */}
       <div className="container-custom section-padding">

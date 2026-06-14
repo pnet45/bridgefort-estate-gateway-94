@@ -11,7 +11,7 @@ interface TestimonialCardProps {
 
 const TestimonialCard = ({ name, role, testimonial, rating, imageUrl }: TestimonialCardProps) => {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:animate-bounce-zoom transition-all duration-300 hover:scale-105 cursor-pointer">
       <div className="flex items-center mb-4">
         <img 
           src={imageUrl} 

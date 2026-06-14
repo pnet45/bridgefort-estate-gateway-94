@@ -12,6 +12,7 @@ import CartIcon from './ecommerce/CartIcon';
 import AnimatedNavLinks from './navbar/AnimatedNavLinks';
 import AnimatedAuthSection from './navbar/AnimatedAuthSection';
 import ProfileCompletionWidget from './navbar/ProfileCompletionWidget';
+import DarkModeToggle from './navbar/DarkModeToggle';
 
 const Navbar = () => {
   const { user, userRole } = useAuth();
@@ -52,9 +53,9 @@ const Navbar = () => {
 
   return (
     <>
-        <nav className="bg-white/40 backdrop-blur-lg fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 h-[64px] lg:h-[80px]">
+        <nav className="bg-background/70 dark:bg-background/80 backdrop-blur-xl border-b border-border/60 fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 h-[88px] lg:h-[104px] shadow-sm">
         <div className="container-custom flex flex-col flex-1 h-full">
-          <div className="flex justify-between items-center py-3 flex-shrink-0 relative">
+          <div className="flex justify-between items-center py-3 flex-shrink-0 relative h-full">
             {/* Mobile: Empty spacer for left side to balance the menu icon */}
             <div className="lg:hidden w-8" />
             
@@ -64,12 +65,13 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-1 xl:space-x-3 2xl:space-x-5 flex-shrink min-w-0">
-              <AnimatedNavLinks className="hover:text-estate-blue transition whitespace-nowrap text-sm xl:text-base" />
+            <div className="hidden lg:flex items-center space-x-1 xl:space-x-2 2xl:space-x-4 flex-shrink min-w-0">
+              <AnimatedNavLinks className="hover:text-estate-blue transition whitespace-nowrap text-base xl:text-lg" />
             </div>
             
             {/* Desktop Auth Section */}
             <div className="hidden lg:flex items-center space-x-4">
+              <DarkModeToggle />
               {user && <ProfileCompletionWidget />}
               <AnimatedAuthSection 
                 user={user}
@@ -80,15 +82,17 @@ const Navbar = () => {
             </div>
             
             {/* Mobile Menu Button - aligned right */}
-            <button
-              className="lg:hidden"
-              onClick={toggleMenu}
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            <div className="lg:hidden flex items-center gap-2">
+              <DarkModeToggle />
+              <button
+                onClick={toggleMenu}
+                aria-label="Toggle menu"
+                className="text-foreground"
+              >
+                {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
+              </button>
+            </div>
           </div>
-          {/* Flex grow pushes .phone-contact to bottom */}
         </div>
 
         {/* Mobile Menu */}

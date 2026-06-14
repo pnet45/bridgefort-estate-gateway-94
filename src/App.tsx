@@ -52,6 +52,8 @@ import AnnouncementArticle from '@/pages/AnnouncementArticle';
 import LocationsIndex from '@/pages/LocationsIndex';
 import LocationLanding from '@/pages/LocationLanding';
 import BHRealtors from '@/pages/BHRealtors';
+import Travels from '@/pages/Travels';
+import TravelBookingStatus from '@/pages/TravelBookingStatus';
 
 import './App.css';
 
@@ -75,6 +77,8 @@ function App() {
                 <Route path="/homes-sales" element={<HomesSales />} />
                 <Route path="/services" element={<Services />} />
                 <Route path="/training" element={<Training />} />
+                <Route path="/travels" element={<Travels />} />
+                <Route path="/travels/booking/:token" element={<TravelBookingStatus />} />
                 <Route path="/career" element={<Career />} />
                 <Route path="/career/apply" element={<CareerApplication />} />
                 <Route path="/contact" element={<Contact />} />
