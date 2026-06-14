@@ -14,7 +14,7 @@ const TermsOfService = () => {
             <h1 className="text-3xl md:text-4xl font-bold mb-6 text-estate-blue">Terms and Conditions of Use</h1>
             <p className="text-gray-600 mb-6">Effective Date: May 20, 2025</p>
             <p className="text-gray-600 mb-6">Company Name: Bridgefort Homes Development Ltd<br />
-            Website: www.pwanbridgefort.ng</p>
+            Website: www.bridgeforthomes.com</p>
             <hr className="my-6" />
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">1. Acceptance of Terms</h2>
@@ -121,7 +121,8 @@ const TermsOfService = () => {
                 <p>Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate,<br />
                   VGC Bus Stop, Lekki-Ajah, Lagos, Nigeria</p>
                 <p>📞 <a href="tel:+2348030624059" className="text-estate-blue hover:underline">+234 803 062 4059</a></p>
-                <p>📧 <a href="mailto:info@pwanbridgefort.ng" className="text-estate-blue hover:underline">info@pwanbridgefort.ng</a></p>
+                <p>📞 <a href="tel:+2348070710688" className="text-estate-blue hover:underline">+234 807 071 0688</a></p>
+                <p>📧 <a href="mailto:info@bridgeforthomes.com" className="text-estate-blue hover:underline">info@bridgeforthomes.com</a></p>
               </div>
             </section>
             <footer className="text-center text-gray-600 mt-10">
