@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { Send, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
@@ -11,6 +12,8 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import ReCaptcha from '@/components/ui/ReCaptcha';
+import type ReCAPTCHA from 'react-google-recaptcha';
 
 const schema = z.object({
   name: z.string().trim().min(2, 'Please enter your full name').max(100),
@@ -38,10 +41,13 @@ interface Blackout {
 
 const TravelsBookingForm: React.FC<Props> = ({ initialPackage = '', initialDestination = '' }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [blackouts, setBlackouts] = useState<Blackout[]>([]);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<ReCAPTCHA>(null);
   const [form, setForm] = useState({
     name: '', email: '', phone: '',
     departure: '', return: '',
@@ -105,6 +111,10 @@ const TravelsBookingForm: React.FC<Props> = ({ initialPackage = '', initialDesti
       toast({ title: 'Selected dates unavailable', description: availabilityWarning, variant: 'destructive' });
       return;
     }
+    if (!captchaToken) {
+      toast({ title: 'Please complete the CAPTCHA', variant: 'destructive' });
+      return;
+    }
     setErrors({});
     setSubmitting(true);
     try {
@@ -119,6 +129,7 @@ const TravelsBookingForm: React.FC<Props> = ({ initialPackage = '', initialDesti
           package: result.data.package,
           destination: result.data.destination || null,
           notes: result.data.notes || null,
+          captchaToken,
         },
       });
       if (error) {
@@ -136,9 +147,14 @@ const TravelsBookingForm: React.FC<Props> = ({ initialPackage = '', initialDesti
       setSubmitted(true);
       toast({
         title: 'Enquiry received ✈️',
-        description: "We've emailed you a confirmation. A consultant will contact you within 24 hours.",
+        description: "We've emailed you a confirmation. Redirecting to your booking status…",
       });
+      if (data?.token) {
+        setTimeout(() => navigate(`/travels/booking/${data.token}`), 1200);
+      }
     } catch (err: any) {
+      captchaRef.current?.reset();
+      setCaptchaToken(null);
       toast({ title: 'Could not submit enquiry', description: err.message || 'Please try again.', variant: 'destructive' });
     } finally {
       setSubmitting(false);
@@ -258,8 +274,14 @@ const TravelsBookingForm: React.FC<Props> = ({ initialPackage = '', initialDesti
                 />
               </div>
 
-              <div className="md:col-span-2 flex justify-end">
-                <Button type="submit" variant="cta" size="lg" className="gap-2" disabled={submitting || !!availabilityWarning}>
+              <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2 border-t">
+                <ReCaptcha
+                  ref={captchaRef}
+                  onChange={setCaptchaToken}
+                  onExpired={() => setCaptchaToken(null)}
+                  onError={() => setCaptchaToken(null)}
+                />
+                <Button type="submit" variant="cta" size="lg" className="gap-2" disabled={submitting || !!availabilityWarning || !captchaToken}>
                   {submitting ? <><Loader2 className="animate-spin" size={18} /> Submitting…</> : <><Send size={18} /> Submit Enquiry</>}
                 </Button>
               </div>
