@@ -63,15 +63,30 @@ const HomeHeroImage = () => {
   }, [heroImages.length]);
 
   return (
-    <section className="relative w-screen max-w-none h-[35vh] md:h-[70vh] lg:h-[80vh] left-1/2 -translate-x-1/2">
+    <section className="relative w-screen max-w-none h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)] left-1/2 -translate-x-1/2">
       <div className="h-full relative overflow-hidden w-full">
-        <img 
-          src={heroImages[currentSlide]} 
+        <img
+          src={heroImages[currentSlide]}
+          srcSet={`${heroImages[currentSlide]} 1x, ${heroImages[currentSlide]} 2x`}
+          sizes="100vw"
           alt={`Bridgefort Homes Development Ltd Hero Image ${currentSlide + 1}`}
           className="w-full h-full object-cover object-center transition-all duration-1000 ease-in-out"
-          loading="lazy"
+          loading={currentSlide === 0 ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={currentSlide === 0 ? 'high' : 'low'}
           onError={(e) => { (e.target as HTMLImageElement).src = '/lovable-uploads/PropertyHero.png'; }}
         />
+        {/* Preload next slide via hidden img for smoother transitions */}
+        {heroImages[(currentSlide + 1) % heroImages.length] && (
+          <img
+            src={heroImages[(currentSlide + 1) % heroImages.length]}
+            alt=""
+            aria-hidden="true"
+            className="hidden"
+            loading="lazy"
+            decoding="async"
+          />
+        )}
 
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end pb-16 md:items-center md:pb-0">
           <div className="container-custom text-white px-4 pt-20 flex justify-start">
