@@ -76,9 +76,16 @@ const HomeHeroImage = () => {
           fetchPriority={currentSlide === 0 ? 'high' : 'low'}
           onError={(e) => { (e.target as HTMLImageElement).src = '/lovable-uploads/PropertyHero.png'; }}
         />
-        {/* Preload next slide for smoother transitions */}
+        {/* Preload next slide via hidden img for smoother transitions */}
         {heroImages[(currentSlide + 1) % heroImages.length] && (
-          <link rel="preload" as="image" href={heroImages[(currentSlide + 1) % heroImages.length]} />
+          <img
+            src={heroImages[(currentSlide + 1) % heroImages.length]}
+            alt=""
+            aria-hidden="true"
+            className="hidden"
+            loading="lazy"
+            decoding="async"
+          />
         )}
 
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end pb-16 md:items-center md:pb-0">
