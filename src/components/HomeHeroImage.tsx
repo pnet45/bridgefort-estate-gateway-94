@@ -63,15 +63,16 @@ const HomeHeroImage = () => {
   }, [heroImages.length]);
 
   return (
-    <section className="relative w-full h-[35vh] md:h-[70vh] lg:h-[80vh]">
-      <div className="h-full relative overflow-hidden">
+    <section className="relative w-screen max-w-none h-[35vh] md:h-[70vh] lg:h-[80vh] left-1/2 -translate-x-1/2">
+      <div className="h-full relative overflow-hidden w-full">
         <img 
           src={heroImages[currentSlide]} 
           alt={`Bridgefort Homes Development Ltd Hero Image ${currentSlide + 1}`}
-          className="w-full h-full object-cover transition-all duration-1000 ease-in-out"
+          className="w-full h-full object-cover object-center transition-all duration-1000 ease-in-out"
           loading="lazy"
           onError={(e) => { (e.target as HTMLImageElement).src = '/lovable-uploads/PropertyHero.png'; }}
         />
+
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end pb-16 md:items-center md:pb-0">
           <div className="container-custom text-white px-4 pt-20 flex justify-start">
             <div key={textKey} className={`max-w-3xl ${textEffect}`} style={{ animationDuration: '0.8s' }}>

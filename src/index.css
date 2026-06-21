@@ -118,22 +118,11 @@
     scroll-padding-top: 96px;
   }
   body {
-    zoom: 0.75;
-  }
-  @supports not (zoom: 1) {
-    body {
-      transform: scale(0.75);
-      transform-origin: top center;
-      width: 133.3333%;
-      height: 133.3333%;
-      margin-left: -16.6667%;
-    }
-  }
-  body {
     min-height: 100%;
     width: 100%;
     margin: 0 auto;
   }
+
   #root {
     min-height: 100vh;
     display: flex;
