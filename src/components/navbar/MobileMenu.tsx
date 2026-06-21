@@ -45,7 +45,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
     { name: 'Services', icon: <Briefcase size={20} />, path: '/services' },
     { name: 'Training', icon: <GraduationCap size={20} />, path: '/training' },
     { name: 'Travels', icon: <Plane size={20} />, path: '/travels' },
-    { name: 'Buy and Resell', icon: <Landmark size={20} />, path: '/buy2sell' },
     { name: 'Blog', icon: <BookOpen size={20} />, path: '/blog' },
     { name: 'MLM', icon: <Users size={20} />, path: '/mlm' },
     { name: 'Bridgefort Realtors', icon: <Users size={20} />, path: '/bridgefort-realtors-login' },
@@ -55,21 +54,25 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-full left-0 right-0 bg-white shadow-lg z-50 py-4 overflow-hidden animate-fade-in lg:hidden">
+    <div className="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl shadow-2xl z-50 py-4 overflow-hidden animate-fade-in lg:hidden border-t border-gray-100 max-h-[85vh] overflow-y-auto">
       <div className="mb-4 px-4">
         <CartIcon />
       </div>
       
       <nav className="flex flex-col">
-        {menuItems.map((item) => (
+        {menuItems.map((item, idx) => (
           <Link
             key={item.name}
             to={item.path}
-            className="flex items-center px-4 py-3 hover:bg-gray-100"
+            className="group flex items-center px-4 py-3 hover:bg-estate-blue/10 hover:pl-6 transition-all duration-300 border-l-2 border-transparent hover:border-estate-blue"
             onClick={toggleMenu}
+            style={{
+              opacity: 0,
+              animation: `slideInRight 0.35s ease-out ${idx * 40}ms forwards`,
+            }}
           >
-            <span className="mr-3 text-gray-500">{item.icon}</span>
-            <span className="font-medium">{item.name}</span>
+            <span className="mr-3 text-gray-500 group-hover:text-estate-blue group-hover:scale-110 transition-all duration-300">{item.icon}</span>
+            <span className="font-medium group-hover:text-estate-blue transition-colors">{item.name}</span>
           </Link>
         ))}
 

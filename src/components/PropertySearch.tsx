@@ -74,7 +74,7 @@ const PropertySearch = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg -mt-20 relative z-10 mx-auto max-w-5xl hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in">
+    <div className="bg-white p-3 md:p-6 rounded-lg shadow-lg -mt-20 relative z-10 mx-auto w-1/2 md:w-full max-w-5xl hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in">
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="md:col-span-1">
