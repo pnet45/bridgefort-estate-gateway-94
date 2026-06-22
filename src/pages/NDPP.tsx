@@ -140,4 +140,4 @@ const NDPP = () => {
   );
 };
 
-export default PrivacyPolicy;
+export default NDPP;
