@@ -20,19 +20,19 @@ export const announcementItems: AnnouncementItem[] = [
 
       <p>Bridgefort Homes Development Ltd proudly celebrates the successful physical allocation and handover of plots to clients at two of its fast-rising developments — <strong>Precious Gardens Estate</strong> and <strong>The Ambassadors Parks and Gardens Estate</strong>, both strategically located at Ode-Omi, Ogun Waterside LGA, Ogun State, along the thriving Ibeju-Lekki Lagos–Calabar Coastal Road corridor.</p>
 
-      <img src="/images/allocation-1.jpg" alt="Client receiving allocation documents" style="width:100%;border-radius:8px;margin:16px 0" />
+      <img src="/images/allocation-1.jpg" alt="Client receiving allocation documents" style="width:50%;border-radius:8px;margin:16px 0" />
 
       <p>The allocation event was filled with excitement, satisfaction, and a deep sense of fulfillment as clients physically stepped onto their lands, marking a major milestone in their investment journey. True to its promise, Bridgefort Homes Development Ltd once again demonstrated reliability and integrity by delivering value exactly as assured.</p>
 
-      <img src="/images/allocation-3.jpg" alt="Happy land owner at Ode-Omi" style="width:100%;border-radius:8px;margin:16px 0" />
+      <img src="/images/allocation-3.jpg" alt="Happy land owner at Ode-Omi" style="width:50%;border-radius:8px;margin:16px 0" />
 
       <p>These estates continue to gain remarkable attention and appreciation in value, driven by ongoing and projected infrastructural developments in the area. With the Lagos–Calabar Coastal Road running directly in front of the estates, improved access roads, and the unique positioning of the land between the Atlantic Ocean and the Lagos Lagoon, the location stands out as a prime investment destination with high future returns.</p>
 
-      <img src="/images/allocation-4.jpg" alt="Plot allocation at Precious Gardens" style="width:100%;border-radius:8px;margin:16px 0" />
+      <img src="/images/allocation-4.jpg" alt="Plot allocation at Precious Gardens" style="width:50%;border-radius:8px;margin:16px 0" />
 
       <p>Representing the company at the event, the Admin/Inspection Officer, <strong>Emmanuel Etokakpan</strong>, officially presented the plots to their rightful owners, guiding them through the process and ensuring a smooth and transparent allocation experience.</p>
 
-      <img src="/images/allocation-5.jpg" alt="Successful allocation ceremony" style="width:100%;border-radius:8px;margin:16px 0" />
+      <img src="/images/allocation-5.jpg" alt="Successful allocation ceremony" style="width:50%;border-radius:8px;margin:16px 0" />
 
       <h2>Client Testimonials</h2>
 
@@ -40,13 +40,13 @@ export const announcementItems: AnnouncementItem[] = [
 
       <p><em>"This is a dream come true for me. The location is perfect, and I can already see the future value. I'm glad I invested early."</em> – <strong>Mrs. Okeke</strong></p>
 
-      <img src="/images/allocation-22.jpg" alt="Proud land owner with certificate" style="width:100%;border-radius:8px;margin:16px 0" />
+      <img src="/images/allocation-22.jpg" alt="Proud land owner with certificate" style="width:50%;border-radius:8px;margin:16px 0" />
 
       <p><em>"The process was seamless from start to finish. Today's allocation has strengthened my trust in Bridgefort Homes Development Ltd."</em> – <strong>Mr. Musa</strong></p>
 
       <p><em>"I'm excited about what is coming here. With the coastal road and developments around, this is definitely a wise investment."</em> – <strong>Mrs. Daniels</strong></p>
 
-      <img src="/images/allocation-222.jpg" alt="Document handover at Ode-Omi" style="width:100%;border-radius:8px;margin:16px 0" />
+      <img src="/images/allocation-222.jpg" alt="Document handover at Ode-Omi" style="width:50%;border-radius:8px;margin:16px 0" />
 
       <p>The successful allocation further reinforces Bridgefort Homes Development Ltd's commitment to transparency, client satisfaction, and delivering premium real estate opportunities. As development continues to unfold within the Ode-Omi axis, investors can remain confident that their assets are positioned for significant growth.</p>
 
@@ -88,9 +88,9 @@ export const announcementItems: AnnouncementItem[] = [
 
       <p><strong>📍 Bridgefort Homes Development Ltd</strong><br/>
       117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, opposite VGC Estate, Lekki, Lagos State<br/>
-      📞 +234 803 062 4059 | 🌐 www.pwanbridgefort.ng | ✉️ info@pwanbridgefort.ng</p>
+      📞 +234 803 062 4059 | 🌐 www.bridgeforthomes.com | ✉️ info@bridgeforthomes.com</p>
 
-      <p><em>"…Rebuilding the Future."</em></p>
+      <p><em>"…Bringing your dream home!."</em></p>
     `
   },
   {
@@ -98,7 +98,7 @@ export const announcementItems: AnnouncementItem[] = [
     datePublished: "2025-10-01",
     title: "Fortress Hills Allocation - This October 2025",
     text: "Exciting news! Physical allocation for Fortress Hills Estate is happening this October 2025. All subscribers who have completed their payments are invited to the allocation ceremony.",
-    img: "/lovable-uploads/2025-CURRENT-SUB-FORM-FORTRESS-HILLS-IKORODU-PHASE-1-&-2.pdf",
+    img: "/lovable-uploads/Fortress_hills_allocation.jpg",
     fullContent: `
       <h2>Fortress Hills Estate - Physical Allocation This October 2025</h2>
 
@@ -131,10 +131,10 @@ export const announcementItems: AnnouncementItem[] = [
 
       <h3>For Enquiries:</h3>
       <p><strong>📞 Phone:</strong> +234 803 062 4059<br/>
-      <strong>✉️ Email:</strong> info@pwanbridgefort.ng<br/>
-      <strong>🌐 Website:</strong> www.pwanbridgefort.ng</p>
+      <strong>✉️ Email:</strong> info@bridgeforthomes.com<br/>
+      <strong>🌐 Website:</strong> www.bridgeforthomes.com</p>
 
-      <p><em>"…Rebuilding the Future."</em></p>
+      <p><em>"…Bringing your dream home!."</em></p>
     `
   },
   {
@@ -161,7 +161,8 @@ export const announcementItems: AnnouncementItem[] = [
 
       <p><strong>For more information, contact:</strong><br/>
       📞 +234 803 062 4059<br/>
-      ✉️ info@pwanbridgefort.ng</p>
+      ✉️ info@bridgeforthomes.com
+      🌐 www.bridgeforthomes.com</p>
     `
   },
   {
@@ -193,7 +194,7 @@ export const announcementItems: AnnouncementItem[] = [
         <li>Professional development training</li>
       </ul>
 
-      <p><strong>To apply, visit:</strong> <a href="/career">www.pwanbridgefort.ng/career</a></p>
+      <p><strong>To apply, visit:</strong> <a href="/career">www.bridgeforthomes.com/career</a></p>
 
       <p>Join us in rebuilding the future!</p>
     `
