@@ -101,6 +101,7 @@ const Footer = () => {
             <p className="text-gray-400 text-sm">© {new Date().getFullYear()} Bridgefort Homes Development Ltd. All rights reserved.</p>
             <div className="mt-4 md:mt-0 flex flex-wrap gap-4">
               <Link to="/privacy-policy" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">Privacy Policy</Link>
+              <Link to="/NDPP" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">Data Protection Policy Statement</Link>
               <Link to="/terms-of-service" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">Terms of Service</Link>
               <Link to="/sitemap" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">Sitemap</Link>
               <Link to="/admin-login" className="text-gray-400 text-sm hover:text-white hover:scale-105 transition-all duration-200">
