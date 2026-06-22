@@ -51,7 +51,7 @@ const SubscriptionGuide = () => {
                 <Mail className="h-5 w-5 text-estate-blue" />
                 <div>
                   <p className="font-medium text-estate-blue">Email:</p>
-                  <p className="text-gray-600">info@pwanbridgefort.com</p>
+                  <p className="text-gray-600">info@bridgeforthomes.com</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
