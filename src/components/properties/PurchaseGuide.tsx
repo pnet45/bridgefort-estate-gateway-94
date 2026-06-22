@@ -84,7 +84,7 @@ const PurchaseGuide = () => {
               <div className="space-y-2">
                 <p className="font-medium">Send documents to:</p>
                 <a href="mailto:sales@pwanbridgefort.ng" className="text-gray-200 hover:text-white transition-colors">
-                  📧 sales@pwanbridgefort.ng
+                  📧 sales@bridgeforthome.com
                 </a>
                 <p className="text-sm text-gray-200 mt-3">
                   Subject Line: "Estate Subscription & Payment Confirmation – (Your Name)"
