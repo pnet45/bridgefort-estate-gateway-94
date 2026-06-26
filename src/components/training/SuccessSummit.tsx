@@ -40,7 +40,7 @@ const SuccessSummit = () => {
               </div>
               
               <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-                Success Summit
+                Wealth Summit
                 <span className="block text-estate-gold">2025</span>
               </h2>
               
