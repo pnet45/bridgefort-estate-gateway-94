@@ -12,10 +12,10 @@ interface SummitDetailsContentProps {
 const SummitDetailsContent: React.FC<SummitDetailsContentProps> = ({ onRegisterClick }) => {
   return (
     <ScrollArea className="p-6 max-h-[60vh]">
-      <h2 className="text-2xl font-bold mb-4 text-estate-blue">SUCCESS SUMMIT 2025</h2>
+      <h2 className="text-2xl font-bold mb-4 text-estate-blue">WEALTH SUMMIT 2026</h2>
       
       <p className="text-lg mb-6">
-        Get ready for an unforgettable experience at the MAY 2025 SUCCESS SUMMIT — LIVE in Port Harcourt!
+        Get ready for an unforgettable experience at the JULY 2026 WEALTH SUMMIT — LIVE!
       </p>
       
       <div className="mb-6">
@@ -51,14 +51,14 @@ const SummitDetailsContent: React.FC<SummitDetailsContentProps> = ({ onRegisterC
         <SpeakerProfile 
           image="/lovable-uploads/2c263077-7d02-4a8a-a3f5-0ce73e9c72e2.png" 
           name="Jayne O. Onwumere"
-          title="Founder/President, PWAN Group"
+          title="Founder/President,  Group"
         />
-      </div>
+      </div> 
       
       <div className="space-y-2 mb-8">
         <p className="flex items-center text-gray-700">
           <Calendar size={18} className="mr-3 text-estate-blue" />
-          <span>Monday, May 12th, 2025</span>
+          <span>Every Tuesday in July, 2026</span>
         </p>
         <p className="flex items-center text-gray-700">
           <Clock size={18} className="mr-3 text-estate-blue" />
@@ -66,7 +66,7 @@ const SummitDetailsContent: React.FC<SummitDetailsContentProps> = ({ onRegisterC
         </p>
         <p className="flex items-center text-gray-700">
           <MapPin size={18} className="mr-3 text-estate-blue" />
-          <span>Autograph Event Center, Sanni Abacha Road, Port Harcourt, Rivers State</span>
+          <span>Bridgefort Homes Office, Suite 8, Gacoun Plaza, Opp. K-Close 23 Road, Festac Town, Lagos</span>
         </p>
       </div>
       
@@ -80,7 +80,7 @@ const SummitDetailsContent: React.FC<SummitDetailsContentProps> = ({ onRegisterC
       </div>
       
       <p className="text-center font-bold text-estate-blue">
-        PWAN GROUP — Making Home Ownership Dreams a Reality!
+       BRIDGEFORT HOMES — Bringing your Dreams Home!
       </p>
       
       <div className="mt-6">
