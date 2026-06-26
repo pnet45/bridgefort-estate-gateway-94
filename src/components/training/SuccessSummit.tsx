@@ -36,12 +36,12 @@ const SuccessSummit = () => {
             <div className="space-y-6 animate-slide-in-left">
               <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full text-sm font-medium">
                 <Calendar size={16} />
-                Premium Event
+                Wealth Summit Series
               </div>
               
               <h2 className="text-4xl md:text-5xl font-bold leading-tight">
                 Wealth Summit
-                <span className="block text-estate-gold">2025</span>
+                <span className="block text-estate-gold">2026</span>
               </h2>
               
               <p className="text-xl text-gray-200 leading-relaxed">
@@ -56,8 +56,8 @@ const SuccessSummit = () => {
                     <Calendar className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="font-semibold">March 15, 2025</p>
-                    <p className="text-sm text-gray-300">Saturday</p>
+                    <p className="font-semibold">July 7, 14, 21,28, 2026</p>
+                    <p className="text-sm text-gray-300">All Tuesdays in July</p>
                   </div>
                 </div>
                 
@@ -66,7 +66,7 @@ const SuccessSummit = () => {
                     <Clock className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="font-semibold">9:00 AM - 6:00 PM</p>
+                    <p className="font-semibold">10:00 AM</p>
                     <p className="text-sm text-gray-300">Full Day Event</p>
                   </div>
                 </div>
@@ -76,8 +76,8 @@ const SuccessSummit = () => {
                     <MapPin className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="font-semibold">Lagos, Nigeria</p>
-                    <p className="text-sm text-gray-300">Premium Venue</p>
+                    <p className="font-semibold">Bridgefort Homes Office, Suite 8, Gacoun Plaza Opposite K-Close, 23 Road Festac Town, Lagos, Nigeria</p>
+                    <p className="text-sm text-gray-300">Summit Venue</p>
                   </div>
                 </div>
                 
@@ -86,7 +86,7 @@ const SuccessSummit = () => {
                     <Users className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="font-semibold">500+ Attendees</p>
+                    <p className="font-semibold">Only 50 Participants</p>
                     <p className="text-sm text-gray-300">Limited Seats</p>
                   </div>
                 </div>
@@ -127,8 +127,8 @@ const SuccessSummit = () => {
               </div>
 
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 animate-pulse">
-                <p className="text-center text-lg font-semibold mb-2">Early Bird Special</p>
-                <p className="text-center text-3xl font-bold text-estate-gold mb-2">Gift Items</p>
+                <p className="text-center text-lg font-semibold mb-2">Pre-Registration is Compulsory!</p>
+                <p className="text-center text-3xl font-bold text-estate-gold mb-2">ONLY 5 OUTSTANDING PARTICIPANTS WILL QUALIFY FOR DIRECT MENTORSHIP</p>
                 <p className="text-center text-sm text-gray-300">Price: Free </p>
               </div>
             </div>
