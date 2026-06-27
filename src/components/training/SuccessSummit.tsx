@@ -107,6 +107,15 @@ const SuccessSummit = () => {
 
             {/* Highlights */}
             <div className="space-y-6 animate-slide-in-right">
+              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/20">
+                <img
+                  src="/lovable-uploads/wealth-summit-2026-flyer.jpg"
+                  alt="The Wealth Summit Series 2026 - Think and Grow Rich, a 4-week executive wealth mastery program hosted by Dr. Dalvin Silva"
+                  className="w-full h-auto object-cover"
+                  loading="lazy"
+                />
+              </div>
+
               <h3 className="text-2xl font-bold mb-6">What You'll Experience</h3>
               
               <div className="space-y-4">
