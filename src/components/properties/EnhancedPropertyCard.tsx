@@ -43,8 +43,8 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
   return (
     <>
       <Card
-        className={`group relative overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-2xl hover:scale-105 transform ${
-          isHovered ? 'shadow-2xl scale-105' : 'shadow-lg'
+        className={`group relative overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 transform ${
+          isHovered ? 'shadow-2xl -translate-y-1' : 'shadow-lg'
         } ${!isAvailable ? 'opacity-75' : ''}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -84,7 +84,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
             <Button
               size="icon"
               variant="secondary"
-              className="rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg"
+              className="rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsLiked(!isLiked);
@@ -100,7 +100,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
             <Button
               size="icon"
               variant="secondary"
-              className="rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg"
+              className="rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg"
               onClick={(e) => {
                 e.stopPropagation();
                 handleViewDetails();
@@ -113,11 +113,11 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
           {/* Status Badge */}
           <div className="absolute top-4 left-4 z-20">
             {!isAvailable ? (
-              <Badge variant="destructive" className="bg-red-500/90 text-white">
+              <Badge variant="destructive" className="bg-destructive/90 text-white">
                 SOLD OUT
               </Badge>
             ) : (
-              <Badge variant="secondary" className="bg-green-500/90 text-white">
+              <Badge variant="secondary" className="bg-beauty-green/90 text-white">
                 AVAILABLE
               </Badge>
             )}
@@ -125,7 +125,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
 
           {/* Price Overlay */}
           <div className="absolute bottom-4 left-4 z-20">
-            <div className="bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+            <div className="bg-card/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
               <p className="text-lg font-bold text-estate-blue">
                 {formatPrice(property.price)}
               </p>
@@ -135,7 +135,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
 
         <CardContent className="p-6">
           {/* Property Title */}
-          <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-estate-blue transition-colors duration-300">
+          <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1 group-hover:text-estate-blue transition-colors duration-300">
             {property.title}
           </h3>
 
