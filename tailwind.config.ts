@@ -14,11 +14,23 @@ export default {
     extend: {
       colors: {
         estate: {
-          blue: '#4000E0',     // Logo indigo (primary)
-          darkBlue: '#1A0566',  // Deep logo indigo
-          red: '#7C3AED',      // Accent violet (complements logo)
-          brown: '#C0C0C0',    // Logo silver accent
-          gold: '#D4AF37',     // Premium/wealth accent (summit badges, highlights)
+          blue: 'hsl(var(--estate-blue))',         // now Vivid Purple — name kept for backwards-compat
+          darkBlue: 'hsl(var(--estate-dark-blue))',
+          red: 'hsl(var(--estate-red))',            // magenta-violet accent
+          brown: 'hsl(var(--estate-brown))',        // grey
+          gold: 'hsl(var(--estate-gold))',
+          purple: 'hsl(var(--estate-purple))',
+          purpleLight: 'hsl(var(--estate-purple-light))',
+          grey: 'hsl(var(--estate-grey))',
+          greyLight: 'hsl(var(--estate-grey-light))',
+          greyDark: 'hsl(var(--estate-grey-dark))',
+        },
+        beauty: {
+          coral: 'hsl(var(--accent-coral))',
+          orange: 'hsl(var(--accent-orange))',
+          pink: 'hsl(var(--accent-pink))',
+          green: 'hsl(var(--accent-green))',
+          greenLight: 'hsl(var(--accent-green-light))',
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
