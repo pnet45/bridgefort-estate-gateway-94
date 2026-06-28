@@ -5,10 +5,10 @@ const CareerHero = () => {
       <div className="h-[50vh] bg-cover bg-center" style={{
       backgroundImage: 'url(/lovable-uploads/b006d931-462b-4646-97c9-0b2f3bc1d210.jpg)'
     }}>
-        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center">
+        <div className="absolute inset-0 hero-overlay flex items-center">
           <div className="container-custom text-white">
             <div className="max-w-3xl rounded-none mx-0 px-0 py-px my-px">
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white animate-slide-in-left">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-slide-in-left text-gradient">
                 Build Your Career With Us
               </h1>
               <p className="text-xl mb-8 animate-fade-in py-[16px] my-[45px]">
