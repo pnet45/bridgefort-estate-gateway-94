@@ -156,7 +156,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   return (
     <>
       <div
-        className={`bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 animate-fade-in hover:animate-roll hover:scale-105 focus-visible:animate-focus-zoom focus-visible:scale-105 group cursor-pointer relative ${isSoldOut ? 'opacity-60' : ''}`}
+        className={`glass-card rounded-lg overflow-hidden transition-all duration-300 animate-fade-in hover:-translate-y-1 focus-visible:animate-focus-zoom group cursor-pointer relative ${isSoldOut ? 'opacity-60' : ''}`}
         onClick={handleCardClick}
         role="button"
         tabIndex={0}
@@ -239,7 +239,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
               </Badge>
             )}
             {isSoldOut && (
-              <Badge variant="destructive" className="bg-gray-600 text-white">
+              <Badge variant="destructive" className="bg-muted-foreground text-white">
                 SOLD OUT
               </Badge>
             )}
@@ -253,7 +253,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
         </div>
         {/* Content */}
         <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-2 hover:text-estate-blue transition-colors">
+          <h3 className="text-xl font-bold text-foreground mb-2 hover:text-estate-blue transition-colors">
             {property.title}
           </h3>
           <PropertyRatingBadge propertyId={property.id} className="mb-2" />

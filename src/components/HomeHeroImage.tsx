@@ -88,10 +88,10 @@ const HomeHeroImage = () => {
           />
         )}
 
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end pb-16 md:items-center md:pb-0">
+        <div className="absolute inset-0 hero-overlay-light flex items-end pb-16 md:items-center md:pb-0">
           <div className="container-custom text-white px-4 pt-20 flex justify-start">
             <div key={textKey} className={`max-w-3xl ${textEffect}`} style={{ animationDuration: '0.8s' }}>
-              <h1 className="text-lg md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-6 leading-snug md:leading-tight text-left">
+              <h1 className="text-lg md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-6 leading-snug md:leading-tight text-left text-gradient">
                 {heroTitle}
               </h1>
               <p className="text-sm md:text-lg lg:text-xl xl:text-2xl mb-3 md:mb-8 max-w-2xl text-left" style={{ animationDelay: '200ms' }}>
