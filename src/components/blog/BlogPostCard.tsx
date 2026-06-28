@@ -12,7 +12,7 @@ interface BlogPostCardProps {
 }
 
 const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onReadMore }) => (
-  <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-300 hover:animate-bounce-zoom hover:scale-105 cursor-pointer">
+  <div className="glass-card rounded-lg overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-pointer">
     <div className="relative h-56 overflow-hidden">
       <img
         src={post.image_path}
@@ -32,7 +32,7 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onReadMore }) => (
         <span className="mx-2">•</span>
         <span>By {post.profiles?.first_name} {post.profiles?.last_name}</span>
       </div>
-      <h3 className="text-xl font-semibold mb-3 text-gray-800">
+      <h3 className="text-xl font-semibold mb-3 text-foreground">
         {post.title}
       </h3>
       <p className="text-gray-600 mb-4">
