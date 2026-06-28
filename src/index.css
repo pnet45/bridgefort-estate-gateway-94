@@ -47,6 +47,7 @@
     --estate-dark-blue: 260 92% 21%;
     --estate-red: 262 83% 58%;
     --estate-brown: 0 0% 75%;
+    --estate-gold: 46 65% 52%;
   }
 
   .dark {
@@ -87,6 +88,7 @@
     --estate-dark-blue: 260 30% 14%;
     --estate-red: 262 83% 68%;
     --estate-brown: 0 0% 75%;
+    --estate-gold: 46 70% 62%;
   }
 }
 
@@ -163,6 +165,9 @@
   .estate-red { color: hsl(var(--estate-red)); }
   .bg-estate-red { background-color: hsl(var(--estate-red)); }
   .border-estate-red { border-color: hsl(var(--estate-red)); }
+  .estate-gold { color: hsl(var(--estate-gold)); }
+  .bg-estate-gold { background-color: hsl(var(--estate-gold)); }
+  .border-estate-gold { border-color: hsl(var(--estate-gold)); }
 
   .responsive-image { @apply w-full h-auto object-cover; }
   .hero-image { @apply w-full h-full object-cover transition-transform duration-300; }
