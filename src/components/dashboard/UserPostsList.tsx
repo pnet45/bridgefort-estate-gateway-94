@@ -21,7 +21,7 @@ const UserPostsList = ({ posts, loading, onEditPost, onDeleteClick }: UserPostsL
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {posts.map((post) => (
-        <div key={post.id} className="bg-gray-50 rounded-lg p-4 shadow-sm">
+        <div key={post.id} className="glass-card rounded-lg p-4 hover:-translate-y-1 transition-all duration-300">
           <h3 className="font-semibold mb-2">{post.title}</h3>
           <p className="text-sm text-gray-600 mb-3">{post.excerpt}</p>
           <div className="flex justify-between items-center">

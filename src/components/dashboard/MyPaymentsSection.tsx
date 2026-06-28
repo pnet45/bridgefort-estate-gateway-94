@@ -53,7 +53,7 @@ const MyPaymentsSection: React.FC = () => {
     return <Card>
       <CardHeader><CardTitle>My Payments</CardTitle></CardHeader>
       <CardContent>
-        <p className="text-gray-600">No payment records found.</p>
+        <p className="text-muted-foreground">No payment records found.</p>
       </CardContent>
     </Card>;
   }
@@ -72,13 +72,13 @@ const MyPaymentsSection: React.FC = () => {
               {docPayments.map((doc) => (
                 <div
                   key={doc.id}
-                  className="p-4 border rounded-lg bg-blue-50 flex flex-col md:flex-row md:items-center justify-between gap-3"
+                  className="p-4 border rounded-lg bg-estate-purpleLight/20 flex flex-col md:flex-row md:items-center justify-between gap-3"
                 >
                   <div>
                     <div className="font-semibold text-estate-blue">
                       Estate: {doc.estate?.name || doc.estate_id}
                     </div>
-                    <div className="text-xs text-gray-700">{doc.estate?.location}</div>
+                    <div className="text-xs text-muted-foreground">{doc.estate?.location}</div>
                   </div>
                   <div>
                     <div className="font-bold">
@@ -105,7 +105,7 @@ const MyPaymentsSection: React.FC = () => {
             return (
               <div
                 key={pm.id}
-                className="p-4 border rounded-lg bg-white flex flex-col md:flex-row md:items-center justify-between gap-3"
+                className="p-4 border rounded-lg glass-card flex flex-col md:flex-row md:items-center justify-between gap-3"
               >
                 <div>
                   <div className="font-semibold text-estate-blue">
@@ -115,13 +115,13 @@ const MyPaymentsSection: React.FC = () => {
                   <div className="text-xs">Tenor: {pm.months} month(s)</div>
                   {pm.plan_type !== "outright" && (
                     <div className="mt-2">
-                      <div className="w-full h-2 rounded bg-blue-100">
+                      <div className="w-full h-2 rounded bg-muted">
                         <div
                           className="h-2 rounded bg-estate-blue transition-all"
                           style={{ width: percentPaid + '%' }}
                         ></div>
                       </div>
-                      <div className="text-xs mt-1 text-gray-500">
+                      <div className="text-xs mt-1 text-muted-foreground">
                         {paidPayments} of {totalPayments} payments completed
                       </div>
                     </div>

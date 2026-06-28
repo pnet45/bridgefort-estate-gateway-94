@@ -10,7 +10,13 @@ interface RegistrationStats {
   categoryStats: { category: string; count: number }[];
 }
 
-const COLORS = ['#1e40af', '#dc2626', '#059669', '#d97706', '#7c3aed'];
+const COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+];
 
 const TrainingAnalyticsTab = () => {
   const [stats, setStats] = useState<RegistrationStats>({
@@ -84,7 +90,7 @@ const TrainingAnalyticsTab = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-600">Loading analytics...</div>
+        <div className="text-muted-foreground">Loading analytics...</div>
       </div>
     );
   }
@@ -155,11 +161,11 @@ const TrainingAnalyticsTab = () => {
                   />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" fill="#1e40af" name="Registrations" />
+                  <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Registrations" />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-gray-500">
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                 No event data available
               </div>
             )}
@@ -193,7 +199,7 @@ const TrainingAnalyticsTab = () => {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-gray-500">
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground">
                 No category data available
               </div>
             )}
@@ -220,7 +226,7 @@ const TrainingAnalyticsTab = () => {
                   {stats.eventStats
                     .sort((a, b) => b.count - a.count)
                     .map((event, index) => (
-                      <tr key={index} className="border-b hover:bg-gray-50">
+                      <tr key={index} className="border-b hover:bg-muted/50">
                         <td className="py-3 px-4">{event.eventTitle}</td>
                         <td className="text-right py-3 px-4 font-semibold">{event.count}</td>
                       </tr>
@@ -229,7 +235,7 @@ const TrainingAnalyticsTab = () => {
               </table>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               No registration data available
             </div>
           )}

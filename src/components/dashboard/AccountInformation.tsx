@@ -15,27 +15,27 @@ const AccountInformation = () => {
     : 'Loading...';
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 mt-8 hover:shadow-xl transition-all duration-300 hover:scale-105 focus-within:scale-105 focus-within:ring-2 focus-within:ring-purple-500">
+    <div className="glass-card rounded-lg p-6 mt-8 transition-all duration-300 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-estate-purple">
       <h2 className="text-xl font-semibold mb-4 text-estate-blue">Account Information</h2>
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg hover:scale-105 transition-all duration-300">
-          <p className="text-gray-600 font-medium">Email</p>
-          <p className="font-semibold text-black">{user?.email || 'N/A'}</p>
+        <div className="bg-gradient-to-br from-estate-purpleLight/40 to-estate-red/10 p-4 rounded-lg transition-all duration-300 hover:-translate-y-0.5 border border-estate-purple/10">
+          <p className="text-muted-foreground font-medium">Email</p>
+          <p className="font-semibold text-foreground">{user?.email || 'N/A'}</p>
         </div>
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg hover:scale-105 transition-all duration-300">
-          <p className="text-gray-600 font-medium">Name</p>
-          <p className="font-semibold text-black">{displayName || 'No name provided'}</p>
+        <div className="bg-gradient-to-br from-beauty-greenLight/30 to-estate-purpleLight/30 p-4 rounded-lg transition-all duration-300 hover:-translate-y-0.5 border border-estate-purple/10">
+          <p className="text-muted-foreground font-medium">Name</p>
+          <p className="font-semibold text-foreground">{displayName || 'No name provided'}</p>
         </div>
         {profile?.phone_number && (
-          <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg hover:scale-105 transition-all duration-300">
-            <p className="text-gray-600 font-medium">Phone Number</p>
-            <p className="font-semibold text-black">{profile.phone_number}</p>
+          <div className="bg-gradient-to-br from-estate-gold/15 to-estate-purpleLight/30 p-4 rounded-lg transition-all duration-300 hover:-translate-y-0.5 border border-estate-purple/10">
+            <p className="text-muted-foreground font-medium">Phone Number</p>
+            <p className="font-semibold text-foreground">{profile.phone_number}</p>
           </div>
         )}
         {profile?.address && (
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg hover:scale-105 transition-all duration-300">
-            <p className="text-gray-600 font-medium">Address</p>
-            <p className="font-semibold text-black">{profile.address}</p>
+          <div className="bg-gradient-to-br from-estate-red/10 to-beauty-pink/15 p-4 rounded-lg transition-all duration-300 hover:-translate-y-0.5 border border-estate-purple/10">
+            <p className="text-muted-foreground font-medium">Address</p>
+            <p className="font-semibold text-foreground">{profile.address}</p>
           </div>
         )}
       </div>

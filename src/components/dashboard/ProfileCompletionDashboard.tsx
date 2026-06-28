@@ -175,7 +175,7 @@ export default function ProfileCompletionDashboard() {
         </div>
 
         {/* Benefits Section */}
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+        <div className="bg-gradient-to-br from-green-50 to-purple-50 dark:from-green-950/20 dark:to-purple-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
           <h3 className="font-semibold flex items-center gap-2 mb-3">
             <TrendingUp className="h-5 w-5 text-green-600" />
             Benefits at 70% Completion

@@ -13,7 +13,7 @@ const DashboardStats = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Properties</CardTitle>
-            <Home className="h-4 w-4 text-muted-foreground" />
+            <Home className="h-4 w-4 text-estate-purple" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
@@ -24,7 +24,7 @@ const DashboardStats = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Purchased Plots</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-beauty-green" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
@@ -35,7 +35,7 @@ const DashboardStats = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Properties Value</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <CreditCard className="h-4 w-4 text-estate-gold" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₦0.00</div>
@@ -46,7 +46,7 @@ const DashboardStats = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Amount Paid</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <CreditCard className="h-4 w-4 text-estate-red" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₦0.00</div>
