@@ -29,29 +29,29 @@ const SummitDetailsContent: React.FC<SummitDetailsContentProps> = ({ onRegisterC
       </div>
       
       <div className="mb-6">
-        <h3 className="text-xl font-bold mb-3">Host:</h3>
-        <SpeakerProfile 
-          image="/lovable-uploads/d22fc324-491b-4130-abe6-8ca58eea41f5.png" 
-          name="Dr. Julius Oyedemi"
-          title="Acting Managing Director, PWAN Group"
-        />
-      </div>
-      
-      <div className="mb-6">
         <h3 className="text-xl font-bold mb-3">Chief Host:</h3>
         <SpeakerProfile 
-          image="/lovable-uploads/2ef7dd06-9cf0-458d-b8a2-9e82f2a5cf26.png" 
-          name="Dr. Michael Afamefuna Okonkwo"
-          title="Executive Chairman, PWAN Group"
+          image="/lovable-uploads/2c263077-7d02-4a8a-a3f5-0ce73e9c72e2.png
+          name="Mrs Precious Silva"
+          title="ED/COO, Bridgefort Homes Development Ltd"
         />
       </div>
       
       <div className="mb-6">
-        <h3 className="text-xl font-bold mb-3">Founder & Convener:</h3>
+        <h3 className="text-xl font-bold mb-3">Speaker:</h3>
         <SpeakerProfile 
-          image="/lovable-uploads/2c263077-7d02-4a8a-a3f5-0ce73e9c72e2.png" 
-          name="Jayne O. Onwumere"
-          title="Founder/President,  Group"
+          image="/lovable-uploads/d22fc324-491b-4130-abe6-8ca58eea41f5.png" 
+          name="Mr Gideon Vincent"
+          title="Head of Staff, Bridgefort Homes Development Ltd"
+        />
+      </div>
+      
+      <div className="mb-6">
+        <h3 className="text-xl font-bold mb-3">Speaker:</h3>
+        <SpeakerProfile 
+          image="/Public/images/Emmanuel.jpg" 
+          name="Mr Emmanuel Etokakpan"
+          title="Admin Officer, Bridgefort Homes Development Ltd"
         />
       </div> 
       
