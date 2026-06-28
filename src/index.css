@@ -177,6 +177,47 @@
   }
 }
 
+/* =========================================================================
+   DARK MODE BACKGROUND OVERRIDE LAYER
+   Many page/section components hardcode literal Tailwind greys (bg-white,
+   bg-gray-50/100/200) as structural page backgrounds instead of the
+   theme-aware `bg-background`/`bg-card` tokens. This block forces those
+   exact (non-opacity) utility classes to resolve to the dark theme when
+   `.dark` is active on <html>, so the whole site actually goes dark.
+
+   Safety: these selectors match the EXACT compiled class name only.
+   Opacity variants (bg-white/10, bg-gray-50/60, etc.) compile to a
+   different class name entirely and are never matched here — those stay
+   literal white/grey for intentional glass-on-photo overlays.
+   ========================================================================= */
+.dark .bg-white {
+  background-color: hsl(var(--card)) !important;
+}
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200 {
+  background-color: hsl(var(--muted)) !important;
+}
+.dark .bg-slate-50,
+.dark .bg-slate-100 {
+  background-color: hsl(var(--muted)) !important;
+}
+/* Text pairs that often ride along with the above light backgrounds */
+.dark .text-gray-900,
+.dark .text-slate-900 {
+  color: hsl(var(--foreground)) !important;
+}
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark .text-slate-700,
+.dark .text-slate-600 {
+  color: hsl(var(--muted-foreground)) !important;
+}
+.dark .border-gray-100,
+.dark .border-gray-200 {
+  border-color: hsl(var(--border)) !important;
+}
+
 @layer utilities {
   .container-custom {
     @apply w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8;
