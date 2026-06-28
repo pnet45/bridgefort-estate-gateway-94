@@ -6,12 +6,15 @@ import SummitDetailsContent from './SummitDetailsContent';
 interface SummitDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onRegisterClick: () => void;
 }
 
-const SummitDetailsDialog: React.FC<SummitDetailsDialogProps> = ({ isOpen, onClose }) => {
+const SummitDetailsDialog: React.FC<SummitDetailsDialogProps> = ({ isOpen, onClose, onRegisterClick }) => {
   const handleRegisterClick = () => {
-    // Open phone dialer for registration
-    window.open('tel:+2348030624059', '_self');
+    // Close this details popup first, then open the registration form
+    // so the two dialogs don't stack on top of each other.
+    onClose();
+    onRegisterClick();
   };
 
   return (

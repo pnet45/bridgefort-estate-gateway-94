@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, Users, Trophy, Clock, ChevronRight } from 'lucide-react';
 import SummitDetailsDialog from './summit/SummitDetailsDialog';
-const SuccessSummit = () => {
+import TrainingRegistrationForm from './TrainingRegistrationForm';
+const WealthSummit = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+  const openRegistration = () => setIsRegistrationOpen(true);
+  const closeRegistration = () => setIsRegistrationOpen(false);
   const eventHighlights = [{
     icon: Trophy,
     title: "Expert Speakers",
@@ -102,18 +106,19 @@ const SuccessSummit = () => {
                 <Button variant="outline" className="border-white text-white hover:bg-white hover:text-estate-blue px-8 py-3 text-lg font-semibold rounded-lg transition-all duration-300" onClick={() => window.open('tel:+2348030624059', '_self')}>
                   Call to Register
                 </Button>
-              <Button 
-                className="bg-estate-red hover:bg-red-700 text-white font-medium py-3 px-8 rounded-lg transition duration-300"
-                onClick={openRegistration}
-              >
-                Register Now
-              </Button>
+
+                <Button
+                  className="bg-estate-red hover:bg-estate-darkBlue text-white font-medium py-3 px-8 rounded-lg transition duration-300"
+                  onClick={openRegistration}
+                >
+                  Register Now
+                </Button>
               </div>
             </div>
 
             {/* Highlights */}
             <div className="space-y-6 animate-slide-in-right">
-              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/20">
+              <div className="rounded-xl overflow-hidden shadow-2xl border border-white/20 w-full sm:w-[65%] mx-auto">
                 <img
                   src="/lovable-uploads/wealth-summit-2026-flyer.jpg"
                   alt="The Wealth Summit Series 2026 - Think and Grow Rich, a 4-week executive wealth mastery program hosted by Dr. Dalvin Silva"
@@ -151,7 +156,18 @@ const SuccessSummit = () => {
         </div>
       </section>
 
-      <SummitDetailsDialog isOpen={isDialogOpen} onClose={() => setIsDialogOpen(false)} />
+      <SummitDetailsDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onRegisterClick={openRegistration}
+      />
+
+      <TrainingRegistrationForm
+        open={isRegistrationOpen}
+        onClose={closeRegistration}
+        eventTitle="this Summit"
+        eventDate="Every Tuesday in July, 2026"
+      />
     </>;
 };
-export default SuccessSummit;
+export default WealthSummit;
