@@ -45,7 +45,7 @@ const TrainingEventCard = ({
 
   return (
     <>
-      <Card className="hover:shadow-lg transition-shadow h-full flex flex-col hover:animate-bounce-zoom hover:scale-105 cursor-pointer">
+      <Card className="hover:shadow-lg transition-all h-full flex flex-col hover:-translate-y-1 cursor-pointer">
         <CardHeader>
           <div className="flex justify-between items-start gap-2">
             <CardTitle className="text-primary text-lg leading-tight">{title}</CardTitle>
@@ -141,7 +141,7 @@ const TrainingEventCard = ({
               )}
               <Button 
                 onClick={() => setIsRegistrationOpen(true)}
-                className="flex-1 bg-gradient-to-r from-primary to-destructive hover:opacity-90"
+                className="flex-1 bg-gradient-to-br from-primary to-destructive hover:opacity-90"
               >
                 Register for Training
               </Button>
