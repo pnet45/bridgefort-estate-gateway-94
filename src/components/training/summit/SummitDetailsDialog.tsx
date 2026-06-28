@@ -18,7 +18,7 @@ const SummitDetailsDialog: React.FC<SummitDetailsDialogProps> = ({ isOpen, onClo
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-estate-blue">Success Summit 2025</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-estate-blue">Wealth Summit 2026</DialogTitle>
         </DialogHeader>
         <SummitDetailsContent onRegisterClick={handleRegisterClick} />
       </DialogContent>
