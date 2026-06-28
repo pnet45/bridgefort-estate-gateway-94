@@ -18,6 +18,7 @@ export default {
           darkBlue: '#1A0566',  // Deep logo indigo
           red: '#7C3AED',      // Accent violet (complements logo)
           brown: '#C0C0C0',    // Logo silver accent
+          gold: '#D4AF37',     // Premium/wealth accent (summit badges, highlights)
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
