@@ -102,12 +102,12 @@ const SuccessSummit = () => {
                 <Button variant="outline" className="border-white text-white hover:bg-white hover:text-estate-blue px-8 py-3 text-lg font-semibold rounded-lg transition-all duration-300" onClick={() => window.open('tel:+2348030624059', '_self')}>
                   Call to Register
                 </Button>
-              <button 
+              <Button 
                 className="bg-estate-red hover:bg-red-700 text-white font-medium py-3 px-8 rounded-lg transition duration-300"
                 onClick={openRegistration}
               >
                 Register Now
-              </button>
+              </Button>
               </div>
             </div>
 
