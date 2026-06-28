@@ -9,10 +9,10 @@ interface RegionSpotlightCardsProps {
 }
 
 const regionColors: Record<string, string> = {
-  Lagos: 'from-blue-600 to-blue-800',
-  Asaba: 'from-emerald-600 to-emerald-800',
-  'Port Harcourt': 'from-orange-600 to-orange-800',
-  Ogun: 'from-violet-600 to-violet-800',
+  Lagos: 'from-estate-purple to-estate-red',           // brand gradient, within 60deg wedge
+  Asaba: 'from-beauty-green to-beauty-greenLight',     // approved beautifying accent
+  'Port Harcourt': 'from-beauty-orange to-beauty-coral', // approved beautifying accent
+  Ogun: 'from-estate-red to-beauty-pink',              // stays within the purple/magenta wedge
 };
 
 const RegionSpotlightCards = ({ selectedRegion, onSelect, counts }: RegionSpotlightCardsProps) => {
