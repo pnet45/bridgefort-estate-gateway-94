@@ -10,7 +10,7 @@ const MondayMotivationHero = () => {
 
   if (loadingImages) {
     return (
-      <section className="relative w-full h-[32vh] md:h-[45vh] lg:h-[50vh] mb-8 bg-gray-200 flex items-center justify-center">
+      <section className="relative w-full h-[32vh] md:h-[45vh] lg:h-[50vh] mb-8 bg-muted flex items-center justify-center">
         <div className="text-estate-blue font-bold text-xl animate-pulse-glow">
           Loading inspiration...
         </div>
