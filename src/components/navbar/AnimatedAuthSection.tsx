@@ -50,7 +50,7 @@ const AnimatedAuthSection = ({ user, profile, userRole, shouldShowLogin }: Anima
               animation: 'slideInRight 0.6s ease-out 1.8s forwards'
             }}
           >
-            <Button onClick={() => navigate('/auth')} className="bg-estate-blue hover:bg-estate-darkBlue">
+            <Button onClick={() => navigate('/auth')} className="gradient-brand hover:opacity-90 text-white transition-opacity">
               Sign In
             </Button>
           </div>
