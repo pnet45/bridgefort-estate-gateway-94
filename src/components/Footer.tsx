@@ -5,14 +5,15 @@ import NewsletterForm from './NewsletterForm';
 
 const Footer = () => {
   return (
-    <footer className="bg-estate-darkBlue text-white pt-16 pb-8 animate-fade-in mt-auto border-t-4 border-estate-blue">
-      <div className="container-custom">
+    <footer className="relative bg-estate-darkBlue text-white pt-16 pb-8 animate-fade-in mt-auto border-t-4 border-estate-purple overflow-hidden">
+      <div className="absolute inset-0 mesh-bg-subtle opacity-40 pointer-events-none" aria-hidden="true" />
+      <div className="container-custom relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="animate-fade-in text-left">
             <div className="mb-4">
               <span className="text-2xl font-bold text-white font-montserrat">Bridgefort</span>
-              <span className="text-xl font-semibold text-estate-lightBlue font-montserrat ml-2">Homes Development Ltd</span>
+              <span className="text-xl font-semibold text-estate-purpleLight font-montserrat ml-2">Homes Development Ltd</span>
             </div>
             <p className="text-gray-300 mb-4">Your Gateway to Premium Real Estate Investments</p>
             <div className="flex space-x-4">

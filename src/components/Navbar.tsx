@@ -53,7 +53,7 @@ const Navbar = () => {
 
   return (
     <>
-        <nav className="bg-background/70 dark:bg-background/80 backdrop-blur-xl border-b border-border/60 fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 h-[88px] lg:h-[104px] shadow-sm">
+        <nav className="glass-strong fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 h-[88px] lg:h-[104px] border-b border-estate-purple/10">
         <div className="container-custom flex flex-col flex-1 h-full">
           <div className="flex justify-between items-center py-3 flex-shrink-0 relative h-full">
             {/* Mobile: Empty spacer for left side to balance the menu icon */}
