@@ -195,7 +195,9 @@
 }
 .dark .bg-gray-50,
 .dark .bg-gray-100,
-.dark .bg-gray-200 {
+.dark .bg-gray-200,
+.dark .bg-gray-300,
+.dark .bg-gray-400 {
   background-color: hsl(var(--muted)) !important;
 }
 .dark .bg-slate-50,
@@ -204,17 +206,25 @@
 }
 /* Text pairs that often ride along with the above light backgrounds */
 .dark .text-gray-900,
-.dark .text-slate-900 {
+.dark .text-gray-800,
+.dark .text-slate-900,
+.dark .text-slate-800 {
   color: hsl(var(--foreground)) !important;
 }
 .dark .text-gray-700,
 .dark .text-gray-600,
+.dark .text-gray-500,
 .dark .text-slate-700,
-.dark .text-slate-600 {
+.dark .text-slate-600,
+.dark .text-slate-500 {
   color: hsl(var(--muted-foreground)) !important;
 }
 .dark .border-gray-100,
-.dark .border-gray-200 {
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: hsl(var(--border)) !important;
+}
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
   border-color: hsl(var(--border)) !important;
 }
 
@@ -236,6 +246,17 @@
   }
   .gradient-brand-soft {
     background: linear-gradient(135deg, hsl(var(--estate-purple-light)) 0%, hsl(var(--estate-grey-light)) 100%);
+  }
+
+  /* ===== Hero overlay — replaces flat bg-black/60 on photo heroes ===== */
+  .hero-overlay {
+    background: linear-gradient(135deg, hsl(var(--estate-dark-blue) / 0.88) 0%, hsl(0 0% 4% / 0.75) 100%);
+  }
+  .hero-overlay-strong {
+    background: linear-gradient(135deg, hsl(var(--estate-dark-blue) / 0.94) 0%, hsl(0 0% 2% / 0.85) 100%);
+  }
+  .hero-overlay-light {
+    background: linear-gradient(135deg, hsl(var(--estate-dark-blue) / 0.5) 0%, hsl(0 0% 4% / 0.4) 100%);
   }
 
   /* ===== Mesh gradient backgrounds — layered radial blobs + 135deg wash ===== */
