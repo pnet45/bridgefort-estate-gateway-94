@@ -31,7 +31,7 @@ const SummitDetailsContent: React.FC<SummitDetailsContentProps> = ({ onRegisterC
       <div className="mb-6">
         <h3 className="text-xl font-bold mb-3">Chief Host:</h3>
         <SpeakerProfile 
-          image="/lovable-uploads/2c263077-7d02-4a8a-a3f5-0ce73e9c72e2.png
+          image="/lovable-uploads/2c263077-7d02-4a8a-a3f5-0ce73e9c72e2.png" 
           name="Mrs Precious Silva"
           title="ED/COO, Bridgefort Homes Development Ltd"
         />
@@ -49,7 +49,7 @@ const SummitDetailsContent: React.FC<SummitDetailsContentProps> = ({ onRegisterC
       <div className="mb-6">
         <h3 className="text-xl font-bold mb-3">Speaker:</h3>
         <SpeakerProfile 
-          image="/Public/images/Emmanuel.jpg" 
+          image="/images/Emmanuel.jpg" 
           name="Mr Emmanuel Etokakpan"
           title="Admin Officer, Bridgefort Homes Development Ltd"
         />
@@ -86,7 +86,7 @@ const SummitDetailsContent: React.FC<SummitDetailsContentProps> = ({ onRegisterC
       <div className="mt-6">
         <Button 
           onClick={onRegisterClick}
-          className="w-full bg-estate-red hover:bg-red-700 text-white py-3"
+          className="w-full bg-estate-red hover:bg-estate-darkBlue text-white py-3"
         >
           Register for this Event
         </Button>
