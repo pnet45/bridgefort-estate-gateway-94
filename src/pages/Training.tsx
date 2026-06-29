@@ -12,7 +12,7 @@ import FeaturedTraining from '../components/training/FeaturedTraining';
 import CenterTrainingSection from '../components/training/CenterTrainingSection';
 import { Toaster } from "@/components/ui/toaster";
 import FeaturedEventsCarousel from '../components/training/FeaturedEventsCarousel';
-import SuccessSummit from '../components/training/SuccessSummit';
+import WealthSummit from '../components/training/WealthSummit';
 import UpcomingTrainingEvents from '../components/training/UpcomingTrainingEvents';
 import TrainingCalendar from '../components/training/TrainingCalendar';
 import PastEventsSection from '../components/training/PastEventsSection';
@@ -30,7 +30,7 @@ const Training = () => {
       <TrainingCalendar />
 
       {/* Success Summit Section */}
-      <SuccessSummit />
+      <WealthSummit />
 
       {/* Featured Training Events Carousel */}
       <FeaturedEventsCarousel />
