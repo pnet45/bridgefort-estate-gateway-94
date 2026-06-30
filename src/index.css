@@ -143,6 +143,11 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     transition: background-color 0.4s ease, color 0.4s ease;
+    /* Global 70% scale: Tailwind's text/spacing/radius utilities are
+       rem-based, so shrinking the root font-size scales the whole UI
+       proportionally instead of just text. Default browser root is 16px;
+       70% of that is 11.2px. */
+    font-size: 70%;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Sora', system-ui, sans-serif;
@@ -252,6 +257,12 @@
   .hero-overlay {
     background: linear-gradient(135deg, hsl(var(--estate-dark-blue) / 0.88) 0%, hsl(0 0% 4% / 0.75) 100%);
   }
+  /* Hero paragraph text must stay white over photo backgrounds in both
+     light and dark mode — overrides the global `p { @apply text-foreground }`
+     rule, which would otherwise turn this dark in light mode. */
+  .hero-text {
+    color: #ffffff !important;
+  }
   .hero-overlay-strong {
     background: linear-gradient(135deg, hsl(var(--estate-dark-blue) / 0.94) 0%, hsl(0 0% 2% / 0.85) 100%);
   }
@@ -302,17 +313,32 @@
     border: 1px solid hsl(var(--foreground) / 0.1);
     box-shadow: 0 8px 32px hsl(var(--estate-purple) / 0.12);
   }
+  /* On mobile, backdrop-filter blur can render inconsistently across
+     browsers, making the navbar look lighter than intended in dark mode.
+     Raise opacity so the navbar background reads as solidly dark
+     regardless of blur support. */
+  @media (max-width: 768px) {
+    .dark .glass-strong {
+      background: hsl(var(--background) / 0.96);
+    }
+  }
   .glass-card {
-    background: hsl(var(--card) / 0.6);
-    backdrop-filter: blur(16px) saturate(150%);
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    border: 1px solid hsl(var(--foreground) / 0.08);
-    box-shadow: 0 4px 24px hsl(0 0% 0% / 0.06);
+    background: hsl(var(--card) / 0.55);
+    backdrop-filter: blur(20px) saturate(165%);
+    -webkit-backdrop-filter: blur(20px) saturate(165%);
+    border: 1px solid hsl(var(--foreground) / 0.1);
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.15) inset,
+      0 8px 28px -4px hsl(0 0% 0% / 0.18),
+      0 2px 8px hsl(var(--estate-purple) / 0.08);
     transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
   }
   .glass-card:hover {
-    box-shadow: 0 12px 40px hsl(var(--estate-purple) / 0.18);
-    border-color: hsl(var(--estate-purple) / 0.3);
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.2) inset,
+      0 18px 45px -8px hsl(var(--estate-purple) / 0.25),
+      0 4px 14px hsl(0 0% 0% / 0.12);
+    border-color: hsl(var(--estate-purple) / 0.35);
   }
 
   /* Primary CTA — vivid purple, gradient on hover */
