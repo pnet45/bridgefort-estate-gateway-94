@@ -6,7 +6,7 @@ const PropertyHero = () => {
         <div className="absolute inset-0 hero-overlay flex items-center">
           <div className="container-custom text-white">
             <h4 className="text-3xl md:text-5xl font-bold mb-4 text-gradient">Our Properties</h4>
-            <p className="text-xl max-w-2xl">Discover our exclusive selection of residential and commercial properties.</p>
+            <p className="text-xl max-w-2xl hero-text">Discover our exclusive selection of residential and commercial properties.</p>
           </div>
         </div>
       </div>
