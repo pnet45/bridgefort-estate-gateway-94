@@ -12,66 +12,69 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Handle the OAuth code exchange from the URL hash/query params
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const queryParams = new URLSearchParams(window.location.search);
-        
+
+        // Check for OAuth errors first
         const errorParam = hashParams.get('error') || queryParams.get('error');
         const errorDescription = hashParams.get('error_description') || queryParams.get('error_description');
 
         if (errorParam) {
-          console.error('OAuth error:', errorParam, errorDescription);
-          setError(errorDescription || errorParam);
-          toast({
-            title: "Sign-in failed",
-            description: errorDescription || "An error occurred during sign-in",
-            variant: "destructive"
-          });
-          setTimeout(() => navigate('/auth'), 2000);
+          const msg = decodeURIComponent(errorDescription || errorParam);
+          setError(msg);
+          toast({ title: "Sign-in failed", description: msg, variant: "destructive" });
+          setTimeout(() => navigate('/auth'), 3000);
           return;
         }
 
-        // Exchange the code for a session if present
+        // PKCE flow: Google returns ?code=... which must be exchanged for a session
         const code = queryParams.get('code');
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) {
-            console.error('Code exchange error:', exchangeError);
             setError(exchangeError.message);
-            toast({
-              title: "Sign-in failed",
-              description: exchangeError.message,
-              variant: "destructive"
-            });
-            setTimeout(() => navigate('/auth'), 2000);
+            toast({ title: "Sign-in failed", description: exchangeError.message, variant: "destructive" });
+            setTimeout(() => navigate('/auth'), 3000);
             return;
           }
         }
 
-        // Verify we have a valid session
+        // Implicit flow fallback: tokens come back in the URL hash
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        if (accessToken && refreshToken) {
+          const { error: setSessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (setSessionError) {
+            setError(setSessionError.message);
+            toast({ title: "Sign-in failed", description: setSessionError.message, variant: "destructive" });
+            setTimeout(() => navigate('/auth'), 3000);
+            return;
+          }
+        }
+
+        // Verify a valid session was actually established
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError || !session) {
-          console.error('Session error:', sessionError);
-          setError('Could not establish session');
-          toast({
-            title: "Sign-in failed",
-            description: "Could not complete authentication. Please try again.",
-            variant: "destructive"
-          });
-          setTimeout(() => navigate('/auth'), 2000);
+          const msg = 'Could not establish session. Please try again.';
+          setError(msg);
+          toast({ title: "Sign-in failed", description: msg, variant: "destructive" });
+          setTimeout(() => navigate('/auth'), 3000);
           return;
         }
 
-        toast({
-          title: "Welcome!",
-          description: "You have been signed in successfully."
-        });
+        // Success
+        toast({ title: "Welcome!", description: `Signed in as ${session.user.email}` });
         navigate('/dashboard');
+
       } catch (err: any) {
-        console.error('Auth callback error:', err);
-        setError(err.message);
-        setTimeout(() => navigate('/auth'), 2000);
+        const msg = err?.message || 'Unexpected error during sign-in';
+        setError(msg);
+        toast({ title: "Error", description: msg, variant: "destructive" });
+        setTimeout(() => navigate('/auth'), 3000);
       }
     };
 
@@ -79,17 +82,21 @@ const AuthCallback = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">
-          {error ? 'Sign-in failed' : 'Completing sign-in...'}
-        </h1>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center max-w-sm px-4">
         {error ? (
-          <p className="text-red-500 mb-2">{error}</p>
+          <>
+            <h1 className="text-2xl font-bold mb-3 text-foreground">Sign-in failed</h1>
+            <p className="text-destructive mb-2">{error}</p>
+            <p className="text-sm text-muted-foreground">Redirecting to login...</p>
+          </>
         ) : (
-          <Loader2 className="w-16 h-16 mx-auto text-estate-blue animate-spin" />
+          <>
+            <Loader2 className="w-12 h-12 mx-auto text-estate-blue animate-spin mb-4" />
+            <h1 className="text-xl font-semibold text-foreground">Completing sign-in...</h1>
+            <p className="text-sm text-muted-foreground mt-2">Please wait</p>
+          </>
         )}
-        {error && <p className="text-sm text-muted-foreground">Redirecting to login...</p>}
       </div>
     </div>
   );
