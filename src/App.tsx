@@ -40,6 +40,7 @@ import NotFound from '@/pages/NotFound';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 import Sitemap from '@/pages/Sitemap';
+import NDPP from '@/pages/NDPP';
 import BridgefortMails from '@/pages/BridgefortMails';
 import AdminAuth from '@/pages/AdminAuth';
 import AdminConsole from '@/pages/AdminConsole';
@@ -103,6 +104,7 @@ function App() {
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/sitemap" element={<Sitemap />} />
+                <Route path="/NDPP" element={<NDPP />} />
                 <Route path="/admin-login" element={<AdminAuth />} />
                 <Route path="/admin-console" element={
                   <PrivateRoute>
