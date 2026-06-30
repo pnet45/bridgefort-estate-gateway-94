@@ -429,4 +429,170 @@
     50% { background-position: 5% 5%, 95% 8%, 92% 95%, 8% 92%; }
   }
   .mesh-bg-animated { animation: meshDrift 18s ease-in-out infinite; }
+
+  /* ==========================================================================
+     ADMIN CONSOLE THEME
+     Wraps all admin pages via .admin-theme on the root div in AdminConsole.tsx.
+     Remaps every hardcoded slate-* shade to brand-purple-tinted dark equivalents,
+     adds glassmorphism to card surfaces, colorful accent highlights, and ensures
+     all text is white/light for readability on the dark background.
+     ========================================================================== */
+
+  /* ── Background ── */
+  .admin-theme {
+    background: linear-gradient(135deg,
+      hsl(271 60% 8%) 0%,
+      hsl(260 55% 6%) 50%,
+      hsl(271 50% 10%) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    position: relative;
+  }
+  .admin-theme::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(at 15% 20%, hsl(271 91% 48% / 0.18) 0px, transparent 55%),
+      radial-gradient(at 85% 15%, hsl(291 80% 50% / 0.12) 0px, transparent 50%),
+      radial-gradient(at 75% 85%, hsl(46 65% 52% / 0.08) 0px, transparent 50%),
+      radial-gradient(at 20% 80%, hsl(271 60% 20% / 0.3) 0px, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .admin-theme > * { position: relative; z-index: 1; }
+
+  /* ── Slate shade remapping → purple-tinted dark ── */
+  .admin-theme .bg-slate-900 { background: hsl(271 55% 6%) !important; }
+  .admin-theme .bg-slate-800 {
+    background: hsl(271 40% 10% / 0.85) !important;
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border-color: hsl(271 50% 30% / 0.25) !important;
+  }
+  .admin-theme .bg-slate-700 {
+    background: hsl(271 35% 15% / 0.75) !important;
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+  }
+  .admin-theme .bg-slate-600 { background: hsl(271 30% 22% / 0.7) !important; }
+  .admin-theme .bg-slate-500 { background: hsl(271 25% 30% / 0.6) !important; }
+
+  /* Opacity variants (bg-slate-700/50 etc) */
+  .admin-theme .bg-slate-700\/50 { background: hsl(271 35% 15% / 0.5) !important; }
+  .admin-theme .bg-slate-800\/50 { background: hsl(271 40% 10% / 0.5) !important; }
+
+  /* ── Text ── */
+  .admin-theme .text-slate-400 { color: hsl(271 40% 75%) !important; }
+  .admin-theme .text-slate-300 { color: hsl(0 0% 88%) !important; }
+  .admin-theme .text-slate-200 { color: hsl(0 0% 94%) !important; }
+  .admin-theme .text-slate-500 { color: hsl(271 30% 60%) !important; }
+  .admin-theme .text-gray-500  { color: hsl(271 30% 60%) !important; }
+  .admin-theme .text-gray-300  { color: hsl(0 0% 88%) !important; }
+
+  /* ── Borders ── */
+  .admin-theme .border-slate-700 { border-color: hsl(271 40% 28% / 0.5) !important; }
+  .admin-theme .border-slate-600 { border-color: hsl(271 35% 35% / 0.5) !important; }
+  .admin-theme .border-slate-500 { border-color: hsl(271 30% 42% / 0.5) !important; }
+  .admin-theme .border-slate-800 { border-color: hsl(271 50% 20% / 0.4) !important; }
+
+  /* ── Card surfaces: glassmorphism ── */
+  .admin-theme .rounded-xl,
+  .admin-theme .rounded-lg {
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.08) inset,
+      0 8px 32px -4px hsl(0 0% 0% / 0.4),
+      0 2px 12px hsl(271 80% 40% / 0.12);
+  }
+
+  /* ── Header: sticky glass navbar ── */
+  .admin-theme header.bg-slate-800 {
+    background: hsl(271 45% 8% / 0.9) !important;
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border-bottom: 1px solid hsl(271 50% 35% / 0.3) !important;
+    box-shadow: 0 4px 24px hsl(0 0% 0% / 0.3);
+  }
+
+  /* ── TabsList ── */
+  .admin-theme [role="tablist"] {
+    background: hsl(271 40% 10% / 0.8) !important;
+    border: 1px solid hsl(271 40% 28% / 0.4) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  /* Inactive tab text */
+  .admin-theme [role="tab"] {
+    color: hsl(271 40% 75%) !important;
+  }
+  .admin-theme [role="tab"]:hover {
+    color: #fff !important;
+    background: hsl(271 50% 20% / 0.5) !important;
+  }
+  /* Active tab uses the brand --primary (vivid purple) */
+  .admin-theme [role="tab"][data-state="active"] {
+    background: linear-gradient(135deg, hsl(271 91% 48%) 0%, hsl(291 80% 55%) 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 12px hsl(271 91% 48% / 0.45) !important;
+  }
+
+  /* ── Colorful stat card accent borders ── */
+  .admin-theme .border-green-800  { border-color: hsl(142 50% 35% / 0.7) !important; }
+  .admin-theme .bg-green-900\/30  { background: hsl(142 50% 12% / 0.5) !important; }
+  .admin-theme .text-green-400    { color: hsl(142 60% 55%) !important; }
+  .admin-theme .border-blue-800   { border-color: hsl(217 80% 45% / 0.6) !important; }
+  .admin-theme .bg-blue-900\/30   { background: hsl(217 60% 12% / 0.5) !important; }
+  .admin-theme .text-blue-400     { color: hsl(217 80% 70%) !important; }
+  .admin-theme .border-purple-800 { border-color: hsl(271 60% 40% / 0.6) !important; }
+  .admin-theme .bg-purple-900\/30 { background: hsl(271 50% 12% / 0.5) !important; }
+  .admin-theme .text-purple-400   { color: hsl(271 70% 72%) !important; }
+  .admin-theme .border-yellow-800 { border-color: hsl(46 70% 40% / 0.6) !important; }
+  .admin-theme .bg-yellow-900\/30 { background: hsl(46 50% 10% / 0.5) !important; }
+  .admin-theme .text-yellow-400   { color: hsl(46 80% 62%) !important; }
+  .admin-theme .border-red-800    { border-color: hsl(0 70% 40% / 0.6) !important; }
+  .admin-theme .bg-red-900\/20    { background: hsl(0 50% 12% / 0.5) !important; }
+  .admin-theme .text-red-400      { color: hsl(0 80% 65%) !important; }
+  .admin-theme .border-orange-800 { border-color: hsl(28 80% 40% / 0.6) !important; }
+  .admin-theme .bg-orange-900\/30 { background: hsl(28 50% 10% / 0.5) !important; }
+  .admin-theme .text-orange-400   { color: hsl(28 90% 62%) !important; }
+
+  /* ── Input fields ── */
+  .admin-theme input,
+  .admin-theme textarea,
+  .admin-theme select {
+    background: hsl(271 35% 12% / 0.8) !important;
+    border-color: hsl(271 40% 30% / 0.5) !important;
+    color: #fff !important;
+  }
+  .admin-theme input::placeholder,
+  .admin-theme textarea::placeholder {
+    color: hsl(271 30% 55%) !important;
+  }
+
+  /* ── Table rows ── */
+  .admin-theme table { border-color: hsl(271 40% 22% / 0.4) !important; }
+  .admin-theme th {
+    background: hsl(271 45% 14% / 0.8) !important;
+    color: hsl(271 50% 80%) !important;
+    border-color: hsl(271 40% 25% / 0.4) !important;
+  }
+  .admin-theme tr:hover td {
+    background: hsl(271 40% 16% / 0.5) !important;
+  }
+  .admin-theme td {
+    color: hsl(0 0% 90%) !important;
+    border-color: hsl(271 30% 20% / 0.3) !important;
+  }
+  .admin-theme .divide-slate-700 > :not([hidden]) ~ :not([hidden]) {
+    border-color: hsl(271 40% 22% / 0.4) !important;
+  }
+
+  /* ── Scrollbar tinted to brand ── */
+  .admin-theme ::-webkit-scrollbar { width: 6px; height: 6px; }
+  .admin-theme ::-webkit-scrollbar-track { background: hsl(271 40% 8%); }
+  .admin-theme ::-webkit-scrollbar-thumb {
+    background: hsl(271 60% 35%);
+    border-radius: 3px;
+  }
+  .admin-theme ::-webkit-scrollbar-thumb:hover { background: hsl(271 70% 50%); }
 }
