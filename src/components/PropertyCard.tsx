@@ -156,7 +156,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   return (
     <>
       <div
-        className={`glass-card rounded-lg overflow-hidden transition-all duration-300 animate-fade-in hover:-translate-y-1 focus-visible:animate-focus-zoom group cursor-pointer relative ${isSoldOut ? 'opacity-60' : ''}`}
+        className={`glass-card rounded-lg overflow-hidden transition-all duration-300 animate-drop-in hover:-translate-y-1 hover:animate-roll focus-visible:animate-focus-zoom group cursor-pointer relative ${isSoldOut ? 'opacity-60' : ''}`}
         onClick={handleCardClick}
         role="button"
         tabIndex={0}

@@ -94,7 +94,7 @@ const HomeHeroImage = () => {
               <h1 className="text-lg md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-6 leading-snug md:leading-tight text-left text-gradient">
                 {heroTitle}
               </h1>
-              <p className="text-sm md:text-lg lg:text-xl xl:text-2xl mb-3 md:mb-8 max-w-2xl text-left" style={{ animationDelay: '200ms' }}>
+              <p className="text-sm md:text-lg lg:text-xl xl:text-2xl mb-3 md:mb-8 max-w-2xl text-left hero-text" style={{ animationDelay: '200ms' }}>
                 {heroSubtitle}
               </p>
               <div className="flex gap-4 text-center" style={{ animationDelay: '400ms' }}>
