@@ -7,7 +7,7 @@ const AboutHero = () => {
         <div className="absolute inset-0 hero-overlay flex items-center my-0">
           <div className="container-custom text-white">
             <h2 className="text-3xl md:text-5xl font-bold mb-4 my-[6px] text-gradient">About Bridgefort Homes Development Ltd</h2>
-            <p className="text-xl max-w-2xl my-0">Learn about our mission, vision, and the team behind Nigeria's leading real estate investment company.</p>
+            <p className="text-xl max-w-2xl my-0 hero-text">Learn about our mission, vision, and the team behind Nigeria's leading real estate investment company.</p>
           </div>
         </div>
       </div>
