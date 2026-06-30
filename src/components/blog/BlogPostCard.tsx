@@ -12,7 +12,7 @@ interface BlogPostCardProps {
 }
 
 const BlogPostCard: React.FC<BlogPostCardProps> = ({ post, onReadMore }) => (
-  <div className="glass-card rounded-lg overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+  <div className="glass-card rounded-lg overflow-hidden transition-all duration-300 animate-roll-in hover:-translate-y-1 hover:animate-bounce-zoom cursor-pointer">
     <div className="relative h-56 overflow-hidden">
       <img
         src={post.image_path}
