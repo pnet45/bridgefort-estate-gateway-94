@@ -11,7 +11,7 @@ const CareerHero = () => {
               <h1 className="text-4xl md:text-6xl font-bold mb-6 animate-slide-in-left text-gradient">
                 Build Your Career With Us
               </h1>
-              <p className="text-xl mb-8 animate-fade-in py-[16px] my-[45px]">
+              <p className="text-xl mb-8 animate-fade-in py-[16px] my-[45px] hero-text">
                 Join Nigeria's leading real estate company and be part of a team that's 
                 transforming the property investment landscape across the country.
               </p>
