@@ -10,7 +10,7 @@ const FeaturedCenterSeminar = () => {
 
   return (
     <>
-      <section className="py-16 bg-gradient-to-br from-estate-blue via-blue-900 to-estate-darkBlue text-white relative overflow-hidden">
+      <section className="py-10 md:py-14 lg:py-16 bg-gradient-to-br from-estate-blue via-blue-900 to-estate-darkBlue text-white relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 right-10 w-40 h-40 border-2 border-white rounded-full animate-pulse" />
@@ -19,31 +19,35 @@ const FeaturedCenterSeminar = () => {
 
         <div className="container-custom relative z-10">
           <div className="text-center mb-4">
-            <span className="inline-flex items-center gap-2 bg-estate-red/90 text-white px-4 py-1.5 rounded-full text-sm font-semibold uppercase tracking-wide">
+            <span className="inline-flex items-center gap-2 bg-estate-red/90 text-white px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wide">
               <Calendar size={14} /> Special Invitation — Center Training
             </span>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
+          <div className="grid lg:grid-cols-2 gap-6 md:gap-8 lg:gap-10 items-center">
             {/* Image */}
             <div className="flex justify-center animate-fade-in">
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 max-w-md">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 w-full max-w-[340px] sm:max-w-sm md:max-w-md bg-black/20">
                   <img
                     src="/images/dalvin-silva-seminar.jpeg"
+                    srcSet="/images/dalvin-silva-seminar.jpeg 1x, /images/dalvin-silva-seminar.jpeg 2x"
+                    sizes="(max-width: 640px) 85vw, (max-width: 1024px) 60vw, 440px"
                     alt="Amb. Dalvin Silva - MD/CEO Bridgefort Homes Development Ltd"
-                    className="w-full h-auto object-cover"
+                    className="w-full h-auto max-h-[60vh] object-contain"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
             </div>
 
             {/* Content */}
-            <div className="space-y-5 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-              <h2 className="text-3xl md:text-4xl font-bold leading-tight">
+            <div className="space-y-4 md:space-y-5 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
                 PWAN Bethel Home Center
                 <span className="block text-estate-gold mt-1">Seminar with Amb. Dalvin Silva</span>
               </h2>
 
-              <p className="text-gray-200 text-lg leading-relaxed">
+              <p className="text-gray-200 text-base sm:text-lg leading-relaxed">
                 A special center training seminar designed to empower real estate professionals and aspiring investors 
                 with cutting-edge strategies for wealth creation through real estate investment. Learn directly from 
                 one of Nigeria's most dynamic real estate leaders.

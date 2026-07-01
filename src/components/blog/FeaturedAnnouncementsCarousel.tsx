@@ -30,12 +30,14 @@ const FeaturedAnnouncementsCarousel = () => {
               key={item.id}
               className={`rounded-lg overflow-hidden shadow bg-gray-50 flex flex-col sm:flex-row transition-all ${animations[Math.floor(Math.random() * animations.length)]}`}
             >
-              <div className="w-full sm:w-2/5 h-56 sm:h-auto sm:min-h-[260px] bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-full sm:w-2/5 h-40 sm:h-auto sm:min-h-[200px] sm:max-h-[240px] bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                 <img
                   src={item.img}
                   alt={item.title}
                   className="w-full h-full object-contain"
                   loading="lazy"
+                  decoding="async"
+                  sizes="(max-width: 640px) 100vw, 40vw"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '/lovable-uploads/PropertyHero.png';
                   }}
