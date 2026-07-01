@@ -143,11 +143,11 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     transition: background-color 0.4s ease, color 0.4s ease;
-    /* Global 85% scale: Tailwind's text/spacing/radius utilities are
+    /* Global 86% scale: Tailwind's text/spacing/radius utilities are
        rem-based, so shrinking the root font-size scales the whole UI
        proportionally instead of just text. Default browser root is 16px;
-       85% of that is 13.6px. */
-    font-size: 85%;
+       86% of that is 13.76px (≈1px larger than before). */
+    font-size: 86%;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Sora', system-ui, sans-serif;

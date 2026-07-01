@@ -2116,6 +2116,7 @@ export type Database = {
       review_reactions: {
         Row: {
           created_at: string | null
+          estate: string | null
           id: string
           reaction: string
           review_id: string
@@ -2123,6 +2124,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          estate?: string | null
           id?: string
           reaction: string
           review_id: string
@@ -2130,6 +2132,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          estate?: string | null
           id?: string
           reaction?: string
           review_id?: string
