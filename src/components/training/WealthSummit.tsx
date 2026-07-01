@@ -170,12 +170,14 @@ const WealthSummit = () => {
 
           {/* ── RIGHT COLUMN: flyer image only ── */}
           <div className="animate-slide-in-right flex items-center justify-center lg:sticky lg:top-28">
-            <div className="rounded-xl overflow-hidden shadow-2xl border border-white/20 w-full sm:w-[85%] lg:w-full">
+            <div className="rounded-xl overflow-hidden shadow-2xl border border-white/20 w-full max-w-[420px] sm:max-w-[460px] lg:max-w-[520px] bg-black/20">
               <img
                 src="/lovable-uploads/wealth-summit-2026-flyer.jpg"
                 alt="The Wealth Summit Series 2026 — Think and Grow Rich, a 4-week executive wealth mastery program hosted by Dr. Dalvin Silva"
-                className="w-full h-auto object-cover"
+                className="w-full h-auto max-h-[70vh] object-contain"
                 loading="lazy"
+                decoding="async"
+                sizes="(max-width: 768px) 90vw, (max-width: 1024px) 60vw, 520px"
               />
             </div>
           </div>

@@ -46,12 +46,17 @@ const FeaturedTraining = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          <div className="relative">
-            <img 
-              src={featuredEvent.image || '/lovable-uploads/pbo.png'} 
-              alt={featuredEvent.title} 
-              className="w-full h-auto rounded-lg shadow-lg" 
-            />
+          <div className="relative flex justify-center">
+            <div className="w-full max-w-[480px] lg:max-w-[520px] rounded-lg overflow-hidden shadow-lg bg-gray-100">
+              <img
+                src={featuredEvent.image || '/lovable-uploads/pbo.png'}
+                alt={featuredEvent.title}
+                className="w-full h-auto max-h-[65vh] object-contain"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 1024px) 90vw, 520px"
+              />
+            </div>
             <div className="absolute top-4 left-4 bg-estate-red text-white text-sm uppercase font-bold py-1 px-3 rounded">
               Featured
             </div>

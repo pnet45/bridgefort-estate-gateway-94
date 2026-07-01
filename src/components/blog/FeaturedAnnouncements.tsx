@@ -43,22 +43,24 @@ const FeaturedAnnouncements = () => <section className="py-10 bg-white">
     <div className="container-custom">
       <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">Featured Announcements</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {announcementItems.map((item, i) => <div key={i} className="rounded-lg overflow-hidden shadow bg-gray-50 flex flex-col md:flex-row transition-all">
-            <div className="md:w-1/3 h-44 md:h-52 overflow-hidden">
+        {announcementItems.map((item, i) => <div key={i} className="rounded-lg overflow-hidden shadow bg-gray-50 flex flex-col md:flex-row transition-all hover:shadow-lg">
+            <div className="md:w-1/3 h-40 sm:h-44 md:h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
               <img 
                 src={item.img} 
                 alt={item.title} 
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-contain" 
                 loading="lazy"
+                decoding="async"
+                sizes="(max-width: 768px) 100vw, 33vw"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = '/lovable-uploads/PropertyHero.png';
                 }}
               />
             </div>
-            <div className="md:w-2/3 p-6 flex flex-col">
-              <h3 className="font-bold text-xl text-estate-blue mb-2">{item.title}</h3>
-              <p className="text-gray-700 mb-3">{item.text}</p>
+            <div className="md:w-2/3 p-4 sm:p-5 md:p-6 flex flex-col">
+              <h3 className="font-bold text-base sm:text-lg md:text-xl text-estate-blue mb-2 line-clamp-3">{item.title}</h3>
+              <p className="text-gray-700 mb-3 text-sm sm:text-base line-clamp-4">{item.text}</p>
               {item.cta && <a href={item.cta.url} className="self-start bg-estate-blue text-white px-4 py-2 rounded shadow hover:bg-estate-blue/90 text-sm font-medium">{item.cta.label}</a>}
             </div>
           </div>)}
