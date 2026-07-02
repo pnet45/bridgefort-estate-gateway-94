@@ -62,8 +62,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
            customerInfo.email && customerInfo.phone && customerInfo.address;
   };
 
-  const handlePaystackPayment = async () => {
-    console.log("[Checkout] handlePaystackPayment triggered.");
+  const handlePayment = async (method: 'paystack' | 'stripe' = 'paystack') => {
+    console.log(`[Checkout] handlePayment triggered. Method: ${method}`);
     if (!validateStep1()) {
       toast({
         title: "Error",
@@ -155,6 +155,28 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         throw new Error('Failed to create order');
       }
 
+      if (method === 'stripe') {
+        console.log("[Checkout] Calling stripe-initialize...");
+        const { data: stripeData, error: stripeError } = await supabase.functions.invoke('stripe-initialize', {
+          body: {
+            email: customerInfo.email,
+            amount: payAmount,
+            reference,
+            description: cart[0]?.plot?.propertyName || 'PWAN Bridgefort Payment',
+            metadata: {
+              order_id: orderData.id,
+              customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
+            },
+          },
+        });
+        console.log("[Checkout] Stripe init result:", { stripeData, stripeError });
+        if (stripeError || !stripeData?.url) {
+          throw new Error(stripeError?.message || stripeData?.error || 'Failed to initialize Stripe');
+        }
+        window.location.href = stripeData.url;
+        return;
+      }
+
       // Initialize Paystack payment using edge function
       console.log("[Checkout] Calling paystack-initialize...");
       const { data: paymentInitData, error: paymentInitError } = await supabase.functions.invoke('paystack-initialize', {
@@ -167,26 +189,10 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
             customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
             phone: customerInfo.phone,
             custom_fields: [
-              {
-                display_name: "Customer Address",
-                variable_name: "customer_address",
-                value: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state}`
-              },
-              {
-                display_name: "Order ID",
-                variable_name: "order_id",
-                value: orderData.id
-              },
-              {
-                display_name: "Payment Plan",
-                variable_name: "payment_plan",
-                value: selectedPlan.type
-              },
-              {
-                display_name: "Months To Pay",
-                variable_name: "months_to_pay",
-                value: monthsToPay
-              }
+              { display_name: "Customer Address", variable_name: "customer_address", value: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state}` },
+              { display_name: "Order ID", variable_name: "order_id", value: orderData.id },
+              { display_name: "Payment Plan", variable_name: "payment_plan", value: selectedPlan.type },
+              { display_name: "Months To Pay", variable_name: "months_to_pay", value: monthsToPay }
             ]
           }
         }
@@ -198,15 +204,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       if (typeof paymentInitData === "object" && paymentInitData.error) {
         throw new Error(paymentInitData.error);
       }
-      if (paymentInitData.status && paymentInitData.data && paymentInitData.data.authorization_url) {
-        console.log("[Checkout] Redirecting to Paystack (status/data/authorization_url)...");
-        window.location.href = paymentInitData.data.authorization_url;
-      } else if (paymentInitData.data && paymentInitData.data.authorization_url) {
-        console.log("[Checkout] Redirecting to Paystack (data/authorization_url)...");
-        window.location.href = paymentInitData.data.authorization_url;
-      } else if (paymentInitData.authorization_url) {
-        console.log("[Checkout] Redirecting to Paystack (authorization_url)...");
-        window.location.href = paymentInitData.authorization_url;
+      const authUrl = paymentInitData?.data?.authorization_url || paymentInitData?.authorization_url;
+      if (authUrl) {
+        window.location.href = authUrl;
       } else {
         console.error('[Checkout] No authorization URL found in response', paymentInitData);
         throw new Error(paymentInitData.message || 'Failed to initialize payment');
@@ -277,7 +277,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
             customerInfo={customerInfo}
             setCustomerInfo={setCustomerInfo}
             isProcessing={isProcessing}
-            onPay={handlePaystackPayment}
+            onPay={handlePayment}
           />
         </div>
       </div>

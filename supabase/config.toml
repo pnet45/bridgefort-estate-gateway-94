@@ -47,3 +47,9 @@ verify_jwt = false
 
 [functions.manage-travel-booking]
 verify_jwt = false
+
+[functions.stripe-initialize]
+verify_jwt = false
+
+[functions.stripe-verify]
+verify_jwt = false

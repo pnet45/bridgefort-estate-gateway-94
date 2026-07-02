@@ -67,7 +67,7 @@ const PropertySearch = () => {
   return (
     <div
       ref={wrapRef}
-      className="-mt-20 relative z-10 mx-auto w-full max-w-5xl animate-fade-in flex justify-center md:justify-start"
+      className="-mt-20 relative z-10 mx-auto w-full max-w-5xl animate-fade-in flex justify-center"
     >
       {/* Collapsed trigger button */}
       {!expanded && (
