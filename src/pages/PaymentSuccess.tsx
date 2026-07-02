@@ -18,13 +18,35 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     const reference = searchParams.get('reference');
-    
-    if (reference) {
+    const stripeSessionId = searchParams.get('stripe_session_id');
+
+    if (stripeSessionId) {
+      verifyStripe(stripeSessionId);
+    } else if (reference) {
       verifyPayment(reference);
     } else {
       setVerificationStatus('failed');
     }
   }, [searchParams]);
+
+  const verifyStripe = async (session_id: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('stripe-verify', {
+        body: { session_id },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.status) {
+        setVerificationStatus('success');
+        setPaymentDetails({ reference: session_id, amount: data?.session?.amount_total, currency: (data?.session?.currency || 'usd').toUpperCase(), provider: 'Stripe' });
+        clearCart();
+      } else {
+        setVerificationStatus('failed');
+      }
+    } catch (e) {
+      console.error('Stripe verify error:', e);
+      setVerificationStatus('failed');
+    }
+  };
 
   const verifyPayment = async (reference: string) => {
     try {
