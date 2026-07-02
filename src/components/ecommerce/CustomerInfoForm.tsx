@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { User } from 'lucide-react';
+import { User, CreditCard } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Customer } from '@/contexts/ecommerce/types';
 
+export type PaymentMethod = 'paystack' | 'stripe';
+
 interface CustomerInfoFormProps {
   user: any;
   customerInfo: Customer;
   setCustomerInfo: React.Dispatch<React.SetStateAction<Customer>>;
   isProcessing: boolean;
-  onPay: () => void;
+  onPay: (method: PaymentMethod) => void;
 }
 
 const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
@@ -21,7 +23,8 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
   isProcessing,
   onPay,
 }) => {
-  
+  const [method, setMethod] = useState<PaymentMethod>('paystack');
+
   const handleCustomerInfoChange = (field: keyof Customer, value: string) => {
     setCustomerInfo((prev) => ({ ...prev, [field]: value }));
   };
@@ -116,20 +119,41 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
               />
             </div>
           </div>
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-blue-800 mb-2">Payment via Paystack</h4>
-            <p className="text-sm text-blue-700">
-              You will be redirected to Paystack to complete your payment securely. 
-              We accept all major cards and bank transfers.
+          <div className="space-y-3">
+            <h4 className="font-semibold text-estate-blue flex items-center gap-2">
+              <CreditCard size={16} /> Choose Payment Method
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setMethod('paystack')}
+                className={`p-3 rounded-lg border-2 text-left transition ${method === 'paystack' ? 'border-estate-blue bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+              >
+                <div className="font-semibold text-estate-blue">Paystack</div>
+                <div className="text-xs text-gray-600">Pay in ₦ (Naira) — cards, transfer, USSD</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMethod('stripe')}
+                className={`p-3 rounded-lg border-2 text-left transition ${method === 'stripe' ? 'border-estate-blue bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+              >
+                <div className="font-semibold text-estate-blue">Stripe</div>
+                <div className="text-xs text-gray-600">Pay in $ (USD) — converted at live FX rate</div>
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              {method === 'stripe'
+                ? 'Amount will be converted from Naira to USD using the current exchange rate at checkout.'
+                : 'You will be redirected to Paystack to complete your payment securely.'}
             </p>
           </div>
           <Button
-            onClick={onPay}
+            onClick={() => onPay(method)}
             disabled={!validateStep1() || isProcessing}
             className="w-full bg-estate-blue hover:bg-estate-darkBlue text-white py-3 animate-fade-in"
             type="button"
           >
-            {isProcessing ? 'Processing...' : 'Pay with Paystack'}
+            {isProcessing ? 'Processing...' : method === 'stripe' ? 'Pay with Stripe (USD)' : 'Pay with Paystack (₦)'}
           </Button>
         </div>
       </ScrollArea>
