@@ -1,0 +1,14 @@
+Eclipse Temurin JDK with Hotspot 11       EclipseAdoptium.Temurin.11.JDK     11.0.31.11 Tag: temurin winget
+Eclipse Temurin JDK with Hotspot 17       EclipseAdoptium.Temurin.17.JDK     17.0.19.10 Tag: temurin winget
+Eclipse Temurin JDK with Hotspot 18       EclipseAdoptium.Temurin.18.JDK     18.0.2.101 Tag: temurin winget
+Eclipse Temurin JDK with Hotspot 19       EclipseAdoptium.Temurin.19.JDK     19.0.2.7   Tag: temurin winget
+Eclipse Temurin JDK with Hotspot 20       EclipseAdoptium.Temurin.20.JDK     20.0.2.9   Tag: temurin winget
+Eclipse Temurin JDK with Hotspot 21       EclipseAdoptium.Temurin.21.JDK     21.0.11.10 Tag: temurin winget
+Eclipse Temurin JDK with Hotspot 8        EclipseAdoptium.Temurin.8.JDK      8.0.492.9  Tag: temurin winget
+Update Watcher for AdoptOpenJDK           tushev.org.AJUpdateWatcher         2.0.5.0    Tag: temurin winget
+Eclipse Temurin JDK with Hotspot 16       EclipseAdoptium.Temurin.16.JDK     16.0.2.7                winget
+Eclipse Temurin JDK with Hotspot 22       EclipseAdoptium.Temurin.22.JDK     22.0.2.9                winget
+Eclipse Temurin JDK with Hotspot 23       EclipseAdoptium.Temurin.23.JDK     23.0.2.7                winget
+Eclipse Temurin JDK with Hotspot 24       EclipseAdoptium.Temurin.24.JDK     24.0.2.12               winget
+Eclipse Temurin JDK with Hotspot 25       EclipseAdoptium.Temurin.25.JDK     25.0.3.9                winget
+Eclipse Temurin JDK with Hotspot 26       EclipseAdoptium.Temurin.26.JDK     26.0.1.8                winget

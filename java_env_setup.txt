@@ -1,0 +1,13 @@
+﻿JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot
+PATH contains javaBin=1
+java.exe : openjdk version "17.0.19" 2026-04-21
+At line:1 char:632
++ ... bject).Count; $results += & "$javaBin\java.exe" -version 2>&1; $resul ...
++                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (openjdk version "17.0.19" 2026-04 
+   -21:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+OpenJDK Runtime Environment Temurin-17.0.19+10 (build 17.0.19+10)
+OpenJDK 64-Bit Server VM Temurin-17.0.19+10 (build 17.0.19+10, mixed mode, 
+sharing)

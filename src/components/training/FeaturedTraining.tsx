@@ -1,0 +1,120 @@
+
+import React, { useState, useEffect } from 'react';
+import { getFeaturedEvent } from './UpcomingEvents';
+import { Calendar, MapPin, Users, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import TrainingRegistrationForm from './TrainingRegistrationForm';
+
+interface TrainingEvent {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  image: string | null;
+  capacity: string;
+  description?: string | null;
+}
+
+const FeaturedTraining = () => {
+  const [featuredEvent, setFeaturedEvent] = useState<TrainingEvent | null>(null);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchEvent = async () => {
+      const event = await getFeaturedEvent();
+      setFeaturedEvent(event);
+    };
+    fetchEvent();
+  }, []);
+
+  const openRegistration = () => setIsRegistrationOpen(true);
+  const closeRegistration = () => setIsRegistrationOpen(false);
+
+  if (!featuredEvent) {
+    return null;
+  }
+
+  return (
+    <section className="py-16 bg-white">
+      <div className="container-custom">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold mb-4">Featured Training Event</h2>
+          <p className="text-gray-600 max-w-3xl mx-auto">
+            Don't miss our premier upcoming training event designed to boost your real estate skills
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          <div className="relative flex justify-center">
+            <div className="w-full max-w-[480px] lg:max-w-[520px] rounded-lg overflow-hidden shadow-lg bg-gray-100">
+              <img
+                src={featuredEvent.image || '/lovable-uploads/pbo.png'}
+                alt={featuredEvent.title}
+                className="w-full h-auto max-h-[65vh] object-contain"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 1024px) 90vw, 520px"
+              />
+            </div>
+            <div className="absolute top-4 left-4 bg-estate-red text-white text-sm uppercase font-bold py-1 px-3 rounded">
+              Featured
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <h3 className="text-2xl md:text-3xl font-bold text-estate-blue">{featuredEvent.title}</h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-center text-gray-700">
+                <Calendar size={20} className="mr-3 text-estate-blue" />
+                <span className="text-lg">{featuredEvent.date}</span>
+              </div>
+              
+              <div className="flex items-center text-gray-700">
+                <Clock size={20} className="mr-3 text-estate-blue" />
+                <span className="text-lg">{featuredEvent.time}</span>
+              </div>
+              
+              <div className="flex items-center text-gray-700">
+                <MapPin size={20} className="mr-3 text-estate-blue" />
+                <span className="text-lg">{featuredEvent.location}</span>
+              </div>
+              
+              <div className="flex items-center text-gray-700">
+                <Users size={20} className="mr-3 text-estate-blue" />
+                <span className="text-lg">{featuredEvent.capacity}</span>
+              </div>
+            </div>
+            
+            <p className="text-gray-600">
+              {featuredEvent.description || 'Join industry experts for an intensive masterclass that will transform your approach to real estate investments and sales strategies. Learn practical skills to immediately implement in your business.'}
+            </p>
+            
+            <div className="flex flex-wrap gap-4">
+              <button 
+                className="bg-estate-red hover:bg-red-700 text-white font-medium py-3 px-8 rounded-lg transition duration-300"
+                onClick={openRegistration}
+              >
+                Register Now
+              </button>
+              <Link to="/training#training-content" className="border border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white font-medium py-3 px-8 rounded-lg transition duration-300">
+                View All Training Resources
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Training Registration Form */}
+      <TrainingRegistrationForm 
+        open={isRegistrationOpen} 
+        onClose={closeRegistration}
+        eventTitle={featuredEvent.title}
+        eventDate={featuredEvent.date}
+      />
+    </section>
+  );
+};
+
+export default FeaturedTraining;

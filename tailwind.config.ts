@@ -1,0 +1,123 @@
+
+import type { Config } from "tailwindcss";
+
+export default {
+  darkMode: ["class"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
+  prefix: "",
+  theme: {
+    extend: {
+      colors: {
+        estate: {
+          blue: 'hsl(var(--estate-blue))',         // now Vivid Purple — name kept for backwards-compat
+          darkBlue: 'hsl(var(--estate-dark-blue))',
+          red: 'hsl(var(--estate-red))',            // magenta-violet accent
+          brown: 'hsl(var(--estate-brown))',        // grey
+          gold: 'hsl(var(--estate-gold))',
+          purple: 'hsl(var(--estate-purple))',
+          purpleLight: 'hsl(var(--estate-purple-light))',
+          grey: 'hsl(var(--estate-grey))',
+          greyLight: 'hsl(var(--estate-grey-light))',
+          greyDark: 'hsl(var(--estate-grey-dark))',
+        },
+        beauty: {
+          coral: 'hsl(var(--accent-coral))',
+          orange: 'hsl(var(--accent-orange))',
+          pink: 'hsl(var(--accent-pink))',
+          green: 'hsl(var(--accent-green))',
+          greenLight: 'hsl(var(--accent-green-light))',
+        },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      fontFamily: {
+        sans: ['Manrope', 'system-ui', 'sans-serif'],
+        display: ['Sora', 'system-ui', 'sans-serif'],
+        montserrat: ['Sora', 'sans-serif'],
+        poppins: ['Manrope', 'sans-serif'],
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        roll: {
+          '0%': { transform: 'translateX(0) rotate(0deg)' },
+          '50%': { transform: 'translateX(6px) rotate(3deg)' },
+          '100%': { transform: 'translateX(0) rotate(0deg)' },
+        },
+        'bounce-zoom': {
+          '0%': { transform: 'scale(1) translateY(0)' },
+          '30%': { transform: 'scale(1.06) translateY(-6px)' },
+          '60%': { transform: 'scale(0.995) translateY(0)' },
+          '100%': { transform: 'scale(1) translateY(0)' },
+        },
+        'focus-zoom': {
+          '0%': { transform: 'scale(1)' },
+          '100%': { transform: 'scale(1.035)' },
+        },
+        'roll-in': {
+          '0%': { transform: 'translateX(-60px) rotate(-8deg)', opacity: '0' },
+          '60%': { transform: 'translateX(6px) rotate(2deg)', opacity: '1' },
+          '100%': { transform: 'translateX(0) rotate(0deg)', opacity: '1' },
+        },
+        'drop-in': {
+          '0%': { transform: 'translateY(-40px) scale(0.96)', opacity: '0' },
+          '60%': { transform: 'translateY(8px) scale(1.01)', opacity: '1' },
+          '80%': { transform: 'translateY(-3px) scale(0.998)' },
+          '100%': { transform: 'translateY(0) scale(1)', opacity: '1' },
+        },
+        'card-bob': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-5px)' },
+        },
+      },
+      animation: {
+        roll: 'roll 420ms cubic-bezier(0.22, 1, 0.36, 1)',
+        'bounce-zoom': 'bounce-zoom 700ms cubic-bezier(.2,.8,.2,1)',
+        'focus-zoom': 'focus-zoom 160ms ease-out',
+        'roll-in': 'roll-in 650ms cubic-bezier(.2,.8,.2,1) both',
+        'drop-in': 'drop-in 700ms cubic-bezier(.2,.8,.2,1) both',
+        'card-bob': 'card-bob 3.2s ease-in-out infinite',
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+} satisfies Config;

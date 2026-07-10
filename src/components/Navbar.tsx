@@ -1,0 +1,109 @@
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/auth';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
+import MobileMenu from './navbar/MobileMenu';
+import NavbarUserMenu from './navbar/NavbarUserMenu';
+import NavbarLoginIcon from './navbar/NavbarLoginIcon';
+import LogoSlideIn from './navbar/LogoSlideIn';
+import CartIcon from './ecommerce/CartIcon';
+import AnimatedNavLinks from './navbar/AnimatedNavLinks';
+import AnimatedAuthSection from './navbar/AnimatedAuthSection';
+import ProfileCompletionWidget from './navbar/ProfileCompletionWidget';
+import DarkModeToggle from './navbar/DarkModeToggle';
+
+const Navbar = () => {
+  const { user, userRole } = useAuth();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<any>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // Control when to show login button (not on auth page or on Realtor login page)
+  const authPaths = ['/auth', '/bridgefort-realtors-login'];
+  const shouldShowLogin = !authPaths.some((path) => window.location.pathname.includes(path));
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+      
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  return (
+    <>
+        <nav className="glass-strong fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 h-[88px] lg:h-[104px] border-b border-estate-purple/10">
+        <div className="container-custom flex flex-col flex-1 h-full">
+          <div className="flex justify-between items-center py-3 flex-shrink-0 relative h-full">
+            {/* Mobile: Empty spacer for left side to balance the menu icon */}
+            <div className="lg:hidden w-8" />
+            
+            {/* Logo - centered on mobile, left on desktop */}
+            <div className="lg:absolute lg:relative lg:left-0 flex-1 lg:flex-none flex justify-center lg:justify-start">
+              <LogoSlideIn />
+            </div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-1 xl:space-x-2 2xl:space-x-4 flex-shrink min-w-0">
+              <AnimatedNavLinks className="hover:text-estate-blue transition whitespace-nowrap text-base xl:text-lg" />
+            </div>
+            
+            {/* Desktop Auth Section */}
+            <div className="hidden lg:flex items-center space-x-4">
+              <DarkModeToggle />
+              {user && <ProfileCompletionWidget />}
+              <AnimatedAuthSection 
+                user={user}
+                profile={profile}
+                userRole={userRole}
+                shouldShowLogin={shouldShowLogin}
+              />
+            </div>
+            
+            {/* Mobile Menu Button - aligned right */}
+            <div className="lg:hidden flex items-center gap-2">
+              <DarkModeToggle />
+              <button
+                onClick={toggleMenu}
+                aria-label="Toggle menu"
+                className="text-foreground"
+              >
+                {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <MobileMenu 
+          isOpen={isMenuOpen} 
+          toggleMenu={toggleMenu}
+          shouldShowLogin={shouldShowLogin}
+        />
+      </nav>
+    </>
+  );
+};
+
+export default Navbar;

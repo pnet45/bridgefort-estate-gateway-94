@@ -1,0 +1,31 @@
+
+import React from 'react';
+import { Calendar, MapPin, Clock, Users } from 'lucide-react';
+
+const SummitEventInfo: React.FC = () => {
+  return (
+    <div className="space-y-4 mb-8 bg-white bg-opacity-10 p-4 rounded-lg">
+      <div className="flex items-center">
+        <Calendar className="mr-3 text-estate-red flex-shrink-0" />
+        <span className="text-lg">Every Tuesday in July 2026</span>
+      </div>
+
+      <div className="flex items-center">
+        <Clock className="mr-3 text-estate-red flex-shrink-0" />
+        <span className="text-lg">10:00 AM Prompt</span>
+      </div>
+      
+      <div className="flex items-center">
+        <MapPin className="mr-3 text-estate-red flex-shrink-0" />
+        <span className="text-lg">Bridgefort Homes Office, Suite 8, Gacoun Plaza, Opp. K-Close 23 Road, Festac Town, Lagos</span>
+      </div>
+   
+      <div className="flex items-center">
+        <Users className="mr-3 text-estate-red flex-shrink-0" />
+        <span className="text-lg">Admission is FREE! Food & Drinks available.</span>
+      </div>
+    </div>
+  );
+};
+
+export default SummitEventInfo;
