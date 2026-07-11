@@ -210,29 +210,48 @@ const Agrovest: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-14">
             {cashCrops.map((c) => (
               <div key={c.name} className="text-center">
-                <div className="aspect-square rounded-xl bg-green-800 border border-green-700 flex items-center justify-center mb-2">
-                  <Sprout className="h-8 w-8 text-amber-300" />
+                <div className="aspect-square rounded-xl overflow-hidden border border-green-700 mb-2 bg-green-800">
+                  <img
+                    src={c.img}
+                    alt={c.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <p className="text-xs font-semibold text-green-100">{c.name}</p>
               </div>
             ))}
           </div>
 
+          <div className="mb-8 rounded-2xl overflow-hidden border border-green-700 max-h-64">
+            <img
+              src={integratedFarmImg}
+              alt="Integrated Farm Facilities"
+              loading="lazy"
+              className="w-full h-64 object-cover"
+            />
+          </div>
           <h3 className="text-2xl font-bold text-center mb-8">Integrated Farm Facilities</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {facilities.map((f) => (
               <div
                 key={f.name}
-                className="bg-green-900/60 border border-green-700 rounded-xl p-6 text-center"
+                className="bg-green-900/60 border border-green-700 rounded-xl overflow-hidden text-center"
               >
-                <f.icon className="h-8 w-8 text-amber-300 mx-auto mb-3" />
-                <p className="font-semibold text-sm">{f.name}</p>
+                <div className="aspect-video overflow-hidden bg-green-800">
+                  <img
+                    src={f.img}
+                    alt={f.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-4">
+                  <f.icon className="h-6 w-6 text-amber-300 mx-auto mb-2" />
+                  <p className="font-semibold text-sm">{f.name}</p>
+                </div>
               </div>
             ))}
-            <div className="bg-green-900/60 border border-green-700 rounded-xl p-6 text-center">
-              <TrendingUp className="h-8 w-8 text-amber-300 mx-auto mb-3" />
-              <p className="font-semibold text-sm">Processing &amp; Value Addition</p>
-            </div>
           </div>
         </div>
       </section>
