@@ -6,6 +6,7 @@ import PropertiesTab from './tabs/PropertiesTab';
 import OrdersTab from './tabs/OrdersTab';
 import InspectionsTab from './tabs/InspectionsTab';
 import DocumentationPricingTab from './DocumentationPricingTab';
+import AgrovestProgressTab from './AgrovestProgressTab';
 import MyPaymentsSection from './MyPaymentsSection';
 import BlogPostsTab from './BlogPostsTab';
 import TrainingEventsTab from './TrainingEventsTab';
@@ -95,6 +96,7 @@ const ClientDashboard = () => {
           <TabsTrigger value="overview" className="text-xs md:text-sm">Overview</TabsTrigger>
           <TabsTrigger value="properties" className="text-xs md:text-sm">Properties</TabsTrigger>
           <TabsTrigger value="documentation" className="text-xs md:text-sm">Documentation</TabsTrigger>
+          <TabsTrigger value="agrovest" className="text-xs md:text-sm">Agrovest</TabsTrigger>
           <TabsTrigger value="orders" className="text-xs md:text-sm">Orders</TabsTrigger>
           <TabsTrigger value="inspections" className="text-xs md:text-sm">Inspections</TabsTrigger>
           <TabsTrigger value="payments" className="text-xs md:text-sm">Payments</TabsTrigger>
@@ -121,6 +123,10 @@ const ClientDashboard = () => {
 
         <TabsContent value="documentation" className="space-y-6">
           <DocumentationPricingTab />
+        </TabsContent>
+
+        <TabsContent value="agrovest" className="space-y-6">
+          <AgrovestProgressTab orders={orders} />
         </TabsContent>
 
         <TabsContent value="orders" className="space-y-6">
