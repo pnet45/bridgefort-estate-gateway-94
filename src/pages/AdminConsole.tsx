@@ -141,59 +141,59 @@ const AdminConsole = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-slate-800 border border-slate-700 p-1 flex flex-wrap h-auto gap-1 justify-start">
             {/* Row 1 - Primary tabs */}
-            <TabsTrigger value="overview" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="overview" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <LayoutDashboard className="h-4 w-4" />
               <span>Dashboard</span>
             </TabsTrigger>
-            <TabsTrigger value="properties" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="properties" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <Building className="h-4 w-4" />
               <span>Properties</span>
             </TabsTrigger>
-            <TabsTrigger value="crm" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="crm" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <CheckSquare className="h-4 w-4" />
               <span>CRM</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="users" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <Users className="h-4 w-4" />
               <span>Users</span>
             </TabsTrigger>
-            <TabsTrigger value="approvals" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm relative">
+            <TabsTrigger value="approvals" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm relative" style={{ color: '#fff' }}>
               <UserCheck className="h-4 w-4" />
               <span>Approvals</span>
               {pendingCount > 0 && (
                 <span className="ml-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="emails" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="emails" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <Mail className="h-4 w-4" />
               <span>Emails</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="analytics" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <TrendingUp className="h-4 w-4" />
               <span>Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="activity" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <Activity className="h-4 w-4" />
               <span>Activity</span>
             </TabsTrigger>
-            <TabsTrigger value="content" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="content" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <FileText className="h-4 w-4" />
               <span>Content</span>
             </TabsTrigger>
-            <TabsTrigger value="cms" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="cms" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <FileText className="h-4 w-4" />
               <span>CMS Hub</span>
             </TabsTrigger>
-            <TabsTrigger value="other-payments" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="other-payments" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <DollarSign className="h-4 w-4" />
               <span>Other Payments</span>
             </TabsTrigger>
-            <TabsTrigger value="permissions" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+            <TabsTrigger value="permissions" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <Settings className="h-4 w-4" />
               <span>Permissions</span>
             </TabsTrigger>
             {isSuperAdmin && (
-              <TabsTrigger value="travels" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm">
+              <TabsTrigger value="travels" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
                 <Plane className="h-4 w-4" />
                 <span>Travels</span>
                 <span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">Super</span>
