@@ -4,6 +4,7 @@ import ConstructionServices from './ConstructionServices';
 import LandSurveyServices from './LandSurveyServices';
 import ConsultancyServices from './ConsultancyServices';
 import SeminarsServices from './SeminarsServices';
+import AgrovestServices from './AgrovestServices';
 import RealEstateManagement from './RealEstateManagement';
 import PropertyDevelopment from './PropertyDevelopment';
 
@@ -23,6 +24,7 @@ const AdditionalServices = () => {
           <LandSurveyServices />
           <ConsultancyServices />
           <SeminarsServices />
+          <AgrovestServices />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 mt-8">
