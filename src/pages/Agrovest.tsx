@@ -22,22 +22,28 @@ import {
   Landmark,
 } from 'lucide-react';
 
+const UNSPLASH = (id: string) =>
+  `https://images.unsplash.com/photo-${id}?w=800&q=80&auto=format&fit=crop`;
+
 const cashCrops = [
-  { name: 'Oil Palm Plantation', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Cocoa Plantation', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Rubber Plantation', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Cassava Farm', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Ginger Plantation', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Lemon Orchard', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Maize Plantation', img: '/lovable-uploads/agrovest-estate-2.jpg' },
+  { name: 'Oil Palm Plantation', img: UNSPLASH('1701109067428-2db2ddd9a322') },
+  { name: 'Cocoa Plantation', img: UNSPLASH('1606312619070-d48b4c652a52') },
+  { name: 'Rubber Plantation', img: UNSPLASH('1516214104703-d870798883c5') },
+  { name: 'Cassava Farm', img: UNSPLASH('1594282486552-05b4d80fbb9f') },
+  { name: 'Ginger Plantation', img: UNSPLASH('1774125364904-de15e430e8f6') },
+  { name: 'Lemon Orchard', img: UNSPLASH('1587049352846-4a222e784d38') },
+  { name: 'Maize Plantation', img: UNSPLASH('1724087404717-ca6ae55feafb') },
 ];
 
 const facilities = [
-  { name: 'Modern Farmhouse', icon: Home },
-  { name: 'Poultry Farm', icon: Bird },
-  { name: 'Fish Farm', icon: Fish },
-  { name: 'Ruminants Farm', icon: Beef },
+  { name: 'Modern Farmhouse', icon: Home, img: UNSPLASH('1568605114967-8130f3a36994') },
+  { name: 'Poultry Farm', icon: Bird, img: UNSPLASH('1548550023-2bdb3c5beed7') },
+  { name: 'Fish Farm', icon: Fish, img: UNSPLASH('1516467508483-a7212febe31a') },
+  { name: 'Ruminants Farm', icon: Beef, img: UNSPLASH('1500595046743-cd271d694d30') },
+  { name: 'Processing & Value Addition', icon: TrendingUp, img: UNSPLASH('1542838132-92c53300491e') },
 ];
+
+const integratedFarmImg = UNSPLASH('1500382017468-9049fed747ef');
 
 const profitPlan = [
   { year: '1st Year', cadence: 'Paid Annually', range: '10% – 20%' },
@@ -204,29 +210,48 @@ const Agrovest: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-14">
             {cashCrops.map((c) => (
               <div key={c.name} className="text-center">
-                <div className="aspect-square rounded-xl bg-green-800 border border-green-700 flex items-center justify-center mb-2">
-                  <Sprout className="h-8 w-8 text-amber-300" />
+                <div className="aspect-square rounded-xl overflow-hidden border border-green-700 mb-2 bg-green-800">
+                  <img
+                    src={c.img}
+                    alt={c.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <p className="text-xs font-semibold text-green-100">{c.name}</p>
               </div>
             ))}
           </div>
 
+          <div className="mb-8 rounded-2xl overflow-hidden border border-green-700 max-h-64">
+            <img
+              src={integratedFarmImg}
+              alt="Integrated Farm Facilities"
+              loading="lazy"
+              className="w-full h-64 object-cover"
+            />
+          </div>
           <h3 className="text-2xl font-bold text-center mb-8">Integrated Farm Facilities</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {facilities.map((f) => (
               <div
                 key={f.name}
-                className="bg-green-900/60 border border-green-700 rounded-xl p-6 text-center"
+                className="bg-green-900/60 border border-green-700 rounded-xl overflow-hidden text-center"
               >
-                <f.icon className="h-8 w-8 text-amber-300 mx-auto mb-3" />
-                <p className="font-semibold text-sm">{f.name}</p>
+                <div className="aspect-video overflow-hidden bg-green-800">
+                  <img
+                    src={f.img}
+                    alt={f.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-4">
+                  <f.icon className="h-6 w-6 text-amber-300 mx-auto mb-2" />
+                  <p className="font-semibold text-sm">{f.name}</p>
+                </div>
               </div>
             ))}
-            <div className="bg-green-900/60 border border-green-700 rounded-xl p-6 text-center">
-              <TrendingUp className="h-8 w-8 text-amber-300 mx-auto mb-3" />
-              <p className="font-semibold text-sm">Processing &amp; Value Addition</p>
-            </div>
           </div>
         </div>
       </section>
