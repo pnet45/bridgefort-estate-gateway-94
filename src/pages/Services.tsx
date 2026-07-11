@@ -12,6 +12,7 @@ import ServicesCTA from '../components/services/ServicesCTA';
 import AdditionalServices from '../components/services/AdditionalServices';
 import BuyAndResellFeature from '../components/services/Buy2SellFeature';
 import TravelsFeature from '../components/services/TravelsFeature';
+import AgrovestFeature from '../components/services/AgrovestFeature';
 import CMSSection from '../components/cms/CMSSection';
 
 const Services = () => {
@@ -29,6 +30,9 @@ const Services = () => {
       <AdditionalServices />
 
       <CMSSection page="services" title="More Services & Articles" />
+
+      {/* Bridgefort Agrovest Feature */}
+      <AgrovestFeature />
 
       {/* Bridgefort Travels Feature */}
       <TravelsFeature />
