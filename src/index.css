@@ -545,7 +545,7 @@
   }
   /* Inactive tab text */
   .admin-theme [role="tab"] {
-    color: hsl(271 40% 75%) !important;
+    color: #fff !important;
   }
   .admin-theme [role="tab"]:hover {
     color: #fff !important;
