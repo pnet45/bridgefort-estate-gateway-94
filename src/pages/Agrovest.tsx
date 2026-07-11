@@ -22,22 +22,28 @@ import {
   Landmark,
 } from 'lucide-react';
 
+const UNSPLASH = (id: string) =>
+  `https://images.unsplash.com/photo-${id}?w=800&q=80&auto=format&fit=crop`;
+
 const cashCrops = [
-  { name: 'Oil Palm Plantation', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Cocoa Plantation', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Rubber Plantation', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Cassava Farm', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Ginger Plantation', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Lemon Orchard', img: '/lovable-uploads/agrovest-estate-2.jpg' },
-  { name: 'Maize Plantation', img: '/lovable-uploads/agrovest-estate-2.jpg' },
+  { name: 'Oil Palm Plantation', img: UNSPLASH('1701109067428-2db2ddd9a322') },
+  { name: 'Cocoa Plantation', img: UNSPLASH('1606312619070-d48b4c652a52') },
+  { name: 'Rubber Plantation', img: UNSPLASH('1516214104703-d870798883c5') },
+  { name: 'Cassava Farm', img: UNSPLASH('1594282486552-05b4d80fbb9f') },
+  { name: 'Ginger Plantation', img: UNSPLASH('1774125364904-de15e430e8f6') },
+  { name: 'Lemon Orchard', img: UNSPLASH('1587049352846-4a222e784d38') },
+  { name: 'Maize Plantation', img: UNSPLASH('1724087404717-ca6ae55feafb') },
 ];
 
 const facilities = [
-  { name: 'Modern Farmhouse', icon: Home },
-  { name: 'Poultry Farm', icon: Bird },
-  { name: 'Fish Farm', icon: Fish },
-  { name: 'Ruminants Farm', icon: Beef },
+  { name: 'Modern Farmhouse', icon: Home, img: UNSPLASH('1568605114967-8130f3a36994') },
+  { name: 'Poultry Farm', icon: Bird, img: UNSPLASH('1548550023-2bdb3c5beed7') },
+  { name: 'Fish Farm', icon: Fish, img: UNSPLASH('1516467508483-a7212febe31a') },
+  { name: 'Ruminants Farm', icon: Beef, img: UNSPLASH('1500595046743-cd271d694d30') },
+  { name: 'Processing & Value Addition', icon: TrendingUp, img: UNSPLASH('1542838132-92c53300491e') },
 ];
+
+const integratedFarmImg = UNSPLASH('1500382017468-9049fed747ef');
 
 const profitPlan = [
   { year: '1st Year', cadence: 'Paid Annually', range: '10% – 20%' },
