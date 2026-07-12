@@ -238,6 +238,25 @@
     @apply w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8;
   }
 
+  /* ── Performance: strip animation/transition effects from forms ──
+     Form controls (and the cards/wrappers that hold them) previously carried
+     hover-lift/roll/fade-in animations and multi-property color/shadow/
+     transform transitions from the global .glass-card and form-control base
+     styles. Interacting with a form (typing, focusing, tabbing between
+     fields) was re-triggering these on every state change, which felt
+     sluggish. Disabling motion specifically within <form> elements keeps the
+     rest of the site's animations intact while making forms feel instant. */
+  form,
+  form * {
+    transition: none !important;
+    animation: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  form *:hover {
+    transform: none !important;
+  }
+
   .section-padding {
     @apply py-16 lg:py-24;
   }
@@ -483,6 +502,28 @@
     z-index: 0;
   }
   .admin-theme > * { position: relative; z-index: 1; }
+
+  /* ── Performance: strip animation/transition/blur effects ──
+     backdrop-filter blur is one of the most expensive CSS properties to
+     repaint, and this console previously applied it (often twice — once
+     from the global .glass-card class, again from the slate-remap rules
+     below) across dozens of cards, on top of hover-lift/roll animations and
+     color transitions on nearly every element. That combination is what was
+     making the console feel sluggish. Everything inside .admin-theme is
+     rendered directly in the page (not portaled), so this is safe to blanket
+     -disable without touching dialogs/dropdowns/popovers, which render via a
+     portal outside this subtree and keep their normal open/close motion. */
+  .admin-theme,
+  .admin-theme * {
+    transition: none !important;
+    animation: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .admin-theme .glass-card:hover,
+  .admin-theme *:hover {
+    transform: none !important;
+  }
 
   /* ── Slate shade remapping → purple-tinted dark ── */
   .admin-theme .bg-slate-900 { background: hsl(271 55% 6%) !important; }
