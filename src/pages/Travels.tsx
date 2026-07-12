@@ -42,24 +42,25 @@ const PRICE_MAX = 2000000;
 const packages = [
   {
     name: 'Explorer',
-    price: '650,000',
+    price: '6,500,000',
     tagline: 'Perfect for first-time travelers',
     perks: ['Return economy flight', '3-night hotel stay', 'Airport transfers', 'Visa support', 'Travel insurance'],
     featured: false,
   },
   {
     name: 'Premium',
-    price: '1,450,000',
+    price: '7,450,000',
     tagline: 'Our most popular package',
     perks: ['Premium economy flight', '5-night 4-star hotel', 'Private city tours', 'Visa fast-track', 'Travel insurance', '24/7 concierge'],
     featured: true,
   },
   {
     name: 'Luxury',
-    price: '3,200,000',
+    price: '8,500,000',
     tagline: 'Bespoke five-star experience',
     perks: ['Business class flight', '7-night 5-star resort', 'Chauffeured transport', 'VIP visa handling', 'Premium insurance', 'Personal travel butler', 'Exclusive excursions'],
     featured: false,
+    <Button ClassName=text-lg text-color=white>Choose Plan</Button>
   },
 ];
 
