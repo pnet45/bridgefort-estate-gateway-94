@@ -505,6 +505,107 @@ export type Database = {
         }
         Relationships: []
       }
+      bh_subscription_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          paid_at: string
+          paystack_reference: string | null
+          status: string
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          paid_at?: string
+          paystack_reference?: string | null
+          status?: string
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          paid_at?: string
+          paystack_reference?: string | null
+          status?: string
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bh_subscription_payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "bh_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bh_subscriptions: {
+        Row: {
+          created_at: string
+          estate_name: string
+          estate_slug: string
+          expected_end_date: string
+          frequency: string
+          id: string
+          installment_amount: number
+          next_due_date: string
+          paid_amount: number
+          paid_installments: number
+          plot_size: string
+          start_date: string
+          status: string
+          total_amount: number
+          total_installments: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          estate_name: string
+          estate_slug: string
+          expected_end_date: string
+          frequency: string
+          id?: string
+          installment_amount: number
+          next_due_date?: string
+          paid_amount?: number
+          paid_installments?: number
+          plot_size: string
+          start_date?: string
+          status?: string
+          total_amount: number
+          total_installments: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          estate_name?: string
+          estate_slug?: string
+          expected_end_date?: string
+          frequency?: string
+          id?: string
+          installment_amount?: number
+          next_due_date?: string
+          paid_amount?: number
+          paid_installments?: number
+          plot_size?: string
+          start_date?: string
+          status?: string
+          total_amount?: number
+          total_installments?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       BlogPost: {
         Row: {
           created_at: string
