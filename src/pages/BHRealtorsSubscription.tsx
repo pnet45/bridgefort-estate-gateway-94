@@ -87,8 +87,11 @@ const BHRealtorsSubscription: React.FC = () => {
         reference: `bh-sub-${created.id}-${Date.now()}`,
         callback_url: `${window.location.origin}/payment-success?bh_sub=${created.id}`,
         metadata: {
-          purpose: 'bh_subscription_first_installment',
-          subscription_id: created.id,
+          customer_name: user.email ?? '',
+          custom_fields: [
+            { display_name: 'Purpose', variable_name: 'purpose', value: 'bh_subscription_first_installment' },
+            { display_name: 'Subscription', variable_name: 'subscription_id', value: String(created.id) },
+          ],
         },
       });
       if (pay?.data?.authorization_url) {
@@ -112,7 +115,13 @@ const BHRealtorsSubscription: React.FC = () => {
         currency: 'NGN',
         reference: `bh-sub-${sub.id}-${Date.now()}`,
         callback_url: `${window.location.origin}/payment-success?bh_sub=${sub.id}`,
-        metadata: { purpose: 'bh_subscription_installment', subscription_id: sub.id },
+        metadata: {
+          customer_name: user.email ?? '',
+          custom_fields: [
+            { display_name: 'Purpose', variable_name: 'purpose', value: 'bh_subscription_installment' },
+            { display_name: 'Subscription', variable_name: 'subscription_id', value: String(sub.id) },
+          ],
+        },
       });
       if (pay?.data?.authorization_url) window.location.href = pay.data.authorization_url;
     } catch (e: any) {
