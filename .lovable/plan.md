@@ -1,58 +1,42 @@
+This is a large, multi-domain change. Confirm the plan below before I implement.
 
-# Bridgefort Travels — New Page & Services Integration
+## 1. Rename "mlm" → "BHRealtors" + Subscription payments
 
-Add a dedicated, richly designed **Bridgefort Travels** page at `/travels`, and surface it as a new service on the Services page and main navigation.
+**Rename**
+- Rename routes: `/mlm` → `/bh-realtors` (keep a redirect from `/mlm`).
+- Rename files: `src/pages/MLM*.tsx` → `BHRealtors*.tsx`, `src/components/mlm/*` → `src/components/bh-realtors/*`, `redirectAfterSignIn: '/mlm'` → `/bh-realtors` in `BridgefortRealtorsAuth.tsx`.
+- Update Navbar, Footer, sitemap, and any user-facing "MLM" copy → "BHRealtors".
+- DB tables `mlm_commissions` etc. stay as-is (no destructive rename) — only code/URL/UI text change. If you want the DB renamed too, say so and I'll add a migration.
 
-## What gets built
+**Subscription (from the flyer)**
+- Seed 8 estate offers exactly as on the flyer: The Big League County (Warri), Fountains Crest Smart City (Owode), Bridgefort Crest Ville (Isiwo-Epe), Hampton Court Phase 3 (Agbara), Hampton Ville Estate (Itokin-Epe), Bridgefort Biz Hub (Ode-Omi), The Big League Haven (Ogwashi-Uku), Gateway Mini-Golf Estate & Resorts (Owode) — with all SQM tiers and prices from the image.
+- New table `subscription_plans` (seeded) and `user_subscriptions` (plan_id, plot_size, total_amount, frequency: daily/weekly/monthly, installment_amount, start_date, next_due_date, paid_amount, status).
+- New table `subscription_payments` (subscription_id, amount, paid_at, paystack_reference).
+- Payment page: user picks estate → plot size → frequency (Daily ₦5k / Weekly / Monthly) → shows total, per-installment amount, # of installments, projected completion date. Paystack redirect for each installment.
+- Timeline UI on subscription detail: progress bar, `paid / total`, days/weeks/months remaining, next due date, missed-installment warning.
 
-### 1. New page: `/travels` (Bridgefort Travels)
-A full marketing page using the existing logo-derived theme tokens (indigo/violet), `font-display` headings, and the site's Navbar/Footer chrome. Sections:
+## 2. Admin Console UI
 
-- **Hero** — Full-width image background with gradient overlay, headline "Explore the World with Bridgefort Travels", subheadline, dual CTAs (Plan My Trip → Contact, Browse Packages → scroll).
-- **Intro / Value Props** — 4 cards: Visa Assistance, Flight Bookings, Hotel Reservations, Tour Packages. Icons from lucide-react (Plane, Hotel, MapPin, FileCheck).
-- **Featured Destinations** — Grid of 6 destinations (Dubai, London, Istanbul, Cape Town, Bali, New York) with image, country, "from ₦" price hint, hover lift.
-- **Travel Packages** — 3 tiered packages (Explorer / Premium / Luxury) with included perks and "Enquire" buttons.
-- **Visa Services** — Two-column section listing supported visa categories (Tourist, Business, Student, Medical, Pilgrimage) with checklist styling.
-- **How It Works** — 4-step process (Consult → Plan → Book → Travel) with numbered cards and framer-motion scroll reveals.
-- **Why Choose Bridgefort Travels** — 3-column trust block (Licensed, 24/7 Support, Best Price Guarantee).
-- **Testimonials** — 3 traveler quotes.
-- **FAQ** — Accordion with 5 common travel questions.
-- **CTA Section** — Gradient indigo→violet band with "Start Planning" button → `/contact`.
+- Menu item text forced `text-white` in both light and dark mode.
+- Strip transitions/hover glows/blur wobble from admin console shell — keep only glassmorphism (`backdrop-blur-xl`, translucent `bg-white/10`, subtle border).
+- Remove Tawk.to widget on `/admin-console` route (unmount script when on admin route).
+- On mount, `window.scrollTo(0,0)` and set focus to top heading so the console opens at the top.
 
-All sections use the existing `container-custom`, `section-padding`, `btn-cta`, `text-gradient`, and motion patterns already in the codebase (mirrors `Buy2Sell`/`Services` page composition).
+## 3. Agrovest detail pages
 
-### 2. Services page integration
-- Add a **Travels** card to `src/components/home/InvestmentServices.tsx` services array (icon: `Plane`, link: `/travels`, flagged `isCallToAction`).
-- Add a **Bridgefort Travels** feature block to `src/pages/Services.tsx` (between `AdditionalServices` and `BuyAndResellFeature`) — short teaser card with image, 3 bullets, and "Visit Bridgefort Travels" button → `/travels`.
+- New route `/agrovest/:slug` rendering per-category detail page (description, key benefits, image, CTA).
+- Data source: extend the existing `cashCrops` / `facilities` arrays with `slug`, `description`, `benefits[]`.
+- Wrap each card in `<Link to={`/agrovest/${slug}`}>`.
 
-### 3. Navigation
-- Add `{ to: '/travels', label: 'Travels' }` to `src/components/navbar/AnimatedNavLinks.tsx` (placed after Training).
-- Add the same entry to `src/components/navbar/MobileMenu.tsx` and `NavLinks.tsx` for parity.
+## 4. Agrovest image optimization
 
-### 4. Routing
-- Register `<Route path="/travels" element={<Travels />} />` in `src/App.tsx`.
+- Append Unsplash params `?auto=format&fm=webp&q=70&w=640` (mobile) with `srcSet` for `w=1024` desktop.
+- Add `loading="lazy"` and `decoding="async"` on every card `<img>`.
 
-### 5. Imagery
-Generate 3 images via imagegen (fast tier, jpg):
-- `src/assets/travels-hero.jpg` — cinematic airplane wing over clouds at sunset.
-- `src/assets/travels-destinations.jpg` — collage-style world landmarks.
-- `src/assets/travels-feature.jpg` — passport + boarding pass flatlay for Services teaser.
-Destination cards use Unsplash-style stock URLs already used elsewhere or reuse generated hero crops to keep cost down.
+## 5. Cleanup
 
-## Technical notes
-- Files created:
-  - `src/pages/Travels.tsx`
-  - `src/components/travels/TravelsHero.tsx`
-  - `src/components/travels/TravelValueProps.tsx`
-  - `src/components/travels/FeaturedDestinations.tsx`
-  - `src/components/travels/TravelPackages.tsx`
-  - `src/components/travels/VisaServices.tsx`
-  - `src/components/travels/HowItWorks.tsx`
-  - `src/components/travels/WhyChooseTravels.tsx`
-  - `src/components/travels/TravelsTestimonials.tsx`
-  - `src/components/travels/TravelsFAQ.tsx`
-  - `src/components/travels/TravelsCTA.tsx`
-  - `src/components/services/TravelsFeature.tsx`
-- Files edited: `src/App.tsx`, `src/pages/Services.tsx`, `src/components/home/InvestmentServices.tsx`, `src/components/navbar/AnimatedNavLinks.tsx`, `src/components/navbar/MobileMenu.tsx`, `src/components/navbar/NavLinks.tsx`.
-- SEO: page sets `<title>Bridgefort Travels — Flights, Visas & Tours</title>`, meta description, single H1, alt text on all images, JSON-LD `TravelAgency` schema.
-- No database or backend changes. Enquiry buttons route to existing `/contact` page.
+- Remove unused `Sprout` import from `src/pages/Agrovest.tsx`.
+
+---
+
+**Confirm** and I'll execute in this order: (5) → (4) → (3) → (2) → (1). Item 1 is the largest — reply "go" or tell me what to trim.
