@@ -82,9 +82,9 @@ const NavbarUserMenu = ({ profile, userRole }: NavbarUserMenuProps) => {
             <User size={16} className="mr-2" />
             Dashboard
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/mlm')}>
+          <DropdownMenuItem onClick={() => navigate('/bh-realtors')}>
             <Users size={16} className="mr-2" />
-            MLM
+            BHRealtors
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowProfilePreview(true)}>
             <Eye size={16} className="mr-2" />

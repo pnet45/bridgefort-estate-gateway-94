@@ -4,7 +4,7 @@ const BridgefortRealtorsAuth = () => {
   return (
     <Auth
       pageTitle="Bridgefort Realtors"
-      redirectAfterSignIn="/mlm"
+      redirectAfterSignIn="/bh-realtors"
       redirectAfterSignUp="/profile"
     />
   );
