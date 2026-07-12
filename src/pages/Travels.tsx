@@ -36,8 +36,8 @@ const destinations: Destination[] = [
   { city: 'New York', country: 'United States', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=900&q=80', from: '2,000,000', price: 2000000, types: ['tourist', 'business', 'student'] },
 ];
 
-const PRICE_MIN = 500000;
-const PRICE_MAX = 2000000;
+const PRICE_MIN = 6500000;
+const PRICE_MAX = 8500000;
 
 const packages = [
   {
@@ -60,7 +60,6 @@ const packages = [
     tagline: 'Bespoke five-star experience',
     perks: ['Business class flight', '7-night 5-star resort', 'Chauffeured transport', 'VIP visa handling', 'Premium insurance', 'Personal travel butler', 'Exclusive excursions'],
     featured: false,
-    <Button ClassName=text-lg text-color=white>Choose Plan</Button>
   },
 ];
 
