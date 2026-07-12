@@ -222,6 +222,15 @@ const BHRealtors = () => {
                 <p className="mt-3 text-gray-600 max-w-2xl">
                   Manage your Bridgefort Homes Realtors Center membership packages, referral network, wallet, and upgrade path.
                 </p>
+                <div className="mt-4 rounded-2xl border border-yellow-300 bg-yellow-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-indigo-900">🔥 5K Daily Promo — Become a Landlord</p>
+                    <p className="text-xs text-slate-700">Subscribe daily, weekly, or monthly for any of 8 flagship estates. We track your payments and timeline to completion.</p>
+                  </div>
+                  <Link to="/bh-realtors/subscription">
+                    <Button className="bg-indigo-700 hover:bg-indigo-800 text-white whitespace-nowrap">Start Subscription</Button>
+                  </Link>
+                </div>
               </div>
 
               {user ? (
