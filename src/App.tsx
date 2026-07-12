@@ -20,9 +20,8 @@ const RecaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 import PrivateRoute from '@/components/PrivateRoute';
 import ScrollToTop from '@/components/ScrollToTop';
 import ScrollToTopButton from '@/components/ScrollToTopButton';
-import FloatingMessageButton from '@/components/FloatingMessageButton';
 import CartSidebar from '@/components/ecommerce/CartSidebar';
-import WhatsAppChat from "@/components/WhatsAppChat";
+import GlobalFloatingWidgets from '@/components/GlobalFloatingWidgets';
 
 // Pages
 import Index from '@/pages/Index';
@@ -70,8 +69,6 @@ import BHRealtors from '@/pages/BHRealtors';
 import Travels from '@/pages/Travels';
 import TravelBookingStatus from '@/pages/TravelBookingStatus';
 import Agrovest from '@/pages/Agrovest';
-import AgrovestCategory from '@/pages/AgrovestCategory';
-import BHRealtorsSubscription from '@/pages/BHRealtorsSubscription';
 
 import './App.css';
 
@@ -97,7 +94,6 @@ function App() {
                 <Route path="/services" element={<Services />} />
                 <Route path="/training" element={<Training />} />
                 <Route path="/agrovest" element={<Agrovest />} />
-                <Route path="/agrovest/:slug" element={<AgrovestCategory />} />
                 <Route path="/travels" element={<Travels />} />
                 <Route path="/travels/booking/:token" element={<TravelBookingStatus />} />
                 <Route path="/career" element={<Career />} />
@@ -147,16 +143,6 @@ function App() {
                     <BHRealtors />
                   </PrivateRoute>
                 } />
-                <Route path="/bh-realtors/subscription" element={
-                  <PrivateRoute>
-                    <BHRealtorsSubscription />
-                  </PrivateRoute>
-                } />
-                <Route path="/mlm" element={
-                  <PrivateRoute>
-                    <BHRealtors />
-                  </PrivateRoute>
-                } />
                 <Route path="/create-post" element={
                   <PrivateRoute>
                     <CreatePost />
@@ -176,9 +162,8 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
               
-              <FloatingMessageButton />
+              <GlobalFloatingWidgets />
               <CartSidebar />
-              <WhatsAppChat /> {/* Make WhatsApp icon global */}
               <ScrollToTopButton />
             </div>
           </EcommerceProvider>

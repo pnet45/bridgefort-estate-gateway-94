@@ -504,6 +504,55 @@
   .admin-theme .bg-slate-700\/50 { background: hsl(271 35% 15% / 0.5) !important; }
   .admin-theme .bg-slate-800\/50 { background: hsl(271 40% 10% / 0.5) !important; }
 
+  /* ── Semantic (shadcn) text-color variables ──
+     Components like <Card>, <CardTitle>, <CardDescription>, <Badge> etc. use
+     semantic classes such as text-card-foreground / text-muted-foreground,
+     which resolve via CSS custom properties rather than literal slate/gray
+     classes. Those variables are defined at :root for the site's LIGHT theme
+     (near-black), so any of these components sitting on the dark surfaces
+     above would otherwise render near-invisible dark-on-dark text. Redefining
+     the variables here cascades a light value down to every descendant that
+     uses them, without touching genuinely light/white surfaces (popovers,
+     selects and dialogs render via a portal outside .admin-theme, so they
+     keep the default light-theme variables and stay dark-on-white). */
+  .admin-theme .bg-slate-900,
+  .admin-theme .bg-slate-800,
+  .admin-theme .bg-slate-700,
+  .admin-theme .bg-slate-600,
+  .admin-theme .bg-slate-500,
+  .admin-theme .bg-slate-700\/50,
+  .admin-theme .bg-slate-800\/50,
+  .admin-theme header.bg-slate-800 {
+    --foreground: 0 0% 98%;
+    --card-foreground: 0 0% 98%;
+    --popover-foreground: 0 0% 98%;
+    --muted-foreground: 271 25% 78%;
+    --secondary-foreground: 0 0% 96%;
+    --accent-foreground: 0 0% 98%;
+  }
+
+  /* Baseline: any text left with no explicit color class at all (plain divs,
+     spans, paragraphs) still needs to default to a light color on the dark
+     admin background. Elements that DO carry an explicit color class/variable
+     are unaffected, since an explicitly-set color always wins over this
+     inherited fallback. */
+  .admin-theme { color: #f1f5f9; }
+
+  /* Form controls (input/textarea/select/combobox) keep their normal white
+     background, so their typed and placeholder text must stay dark/readable
+     regardless of the light baseline above — otherwise it'd be white-on-white. */
+  .admin-theme input,
+  .admin-theme textarea,
+  .admin-theme select,
+  .admin-theme [role="combobox"] {
+    color: #0f172a !important;
+  }
+  .admin-theme input::placeholder,
+  .admin-theme textarea::placeholder {
+    color: #64748b !important;
+    opacity: 1;
+  }
+
   /* ── Text ── */
   .admin-theme .text-slate-400 { color: hsl(271 40% 75%) !important; }
   .admin-theme .text-slate-300 { color: hsl(0 0% 88%) !important; }
