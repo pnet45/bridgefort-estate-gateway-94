@@ -17,7 +17,7 @@ const NavLinks = ({ className = '', onClick }: NavLinksProps) => {
     { to: '/travels', label: 'Travels' },
     { to: '/blog', label: 'Blog' },
     { to: '/career', label: 'Career' },
-    { to: '/mlm', label: 'MLM' },
+    { to: '/bh-realtors', label: 'BHRealtors' },
     { to: '/bridgefort-realtors-login', label: 'Bridgefort Realtors' },
     { to: '/contact', label: 'Contact' }
   ];
