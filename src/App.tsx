@@ -70,6 +70,8 @@ import BHRealtors from '@/pages/BHRealtors';
 import Travels from '@/pages/Travels';
 import TravelBookingStatus from '@/pages/TravelBookingStatus';
 import Agrovest from '@/pages/Agrovest';
+import AgrovestCategory from '@/pages/AgrovestCategory';
+import BHRealtorsSubscription from '@/pages/BHRealtorsSubscription';
 
 import './App.css';
 
@@ -95,6 +97,7 @@ function App() {
                 <Route path="/services" element={<Services />} />
                 <Route path="/training" element={<Training />} />
                 <Route path="/agrovest" element={<Agrovest />} />
+                <Route path="/agrovest/:slug" element={<AgrovestCategory />} />
                 <Route path="/travels" element={<Travels />} />
                 <Route path="/travels/booking/:token" element={<TravelBookingStatus />} />
                 <Route path="/career" element={<Career />} />
@@ -140,6 +143,16 @@ function App() {
                   </PrivateRoute>
                 } />
                 <Route path="/bh-realtors" element={
+                  <PrivateRoute>
+                    <BHRealtors />
+                  </PrivateRoute>
+                } />
+                <Route path="/bh-realtors/subscription" element={
+                  <PrivateRoute>
+                    <BHRealtorsSubscription />
+                  </PrivateRoute>
+                } />
+                <Route path="/mlm" element={
                   <PrivateRoute>
                     <BHRealtors />
                   </PrivateRoute>
