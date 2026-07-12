@@ -28,12 +28,12 @@ interface Destination {
 }
 
 const destinations: Destination[] = [
-  { city: 'Dubai', country: 'United Arab Emirates', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=900&q=80', from: '850,000', price: 850000, types: ['tourist', 'business', 'luxury'] },
-  { city: 'London', country: 'United Kingdom', img: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=900&q=80', from: '1,450,000', price: 1450000, types: ['tourist', 'business', 'student', 'medical'] },
-  { city: 'Istanbul', country: 'Türkiye', img: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=900&q=80', from: '780,000', price: 780000, types: ['tourist', 'medical', 'pilgrimage'] },
+  { city: 'Dubai', country: 'United Arab Emirates', img: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=900&q=80', from: '1,850,000', price: 1850000, types: ['tourist', 'business', 'luxury'] },
+  { city: 'London', country: 'United Kingdom', img: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=900&q=80', from: '2,250,000', price: 2250000, types: ['tourist', 'business', 'student', 'medical'] },
+  { city: 'Istanbul', country: 'Türkiye', img: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=900&q=80', from: '1,780,000', price: 1780000, types: ['tourist', 'medical', 'pilgrimage'] },
   { city: 'Cape Town', country: 'South Africa', img: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=900&q=80', from: '920,000', price: 920000, types: ['tourist', 'luxury'] },
   { city: 'Bali', country: 'Indonesia', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80', from: '1,250,000', price: 1250000, types: ['tourist', 'luxury'] },
-  { city: 'New York', country: 'United States', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=900&q=80', from: '1,890,000', price: 1890000, types: ['tourist', 'business', 'student'] },
+  { city: 'New York', country: 'United States', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=900&q=80', from: '2,000,000', price: 2000000, types: ['tourist', 'business', 'student'] },
 ];
 
 const PRICE_MIN = 500000;
