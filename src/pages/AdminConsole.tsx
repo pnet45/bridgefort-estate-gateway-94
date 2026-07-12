@@ -47,6 +47,23 @@ const AdminConsole = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
+    // Force scroll to top on admin console open
+    window.scrollTo({ top: 0, behavior: 'auto' });
+
+    // Hide Tawk.to widget on admin console
+    const hideTawk = () => {
+      try {
+        const w: any = window;
+        if (w.Tawk_API?.hideWidget) w.Tawk_API.hideWidget();
+      } catch { /* no-op */ }
+      const style = document.createElement('style');
+      style.id = 'admin-hide-tawk';
+      style.textContent = '#tawkchat-container, iframe[title*="chat" i], iframe[src*="tawk.to"] { display: none !important; }';
+      document.head.appendChild(style);
+    };
+    hideTawk();
+    const interval = setInterval(hideTawk, 1500);
+
     const checkAdminAccess = async () => {
       if (!user) { navigate('/admin-login'); return; }
       const { data: isAdmin, error } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
@@ -61,6 +78,15 @@ const AdminConsole = () => {
       setLoading(false);
     };
     checkAdminAccess();
+
+    return () => {
+      clearInterval(interval);
+      document.getElementById('admin-hide-tawk')?.remove();
+      try {
+        const w: any = window;
+        if (w.Tawk_API?.showWidget) w.Tawk_API.showWidget();
+      } catch { /* no-op */ }
+    };
   }, [user, navigate]);
 
   const handleSignOut = async () => {
@@ -85,9 +111,9 @@ const AdminConsole = () => {
   }
 
   return (
-    <div className="admin-theme min-h-[200vh]">
-      {/* Admin Header */}
-      <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+    <div className="admin-theme min-h-[200vh] bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950">
+      {/* Admin Header — glassmorphism, no motion effects */}
+      <header className="bg-white/10 backdrop-blur-xl border-b border-white/15 sticky top-0 z-50 shadow-lg shadow-black/20">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
@@ -139,7 +165,7 @@ const AdminConsole = () => {
       {/* Main Content */}
       <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-slate-800 border border-slate-700 p-1 flex flex-wrap h-auto gap-1 justify-start">
+          <TabsList className="bg-white/10 backdrop-blur-xl border border-white/15 p-1 flex flex-wrap h-auto gap-1 justify-start shadow-lg shadow-black/20">
             {/* Row 1 - Primary tabs */}
             <TabsTrigger value="overview" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <LayoutDashboard className="h-4 w-4" />
