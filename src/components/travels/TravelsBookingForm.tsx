@@ -243,9 +243,9 @@ const TravelsBookingForm: React.FC<Props> = ({ initialPackage = '', initialDesti
                     <SelectValue placeholder="Select a package" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Explorer">Explorer — from ₦650,000</SelectItem>
-                    <SelectItem value="Premium">Premium — from ₦1,450,000</SelectItem>
-                    <SelectItem value="Luxury">Luxury — from ₦3,200,000</SelectItem>
+                    <SelectItem value="Explorer">Explorer</SelectItem>
+                    <SelectItem value="Premium">Premium</SelectItem>
+                    <SelectItem value="Luxury">Luxury</SelectItem>
                     <SelectItem value="Custom">Custom / Bespoke</SelectItem>
                     <SelectItem value="Visa Only">Visa assistance only</SelectItem>
                     <SelectItem value="Flight Only">Flight booking only</SelectItem>
