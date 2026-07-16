@@ -62,12 +62,56 @@ const PaymentSuccess = () => {
         setVerificationStatus('success');
         setPaymentDetails(data.data);
         clearCart(); // Clear cart on successful payment
+
+        // 5K Daily Promo installments are tagged as PROMO_<paymentsRowId>_<ts>
+        // in the reference, so we can credit the right savings plan here.
+        if (reference.startsWith('PROMO_')) {
+          await creditPromoInstallment(reference, data.data.amount / 100);
+        }
       } else {
         setVerificationStatus('failed');
       }
     } catch (error) {
       console.error('Payment verification error:', error);
       setVerificationStatus('failed');
+    }
+  };
+
+  const creditPromoInstallment = async (reference: string, amountPaid: number) => {
+    try {
+      const parts = reference.split('_');
+      const planId = parts[1];
+      if (!planId) return;
+
+      const { data: plan, error: fetchError } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('id', planId)
+        .single();
+      if (fetchError || !plan) return;
+
+      const newAmountPaid = (plan.amount_paid || 0) + amountPaid;
+      const newBalance = Math.max(0, plan.total_amount - newAmountPaid);
+
+      await supabase
+        .from('payments')
+        .update({
+          amount_paid: newAmountPaid,
+          balance: newBalance,
+          status: newBalance <= 0 ? 'completed' : 'active',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', planId);
+
+      await supabase.from('payment_transactions').insert({
+        payment_id: planId,
+        user_id: plan.user_id,
+        amount: amountPaid,
+        channel: 'paystack',
+        notes: '5K Daily Promo installment',
+      });
+    } catch (e) {
+      console.error('Error crediting promo installment:', e);
     }
   };
 

@@ -9,14 +9,14 @@ const Contact = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative animate-fade-in">
-        <div className="h-[40vh] bg-cover bg-center hover:scale-105 transition-transform duration-500" style={{
+      <section className="relative pt-[88px] lg:pt-[104px] animate-fade-in">
+        <div className="h-[40vh] min-h-[320px] bg-cover bg-center hover:scale-105 transition-transform duration-500" style={{
         backgroundImage: 'url(https://images.unsplash.com/photo-1423666639041-f56000c27a9a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&q=80)'
       }}>
           <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center">
             <div className="container-custom text-white">
-              <h1 className="text-3xl md:text-5xl font-bold mb-4 animate-scale-in">Contact Us</h1>
-              <p className="text-xl max-w-2xl animate-fade-in">Get in touch with our team of experts for personalized assistance with your real estate needs.</p>
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 text-white animate-scale-in">Contact Us</h1>
+              <p className="text-xl max-w-2xl text-white animate-fade-in">Get in touch with our team of experts for personalized assistance with your real estate needs.</p>
             </div>
           </div>
         </div>
@@ -33,7 +33,7 @@ const Contact = () => {
                 <div className="space-y-6 text-left">
                   <div className="flex items-start animate-fade-in">
                     <div className="bg-estate-blue bg-opacity-10 p-3 rounded-full mr-4 hover:scale-110 transition-transform duration-300">
-                      <MapPin size={24} className="text-white" />
+                      <MapPin size={24} className="text-estate-blue" />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold mb-1">Our Locations</h3>
@@ -44,7 +44,7 @@ const Contact = () => {
 
                   <div className="flex items-start animate-fade-in">
                     <div className="bg-estate-blue bg-opacity-10 p-3 rounded-full mr-4 hover:scale-110 transition-transform duration-300">
-                      <Phone size={24} className="text-white " />
+                      <Phone size={24} className="text-estate-blue" />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold mb-1">Phone</h3>
@@ -59,7 +59,7 @@ const Contact = () => {
 
                   <div className="flex items-start animate-fade-in">
                     <div className="bg-estate-blue bg-opacity-10 p-3 rounded-full mr-4 hover:scale-110 transition-transform duration-300">
-                      <Mail size={24} className="text-white " />
+                      <Mail size={24} className="text-estate-blue" />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold mb-1">Email</h3>
@@ -83,7 +83,7 @@ const Contact = () => {
 
                   <div className="flex items-start animate-fade-in">
                     <div className="bg-estate-blue bg-opacity-10 p-3 rounded-full mr-4 hover:scale-110 transition-transform duration-300">
-                      <Clock size={24} className="text-white " />
+                      <Clock size={24} className="text-estate-blue" />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold mb-1">Business Hours</h3>

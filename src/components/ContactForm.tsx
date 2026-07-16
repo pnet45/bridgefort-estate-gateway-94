@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -7,7 +7,8 @@ import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useRecaptchaV3 } from '@/hooks/useRecaptchaV3';
+import ReCaptcha, { RECAPTCHA_ENABLED } from '@/components/ui/ReCaptcha';
+import type ReCAPTCHA from 'react-google-recaptcha';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -18,7 +19,8 @@ const ContactForm = () => {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { execute: executeRecaptcha } = useRecaptchaV3();
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -36,26 +38,43 @@ const ContactForm = () => {
       subject: '',
       message: ''
     });
+    setRecaptchaToken(null);
+    recaptchaRef.current?.reset();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Passive reCAPTCHA v3 — blocks submit only if no token is returned.
-    const captchaToken = await executeRecaptcha('contact_form');
-    if (!captchaToken) {
+    if (RECAPTCHA_ENABLED && !recaptchaToken) {
       toast({
-        title: "Verification Failed",
-        description: "Please refresh the page and try again.",
+        title: "reCAPTCHA Required",
+        description: "Please complete the reCAPTCHA verification before sending your message.",
         variant: "destructive"
       });
       return;
     }
 
-    
     setIsSubmitting(true);
-    
+
     try {
+      // Server-side verification — the site key only proves a widget was
+      // rendered; this call actually confirms the token with Google using
+      // the secret key, which lives in the verify-recaptcha edge function.
+      const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-recaptcha', {
+        body: { token: recaptchaToken, action: 'contact_form' }
+      });
+
+      if (verifyError || !verifyData?.success) {
+        toast({
+          title: "Verification Failed",
+          description: "We couldn't verify you're human. Please try the reCAPTCHA again.",
+          variant: "destructive"
+        });
+        recaptchaRef.current?.reset();
+        setRecaptchaToken(null);
+        return;
+      }
+
       const { error } = await supabase
         .from('contact_messages')
         .insert([
@@ -169,14 +188,26 @@ const ContactForm = () => {
             />
           </div>
 
+          <div className="flex justify-center">
+            <ReCaptcha
+              ref={recaptchaRef}
+              onChange={setRecaptchaToken}
+              onExpired={() => setRecaptchaToken(null)}
+              onError={() => setRecaptchaToken(null)}
+              variant="normal"
+            />
+          </div>
+
           <p className="text-xs text-muted-foreground text-center">
-            Protected by reCAPTCHA — this form runs a passive check on submit.
+            {RECAPTCHA_ENABLED
+              ? 'Please verify you are human before sending your message.'
+              : 'Protected by reCAPTCHA.'}
           </p>
 
           <Button
             type="submit"
             className="w-full bg-estate-blue hover:bg-estate-darkBlue text-white py-3"
-            disabled={isSubmitting}
+            disabled={isSubmitting || (RECAPTCHA_ENABLED && !recaptchaToken)}
           >
             {isSubmitting ? 'Sending...' : 'Send Message'}
           </Button>

@@ -7,6 +7,7 @@ import CheckoutForm from './CheckoutForm';
 import CartSidebarMenu from './CartSidebarMenu';
 import CartDashboard from './CartDashboard';
 import MainCartContent from './cart/MainCartContent';
+import LandSavingsPromoTab from './LandSavingsPromoTab';
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -27,7 +28,9 @@ const CartPage = () => {
           setShowCheckout={setShowCheckout}
         />
       );
-    
+
+    if (activeTab === "promo") return <LandSavingsPromoTab />;
+
     // Use CartDashboard for all other tabs
     return <CartDashboard tabType={activeTab} />;
   };

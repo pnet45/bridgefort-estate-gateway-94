@@ -65,12 +65,15 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-1 xl:space-x-2 2xl:space-x-4 flex-shrink min-w-0">
-              <AnimatedNavLinks className="hover:text-estate-blue transition whitespace-nowrap text-base xl:text-lg" />
+            <div className="hidden lg:flex items-center space-x-1 xl:space-x-2 2xl:space-x-4 flex-1 min-w-0 justify-center">
+              <AnimatedNavLinks className="hover:text-estate-blue transition whitespace-nowrap text-sm xl:text-base" />
             </div>
             
-            {/* Desktop Auth Section */}
-            <div className="hidden lg:flex items-center space-x-4">
+            {/* Desktop Auth Section — grouped tight by default (grid with a
+                small gap) so the nav links above have room to breathe; the
+                cluster only "drops open" to its fuller spacing on hover or
+                keyboard focus. */}
+            <div className="hidden lg:grid grid-flow-col auto-cols-max items-center gap-1.5 hover:gap-3 focus-within:gap-3 transition-[gap] duration-300 shrink-0">
               <DarkModeToggle />
               {user && <ProfileCompletionWidget />}
               <AnimatedAuthSection 

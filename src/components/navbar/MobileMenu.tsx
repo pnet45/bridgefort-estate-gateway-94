@@ -17,7 +17,8 @@ import {
   GraduationCap,
   Users,
   Plane,
-  Sprout
+  Sprout,
+  PiggyBank
 } from 'lucide-react';
 import CartIcon from '../ecommerce/CartIcon';
 
@@ -46,6 +47,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
     { name: 'Services', icon: <Briefcase size={20} />, path: '/services' },
     { name: 'Training', icon: <GraduationCap size={20} />, path: '/training' },
     { name: 'Agrovest', icon: <Sprout size={20} />, path: '/agrovest' },
+    { name: '5K Daily Promo', icon: <PiggyBank size={20} />, path: '/5k-daily-promo' },
     { name: 'Travels', icon: <Plane size={20} />, path: '/travels' },
     { name: 'Blog', icon: <BookOpen size={20} />, path: '/blog' },
     { name: 'BHRealtors', icon: <Users size={20} />, path: '/bh-realtors' },
@@ -56,7 +58,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-full left-0 right-0 bg-white/95 backdrop-blur-xl shadow-2xl z-50 py-4 overflow-hidden animate-fade-in lg:hidden border-t border-gray-100 max-h-[85vh] overflow-y-auto">
+    <div className="absolute top-full left-0 right-0 bg-white/95 dark:bg-[hsl(240_13%_5%)] backdrop-blur-xl dark:backdrop-blur-none shadow-2xl z-50 py-4 overflow-hidden animate-fade-in lg:hidden border-t border-gray-100 dark:border-white/10 max-h-[85vh] overflow-y-auto">
       <div className="mb-4 px-4">
         <CartIcon />
       </div>
@@ -66,27 +68,27 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
           <Link
             key={item.name}
             to={item.path}
-            className="group flex items-center px-4 py-3 hover:bg-estate-blue/10 hover:pl-6 transition-all duration-300 border-l-2 border-transparent hover:border-estate-blue"
+            className="group flex items-center px-4 py-3 hover:bg-estate-blue/10 hover:pl-6 transition-all duration-300 border-l-2 border-transparent hover:border-estate-blue dark:text-gray-300"
             onClick={toggleMenu}
             style={{
               opacity: 0,
               animation: `slideInRight 0.35s ease-out ${idx * 40}ms forwards`,
             }}
           >
-            <span className="mr-3 text-gray-500 group-hover:text-estate-blue group-hover:scale-110 transition-all duration-300">{item.icon}</span>
+            <span className="mr-3 text-gray-500 dark:text-gray-400 group-hover:text-estate-blue group-hover:scale-110 transition-all duration-300">{item.icon}</span>
             <span className="font-medium group-hover:text-estate-blue transition-colors">{item.name}</span>
           </Link>
         ))}
 
-        <div className="border-t mt-2 pt-2 px-4">
+        <div className="border-t dark:border-white/10 mt-2 pt-2 px-4">
           {user ? (
             <>
               <Link
                 to="/dashboard"
-                className="flex items-center py-3 hover:text-estate-blue"
+                className="flex items-center py-3 hover:text-estate-blue dark:text-gray-300"
                 onClick={toggleMenu}
               >
-                <User size={20} className="mr-3 text-gray-500" />
+                <User size={20} className="mr-3 text-gray-500 dark:text-gray-400" />
                 <span className="font-medium">Dashboard</span>
               </Link>
               <Button

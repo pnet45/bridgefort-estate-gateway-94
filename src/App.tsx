@@ -69,6 +69,8 @@ import BHRealtors from '@/pages/BHRealtors';
 import Travels from '@/pages/Travels';
 import TravelBookingStatus from '@/pages/TravelBookingStatus';
 import Agrovest from '@/pages/Agrovest';
+import AgrovestCategoryDetail from '@/pages/AgrovestCategoryDetail';
+import FiveKDailyPromo from '@/pages/FiveKDailyPromo';
 
 import './App.css';
 
@@ -94,6 +96,8 @@ function App() {
                 <Route path="/services" element={<Services />} />
                 <Route path="/training" element={<Training />} />
                 <Route path="/agrovest" element={<Agrovest />} />
+                <Route path="/agrovest/:slug" element={<AgrovestCategoryDetail />} />
+                <Route path="/5k-daily-promo" element={<FiveKDailyPromo />} />
                 <Route path="/travels" element={<Travels />} />
                 <Route path="/travels/booking/:token" element={<TravelBookingStatus />} />
                 <Route path="/career" element={<Career />} />

@@ -17,7 +17,7 @@ const AnimatedAuthSection = ({ user, profile, userRole, shouldShowLogin }: Anima
   const navigate = useNavigate();
 
   return (
-    <div className="hidden lg:flex items-center space-x-4">
+    <div className="hidden lg:grid grid-flow-col auto-cols-max items-center gap-1.5">
       <div 
         className="animate-fade-in"
         style={{

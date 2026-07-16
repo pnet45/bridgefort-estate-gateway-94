@@ -8,6 +8,7 @@ import {
   Eye,
   CreditCard,
   Calendar,
+  Sprout,
 } from "lucide-react";
 
 interface MenuItem {
@@ -29,6 +30,7 @@ const menuItems: MenuItem[] = [
   { id: "inspections", label: "Property Inspections", icon: Eye },
   { id: "payments", label: "My Payments", icon: CreditCard },
   { id: "installments", label: "My Installments", icon: Calendar },
+  { id: "promo", label: "5K Daily Promo", icon: Sprout },
 ];
 
 const CartSidebarMenu: React.FC<CartSidebarMenuProps> = ({
