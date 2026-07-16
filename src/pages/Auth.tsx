@@ -222,36 +222,50 @@ const Auth = ({
         };
 
         if (isRegisteringAsPBO) {
-          if (!pboCode.trim()) {
-            toast({
-              title: "PBO Code Required",
-              description: "Please enter a unique PBO referral code to complete registration.",
-              variant: "destructive"
-            });
-            return;
+          // Allow automatic generation of a unique 5-digit PBO referral code when the user
+          // doesn't provide one. Ensure it doesn't collide with existing codes.
+          const generateUniquePboCode = async () => {
+            let attempts = 0;
+            while (attempts < 10) {
+              const candidate = String(Math.floor(10000 + Math.random() * 90000));
+              const { data: existing } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('pbo_referral_code', candidate)
+                .limit(1)
+                .maybeSingle();
+
+              if (!existing) return candidate;
+              attempts += 1;
+            }
+            // Fallback to time-based code if unlucky
+            return `P${String(Date.now()).slice(-5)}`;
+          };
+
+          let finalPbo = pboCode.trim();
+          if (!finalPbo) {
+            finalPbo = await generateUniquePboCode();
           }
 
-          const { data: existingPBO, error: pboError } = await supabase
+          // Check uniqueness one last time
+          const { data: existingPBO } = await supabase
             .from('profiles')
             .select('id')
-            .eq('pbo_referral_code', pboCode.trim())
-            .single();
-
-          if (pboError && pboError.code !== 'PGRST116') {
-            throw pboError;
-          }
+            .eq('pbo_referral_code', finalPbo)
+            .limit(1)
+            .maybeSingle();
 
           if (existingPBO) {
             toast({
-              title: "PBO Code Already Used",
-              description: "This PBO referral code has already been used by another PBO. Please choose a different code.",
-              variant: "destructive"
+              title: 'PBO Code Already Used',
+              description: 'Generated referral code collided. Please try again.',
+              variant: 'destructive'
             });
             return;
           }
 
           profileUpdate.is_pbo = true;
-          profileUpdate.pbo_referral_code = pboCode.trim();
+          profileUpdate.pbo_referral_code = finalPbo;
         } else if (sponsorCode.trim()) {
           const { data: sponsorProfile, error: sponsorError } = await supabase
             .from('profiles')

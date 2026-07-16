@@ -148,6 +148,36 @@ const BHRealtors = () => {
     setPurchaseError('');
 
     try {
+      // If amount due is zero, treat this as a free upgrade and complete server-side
+      if (amountDue === 0) {
+        // Update profile to reflect new package
+        await supabase.from('profiles').update({
+          current_package: selectedPackage.package_code,
+          updated_at: new Date().toISOString(),
+        }).eq('id', user.id);
+
+        // Create a zero-amount payment record for bookkeeping
+        await supabase.from('payments').insert({
+          user_id: user.id,
+          property_id: 'bh-realtors',
+          plan_type: selectedPackage.package_code,
+          months: 0,
+          principal_amount: selectedPackage.price,
+          interest_percent: 0,
+          interest_amount: 0,
+          total_amount: 0,
+          amount_paid: 0,
+          balance: 0,
+          status: 'completed',
+        });
+
+        setPurchaseStatus('idle');
+        toast({ title: 'Membership upgraded', description: 'Your membership was upgraded successfully.' });
+        // Refresh page or navigate to dashboard
+        window.location.reload();
+        return;
+      }
+
       const fullName = `${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim();
       const paymentData = await initializePayment({
         email: user.email ?? '',
@@ -194,7 +224,9 @@ const BHRealtors = () => {
     if (!user) return 'Sign in to purchase';
     if (!isEligibleForPurchase) return 'Select a higher package';
     if (purchaseStatus === 'pending') return 'Redirecting to Paystack...';
-    return amountDue > 0 ? `Pay ₦${amountDue.toLocaleString()} via Paystack` : 'Confirm purchase';
+    if (amountDue > 0) return `Pay ₦${amountDue.toLocaleString()} via Paystack`;
+    // For zero-amount upgrades, keep the label explicit so users know the button still completes the upgrade
+    return `Pay ₦0.00 via Paystack`;
   }, [amountDue, isEligibleForPurchase, purchaseStatus, user]);
 
   if (loading) {
@@ -216,7 +248,7 @@ const BHRealtors = () => {
       <main className="flex-grow pt-28 pb-12">
         <div className="container mx-auto px-4">
           <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr] items-start">
-            <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+            <section className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-8 shadow-lg ring-1 ring-white/5">
               <div className="mb-6">
                 <h1 className="text-3xl font-bold text-estate-blue">BHRealtors Dashboard</h1>
                 <p className="mt-3 text-gray-600 max-w-2xl">
@@ -266,7 +298,7 @@ const BHRealtors = () => {
                         return (
                           <div
                             key={pkg.package_code}
-                            className={`rounded-3xl border p-6 shadow-sm ${pkg.package_code === currentPackageCode ? 'border-estate-blue bg-estate-blue/5' : 'border-slate-200 bg-white'}`}
+                            className={`rounded-3xl border p-6 shadow-lg backdrop-blur-sm ${pkg.package_code === currentPackageCode ? 'ring-2 ring-indigo-400 bg-gradient-to-br from-indigo-50/30 to-white/10 border-transparent' : 'border-white/10 bg-white/5'}`}
                           >
                             <div className="mb-4">
                               <p className="text-sm uppercase tracking-[0.2em] text-slate-500">{pkg.package_name}</p>
