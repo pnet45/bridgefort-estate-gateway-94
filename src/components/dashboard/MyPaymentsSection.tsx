@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth";
+import { estimatePayoffPeriods, frequencyMeta } from "@/data/fiveKDailyPromo";
 
 const PLAN_LABELS: Record<string, string> = {
   "outright": "Outright",
@@ -18,31 +19,61 @@ const MyPaymentsSection: React.FC = () => {
   const [docPayments, setDocPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const formatCountdown = (days: number) => {
+    if (days <= 0) return 'Complete';
+    if (days < 14) return `${days} day${days === 1 ? '' : 's'}`;
+    if (days < 60) return `${Math.round(days / 7)} weeks`;
+    return `${Math.round(days / 30)} months`;
+  };
+
   useEffect(() => {
     let cancelled = false;
+
     async function fetchPayments() {
-      if (user) {
-        const [{ data: normal, error: err1 }, { data: docs, error: err2 }] = await Promise.all([
-          supabase
-            .from("payments")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false }),
-          supabase
-            .from("estate_documentation_payments")
-            .select("*, estate:estate_id(name, location)")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false })
-        ]);
-        if (!cancelled) {
-          setPayments(normal || []);
-          setDocPayments(docs || []);
-          setLoading(false);
-        }
+      if (!user) return;
+
+      const [{ data: normal, error: err1 }, { data: docs, error: err2 }] = await Promise.all([
+        supabase
+          .from("payments")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("estate_documentation_payments")
+          .select("*, estate:estate_id(name, location)")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+      ]);
+
+      if (!cancelled) {
+        setPayments(normal || []);
+        setDocPayments(docs || []);
+        setLoading(false);
       }
     }
+
     fetchPayments();
-    return () => { cancelled = true; };
+
+    const channel = supabase.channel(`payments-dashboard-${user?.id ?? 'anon'}`);
+    channel
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'payments',
+          filter: user ? `user_id=eq.${user.id}` : undefined,
+        },
+        () => {
+          fetchPayments();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   if (loading) {
@@ -58,6 +89,13 @@ const MyPaymentsSection: React.FC = () => {
     </Card>;
   }
 
+  const promoPlans = payments.filter((pm) => {
+    const planType = String(pm.plan_type || '').toLowerCase();
+    return planType === 'daily' || planType === 'weekly' || planType === 'monthly' || String(pm.property_id || '').startsWith('5k-daily-');
+  });
+
+  const standardPayments = payments.filter((pm) => !promoPlans.includes(pm));
+
   return (
     <Card>
       <CardHeader>
@@ -65,6 +103,46 @@ const MyPaymentsSection: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {promoPlans.length > 0 && (
+            <>
+              <div className="font-bold pb-2">5K Daily Promo Plans</div>
+              {promoPlans.map((pm) => {
+                const totalAmount = Number(pm.total_amount || 0);
+                const amountPaid = Number(pm.amount_paid || 0);
+                const balance = Math.max(0, totalAmount - amountPaid);
+                const progressPct = totalAmount > 0 ? Math.min(100, (amountPaid / totalAmount) * 100) : 0;
+                const planType = String(pm.plan_type || 'daily').toLowerCase();
+                const meta = frequencyMeta[planType as keyof typeof frequencyMeta] || frequencyMeta.daily;
+                const installmentAmount = Number(pm.promo_installment_amount || 5000);
+                const { installments, totalDays } = estimatePayoffPeriods(balance, planType as any, installmentAmount);
+                const isComplete = balance <= 0;
+
+                return (
+                  <div key={pm.id} className={`p-4 border rounded-lg ${isComplete ? 'border-green-300 bg-green-50/70' : 'border-purple-200 bg-purple-50/60'} flex flex-col md:flex-row md:items-center justify-between gap-3`}>
+                    <div>
+                      <div className="font-semibold text-purple-900">
+                        {pm.promo_estate_slug ? pm.promo_estate_slug.replace(/-/g, ' ') : pm.property_id}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Plan: {meta.label}</div>
+                      <div className="text-xs text-muted-foreground">{pm.status || 'active'}</div>
+                      <div className="mt-2 w-full h-2 rounded bg-white/70">
+                        <div className="h-2 rounded bg-purple-700 transition-all" style={{ width: `${progressPct}%` }}></div>
+                      </div>
+                      <div className="text-xs mt-1 text-muted-foreground">{progressPct.toFixed(0)}% complete</div>
+                    </div>
+                    <div className="text-sm space-y-1">
+                      <div className="font-bold">Total: ₦{totalAmount.toLocaleString()}</div>
+                      <div className="text-green-700">Paid: ₦{amountPaid.toLocaleString()}</div>
+                      <div className="text-red-700">Balance remaining: ₦{balance.toLocaleString()}</div>
+                      <div className="text-muted-foreground">{formatCountdown(totalDays)} remaining</div>
+                      <div className="text-muted-foreground">{installments} {meta.unitLabel}{installments === 1 ? '' : 's'} left</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
+
           {/* Estate Documentation Payments */}
           {docPayments.length > 0 && (
             <>
@@ -96,7 +174,7 @@ const MyPaymentsSection: React.FC = () => {
           )}
 
           {/* Regular Estate Payments */}
-          {payments.map((pm) => {
+          {standardPayments.map((pm) => {
             // Calculate progress
             const totalPayments = pm.months;
             const monthlyPayment = Math.ceil(Number(pm.total_amount) / totalPayments);

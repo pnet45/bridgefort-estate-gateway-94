@@ -78,26 +78,37 @@ const LandSavingsPromoTab: React.FC = () => {
       toast({ title: 'Login required', description: 'Please log in to start a savings plan.', variant: 'destructive' });
       return;
     }
+
     setCreating(true);
     try {
-      const { error } = await supabase.from('payments').insert({
-        user_id: user.id,
-        property_id: `5k-daily-${estate.slug}`,
-        plan_type: frequency,
-        months: 0,
-        principal_amount: tier.price,
-        interest_percent: 0,
-        interest_amount: 0,
-        total_amount: tier.price,
-        amount_paid: 0,
-        balance: tier.price,
-        status: 'pending',
-        promo_estate_slug: estate.slug,
-        promo_installment_amount: installment,
-      });
+      const { data: createdPlans, error } = await supabase
+        .from('payments')
+        .insert({
+          user_id: user.id,
+          property_id: `5k-daily-${estate.slug}`,
+          plan_type: frequency,
+          months: 0,
+          principal_amount: tier.price,
+          interest_percent: 0,
+          interest_amount: 0,
+          total_amount: tier.price,
+          amount_paid: 0,
+          balance: tier.price,
+          status: 'pending',
+          promo_estate_slug: estate.slug,
+          promo_installment_amount: installment,
+        })
+        .select()
+        .single();
+
       if (error) throw error;
-      toast({ title: 'Plan started', description: `Your ${frequencyMeta[frequency].label.toLowerCase()} savings plan for ${estate.name} is ready. Make your first payment below.` });
-      fetchPlans();
+
+      const createdPlan = createdPlans as PromoPlanRow;
+      if (!createdPlan?.id) throw new Error('Could not create savings plan');
+
+      toast({ title: 'Opening payment', description: 'You will be redirected to Paystack to complete your first installment.' });
+      await handlePayInstallment(createdPlan);
+      await fetchPlans();
     } catch (e: any) {
       console.error(e);
       toast({ title: 'Could not start plan', description: e?.message || 'Please try again.', variant: 'destructive' });
