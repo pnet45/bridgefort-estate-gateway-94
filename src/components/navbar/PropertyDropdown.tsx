@@ -13,6 +13,7 @@ const PropertyDropdown = ({ className = '', onClick }: PropertyDropdownProps) =>
 
   const propertyLinks = [
     { to: '/properties/estates', label: 'Estate Lands' },
+    { to: '/5k-daily-promo', label: '5K Daily Promo' },
     { to: '/homes-sales', label: 'Homes Sales' },
     { to: '/properties/apartments', label: 'Apartments for Rent' }
   ];
