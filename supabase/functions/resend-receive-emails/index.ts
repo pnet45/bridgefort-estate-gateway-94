@@ -133,11 +133,27 @@ serve(async (req) => {
           });
         }
 
+        let insertedCount = 0;
         if (toInsert.length > 0) {
           await svc.from('admin_emails').insert(toInsert);
+          insertedCount = toInsert.length;
+
+          const contactInsert = toInsert.map((email) => ({
+            name: email.from_name || email.from_email || 'Unknown',
+            email: email.from_email || 'unknown@bridgeforthomes.com',
+            phone: '',
+            subject: email.subject || '(No Subject)',
+            message: email.body || email.html || '',
+            responded: false,
+            responded_at: null,
+            responded_by: null,
+            created_at: email.created_at,
+          }));
+
+          await svc.from('contact_messages').insert(contactInsert);
         }
 
-        data = { synced: toInsert.length, received: emails?.length || 0 };
+        data = { synced: insertedCount, received: emails?.length || 0 };
         break;
       }
       case 'get': {
