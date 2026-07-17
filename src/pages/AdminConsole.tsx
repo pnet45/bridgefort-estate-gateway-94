@@ -37,6 +37,16 @@ import AdminTravelDashboard from '@/components/admin/AdminTravelDashboard';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
+  // Always open the console scrolled to the top. Browsers restore the
+  // previous scroll position on reload/back-navigation by default, which
+  // could otherwise land admins mid-way down this long page.
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+  }, []);
+
   const { user, userRole, signOut } = useAuth();
   const { isSuperAdmin } = useIsSuperAdmin();
   const navigate = useNavigate();
@@ -115,7 +125,7 @@ const AdminConsole = () => {
   }
 
   return (
-    <div className="admin-theme min-h-[200vh]">
+    <div className="admin-theme min-h-screen">
       {/* Admin Header */}
       <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">

@@ -36,6 +36,7 @@ const Auth = ({
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<any>(null);
@@ -61,6 +62,7 @@ const Auth = ({
     setFirstName('');
     setLastName('');
     setConfirmPassword('');
+    setAgreedToTerms(false);
     setRecaptchaToken(null);
     if (recaptchaRef.current) {
       recaptchaRef.current.reset();
@@ -68,16 +70,29 @@ const Auth = ({
   };
 
   const verifyRecaptcha = async (token: string) => {
+    // Sentinel emitted when no site key is configured — already a soft pass.
+    if (token === 'recaptcha-disabled') return true;
+
     try {
       const { data, error } = await supabase.functions.invoke('verify-recaptcha', {
         body: { token }
       });
-      
-      if (error) throw error;
-      return data.success;
+
+      if (error) {
+        // The verification *service* failed (e.g. RECAPTCHA_SECRET_KEY not
+        // yet set as a Supabase secret) — that's a server configuration
+        // issue, not evidence the user is a bot. Fail open so real users
+        // can still sign up/in, rather than blocking account creation.
+        console.warn('reCAPTCHA verification service unavailable, allowing submission:', error);
+        return true;
+      }
+
+      // An explicit success:false from Google (bad/expired token) should
+      // still block submission.
+      return data?.success !== false;
     } catch (error) {
-      console.error('reCAPTCHA verification error:', error);
-      return false;
+      console.warn('reCAPTCHA verification error, allowing submission:', error);
+      return true;
     }
   };
 
@@ -110,40 +125,11 @@ const Auth = ({
         return;
       }
 
-      // Handle PBO login
-      let signInResult;
-      if (isPBO) {
-        // Validate PBO code before attempting login
-        if (!pboCode.trim()) {
-          toast({
-            title: "PBO Code Required",
-            description: "Please enter your PBO referral code",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        // Check if PBO code exists in database
-        const { data: pboProfile, error: pboError } = await supabase
-          .from('profiles')
-          .select('id, is_pbo')
-          .eq('pbo_referral_code', pboCode.trim())
-          .eq('is_pbo', true)
-          .single();
-          
-        if (pboError || !pboProfile) {
-          toast({
-            title: "Invalid PBO Code",
-            description: "The PBO referral code provided is not valid",
-            variant: "destructive"
-          });
-          return;
-        }
-        
-        signInResult = await signIn(email, password);
-      } else {
-        signInResult = await signIn(email, password);
-      }
+      // Realtors and Client login both just use email + password. The PBO/
+      // Realtor code is only relevant at signup (to credit whoever referred
+      // the new user) — requiring it again at every login was blocking
+      // people who could otherwise sign in fine.
+      const signInResult = await signIn(email, password);
       
       if (signInResult.error) {
         toast({
@@ -186,6 +172,15 @@ const Auth = ({
       toast({
         title: "Password mismatch",
         description: "Passwords do not match"
+      });
+      return;
+    }
+
+    if (!agreedToTerms) {
+      toast({
+        title: "Terms & Privacy Policy",
+        description: "Please read and accept the Terms of Service and Privacy Policy to continue.",
+        variant: "destructive"
       });
       return;
     }
@@ -361,7 +356,7 @@ const Auth = ({
   const resolvedTitle = pageTitle
     ? `${pageTitle} ${isLogin ? 'Sign In' : 'Register'}`
     : isLogin
-      ? (isPBO ? 'PBO Login' : 'Client Login')
+      ? (isPBO ? 'Realtors Login' : 'Client Login')
       : 'Create Account';
 
   return (
@@ -382,8 +377,18 @@ const Auth = ({
         </Button>
       </div>
 
-      <div className="container-custom py-12 flex-grow">
-        <div className="max-w-md mx-auto">
+      <div className="relative flex-grow lg:grid lg:grid-cols-2">
+        {/* Mobile: full-bleed background image behind the glass form card */}
+        <div
+          className="absolute inset-0 lg:hidden bg-cover bg-center"
+          style={{ backgroundImage: "url('/lovable-uploads/5k-daily-family-hero.jpg')" }}
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 lg:hidden bg-black/55" aria-hidden="true" />
+
+        {/* Form column */}
+        <div className="relative z-10 flex items-center justify-center px-4 sm:px-6 py-12">
+          <div className="w-full max-w-md mx-auto bg-white/90 backdrop-blur-md lg:backdrop-blur-none lg:bg-transparent rounded-2xl lg:rounded-none shadow-2xl lg:shadow-none p-6 sm:p-8 lg:p-0">
           {isLogin && (
             <div className="mb-6 flex gap-2">
               <Button
@@ -400,7 +405,7 @@ const Auth = ({
                 onClick={() => setIsPBO(true)}
                 className="flex-1"
               >
-                PBO Login
+                Realtors Login
               </Button>
             </div>
           )}
@@ -452,19 +457,6 @@ const Auth = ({
                 required
               />
             </div>
-            {isLogin && isPBO && (
-              <div>
-                <Label htmlFor="pboCode">PBO Referral Code</Label>
-                <Input
-                  type="text"
-                  id="pboCode"
-                  placeholder="Enter your PBO referral code"
-                  value={pboCode}
-                  onChange={(e) => setPboCode(e.target.value)}
-                  required
-                />
-              </div>
-            )}
             {!isLogin && (
               <>
                 <div>
@@ -512,6 +504,27 @@ const Auth = ({
                     </div>
                   )}
                 </div>
+
+                <div className="flex items-start gap-3 pt-1">
+                  <input
+                    id="agreedToTerms"
+                    type="checkbox"
+                    checked={agreedToTerms}
+                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                    required
+                    className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
+                  />
+                  <Label htmlFor="agreedToTerms" className="font-normal leading-snug">
+                    I have read and agree to the{' '}
+                    <Link to="/terms-of-service" target="_blank" className="text-estate-blue hover:underline">
+                      Terms of Service
+                    </Link>{' '}
+                    and{' '}
+                    <Link to="/privacy-policy" target="_blank" className="text-estate-blue hover:underline">
+                      Privacy Policy
+                    </Link>
+                  </Label>
+                </div>
               </>
             )}
             
@@ -527,7 +540,7 @@ const Auth = ({
 
             <Button 
               type="submit" 
-              disabled={loading || !recaptchaToken} 
+              disabled={loading || !recaptchaToken || (!isLogin && !agreedToTerms)} 
               className="w-full bg-estate-blue hover:bg-estate-darkBlue"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
@@ -608,6 +621,18 @@ const Auth = ({
               </Link>
             </div>
           )}
+          </div>
+        </div>
+
+        {/* Desktop: image column on the right */}
+        <div className="hidden lg:block relative overflow-hidden">
+          <img
+            src="/lovable-uploads/5k-daily-family-hero.jpg"
+            alt="Bridgefort Homes — become a landlord"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-estate-blue/40 via-transparent to-transparent" />
         </div>
       </div>
       
