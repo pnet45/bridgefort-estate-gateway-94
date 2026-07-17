@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Loader2, Clipboard, Share2, Users } from 'lucide-react';
 import { initializePayment } from '@/integrations/paystack/client';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
@@ -17,7 +18,7 @@ const packageRank: Record<string, number> = {
 };
 
 const BHRealtors = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
   const [shareLink, setShareLink] = useState('');
   const [memberCount, setMemberCount] = useState<number | null>(null);
   const [pboCount, setPboCount] = useState<number | null>(null);
@@ -27,6 +28,8 @@ const BHRealtors = () => {
   const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'pending' | 'error'>('idle');
   const [purchaseError, setPurchaseError] = useState('');
   const [commissionTotals, setCommissionTotals] = useState({ available: 0, locked: 0 });
+  const [freeUpgradeModalOpen, setFreeUpgradeModalOpen] = useState(false);
+  const [freeUpgradeMessage, setFreeUpgradeMessage] = useState('');
   const [selectedPackage, setSelectedPackage] = useState<BhRealtorsPackage>(bhRealtorsPackages[0]);
 
   const currentPackageCode = profile?.current_package || 'associate';
@@ -171,10 +174,10 @@ const BHRealtors = () => {
           status: 'completed',
         });
 
+        await refreshProfile();
         setPurchaseStatus('idle');
-        toast({ title: 'Membership upgraded', description: 'Your membership was upgraded successfully.' });
-        // Refresh page or navigate to dashboard
-        window.location.reload();
+        setFreeUpgradeMessage(`Your BHRealtors package has been upgraded to ${selectedPackage.package_name} successfully.`);
+        setFreeUpgradeModalOpen(true);
         return;
       }
 
@@ -355,6 +358,20 @@ const BHRealtors = () => {
                         {purchaseError && <p className="mt-3 text-sm text-red-600">{purchaseError}</p>}
                       </div>
                     </div>
+
+                  <Dialog open={freeUpgradeModalOpen} onOpenChange={setFreeUpgradeModalOpen}>
+                    <DialogContent className="sm:max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>Upgrade complete</DialogTitle>
+                        <DialogDescription>{freeUpgradeMessage}</DialogDescription>
+                      </DialogHeader>
+                      <div className="mt-6 text-center">
+                        <Button onClick={() => setFreeUpgradeModalOpen(false)} className="w-full">
+                          Continue
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                   </div>
 
                   <div className="grid gap-4 lg:grid-cols-2">
