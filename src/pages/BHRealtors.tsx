@@ -10,6 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Loader2, Clipboard, Share2, Users } from 'lucide-react';
 import { initializePayment } from '@/integrations/paystack/client';
+import { emailService } from '@/services/emailClient';
+import { toast } from '@/hooks/use-toast';
+import { X } from 'lucide-react';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
 
 const packageRank: Record<string, number> = {
@@ -180,7 +183,38 @@ const BHRealtors = () => {
         await refreshProfile();
         setPurchaseStatus('idle');
         setFreeUpgradeMessage(`Your BHRealtors package has been upgraded to ${selectedPackage.package_name} successfully.`);
+
+        // Send an upgrade confirmation email (best-effort) and log result
+        const recipientEmail = user.email ?? '';
+        const recipientName = `${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim() || 'Bridgefort Member';
+        const upgradeSubject = `BHRealtors: Your package has been upgraded to ${selectedPackage.package_name}`;
+        const upgradePlain = `Hello ${profile?.first_name || ''},\n\nYour BHRealtors package has been upgraded to ${selectedPackage.package_name}. You can now access your updated benefits in the BHRealtors dashboard.\n\nThank you for staying with us.`;
+        const upgradeHtml = `<p>Hello ${profile?.first_name || ''},</p><p>Your BHRealtors package has been upgraded to <strong>${selectedPackage.package_name}</strong>. You can now access your updated benefits in the BHRealtors dashboard.</p><p>Thank you for staying with us.</p>`;
+
+        try {
+          const sendResult = await emailService.sendEmail({
+            to: recipientEmail,
+            name: recipientName,
+            subject: upgradeSubject,
+            body: upgradePlain,
+            html: upgradeHtml,
+          });
+
+          // Log email attempt (status = sent or failed)
+          await emailService.logEmail(recipientEmail, recipientName, upgradeSubject, upgradePlain, user.id, sendResult.success ? 'sent' : 'failed');
+
+          if (!sendResult.success) {
+            toast({ title: 'Upgrade email failed', description: 'Could not send confirmation email.' });
+          }
+        } catch (e) {
+          console.error('Failed to send/record upgrade confirmation email:', e);
+          try { await emailService.logEmail(recipientEmail, recipientName, upgradeSubject, upgradePlain, user.id, 'failed'); } catch {};
+          toast({ title: 'Upgrade email failed', description: 'Could not send confirmation email.' });
+        }
+
         setFreeUpgradeModalOpen(true);
+        // Auto-close the modal after 8 seconds
+        setTimeout(() => setFreeUpgradeModalOpen(false), 8000);
         return;
       }
 
@@ -385,7 +419,14 @@ const BHRealtors = () => {
                     </div>
 
                   <Dialog open={freeUpgradeModalOpen} onOpenChange={setFreeUpgradeModalOpen}>
-                    <DialogContent className="sm:max-w-lg">
+                    <DialogContent className="sm:max-w-lg relative">
+                      <button
+                        onClick={() => setFreeUpgradeModalOpen(false)}
+                        aria-label="Close"
+                        className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                       <DialogHeader>
                         <DialogTitle>Upgrade complete</DialogTitle>
                         <DialogDescription>{freeUpgradeMessage}</DialogDescription>
