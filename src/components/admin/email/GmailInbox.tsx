@@ -4,6 +4,8 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
@@ -75,6 +77,13 @@ export default function GmailInbox() {
   const [pageToken, setPageToken] = useState<string | null>(null);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [replyMode, setReplyMode] = useState<null | 'reply' | 'forward'>(null);
+  const [replyTo, setReplyTo] = useState('');
+  const [replyCc, setReplyCc] = useState('');
+  const [replyBcc, setReplyBcc] = useState('');
+  const [replySubject, setReplySubject] = useState('');
+  const [replyBody, setReplyBody] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
 
   const fetchLabels = useCallback(async () => {
     setLoadingLabels(true);
@@ -145,6 +154,62 @@ export default function GmailInbox() {
       toast.error(e.message);
     } finally {
       setLoadingMessage(false);
+    }
+  };
+
+  const sendGmailMessage = async (to: string, subject: string, body: string, cc?: string, bcc?: string) => {
+    setSendingReply(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('gmail-sync', {
+        body: {
+          action: 'send-message',
+          to,
+          subject,
+          html: body,
+          cc: cc || undefined,
+          bcc: bcc || undefined,
+        },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to send Gmail message');
+      toast.success('Message sent');
+      setReplyMode(null);
+      setReplyCc('');
+      setReplyBcc('');
+      setReplyBody('');
+      setReplySubject('');
+      setReplyTo('');
+      setSelected(null);
+      fetchMessages(activeLabel, query, pageToken);
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSendingReply(false);
+    }
+  };
+
+  const replyToMessage = (mode: 'reply' | 'forward') => {
+    if (!selected) return;
+    setReplyMode(mode);
+    setReplyTo(selected.from);
+    setReplyCc('');
+    setReplyBcc('');
+    if (mode === 'reply') {
+      setReplySubject(`Re: ${selected.subject}`);
+      setReplyBody('');
+    } else {
+      setReplySubject(`Fwd: ${selected.subject}`);
+      setReplyBody(`
+<div><br></div>
+<hr>
+<div><strong>Forwarded message</strong></div>
+<div><strong>From:</strong> ${selected.from}</div>
+<div><strong>To:</strong> ${selected.to}</div>
+<div><strong>Date:</strong> ${selected.date}</div>
+<div><strong>Subject:</strong> ${selected.subject}</div>
+<div><br></div>
+<div>${selected.html ? selected.html : `<pre>${selected.text || selected.snippet}</pre>`}</div>
+`);
     }
   };
 
@@ -338,8 +403,10 @@ export default function GmailInbox() {
           </>
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
-            <div className="flex items-center gap-1 px-4 py-2 border-b border-border">
+            <div className="flex flex-wrap items-center gap-1 px-4 py-2 border-b border-border">
               <Button variant="ghost" size="icon" onClick={() => setSelected(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => replyToMessage('reply')} title="Reply"><Send className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => replyToMessage('forward')} title="Forward"><FileText className="h-4 w-4" /></Button>
               <Button variant="ghost" size="icon" onClick={() => archiveMessage(selected.id)} title="Archive"><Archive className="h-4 w-4" /></Button>
               <Button variant="ghost" size="icon" onClick={() => trashMessage(selected.id)} className="text-destructive" title="Trash"><Trash2 className="h-4 w-4" /></Button>
               <Button variant="ghost" size="icon" onClick={() => toggleRead(selected)} title="Toggle read"><MailOpen className="h-4 w-4" /></Button>
@@ -364,6 +431,42 @@ export default function GmailInbox() {
                   />
                 ) : (
                   <pre className="whitespace-pre-wrap text-sm font-sans">{selected.text || selected.snippet}</pre>
+                )}
+                {replyMode && (
+                  <div className="mt-6 p-4 border rounded-lg bg-muted/10">
+                    <div className="grid gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">To</Label>
+                          <Input value={replyTo} onChange={(e) => setReplyTo(e.target.value)} className="mt-1 h-9" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Cc</Label>
+                          <Input value={replyCc} onChange={(e) => setReplyCc(e.target.value)} className="mt-1 h-9" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Bcc</Label>
+                          <Input value={replyBcc} onChange={(e) => setReplyBcc(e.target.value)} className="mt-1 h-9" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Subject</Label>
+                          <Input value={replySubject} onChange={(e) => setReplySubject(e.target.value)} className="mt-1 h-9" />
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Message</Label>
+                        <Textarea value={replyBody} onChange={(e) => setReplyBody(e.target.value)} rows={8} className="mt-1" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button disabled={sendingReply || !replyTo.trim() || !replySubject.trim() || !replyBody.trim()} onClick={() => sendGmailMessage(replyTo, replySubject, replyBody, replyCc, replyBcc)}>
+                          {sendingReply ? 'Sending...' : 'Send'}
+                        </Button>
+                        <Button variant="outline" onClick={() => setReplyMode(null)}>Cancel</Button>
+                      </div>
+                    </div>
+                  </div>
                 )}
                 {selected.attachments.length > 0 && (
                   <div className="mt-6 pt-4 border-t border-border">

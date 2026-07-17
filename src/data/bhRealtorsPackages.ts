@@ -31,9 +31,9 @@ export const bhRealtorsPackages: BhRealtorsPackage[] = [
     package_code: 'classic_gold',
     package_name: 'Classic Gold',
     price: 75000,
-    direct_commission_pct: 15,
+    direct_commission_pct: 10,
     indirect_commission_pct: 5,
     withdrawable: true,
-    description: '15% direct commission plus 5% on 2nd level package purchases.',
+    description: '10% direct commission plus 5% on 2nd level package purchases.',
   },
 ];

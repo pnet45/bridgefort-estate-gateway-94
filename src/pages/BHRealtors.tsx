@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Loader2, Clipboard, Share2, Users } from 'lucide-react';
 import { initializePayment } from '@/integrations/paystack/client';
@@ -42,10 +43,12 @@ const BHRealtors = () => {
   const amountDue = Math.max(0, selectedPackage.price - currentPackagePrice);
 
   useEffect(() => {
-    const code = profile?.pbo_referral_code || (user ? user.id.slice(0, 8).toUpperCase() : '');
-    if (user) {
-      setShareLink(`${window.location.origin}/auth?ref=${code}`);
-    }
+    if (!user) return;
+    const code = profile?.pbo_referral_code;
+    const link = code
+      ? `${window.location.origin}/bridgefort-realtors-login?ref=${code}`
+      : `${window.location.origin}/bridgefort-realtors-login`;
+    setShareLink(link);
   }, [profile, user]);
 
   useEffect(() => {
@@ -280,6 +283,28 @@ const BHRealtors = () => {
                       <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Wallet balance</p>
                       <p className="mt-2 text-2xl font-semibold text-slate-900">₦{walletBalance.toLocaleString()}</p>
                       <p className="mt-2 text-slate-600">Available commission balance</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-200 bg-white p-6 mb-8">
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <h2 className="text-xl font-semibold text-estate-blue">Your referral link</h2>
+                        <p className="mt-2 text-slate-600">
+                          Share this link to invite new Bridgefort Realtors. New signups who use it will be attributed to your network.
+                        </p>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-[1fr_auto] items-center">
+                        <Input readOnly value={shareLink} className="min-w-0" />
+                        <Button type="button" onClick={handleCopyLink} className="whitespace-nowrap">
+                          {copyStatus || 'Copy link'}
+                        </Button>
+                      </div>
+                      {!profile?.pbo_referral_code && (
+                        <p className="text-sm text-amber-700">
+                          Your referral code is not yet set. Register as a PBO to receive a personal referral link.
+                        </p>
+                      )}
                     </div>
                   </div>
 
