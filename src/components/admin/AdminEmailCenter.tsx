@@ -58,6 +58,21 @@ export default function AdminEmailCenter() {
     if (data) setAdminEmails(data);
   }, []);
 
+  const syncReceivedEmails = useCallback(async () => {
+    setReceivedLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
+        body: { action: 'sync' },
+      });
+      if (error) throw error;
+      return data?.data;
+    } catch {
+      return null;
+    } finally {
+      setReceivedLoading(false);
+    }
+  }, []);
+
   const fetchReceivedEmails = useCallback(async () => {
     setReceivedLoading(true);
     try {
@@ -65,7 +80,7 @@ export default function AdminEmailCenter() {
         body: { action: 'list' },
       });
       if (error) throw error;
-      const emails = data?.data?.data || (Array.isArray(data?.data) ? data.data : []);
+      const emails = Array.isArray(data?.data) ? data.data : data?.data?.data || [];
       setReceivedEmails(emails);
     } catch {
       // silent
@@ -88,7 +103,7 @@ export default function AdminEmailCenter() {
 
   useEffect(() => {
     refreshAll();
-    fetchAllAdminEmails();
+    syncReceivedEmails().then(() => fetchAllAdminEmails());
     fetchReceivedEmails();
     const ch = supabase
       .channel('admin-emails-gmail')
@@ -388,7 +403,7 @@ export default function AdminEmailCenter() {
 
   const handleRefresh = () => {
     refreshAll();
-    fetchAllAdminEmails();
+    syncReceivedEmails().then(() => fetchAllAdminEmails());
     fetchReceivedEmails();
   };
 

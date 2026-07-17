@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const ALLOWED_ACTIONS = new Set(['list','get','list-attachments','get-attachment']);
+const ALLOWED_ACTIONS = new Set(['list','get','sync','list-attachments','get-attachment']);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -72,8 +72,72 @@ serve(async (req) => {
 
     switch (action) {
       case 'list': {
-        const result = await resend.emails.get(emailId || '');
-        data = result.data;
+        const response = await fetch('https://api.resend.com/emails/receiving', {
+          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}` },
+        });
+        if (!response.ok) {
+          const errBody = await response.text();
+          throw new Error(`Resend API error [${response.status}]: ${errBody}`);
+        }
+        const json = await response.json();
+        data = Array.isArray(json) ? json : json?.data || json;
+        break;
+      }
+      case 'sync': {
+        const response = await fetch('https://api.resend.com/emails/receiving', {
+          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}` },
+        });
+        if (!response.ok) {
+          const errBody = await response.text();
+          throw new Error(`Resend API error [${response.status}]: ${errBody}`);
+        }
+        const json = await response.json();
+        const emails = Array.isArray(json) ? json : json?.data || json;
+
+        const svc = createClient(supabaseUrl, serviceKey);
+        const { data: existingRows } = await svc
+          .from('admin_emails')
+          .select('external_ref');
+        const existingRefs = new Set((existingRows || []).map((row: any) => row.external_ref).filter(Boolean));
+
+        const toInsert: any[] = [];
+        for (const email of emails || []) {
+          if (!email?.id || existingRefs.has(email.id)) continue;
+          const detailResponse = await fetch(`https://api.resend.com/emails/receiving/${email.id}`, {
+            headers: { 'Authorization': `Bearer ${RESEND_API_KEY}` },
+          });
+          if (!detailResponse.ok) continue;
+          const detail = await detailResponse.json();
+
+          const from = detail.from || detail?.envelope?.from || email.from || email.from_email || '';
+          const to = detail.to || email.to || 'admin@pwanbridgefort.ng';
+          const subject = detail.subject || email.subject || '(No Subject)';
+          const text = detail.text || detail.body || '';
+          const html = detail.html || undefined;
+          const createdAt = detail.created_at || detail.received_at || new Date().toISOString();
+          const fromName = typeof from === 'string' ? from : Array.isArray(from) ? from[0] : '';
+
+          toInsert.push({
+            from_email: fromName || String(from || ''),
+            from_name: fromName || '',
+            to_email: Array.isArray(to) ? to[0] : String(to || 'admin@pwanbridgefort.ng'),
+            to_name: 'Admin',
+            subject,
+            body: text || html || '',
+            html,
+            folder: 'inbox',
+            source: 'resend',
+            external_ref: email.id,
+            created_at: createdAt,
+            updated_at: createdAt,
+          });
+        }
+
+        if (toInsert.length > 0) {
+          await svc.from('admin_emails').insert(toInsert);
+        }
+
+        data = { synced: toInsert.length, received: emails?.length || 0 };
         break;
       }
       case 'get': {
