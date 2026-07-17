@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
@@ -10,6 +11,7 @@
       ]
     },
     "skipLibCheck": true,
+    "strict": true,
     "strictNullChecks": false
   },
   "files": [],
