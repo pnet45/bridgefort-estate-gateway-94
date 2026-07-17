@@ -31,6 +31,8 @@ const Auth = ({
   const [sponsorCode, setSponsorCode] = useState('');
   const [isRegisteringAsPBO, setIsRegisteringAsPBO] = useState(false);
   const [referralMessage, setReferralMessage] = useState('');
+  const [referralEmailNotice, setReferralEmailNotice] = useState('');
+  const [referralEmailSent, setReferralEmailSent] = useState<boolean | null>(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -264,19 +266,31 @@ const Auth = ({
 
           if (data.user?.email) {
             const referralLink = `${window.location.origin}/bridgefort-realtors-login?ref=${finalPbo}`;
-            toast({
-              title: 'Referral link generated',
-              description: 'Your PBO referral link has been emailed to you.',
-            });
-
-            emailService.sendEmail({
+            const emailResult = await emailService.sendEmail({
               to: data.user.email,
               name: `${firstName} ${lastName}`.trim() || 'BHRealtors Partner',
               subject: 'Your BHRealtors Referral Link',
               body: `Hello ${firstName || 'Partner'},\n\nYour BHRealtors referral code has been generated successfully:\n\n${finalPbo}\n\nUse the link below to invite new Realtors:\n${referralLink}\n\nThank you for joining BHRealtors!`,
-            }).catch((emailError) => {
-              console.error('Failed to send PBO referral email:', emailError);
+              html: `<p>Hello ${firstName || 'Partner'},</p><p>Your BHRealtors referral code has been generated successfully:</p><p><strong>${finalPbo}</strong></p><p>Use the link below to invite new Realtors:</p><p><a href="${referralLink}">${referralLink}</a></p><p>Thank you for joining BHRealtors!</p>`,
             });
+
+            if (emailResult.success) {
+              toast({
+                title: 'Referral link emailed',
+                description: 'Your PBO referral link and code were sent to your email address.',
+              });
+              setReferralEmailNotice(`We emailed your referral link to ${data.user.email}`);
+              setReferralEmailSent(true);
+            } else {
+              console.error('Failed to send PBO referral email:', emailResult.error);
+              toast({
+                title: 'Referral email failed',
+                description: 'Your referral code was generated, but the email could not be delivered. Please check your email address or contact support.',
+                variant: 'destructive',
+              });
+              setReferralEmailNotice('Referral code created but email delivery failed. Please contact support.');
+              setReferralEmailSent(false);
+            }
           }
         }
 
@@ -492,6 +506,11 @@ const Auth = ({
                     If you have a sponsoring PBO, enter their code so they receive credit for your signup.
                   </p>
                   {referralMessage && <p className="text-xs text-emerald-600 mt-1">{referralMessage}</p>}
+                  {referralEmailSent !== null && (
+                    <div className={`mt-2 p-3 rounded-md text-sm ${referralEmailSent ? 'bg-emerald-100 text-emerald-900' : 'bg-red-100 text-red-900'}`}>
+                      {referralEmailNotice || (referralEmailSent ? `Referral link emailed to ${email}` : 'Referral code created but email failed.')}
+                    </div>
+                  )}
                 </div>
               </>
             )}
