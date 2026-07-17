@@ -11,6 +11,8 @@ import { emailService } from '@/services/emailClient';
 import { Toaster } from '@/components/ui/toaster';
 import ReCaptcha from '@/components/ui/ReCaptcha';
 import AuthCarousel from '@/components/auth/AuthCarousel';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 type AuthProps = {
@@ -38,6 +40,8 @@ const Auth = ({
   const [lastName, setLastName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [accountLockedOpen, setAccountLockedOpen] = useState(false);
+  const [lockedReason, setLockedReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<any>(null);
@@ -144,6 +148,28 @@ const Auth = ({
           recaptchaRef.current.reset();
         }
       } else {
+        // Check for a locked account before treating this as a successful
+        // sign-in — an admin may have locked it, in which case we sign them
+        // straight back out and show why, rather than letting them into a
+        // dashboard they shouldn't have access to.
+        const { data: { user: signedInUser } } = await supabase.auth.getUser();
+        if (signedInUser) {
+          const { data: lockCheck } = await supabase
+            .from('profiles')
+            .select('account_locked, account_locked_reason')
+            .eq('id', signedInUser.id)
+            .single();
+
+          if (lockCheck?.account_locked) {
+            await supabase.auth.signOut();
+            setLockedReason(lockCheck.account_locked_reason || null);
+            setAccountLockedOpen(true);
+            setRecaptchaToken(null);
+            if (recaptchaRef.current) recaptchaRef.current.reset();
+            return;
+          }
+        }
+
         toast({
           title: "Login successful",
           description: "Welcome back!"
@@ -699,6 +725,24 @@ const Auth = ({
       <div className="hidden lg:block lg:h-screen lg:sticky lg:top-0">
         <AuthCarousel rounded={false} />
       </div>
+
+      <Dialog open={accountLockedOpen} onOpenChange={setAccountLockedOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
+              <Lock className="h-7 w-7 text-red-600" />
+            </div>
+            <DialogTitle className="text-center text-red-700">Account Locked</DialogTitle>
+            <DialogDescription className="text-center">
+              {lockedReason || 'Your account has been locked.'} Contact Support at{' '}
+              <a href="mailto:support@bridgeforthomes.com" className="text-estate-blue underline">
+                support@bridgeforthomes.com
+              </a>{' '}
+              for assistance on how to unlock your account.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
 
       <Toaster />
     </div>

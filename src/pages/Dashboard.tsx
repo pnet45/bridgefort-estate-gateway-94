@@ -157,7 +157,13 @@ const Dashboard = () => {
               <div className="text-right">
                 <p className="text-sm text-gray-500">Account Type</p>
                 <p className="font-semibold text-estate-blue capitalize">
-                  {userRole || 'Client'}
+                  {userRole === 'admin'
+                    ? 'Admin'
+                    : userRole === 'staff'
+                      ? 'Staff'
+                      : profile?.is_pbo
+                        ? 'Realtor / PBO'
+                        : 'Client'}
                 </p>
               </div>
             </div>

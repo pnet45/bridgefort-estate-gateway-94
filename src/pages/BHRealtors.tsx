@@ -67,6 +67,39 @@ const BHRealtors = () => {
     setShareLink(link);
   }, [profile, user]);
 
+  // Registration renewal reminder: fires once, the first time the user
+  // loads this page within 30 days of their registration expiring, and
+  // records that it was sent so it doesn't repeat every visit.
+  useEffect(() => {
+    if (!user || !profile?.registration_expires_at) return;
+
+    const expiresAt = new Date(profile.registration_expires_at);
+    const daysLeft = (expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+    const alreadySent = profile.renewal_reminder_sent_at
+      && new Date(profile.renewal_reminder_sent_at) > new Date(expiresAt.getTime() - 366 * 24 * 60 * 60 * 1000);
+
+    if (daysLeft > 0 && daysLeft <= 30 && !alreadySent) {
+      (async () => {
+        try {
+          await supabase.from('notifications').insert({
+            user_id: user.id,
+            audience: 'user',
+            type: 'renewal_reminder',
+            title: 'Your BHRealtors registration is expiring soon',
+            message: `Your registration expires on ${expiresAt.toLocaleDateString()}. Renew to keep earning commissions without interruption.`,
+            link: '/bh-realtors',
+          });
+          await supabase
+            .from('profiles')
+            .update({ renewal_reminder_sent_at: new Date().toISOString() })
+            .eq('id', user.id);
+        } catch (err) {
+          console.error('Error sending renewal reminder:', err);
+        }
+      })();
+    }
+  }, [user, profile]);
+
   useEffect(() => {
     if (!user) return;
 
@@ -173,11 +206,6 @@ const BHRealtors = () => {
 
   const handleRegistrationComplete = () => {
     setRegistrationFormOpen(false);
-    setFreeUpgradeMessage(
-      `Your BHRealtors registration on the ${selectedPackage.package_name} package is complete — at no cost to you!`
-    );
-    setFreeUpgradeModalOpen(true);
-    window.setTimeout(() => setFreeUpgradeModalOpen(false), 8000);
   };
 
   const purchaseButtonText = useMemo(() => {
@@ -364,8 +392,14 @@ const BHRealtors = () => {
                           Registration is <span className="font-semibold text-green-700">FREE</span> on every package for a limited time — upgrade your tier to unlock higher earning potential.
                         </p>
                       </div>
-                      <div className="text-sm text-slate-600">
+                      <div className="text-sm text-slate-600 text-right">
                         Current package: <span className="font-semibold text-slate-900">{currentPackageLabel}</span>
+                        {profile?.registration_expires_at && (
+                          <p className="text-xs text-slate-500 mt-1">
+                            {new Date(profile.registration_expires_at) > new Date() ? 'Expires' : 'Expired'} on{' '}
+                            <span className="font-medium">{new Date(profile.registration_expires_at).toLocaleDateString()}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
 

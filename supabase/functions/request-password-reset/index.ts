@@ -30,6 +30,26 @@ serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
+    // Only send a reset code to accounts that actually exist — tell the
+    // person plainly if there's no account for that email, rather than
+    // silently doing nothing (which just looked like the button was broken).
+    const { data: existingProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .ilike("email", email)
+      .maybeSingle();
+
+    if (!existingProfile) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          reason: "account_not_found",
+          message: "We couldn't find an account with that email. Please sign up first.",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     // Rate limit: max 3 OTPs per email in last 10 minutes
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     const { count } = await supabase

@@ -68,12 +68,73 @@ const PaymentSuccess = () => {
         if (reference.startsWith('PROMO_')) {
           await creditPromoInstallment(reference, data.data.amount / 100);
         }
+
+        // Starting a brand-new 5K Daily Promo plan: the plan row and its
+        // admin-approval payment request are only created here, after the
+        // first payment is confirmed successful — never before.
+        if (reference.startsWith('STARTPLAN_')) {
+          await createPlanFromPayment(reference, data.data);
+        }
       } else {
         setVerificationStatus('failed');
       }
     } catch (error) {
       console.error('Payment verification error:', error);
       setVerificationStatus('failed');
+    }
+  };
+
+  const createPlanFromPayment = async (reference: string, paystackData: any) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const fields: Record<string, string> = {};
+      (paystackData?.metadata?.custom_fields || []).forEach((f: any) => {
+        fields[f.variable_name] = f.value;
+      });
+
+      if (fields.payment_type !== 'promo_start_plan') return;
+
+      const estateSlug = fields.estate_slug;
+      const frequency = fields.frequency;
+      const tierPrice = Number(fields.tier_price || 0);
+      const installmentAmount = Number(fields.installment_amount || 5000);
+      const amountPaid = paystackData.amount / 100;
+
+      const { data: createdPlan, error: planError } = await supabase
+        .from('payments')
+        .insert({
+          user_id: user.id,
+          property_id: `5k-daily-${estateSlug}`,
+          plan_type: frequency,
+          months: 0,
+          principal_amount: tierPrice,
+          interest_percent: 0,
+          interest_amount: 0,
+          total_amount: tierPrice,
+          amount_paid: amountPaid,
+          balance: Math.max(0, tierPrice - amountPaid),
+          status: 'pending', // stays pending until an admin approves it
+          promo_estate_slug: estateSlug,
+          promo_installment_amount: installmentAmount,
+        })
+        .select()
+        .single();
+
+      if (planError) throw planError;
+
+      await supabase.from('payment_requests').insert({
+        user_id: user.id,
+        type: '5k_daily_promo',
+        amount: amountPaid,
+        reference,
+        related_payment_id: createdPlan.id,
+        description: `5K Daily Promo — ${estateSlug} (${frequency}) — first installment`,
+        status: 'pending',
+      });
+    } catch (err) {
+      console.error('Error creating plan from payment:', err);
     }
   };
 

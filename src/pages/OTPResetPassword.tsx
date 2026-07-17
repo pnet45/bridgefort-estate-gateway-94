@@ -17,18 +17,30 @@ const OTPResetPassword = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [accountNotFound, setAccountNotFound] = useState(false);
   const navigate = useNavigate();
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+    setAccountNotFound(false);
+
     try {
       const { data, error } = await supabase.functions.invoke('request-password-reset', {
         body: { email }
       });
 
       if (error) throw error;
+
+      if (data?.reason === 'account_not_found') {
+        setAccountNotFound(true);
+        toast({
+          title: "Account not found",
+          description: "We couldn't find an account with that email. Please sign up first.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       setStep('otp');
       toast({
@@ -153,6 +165,18 @@ const OTPResetPassword = () => {
                 >
                   {isLoading ? 'Sending...' : 'Send OTP'}
                 </Button>
+                {accountNotFound && (
+                  <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700 text-center">
+                    We couldn't find an account with that email.{' '}
+                    <button
+                      type="button"
+                      onClick={() => navigate('/auth')}
+                      className="underline font-medium hover:text-red-800"
+                    >
+                      Sign up instead
+                    </button>
+                  </div>
+                )}
               </form>
             )}
 

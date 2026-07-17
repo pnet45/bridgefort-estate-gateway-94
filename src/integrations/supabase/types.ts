@@ -1882,17 +1882,25 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_locked: boolean
+          account_locked_at: string | null
+          account_locked_reason: string | null
           address: string | null
           aml_notes: string | null
           aml_risk_rating: string | null
           banking_details: string | null
+          birthday_reminder_sent_year: number | null
           created_at: string | null
+          current_package: string | null
           current_residence: string | null
           date_of_birth: string | null
           employer_address: string | null
           employer_country: string | null
           employer_name: string | null
           employment_status: string | null
+          registration_date: string | null
+          registration_expires_at: string | null
+          renewal_reminder_sent_at: string | null
           first_name: string | null
           gender: string | null
           id: string
@@ -1928,17 +1936,25 @@ export type Database = {
           visa_status: string | null
         }
         Insert: {
+          account_locked?: boolean
+          account_locked_at?: string | null
+          account_locked_reason?: string | null
           address?: string | null
           aml_notes?: string | null
           aml_risk_rating?: string | null
           banking_details?: string | null
+          birthday_reminder_sent_year?: number | null
           created_at?: string | null
+          current_package?: string | null
           current_residence?: string | null
           date_of_birth?: string | null
           employer_address?: string | null
           employer_country?: string | null
           employer_name?: string | null
           employment_status?: string | null
+          registration_date?: string | null
+          registration_expires_at?: string | null
+          renewal_reminder_sent_at?: string | null
           first_name?: string | null
           gender?: string | null
           id: string
@@ -1974,17 +1990,25 @@ export type Database = {
           visa_status?: string | null
         }
         Update: {
+          account_locked?: boolean
+          account_locked_at?: string | null
+          account_locked_reason?: string | null
           address?: string | null
           aml_notes?: string | null
           aml_risk_rating?: string | null
           banking_details?: string | null
+          birthday_reminder_sent_year?: number | null
           created_at?: string | null
+          current_package?: string | null
           current_residence?: string | null
           date_of_birth?: string | null
           employer_address?: string | null
           employer_country?: string | null
           employer_name?: string | null
           employment_status?: string | null
+          registration_date?: string | null
+          registration_expires_at?: string | null
+          renewal_reminder_sent_at?: string | null
           first_name?: string | null
           gender?: string | null
           id?: string
@@ -2508,6 +2532,129 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          audience: string
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          audience?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_requests: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          processed_at: string | null
+          processed_by: string | null
+          reference: string | null
+          related_payment_id: string | null
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reference?: string | null
+          related_payment_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reference?: string | null
+          related_payment_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      auth_carousel_slides: {
+        Row: {
+          created_at: string
+          eyebrow: string
+          id: string
+          image_url: string
+          is_active: boolean
+          link: string | null
+          sort_order: number
+          subtitle: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          eyebrow?: string
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link?: string | null
+          sort_order?: number
+          subtitle?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          eyebrow?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link?: string | null
+          sort_order?: number
+          subtitle?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

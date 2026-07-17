@@ -9,7 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, ShieldCheck, User, Users, Landmark } from 'lucide-react';
+import { Loader2, ShieldCheck, User, Users, Landmark, PartyPopper } from 'lucide-react';
 import type { BhRealtorsPackage } from '@/data/bhRealtorsPackages';
 
 // Same weighted fields/weights used by ProfileCompletionWidget, so the 50%
@@ -65,6 +65,8 @@ const RealtorsRegistrationForm: React.FC<RealtorsRegistrationFormProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [profileRow, setProfileRow] = useState<Record<string, any> | null>(null);
   const [completion, setCompletion] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [expiryDate, setExpiryDate] = useState<Date | null>(null);
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -183,6 +185,16 @@ const RealtorsRegistrationForm: React.FC<RealtorsRegistrationFormProps> = ({
         updated_at: new Date().toISOString(),
       };
 
+      const now = new Date();
+      const oneYearLater = new Date(now);
+      oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+
+      Object.assign(update, {
+        registration_date: now.toISOString(),
+        registration_expires_at: oneYearLater.toISOString(),
+        renewal_reminder_sent_at: null,
+      });
+
       if (isFullMode) {
         Object.assign(update, {
           first_name: firstName,
@@ -210,11 +222,18 @@ const RealtorsRegistrationForm: React.FC<RealtorsRegistrationFormProps> = ({
       if (updateError) throw updateError;
 
       // Record a zero-cost registration for bookkeeping, consistent with the
-      // existing free-upgrade flow elsewhere on this page.
+      // existing free-upgrade flow elsewhere on this page. plan_type must be
+      // one of the values allowed by the payments table's check constraint
+      // ('outright' | '1-3' | '4-6' | '7-12' | 'daily' | 'weekly' | 'monthly')
+      // — the package tier itself (associate/gold/classic_gold) isn't a
+      // valid plan_type, so it's encoded in property_id instead. Passing the
+      // package code directly here was the second bug behind "does not
+      // submit": even once the schema-cache error was resolved, this insert
+      // would still have failed a check constraint violation.
       await supabase.from('payments').insert({
         user_id: user.id,
-        property_id: 'bh-realtors',
-        plan_type: selectedPackage.package_code,
+        property_id: `bh-realtors-${selectedPackage.package_code}`,
+        plan_type: 'outright',
         months: 0,
         principal_amount: selectedPackage.price,
         interest_percent: 0,
@@ -226,11 +245,8 @@ const RealtorsRegistrationForm: React.FC<RealtorsRegistrationFormProps> = ({
       });
 
       await refreshProfile();
-      toast({
-        title: 'Registration complete!',
-        description: `You're now registered on the ${selectedPackage.package_name} package at no cost.`,
-      });
-      onComplete();
+      setExpiryDate(oneYearLater);
+      setShowSuccess(true);
     } catch (error: any) {
       console.error('Realtors registration error:', error);
       toast({
@@ -243,30 +259,57 @@ const RealtorsRegistrationForm: React.FC<RealtorsRegistrationFormProps> = ({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-estate-blue">
-            <ShieldCheck className="h-5 w-5" /> Realtors Registration Form
-          </DialogTitle>
-          <DialogDescription>
-            {loadingProfile
-              ? 'Loading your details…'
-              : isFullMode
-                ? `Complete the form below to register on the ${selectedPackage.package_name} package — free of charge.`
-                : `We already have your personal details on file. Just add your bank account details to complete your ${selectedPackage.package_name} registration — free of charge.`}
-          </DialogDescription>
-        </DialogHeader>
+  const handleContinue = () => {
+    setShowSuccess(false);
+    onComplete();
+  };
 
-        {loadingProfile ? (
-          <div className="py-12 flex justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-estate-blue" />
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && (showSuccess ? handleContinue() : onClose())}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        {showSuccess ? (
+          <div className="py-6 text-center">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+              <PartyPopper className="h-8 w-8 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-green-700 mb-2">Congratulations!</h2>
+            <p className="text-slate-700 mb-1">
+              Thank you for registering with BHRealtors on the <span className="font-semibold">{selectedPackage.package_name}</span> package — at no cost to you.
+            </p>
+            <p className="text-sm text-slate-500 mb-6">
+              Your registration is valid for 1 year
+              {expiryDate && (
+                <> and will expire on <span className="font-semibold text-slate-700">{expiryDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span></>
+              )}
+              . We'll remind you to renew a month before it expires.
+            </p>
+            <Button onClick={handleContinue} className="bg-estate-blue hover:bg-estate-darkBlue px-8">
+              Continue
+            </Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {!isFullMode && (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-estate-blue">
+                <ShieldCheck className="h-5 w-5" /> Realtors Registration Form
+              </DialogTitle>
+              <DialogDescription>
+                {loadingProfile
+                  ? 'Loading your details…'
+                  : isFullMode
+                    ? `Complete the form below to register on the ${selectedPackage.package_name} package — free of charge.`
+                    : `We already have your personal details on file. Just add your bank account details to complete your ${selectedPackage.package_name} registration — free of charge.`}
+              </DialogDescription>
+            </DialogHeader>
+
+            {loadingProfile ? (
+              <div className="py-12 flex justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-estate-blue" />
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {!isFullMode && (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <p className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
                   <User className="h-4 w-4" /> Your details on file
                 </p>
@@ -416,7 +459,9 @@ const RealtorsRegistrationForm: React.FC<RealtorsRegistrationFormProps> = ({
                 `Submit and Complete Registration with ₦0`
               )}
             </Button>
-          </form>
+              </form>
+            )}
+          </>
         )}
       </DialogContent>
     </Dialog>

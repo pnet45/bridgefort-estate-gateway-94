@@ -19,6 +19,8 @@ interface UserWithRole {
   last_name: string | null;
   created_at: string;
   role: string | null;
+  account_locked: boolean;
+  account_locked_reason: string | null;
 }
 
 interface LockedAccount {
@@ -48,7 +50,7 @@ const UserManagementTab = () => {
       // Fetch profiles with their roles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, created_at');
+        .select('id, first_name, last_name, created_at, account_locked, account_locked_reason');
 
       if (profilesError) throw profilesError;
 
@@ -76,7 +78,9 @@ const UserManagementTab = () => {
           first_name: profile.first_name,
           last_name: profile.last_name,
           created_at: profile.created_at,
-          role: roleEntry?.role || null
+          role: roleEntry?.role || null,
+          account_locked: (profile as any).account_locked || false,
+          account_locked_reason: (profile as any).account_locked_reason || null,
         };
       });
 
@@ -251,6 +255,34 @@ const UserManagementTab = () => {
     }
   };
 
+  const handleToggleLock = async (targetUser: UserWithRole) => {
+    const locking = !targetUser.account_locked;
+    let reason: string | null = targetUser.account_locked_reason;
+
+    if (locking) {
+      reason = window.prompt('Reason for locking this account (shown to the user):', 'Account under review') || 'Account locked by admin';
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          account_locked: locking,
+          account_locked_reason: locking ? reason : null,
+          account_locked_at: locking ? new Date().toISOString() : null,
+        })
+        .eq('id', targetUser.id);
+
+      if (error) throw error;
+
+      toast.success(locking ? 'Account locked' : 'Account unlocked');
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error toggling account lock:', error);
+      toast.error(error.message || 'Failed to update account lock status');
+    }
+  };
+
   const getRoleBadgeColor = (role: string | null) => {
     switch (role) {
       case 'admin': return 'bg-red-500';
@@ -404,6 +436,9 @@ const UserManagementTab = () => {
                           ) : (
                             <Badge variant="outline">No role</Badge>
                           )}
+                          {user.account_locked && (
+                            <Badge className="ml-1 bg-red-600 text-white">Locked</Badge>
+                          )}
                         </TableCell>
                         <TableCell>
                           {new Date(user.created_at).toLocaleDateString()}
@@ -434,6 +469,15 @@ const UserManagementTab = () => {
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className={user.account_locked ? 'text-green-600 hover:text-green-700' : 'text-amber-600 hover:text-amber-700'}
+                              title={user.account_locked ? 'Unlock account' : 'Lock account'}
+                              onClick={() => handleToggleLock(user)}
+                            >
+                              {user.account_locked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
-import AdminApprovalTab from '@/components/admin/AdminApprovalTab';
+import AdminApprovalsHub from '@/components/admin/AdminApprovalsHub';
 import AdminEmailCenter from '@/components/admin/AdminEmailCenter';
 import AdminDashboardStats from '@/components/admin/AdminDashboardStats';
 import AdminInbox from '@/components/admin/AdminInbox';
@@ -229,9 +229,6 @@ const AdminConsole = () => {
               <DollarSign className="h-4 w-4" />
               <span>Other Payments</span>
             </TabsTrigger>
-            <TabsTrigger value="withdrawals" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <Wallet className="h-4 w-4" /> Withdrawals
-            </TabsTrigger>
             <TabsTrigger value="permissions" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <Settings className="h-4 w-4" />
               <span>Permissions</span>
@@ -275,14 +272,13 @@ const AdminConsole = () => {
           </TabsContent>
 
           <TabsContent value="users"><UserManagementTab /></TabsContent>
-          <TabsContent value="approvals"><AdminApprovalTab onCountChange={setPendingCount} /></TabsContent>
+          <TabsContent value="approvals"><AdminApprovalsHub onCountChange={setPendingCount} /></TabsContent>
           <TabsContent value="emails"><AdminEmailCenter /></TabsContent>
           <TabsContent value="analytics"><AdminPropertyAnalytics /></TabsContent>
           <TabsContent value="activity"><AdminActivityLogs /></TabsContent>
           <TabsContent value="content"><AdminContentManagement /></TabsContent>
           <TabsContent value="cms"><AdminContentHub /></TabsContent>
           <TabsContent value="other-payments"><AdminOtherPayments /></TabsContent>
-          <TabsContent value="withdrawals"><AdminWithdrawalRequests /></TabsContent>
           <TabsContent value="permissions"><AdminRolePermissions /></TabsContent>
           {isSuperAdmin && <TabsContent value="travels"><AdminTravelDashboard /></TabsContent>}
         </Tabs>

@@ -74,45 +74,43 @@ const LandSavingsPromoTab: React.FC = () => {
   }, [user]);
 
   const handleCreatePlan = async () => {
-    if (!user) {
+    if (!user || !user.email) {
       toast({ title: 'Login required', description: 'Please log in to start a savings plan.', variant: 'destructive' });
       return;
     }
 
     setCreating(true);
     try {
-      const { data: createdPlans, error } = await supabase
-        .from('payments')
-        .insert({
-          user_id: user.id,
-          property_id: `5k-daily-${estate.slug}`,
-          plan_type: frequency,
-          months: 0,
-          principal_amount: tier.price,
-          interest_percent: 0,
-          interest_amount: 0,
-          total_amount: tier.price,
-          amount_paid: 0,
-          balance: tier.price,
-          status: 'pending',
-          promo_estate_slug: estate.slug,
-          promo_installment_amount: installment,
-        })
-        .select()
-        .single();
+      // The plan itself, and the admin-approval payment request, are only
+      // created after a REAL payment succeeds — handled in PaymentSuccess.tsx,
+      // which recognises the STARTPLAN_ reference prefix and reads the
+      // structured details back out of Paystack's metadata.
+      const reference = `STARTPLAN_${Date.now()}_${user.id.slice(0, 8)}`;
+      const paymentData = await initializePayment({
+        email: user.email,
+        amount: installment,
+        reference,
+        callback_url: `${window.location.origin}/payment-success`,
+        metadata: {
+          customer_name: user.email,
+          custom_fields: [
+            { display_name: 'Payment Type', variable_name: 'payment_type', value: 'promo_start_plan' },
+            { display_name: 'Estate', variable_name: 'estate_slug', value: estate.slug },
+            { display_name: 'Frequency', variable_name: 'frequency', value: frequency },
+            { display_name: 'Target Amount', variable_name: 'tier_price', value: String(tier.price) },
+            { display_name: 'Installment Amount', variable_name: 'installment_amount', value: String(installment) },
+          ],
+        },
+      });
 
-      if (error) throw error;
-
-      const createdPlan = createdPlans as PromoPlanRow;
-      if (!createdPlan?.id) throw new Error('Could not create savings plan');
-
-      toast({ title: 'Opening payment', description: 'You will be redirected to Paystack to complete your first installment.' });
-      await handlePayInstallment(createdPlan);
-      await fetchPlans();
+      if (paymentData?.data?.authorization_url) {
+        window.location.href = paymentData.data.authorization_url;
+      } else {
+        throw new Error('Could not start payment');
+      }
     } catch (e: any) {
       console.error(e);
       toast({ title: 'Could not start plan', description: e?.message || 'Please try again.', variant: 'destructive' });
-    } finally {
       setCreating(false);
     }
   };
@@ -239,9 +237,20 @@ const LandSavingsPromoTab: React.FC = () => {
                         <p className="font-semibold">{planEstate?.name || plan.property_id}</p>
                         <p className="text-xs text-muted-foreground">{planEstate?.location}</p>
                       </div>
-                      <Badge className={isComplete ? 'bg-green-100 text-green-800' : 'bg-estate-blue/10 text-estate-blue'}>
-                        {isComplete ? 'Completed' : `${meta.label} Plan`}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge className={isComplete ? 'bg-green-100 text-green-800' : 'bg-estate-blue/10 text-estate-blue'}>
+                          {isComplete ? 'Completed' : `${meta.label} Plan`}
+                        </Badge>
+                        {plan.status === 'pending' && (
+                          <Badge className="bg-amber-100 text-amber-800">Pending Admin Approval</Badge>
+                        )}
+                        {plan.status === 'rejected' && (
+                          <Badge className="bg-red-100 text-red-800">Rejected</Badge>
+                        )}
+                        {plan.status === 'active' && (
+                          <Badge className="bg-green-100 text-green-800">Approved</Badge>
+                        )}
+                      </div>
                     </div>
 
                     <div>
@@ -252,7 +261,13 @@ const LandSavingsPromoTab: React.FC = () => {
                       <Progress value={progressPct} className="h-2" />
                     </div>
 
-                    {!isComplete && (
+                    {!isComplete && plan.status === 'pending' && (
+                      <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                        Your first payment was received and is awaiting admin approval before further installments can be made.
+                      </p>
+                    )}
+
+                    {!isComplete && plan.status !== 'pending' && (
                       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {formatCountdown(totalDays)} remaining</span>
