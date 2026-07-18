@@ -212,7 +212,7 @@ const BHRealtors = () => {
       <section className="relative pt-24 lg:pt-28 pb-14 overflow-hidden bg-gradient-to-br from-[#2b0a52] via-[#3a1070] to-[#1a0638] text-white">
         <div
           className="absolute inset-0 opacity-20 bg-cover bg-center"
-          style={{ backgroundImage: "url('/lovable-uploads/agrovest-hero-1.jpg')" }}
+          style={{ backgroundImage: "url('/lovable-uploads/bhRealtors-reward-scheme.jpeg')" }}
           aria-hidden="true"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a0638] via-[#1a0638]/60 to-transparent" />
@@ -275,7 +275,7 @@ const BHRealtors = () => {
                     <p className="text-sm font-semibold text-indigo-900">🔥 5K Daily Promo — Become a Landlord</p>
                     <p className="text-xs text-slate-700">Subscribe daily, weekly, or monthly for any of 8 flagship estates. We track your payments and timeline to completion.</p>
                   </div>
-                  <Link to="/bh-realtors/subscription">
+                  <Link to="/5k-daily-promo">
                     <Button className="bg-indigo-700 hover:bg-indigo-800 text-white whitespace-nowrap">Start Subscription</Button>
                   </Link>
                 </div>
