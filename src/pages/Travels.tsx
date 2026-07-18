@@ -24,7 +24,7 @@ const valueProps = [
 
 type DestType = Exclude<TravelType, 'all'>;
 interface Destination {
-  city: string; country: string; img: string; from: string; price: number; types: DestType[];
+  city: string; country: string; img?: string; flag?: string; from: string; price: number; types: DestType[];
 }
 
 const destinations: Destination[] = [
@@ -34,6 +34,17 @@ const destinations: Destination[] = [
   { city: 'Cape Town', country: 'South Africa', img: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=900&q=80', from: '920,000', price: 920000, types: ['tourist', 'luxury'] },
   { city: 'Bali', country: 'Indonesia', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80', from: '1,250,000', price: 1250000, types: ['tourist', 'luxury'] },
   { city: 'New York', country: 'United States', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=900&q=80', from: '2,000,000', price: 2000000, types: ['tourist', 'business', 'student'] },
+  // Travel & Work in Europe — 100% guaranteed visa destinations, matching
+  // the Bridgefort Travels flyer. Total cost ranges ₦6.5M–₦8.5M depending on
+  // country, payable in instalments (see the dedicated campaign section).
+  { city: 'Poland', country: 'Work & Residence Visa', flag: '🇵🇱', from: '6,500,000', price: 6500000, types: ['work'] },
+  { city: 'Romania', country: 'Work & Residence Visa', flag: '🇷🇴', from: '6,500,000', price: 6500000, types: ['work'] },
+  { city: 'Belarus', country: 'Work & Residence Visa', flag: '🇧🇾', from: '6,800,000', price: 6800000, types: ['work'] },
+  { city: 'Moldova', country: 'Work & Residence Visa', flag: '🇲🇩', from: '6,800,000', price: 6800000, types: ['work'] },
+  { city: 'Serbia', country: 'Work & Residence Visa', flag: '🇷🇸', from: '7,200,000', price: 7200000, types: ['work'] },
+  { city: 'Czech Republic', country: 'Work & Residence Visa', flag: '🇨🇿', from: '7,500,000', price: 7500000, types: ['work'] },
+  { city: 'Ukraine', country: 'Work & Residence Visa', flag: '🇺🇦', from: '7,000,000', price: 7000000, types: ['work'] },
+  { city: 'Russia', country: 'Work & Residence Visa', flag: '🇷🇺', from: '8,500,000', price: 8500000, types: ['work'] },
 ];
 
 const PRICE_MIN = 500000;
@@ -246,7 +257,7 @@ const Travels = () => {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredDestinations.map((d, i) => (
                 <motion.div
                   key={d.city}
@@ -254,24 +265,35 @@ const Travels = () => {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: i * 0.06 }}
-                  className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-shadow cursor-pointer"
-                  onClick={() => scrollToBooking('', d.city)}
+                  className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-2xl transition-shadow cursor-pointer"
+                  onClick={() => scrollToBooking(d.flag ? 'Work & Travel Europe' : '', d.city)}
                 >
                   <div className="aspect-[4/5] overflow-hidden">
-                    <img
-                      src={d.img}
-                      alt={`${d.city}, ${d.country}`}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      loading="lazy"
-                    />
+                    {d.img ? (
+                      <img
+                        src={d.img}
+                        alt={`${d.city}, ${d.country}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-estate-blue via-estate-darkBlue to-estate-red group-hover:scale-110 transition-transform duration-700">
+                        <span className="text-5xl">{d.flag}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <div className="text-sm font-medium opacity-80">{d.country}</div>
-                    <div className="font-display text-2xl font-bold">{d.city}</div>
-                    <div className="mt-2 text-sm flex items-center justify-between">
-                      <span>From <span className="text-estate-blue font-bold text-base">₦{d.from}</span></span>
-                      <span className="text-xs font-semibold bg-white/15 backdrop-blur-md border border-white/20 rounded-full px-3 py-1">
+                  {d.flag && (
+                    <span className="absolute top-2 right-2 text-[10px] font-bold uppercase tracking-wide bg-emerald-500 text-white rounded-full px-2 py-0.5">
+                      Visa Guaranteed
+                    </span>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <div className="text-xs font-medium opacity-80 truncate">{d.country}</div>
+                    <div className="font-display text-lg font-bold">{d.city}</div>
+                    <div className="mt-1.5 text-xs flex items-center justify-between gap-1">
+                      <span>From <span className="text-estate-blue font-bold text-sm">₦{d.from}</span></span>
+                      <span className="text-[10px] font-semibold bg-white/15 backdrop-blur-md border border-white/20 rounded-full px-2 py-1 shrink-0">
                         Book →
                       </span>
                     </div>
@@ -365,6 +387,95 @@ const Travels = () => {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TRAVEL & WORK IN EUROPE CAMPAIGN */}
+      <section className="section-padding bg-gradient-to-br from-[#0a1a3a] via-[#0f2452] to-[#0a1a3a] text-white overflow-hidden relative">
+        <div className="container-custom">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div>
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-amber-400/40 text-xs uppercase tracking-[0.2em] text-amber-300 mb-5">
+                <Plane className="h-3.5 w-3.5" /> Bridgefort Travels
+              </span>
+              <h2 className="font-display text-3xl md:text-5xl font-bold leading-tight mb-3">
+                Travel &amp; <span className="text-amber-400">Work</span> in Europe
+              </h2>
+              <p className="text-lg text-white/85 mb-2">
+                Salary: <span className="font-bold text-amber-300">€500 to €1500 monthly</span>
+              </p>
+              <p className="text-white/70 mb-6 max-w-lg">
+                100% guaranteed visa to 8 European countries — depending on the country of choice,
+                total cost ranges from ₦6.5M to ₦8.5M, payable in instalments (not all at once).
+                The process takes between 1 and 5 months, depending on your chosen country.
+              </p>
+
+              <p className="text-sm font-semibold uppercase tracking-wide text-amber-300 mb-3">
+                100% Guaranteed Visa To:
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-8 max-w-lg">
+                {destinations.filter((d) => d.flag).map((d) => (
+                  <button
+                    key={d.city}
+                    onClick={() => scrollToBooking('Work & Travel Europe', d.city)}
+                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg px-3 py-2 text-sm transition-colors text-left"
+                  >
+                    <span className="text-lg">{d.flag}</span> {d.city}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-4">
+                <Button variant="cta" size="lg" onClick={() => scrollToBooking('Work & Travel Europe')}>
+                  Apply for Work &amp; Travel
+                </Button>
+                <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white hover:text-estate-darkBlue">
+                  <a href="tel:+2348130046939">Call +234 813 004 6939</a>
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* Embedded flyer */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="rounded-2xl overflow-hidden border border-white/15 shadow-2xl max-w-xs mx-auto lg:mx-0"
+              >
+                <picture>
+                  <source srcSet="/lovable-uploads/travels-flyer.webp" type="image/webp" />
+                  <img
+                    src="/lovable-uploads/travels-flyer.jpg"
+                    alt="Bridgefort Travels — Travel & Work in Europe flyer"
+                    className="w-full h-auto"
+                    loading="lazy"
+                  />
+                </picture>
+              </motion.div>
+
+              {/* Fees covered */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                <p className="text-sm font-semibold uppercase tracking-wide text-amber-300 mb-3">
+                  The fees paid will cover the following:
+                </p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/85">
+                  {[
+                    'Visa 100% Guaranteed', 'Flight Ticket',
+                    'Work Permit', 'Accommodation',
+                    'Residence Permit', 'Processing Fees (Abroad)',
+                    'Job/Employment Offer', 'Processing Fees (Nigeria)',
+                    'Travel Itinerary', 'Government Taxes/Fees',
+                  ].map((f) => (
+                    <div key={f} className="flex items-center gap-2">
+                      <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0" /> {f}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

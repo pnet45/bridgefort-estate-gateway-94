@@ -8,7 +8,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 
-export type TravelType = 'all' | 'tourist' | 'business' | 'student' | 'medical' | 'pilgrimage' | 'luxury';
+export type TravelType = 'all' | 'tourist' | 'business' | 'student' | 'medical' | 'pilgrimage' | 'luxury' | 'work';
 
 export interface TravelFiltersState {
   query: string;
@@ -74,6 +74,7 @@ const TravelsFilters: React.FC<Props> = ({ value, onChange, min, max, resultCoun
                   <SelectItem value="medical">Medical</SelectItem>
                   <SelectItem value="pilgrimage">Pilgrimage</SelectItem>
                   <SelectItem value="luxury">Luxury</SelectItem>
+                  <SelectItem value="work">Work & Migration (Europe)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

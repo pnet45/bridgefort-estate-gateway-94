@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Shield, Users, FileText, Mail, LayoutDashboard, LogOut, Bell, Home,
   UserCheck, CheckSquare, Calendar, Building, Activity, TrendingUp,
-  DollarSign, Settings, Plane
+  DollarSign, Settings, Plane, Wallet
 } from 'lucide-react';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
@@ -30,6 +30,7 @@ import AdminPropertyAnalytics from '@/components/admin/AdminPropertyAnalytics';
 import AdminContentManagement from '@/components/admin/AdminContentManagement';
 import AdminContentHub from '@/components/admin/AdminContentHub';
 import AdminOtherPayments from '@/components/admin/AdminOtherPayments';
+import AdminWithdrawalRequests from '@/components/admin/AdminWithdrawalRequests';
 import AdminRolePermissions from '@/components/admin/AdminRolePermissions';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
 import AdminEstateViewsLeaderboard from '@/components/admin/AdminEstateViewsLeaderboard';
@@ -228,6 +229,9 @@ const AdminConsole = () => {
               <DollarSign className="h-4 w-4" />
               <span>Other Payments</span>
             </TabsTrigger>
+            <TabsTrigger value="withdrawals" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+              <Wallet className="h-4 w-4" /> Withdrawals
+            </TabsTrigger>
             <TabsTrigger value="permissions" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <Settings className="h-4 w-4" />
               <span>Permissions</span>
@@ -278,6 +282,7 @@ const AdminConsole = () => {
           <TabsContent value="content"><AdminContentManagement /></TabsContent>
           <TabsContent value="cms"><AdminContentHub /></TabsContent>
           <TabsContent value="other-payments"><AdminOtherPayments /></TabsContent>
+          <TabsContent value="withdrawals"><AdminWithdrawalRequests /></TabsContent>
           <TabsContent value="permissions"><AdminRolePermissions /></TabsContent>
           {isSuperAdmin && <TabsContent value="travels"><AdminTravelDashboard /></TabsContent>}
         </Tabs>

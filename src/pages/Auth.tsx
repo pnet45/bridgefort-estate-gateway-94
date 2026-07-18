@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { emailService } from '@/services/emailClient';
 import { Toaster } from '@/components/ui/toaster';
 import ReCaptcha from '@/components/ui/ReCaptcha';
+import AuthCarousel from '@/components/auth/AuthCarousel';
 import { supabase } from '@/integrations/supabase/client';
 
 type AuthProps = {
@@ -147,7 +148,32 @@ const Auth = ({
           title: "Login successful",
           description: "Welcome back!"
         });
-        navigate(redirectAfterSignIn);
+
+        // Pages that pass their own pageTitle (e.g. the dedicated Bridgefort
+        // Realtors login) already specify exactly where they want to land —
+        // respect that. Otherwise (the shared /auth page with the Client /
+        // Realtors Login toggle), route based on the account's actual type
+        // rather than which tab happened to be selected, so a client never
+        // lands on the BHRealtors dashboard and vice versa.
+        if (pageTitle) {
+          navigate(redirectAfterSignIn);
+        } else {
+          let destination = '/dashboard';
+          try {
+            const { data: { user: signedInUser } } = await supabase.auth.getUser();
+            if (signedInUser) {
+              const { data: profileRow } = await supabase
+                .from('profiles')
+                .select('is_pbo')
+                .eq('id', signedInUser.id)
+                .single();
+              if (profileRow?.is_pbo) destination = '/bh-realtors';
+            }
+          } catch (lookupError) {
+            console.warn('Could not determine account type after sign-in:', lookupError);
+          }
+          navigate(destination);
+        }
       }
     } catch (error) {
       toast({
@@ -624,15 +650,11 @@ const Auth = ({
           </div>
         </div>
 
-        {/* Desktop: image column on the right */}
-        <div className="hidden lg:block relative overflow-hidden">
-          <img
-            src="/lovable-uploads/5k-daily-family-hero.jpg"
-            alt="Bridgefort Homes — become a landlord"
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-estate-blue/40 via-transparent to-transparent" />
+        {/* Desktop: promotional carousel on the right */}
+        <div className="hidden lg:flex items-center p-6 xl:p-10 bg-gradient-to-br from-estate-blue/5 via-transparent to-amber-500/5">
+          <div className="w-full h-[560px] xl:h-[620px]">
+            <AuthCarousel />
+          </div>
         </div>
       </div>
       

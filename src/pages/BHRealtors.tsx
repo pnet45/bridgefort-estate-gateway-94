@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   Loader2, Clipboard, Share2, Users, Trophy, Gift, Handshake, Target,
-  Sparkles, Star, TrendingUp, Award, X,
+  Sparkles, Star, TrendingUp, Award, X, MessageCircle, Send, Mail,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
@@ -43,7 +43,17 @@ const BHRealtors = () => {
   const currentPackagePrice = currentPackage.price;
   const walletBalance = Number(profile?.wallet_balance ?? 0);
 
-  const isEligibleForPurchase = user && packageRank[selectedPackage.package_code] > packageRank[currentPackageCode];
+  // A brand-new user has never actually registered as a PBO/Realtor yet —
+  // `current_package` defaulting to 'associate' is just a display fallback,
+  // not evidence they already hold that tier. Without this distinction, new
+  // users could never register for Associate at all (it always compared
+  // equal to itself and got rejected), and Gold/Classic Gold were the only
+  // packages that ever showed a working "Register Free" button.
+  const isRegisteredRealtor = Boolean(profile?.is_pbo);
+
+  const isEligibleForPurchase = Boolean(
+    user && (!isRegisteredRealtor || packageRank[selectedPackage.package_code] > packageRank[currentPackageCode])
+  );
   // Registration is now free for every package — the original price is kept
   // around only to render the struck-through "was ₦X" reference.
   const amountDue = 0;
@@ -151,7 +161,7 @@ const BHRealtors = () => {
       return;
     }
 
-    if (packageRank[pkg.package_code] <= packageRank[currentPackageCode]) {
+    if (isRegisteredRealtor && packageRank[pkg.package_code] <= packageRank[currentPackageCode]) {
       setPurchaseError('Please select a higher package than your current tier.');
       return;
     }
@@ -212,7 +222,7 @@ const BHRealtors = () => {
       <section className="relative pt-24 lg:pt-28 pb-14 overflow-hidden bg-gradient-to-br from-[#2b0a52] via-[#3a1070] to-[#1a0638] text-white">
         <div
           className="absolute inset-0 opacity-20 bg-cover bg-center"
-          style={{ backgroundImage: "url('/lovable-uploads/bhRealtors-reward-scheme.jpeg')" }}
+          style={{ backgroundImage: "url('/lovable-uploads/agrovest-hero-1.jpg')" }}
           aria-hidden="true"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a0638] via-[#1a0638]/60 to-transparent" />
@@ -310,6 +320,34 @@ const BHRealtors = () => {
                           {copyStatus || 'Copy link'}
                         </Button>
                       </div>
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <span className="text-xs text-slate-500 mr-1">Share via:</span>
+                        <a
+                          href={`https://wa.me/?text=${encodeURIComponent(`Join Bridgefort Homes Realtors with my referral link: ${shareLink}`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Share on WhatsApp"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </a>
+                        <a
+                          href={`https://web.facebook.com/share_as_message/?Link=${encodeURIComponent(shareLink)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Share on Facebook Messenger"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#0084FF] hover:opacity-90 text-white transition-colors"
+                        >
+                          <Send className="h-4 w-4" />
+                        </a>
+                        <a
+                          href={`mailto:?subject=${encodeURIComponent('Join Bridgefort Homes Realtors')}&body=${encodeURIComponent(`I'd like to invite you to join Bridgefort Homes Realtors. Sign up using my referral link: ${shareLink}`)}`}
+                          aria-label="Share via Email"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-estate-blue hover:bg-estate-darkBlue text-white transition-colors"
+                        >
+                          <Mail className="h-4 w-4" />
+                        </a>
+                      </div>
                       {!profile?.pbo_referral_code && (
                         <p className="text-sm text-amber-700">
                           Your referral code is not yet set. Register as a PBO to receive a personal referral link.
@@ -333,7 +371,8 @@ const BHRealtors = () => {
 
                     <div className="mt-6 grid gap-4 lg:grid-cols-3">
                       {bhRealtorsPackages.map((pkg) => {
-                        const isHigherTier = packageRank[pkg.package_code] > packageRank[currentPackageCode];
+                        const isHigherTier = !isRegisteredRealtor || packageRank[pkg.package_code] > packageRank[currentPackageCode];
+                        const isCurrentTier = isRegisteredRealtor && pkg.package_code === currentPackageCode;
                         return (
                           <div
                             key={pkg.package_code}
@@ -359,7 +398,7 @@ const BHRealtors = () => {
                             >
                               {pkg.package_code === selectedPackage.package_code ? 'Selected' : 'Select'}
                             </Button>
-                            {pkg.package_code === currentPackageCode ? (
+                            {isCurrentTier ? (
                               <p className="mt-3 text-xs text-slate-500">This is your current package.</p>
                             ) : isHigherTier ? (
                               <Button
@@ -452,6 +491,9 @@ const BHRealtors = () => {
                           <p className="mt-2 text-2xl font-semibold text-slate-900">₦{commissionTotals.locked.toLocaleString()}</p>
                         </div>
                       </div>
+                      <Link to="/bh-realtors/withdraw">
+                        <Button className="w-full mt-4 bg-estate-blue hover:bg-estate-darkBlue">Withdraw</Button>
+                      </Link>
                     </div>
                     <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
                       <h2 className="text-xl font-semibold text-estate-blue">Direct referrals</h2>

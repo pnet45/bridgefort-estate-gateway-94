@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,75 +9,90 @@ const AuthCallback = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleAuthCallback = async () => {
+    let settled = false;
+
+    const redirectAfterSession = async (userId: string, email?: string | null) => {
+      if (settled) return;
+      settled = true;
+
+      // Client vs Realtor: same distinction used across the rest of the app.
+      let destination = '/dashboard';
       try {
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const queryParams = new URLSearchParams(window.location.search);
-
-        // Check for OAuth errors first
-        const errorParam = hashParams.get('error') || queryParams.get('error');
-        const errorDescription = hashParams.get('error_description') || queryParams.get('error_description');
-
-        if (errorParam) {
-          const msg = decodeURIComponent(errorDescription || errorParam);
-          setError(msg);
-          toast({ title: "Sign-in failed", description: msg, variant: "destructive" });
-          setTimeout(() => navigate('/auth'), 3000);
-          return;
-        }
-
-        // PKCE flow: Google returns ?code=... which must be exchanged for a session
-        const code = queryParams.get('code');
-        if (code) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          if (exchangeError) {
-            setError(exchangeError.message);
-            toast({ title: "Sign-in failed", description: exchangeError.message, variant: "destructive" });
-            setTimeout(() => navigate('/auth'), 3000);
-            return;
-          }
-        }
-
-        // Implicit flow fallback: tokens come back in the URL hash
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        if (accessToken && refreshToken) {
-          const { error: setSessionError } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-          if (setSessionError) {
-            setError(setSessionError.message);
-            toast({ title: "Sign-in failed", description: setSessionError.message, variant: "destructive" });
-            setTimeout(() => navigate('/auth'), 3000);
-            return;
-          }
-        }
-
-        // Verify a valid session was actually established
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError || !session) {
-          const msg = 'Could not establish session. Please try again.';
-          setError(msg);
-          toast({ title: "Sign-in failed", description: msg, variant: "destructive" });
-          setTimeout(() => navigate('/auth'), 3000);
-          return;
-        }
-
-        // Success
-        toast({ title: "Welcome!", description: `Signed in as ${session.user.email}` });
-        navigate('/dashboard');
-
-      } catch (err: any) {
-        const msg = err?.message || 'Unexpected error during sign-in';
-        setError(msg);
-        toast({ title: "Error", description: msg, variant: "destructive" });
-        setTimeout(() => navigate('/auth'), 3000);
+        const { data: profileRow } = await supabase
+          .from('profiles')
+          .select('is_pbo')
+          .eq('id', userId)
+          .single();
+        if (profileRow?.is_pbo) destination = '/bh-realtors';
+      } catch (e) {
+        // If the profile lookup fails for any reason, fall back to the
+        // regular client dashboard rather than blocking sign-in entirely.
+        console.warn('Could not determine account type after sign-in:', e);
       }
+
+      toast({ title: 'Welcome!', description: email ? `Signed in as ${email}` : 'Signed in successfully' });
+      navigate(destination, { replace: true });
     };
 
-    handleAuthCallback();
+    const handleAuthCallback = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const queryParams = new URLSearchParams(window.location.search);
+
+      // Explicit OAuth errors from the provider (access denied, etc).
+      const errorParam = hashParams.get('error') || queryParams.get('error');
+      const errorDescription = hashParams.get('error_description') || queryParams.get('error_description');
+      if (errorParam) {
+        const msg = decodeURIComponent(errorDescription || errorParam);
+        setError(msg);
+        toast({ title: 'Sign-in failed', description: msg, variant: 'destructive' });
+        setTimeout(() => navigate('/auth'), 3000);
+        return;
+      }
+
+      // IMPORTANT: the Supabase client is configured with
+      // `detectSessionInUrl: true`, which means it automatically exchanges
+      // the `?code=...` in this URL for a session as soon as it initializes
+      // — that happens the moment this page's JS bundle loads, before this
+      // effect even runs. A PKCE code + verifier pair is single-use, so
+      // manually calling `exchangeCodeForSession(code)` again here was
+      // racing against that automatic exchange: whichever one ran first
+      // consumed the verifier and succeeded, while the other reliably failed
+      // with "PKCE code verifier not found in storage" — which is exactly
+      // the error users were seeing, even though they were, in fact,
+      // already signed in by the winning attempt. We no longer call
+      // exchangeCodeForSession here at all; we just wait for the session
+      // the automatic exchange produces.
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session) {
+          redirectAfterSession(session.user.id, session.user.email);
+        }
+      });
+
+      // In case the automatic exchange already completed before this effect
+      // attached the listener above.
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      if (existingSession) {
+        await redirectAfterSession(existingSession.user.id, existingSession.user.email);
+      }
+
+      // Give the automatic exchange a reasonable window to finish before
+      // giving up — covers slow networks without hanging forever.
+      window.setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          const msg = 'Could not establish session. Please try signing in again.';
+          setError(msg);
+          toast({ title: 'Sign-in failed', description: msg, variant: 'destructive' });
+          setTimeout(() => navigate('/auth'), 3000);
+        }
+      }, 8000);
+
+      return () => subscription.unsubscribe();
+    };
+
+    let cleanup: (() => void) | undefined;
+    handleAuthCallback().then((fn) => { cleanup = fn; });
+    return () => cleanup?.();
   }, [navigate]);
 
   return (

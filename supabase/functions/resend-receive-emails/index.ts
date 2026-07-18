@@ -72,88 +72,23 @@ serve(async (req) => {
 
     switch (action) {
       case 'list': {
-        const response = await fetch('https://api.resend.com/emails/receiving', {
-          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}` },
-        });
-        if (!response.ok) {
-          const errBody = await response.text();
-          throw new Error(`Resend API error [${response.status}]: ${errBody}`);
-        }
-        const json = await response.json();
-        data = Array.isArray(json) ? json : json?.data || json;
+        // IMPORTANT: Resend has no bulk "list all received emails" REST
+        // endpoint — this used to call https://api.resend.com/emails/receiving
+        // with no id, which doesn't exist and always failed, which is why
+        // incoming mail never showed up here even though sending worked.
+        // Inbound emails now arrive automatically via the resend-inbound-webhook
+        // function (a real Resend feature: push webhooks, not polling) and
+        // land directly in the admin_emails table, which the admin inbox UI
+        // already reads and subscribes to in real time. So there is nothing
+        // further to "list" here — return an empty array to avoid duplicate
+        // entries alongside those already-synced rows.
+        data = [];
         break;
       }
       case 'sync': {
-        const response = await fetch('https://api.resend.com/emails/receiving', {
-          headers: { 'Authorization': `Bearer ${RESEND_API_KEY}` },
-        });
-        if (!response.ok) {
-          const errBody = await response.text();
-          throw new Error(`Resend API error [${response.status}]: ${errBody}`);
-        }
-        const json = await response.json();
-        const emails = Array.isArray(json) ? json : json?.data || json;
-
-        const svc = createClient(supabaseUrl, serviceKey);
-        const { data: existingRows } = await svc
-          .from('admin_emails')
-          .select('external_ref');
-        const existingRefs = new Set((existingRows || []).map((row: any) => row.external_ref).filter(Boolean));
-
-        const toInsert: any[] = [];
-        for (const email of emails || []) {
-          if (!email?.id || existingRefs.has(email.id)) continue;
-          const detailResponse = await fetch(`https://api.resend.com/emails/receiving/${email.id}`, {
-            headers: { 'Authorization': `Bearer ${RESEND_API_KEY}` },
-          });
-          if (!detailResponse.ok) continue;
-          const detail = await detailResponse.json();
-
-          const from = detail.from || detail?.envelope?.from || email.from || email.from_email || '';
-          const to = detail.to || email.to || 'admin@pwanbridgefort.ng';
-          const subject = detail.subject || email.subject || '(No Subject)';
-          const text = detail.text || detail.body || '';
-          const html = detail.html || undefined;
-          const createdAt = detail.created_at || detail.received_at || new Date().toISOString();
-          const fromName = typeof from === 'string' ? from : Array.isArray(from) ? from[0] : '';
-
-          toInsert.push({
-            from_email: fromName || String(from || ''),
-            from_name: fromName || '',
-            to_email: Array.isArray(to) ? to[0] : String(to || 'admin@pwanbridgefort.ng'),
-            to_name: 'Admin',
-            subject,
-            body: text || html || '',
-            html,
-            folder: 'inbox',
-            source: 'resend',
-            external_ref: email.id,
-            created_at: createdAt,
-            updated_at: createdAt,
-          });
-        }
-
-        let insertedCount = 0;
-        if (toInsert.length > 0) {
-          await svc.from('admin_emails').insert(toInsert);
-          insertedCount = toInsert.length;
-
-          const contactInsert = toInsert.map((email) => ({
-            name: email.from_name || email.from_email || 'Unknown',
-            email: email.from_email || 'unknown@bridgeforthomes.com',
-            phone: '',
-            subject: email.subject || '(No Subject)',
-            message: email.body || email.html || '',
-            responded: false,
-            responded_at: null,
-            responded_by: null,
-            created_at: email.created_at,
-          }));
-
-          await svc.from('contact_messages').insert(contactInsert);
-        }
-
-        data = { synced: insertedCount, received: emails?.length || 0 };
+        // See the 'list' comment above — this button no longer needs to do
+        // anything, since inbound emails sync automatically via webhook now.
+        data = { synced: 0, received: 0 };
         break;
       }
       case 'get': {

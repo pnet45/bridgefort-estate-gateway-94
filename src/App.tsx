@@ -66,6 +66,7 @@ import AnnouncementArticle from '@/pages/AnnouncementArticle';
 import LocationsIndex from '@/pages/LocationsIndex';
 import LocationLanding from '@/pages/LocationLanding';
 import BHRealtors from '@/pages/BHRealtors';
+import BHRealtorsWithdraw from '@/pages/BHRealtorsWithdraw';
 import Travels from '@/pages/Travels';
 import TravelBookingStatus from '@/pages/TravelBookingStatus';
 import Agrovest from '@/pages/Agrovest';
@@ -145,6 +146,11 @@ function App() {
                 <Route path="/bh-realtors" element={
                   <PrivateRoute>
                     <BHRealtors />
+                  </PrivateRoute>
+                } />
+                <Route path="/bh-realtors/withdraw" element={
+                  <PrivateRoute>
+                    <BHRealtorsWithdraw />
                   </PrivateRoute>
                 } />
                 <Route path="/create-post" element={
