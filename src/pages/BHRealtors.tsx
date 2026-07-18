@@ -8,12 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Loader2, Clipboard, Share2, Users } from 'lucide-react';
-import { initializePayment } from '@/integrations/paystack/client';
-import { emailService } from '@/services/emailClient';
+import {
+  Loader2, Clipboard, Share2, Users, Trophy, Gift, Handshake, Target,
+  Sparkles, Star, TrendingUp, Award, X,
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { X } from 'lucide-react';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
+import RealtorsRegistrationForm from '@/components/bhRealtors/RealtorsRegistrationForm';
 
 const packageRank: Record<string, number> = {
   associate: 1,
@@ -29,11 +30,11 @@ const BHRealtors = () => {
   const [downlineMembers, setDownlineMembers] = useState<Array<any>>([]);
   const [copyStatus, setCopyStatus] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'pending' | 'error'>('idle');
   const [purchaseError, setPurchaseError] = useState('');
   const [commissionTotals, setCommissionTotals] = useState({ available: 0, locked: 0 });
   const [freeUpgradeModalOpen, setFreeUpgradeModalOpen] = useState(false);
   const [freeUpgradeMessage, setFreeUpgradeMessage] = useState('');
+  const [registrationFormOpen, setRegistrationFormOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<BhRealtorsPackage>(bhRealtorsPackages[0]);
 
   const currentPackageCode = profile?.current_package || 'associate';
@@ -43,7 +44,9 @@ const BHRealtors = () => {
   const walletBalance = Number(profile?.wallet_balance ?? 0);
 
   const isEligibleForPurchase = user && packageRank[selectedPackage.package_code] > packageRank[currentPackageCode];
-  const amountDue = Math.max(0, selectedPackage.price - currentPackagePrice);
+  // Registration is now free for every package — the original price is kept
+  // around only to render the struck-through "was ₦X" reference.
+  const amountDue = 0;
 
   useEffect(() => {
     if (!user) return;
@@ -142,132 +145,36 @@ const BHRealtors = () => {
     setPurchaseError('');
   };
 
-  const handleMembershipPurchase = async () => {
+  const handleRegisterClick = (pkg: BhRealtorsPackage) => {
     if (!user) {
-      setPurchaseError('Please sign in to purchase a package.');
+      setPurchaseError('Please sign in to register for a package.');
       return;
     }
 
-    if (!isEligibleForPurchase) {
+    if (packageRank[pkg.package_code] <= packageRank[currentPackageCode]) {
       setPurchaseError('Please select a higher package than your current tier.');
       return;
     }
 
-    setPurchaseStatus('pending');
+    setSelectedPackage(pkg);
     setPurchaseError('');
+    setRegistrationFormOpen(true);
+  };
 
-    try {
-      // If amount due is zero, treat this as a free upgrade and complete server-side
-      if (amountDue === 0) {
-        // Update profile to reflect new package
-        await supabase.from('profiles').update({
-          current_package: selectedPackage.package_code,
-          updated_at: new Date().toISOString(),
-        }).eq('id', user.id);
-
-        // Create a zero-amount payment record for bookkeeping
-        await supabase.from('payments').insert({
-          user_id: user.id,
-          property_id: 'bh-realtors',
-          plan_type: selectedPackage.package_code,
-          months: 0,
-          principal_amount: selectedPackage.price,
-          interest_percent: 0,
-          interest_amount: 0,
-          total_amount: 0,
-          amount_paid: 0,
-          balance: 0,
-          status: 'completed',
-        });
-
-        await refreshProfile();
-        setPurchaseStatus('idle');
-        setFreeUpgradeMessage(`Your BHRealtors package has been upgraded to ${selectedPackage.package_name} successfully.`);
-
-        // Send an upgrade confirmation email (best-effort) and log result
-        const recipientEmail = user.email ?? '';
-        const recipientName = `${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim() || 'Bridgefort Member';
-        const upgradeSubject = `BHRealtors: Your package has been upgraded to ${selectedPackage.package_name}`;
-        const upgradePlain = `Hello ${profile?.first_name || ''},\n\nYour BHRealtors package has been upgraded to ${selectedPackage.package_name}. You can now access your updated benefits in the BHRealtors dashboard.\n\nThank you for staying with us.`;
-        const upgradeHtml = `<p>Hello ${profile?.first_name || ''},</p><p>Your BHRealtors package has been upgraded to <strong>${selectedPackage.package_name}</strong>. You can now access your updated benefits in the BHRealtors dashboard.</p><p>Thank you for staying with us.</p>`;
-
-        try {
-          const sendResult = await emailService.sendEmail({
-            to: recipientEmail,
-            name: recipientName,
-            subject: upgradeSubject,
-            body: upgradePlain,
-            html: upgradeHtml,
-          });
-
-          // Log email attempt (status = sent or failed)
-          await emailService.logEmail(recipientEmail, recipientName, upgradeSubject, upgradePlain, user.id, sendResult.success ? 'sent' : 'failed');
-
-          if (!sendResult.success) {
-            toast({ title: 'Upgrade email failed', description: 'Could not send confirmation email.' });
-          }
-        } catch (e) {
-          console.error('Failed to send/record upgrade confirmation email:', e);
-          try { await emailService.logEmail(recipientEmail, recipientName, upgradeSubject, upgradePlain, user.id, 'failed'); } catch {};
-          toast({ title: 'Upgrade email failed', description: 'Could not send confirmation email.' });
-        }
-
-        setFreeUpgradeModalOpen(true);
-        // Auto-close the modal after 8 seconds
-        setTimeout(() => setFreeUpgradeModalOpen(false), 8000);
-        return;
-      }
-
-      const fullName = `${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim();
-      const paymentData = await initializePayment({
-        email: user.email ?? '',
-        amount: amountDue,
-        currency: 'NGN',
-        reference: `bh-realtors-${user.id}-${Date.now()}`,
-        callback_url: `${window.location.origin}/payment-success`,
-        metadata: {
-          customer_name: fullName || 'Bridgefort Member',
-          custom_fields: [
-            {
-              display_name: 'Purchase type',
-              variable_name: 'purchase_type',
-              value: 'membership',
-            },
-            {
-              display_name: 'Package code',
-              variable_name: 'package_code',
-              value: selectedPackage.package_code,
-            },
-            {
-              display_name: 'Current package',
-              variable_name: 'current_package',
-              value: currentPackageCode,
-            },
-          ],
-        },
-      });
-
-      if (!paymentData?.data?.authorization_url) {
-        throw new Error('Unable to initialize Paystack payment.');
-      }
-
-      setPurchaseStatus('idle');
-      window.location.href = paymentData.data.authorization_url;
-    } catch (error: any) {
-      console.error('Membership payment initialization failed:', error);
-      setPurchaseStatus('error');
-      setPurchaseError(error?.message || 'Failed to initialize membership purchase.');
-    }
+  const handleRegistrationComplete = () => {
+    setRegistrationFormOpen(false);
+    setFreeUpgradeMessage(
+      `Your BHRealtors registration on the ${selectedPackage.package_name} package is complete — at no cost to you!`
+    );
+    setFreeUpgradeModalOpen(true);
+    window.setTimeout(() => setFreeUpgradeModalOpen(false), 8000);
   };
 
   const purchaseButtonText = useMemo(() => {
-    if (!user) return 'Sign in to purchase';
+    if (!user) return 'Sign in to register';
     if (!isEligibleForPurchase) return 'Select a higher package';
-    if (purchaseStatus === 'pending') return 'Redirecting to Paystack...';
-    if (amountDue > 0) return `Pay ₦${amountDue.toLocaleString()} via Paystack`;
-    // For zero-amount upgrades, keep the label explicit so users know the button still completes the upgrade
-    return `Pay ₦0.00 via Paystack`;
-  }, [amountDue, isEligibleForPurchase, purchaseStatus, user]);
+    return `Submit and Complete Registration with \u20a60`;
+  }, [isEligibleForPurchase, user]);
 
   if (loading) {
     return (
@@ -281,12 +188,81 @@ const BHRealtors = () => {
     );
   }
 
+  const rewardCategories = [
+    { icon: Trophy, title: 'Top Sales Achiever', desc: 'Monthly reward for the highest sales performer.' },
+    { icon: TrendingUp, title: 'Most Promising Performer', desc: 'Recognizing rising stars with exceptional potential.' },
+    { icon: Handshake, title: 'Team Spirit Award', desc: 'Reward for outstanding teamwork and collaboration.' },
+    { icon: Target, title: 'Consistency Champion', desc: 'For those who show consistency and dedication.' },
+    { icon: Gift, title: 'Special Bonus Rewards', desc: 'Surprise rewards for exceptional impact and milestones.' },
+    { icon: Award, title: 'Quarterly Excellence Awards', desc: 'Recognition and rewards for consistent excellence every quarter.' },
+  ];
+
+  const rewardFeatures = [
+    { icon: Gift, label: 'Exciting Prizes & Gifts' },
+    { icon: Trophy, label: 'Recognition & Appreciation' },
+    { icon: TrendingUp, label: 'Career Growth Opportunities' },
+    { icon: Star, label: 'Exclusive Access & Incentives' },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Navbar />
 
-      <main className="flex-grow pt-28 pb-12">
-        <div className="container mx-auto px-4">
+      {/* Hero — Bridgefort Homes PBOs & Realtors Performance Reward Scheme */}
+      <section className="relative pt-24 lg:pt-28 pb-14 overflow-hidden bg-gradient-to-br from-[#2b0a52] via-[#3a1070] to-[#1a0638] text-white">
+        <div
+          className="absolute inset-0 opacity-20 bg-cover bg-center"
+          style={{ backgroundImage: "url('/lovable-uploads/agrovest-hero-1.jpg')" }}
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1a0638] via-[#1a0638]/60 to-transparent" />
+        <div className="container mx-auto px-4 relative z-10 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-yellow-400/40 px-4 py-1.5 text-xs uppercase tracking-[0.25em] text-yellow-300 mb-5">
+            <Sparkles className="h-3.5 w-3.5" /> Bridgefort Homes Development Ltd
+          </span>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight mb-3">
+            PBOs &amp; Realtors <span className="text-yellow-400">Performance Reward Scheme</span>
+          </h1>
+          <p className="text-lg sm:text-xl font-semibold text-yellow-200 mb-4">
+            Sell More. Earn More. Get Celebrated.
+          </p>
+          <p className="max-w-2xl mx-auto text-purple-100 mb-8">
+            At Bridgefort Homes Development Ltd, we believe in recognizing excellence, driving
+            performance, and celebrating our top achievers. This scheme is designed to reward
+            your hard work, boost your income, and inspire greater success.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-3 mb-10">
+            {rewardFeatures.map((f) => (
+              <span
+                key={f.label}
+                className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm font-medium"
+              >
+                <f.icon className="h-4 w-4 text-yellow-400" /> {f.label}
+              </span>
+            ))}
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto text-left">
+            {rewardCategories.map((c) => (
+              <div key={c.title} className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-sm p-5">
+                <div className="h-10 w-10 rounded-full bg-yellow-400/20 flex items-center justify-center mb-3">
+                  <c.icon className="h-5 w-5 text-yellow-400" />
+                </div>
+                <p className="font-semibold text-sm mb-1">{c.title}</p>
+                <p className="text-xs text-purple-100">{c.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-10 italic text-yellow-200 text-lg">
+            "We don't just reward sales — we celebrate commitment."
+          </p>
+        </div>
+      </section>
+
+      <main className="flex-grow pb-12">
+        <div className="container mx-auto px-4 pt-8">
           <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr] items-start">
             <section className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-8 shadow-lg ring-1 ring-white/5">
               <div className="mb-6">
@@ -346,7 +322,9 @@ const BHRealtors = () => {
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <h2 className="text-xl font-semibold text-estate-blue">Membership packages</h2>
-                        <p className="mt-2 text-slate-600">Upgrade your tier to unlock higher earning potential.</p>
+                        <p className="mt-2 text-slate-600">
+                          Registration is <span className="font-semibold text-green-700">FREE</span> on every package for a limited time — upgrade your tier to unlock higher earning potential.
+                        </p>
                       </div>
                       <div className="text-sm text-slate-600">
                         Current package: <span className="font-semibold text-slate-900">{currentPackageLabel}</span>
@@ -355,16 +333,17 @@ const BHRealtors = () => {
 
                     <div className="mt-6 grid gap-4 lg:grid-cols-3">
                       {bhRealtorsPackages.map((pkg) => {
-                        const isCurrentOrLower = packageRank[pkg.package_code] <= packageRank[currentPackageCode];
-                        const upgradeAmount = Math.max(0, pkg.price - currentPackagePrice);
+                        const isHigherTier = packageRank[pkg.package_code] > packageRank[currentPackageCode];
                         return (
                           <div
                             key={pkg.package_code}
-                            className={`rounded-3xl border p-6 shadow-lg backdrop-blur-sm ${pkg.package_code === currentPackageCode ? 'ring-2 ring-indigo-400 bg-gradient-to-br from-indigo-50/30 to-white/10 border-transparent' : 'border-white/10 bg-white/5'}`}
+                            className={`relative rounded-3xl border p-6 shadow-lg backdrop-blur-sm ${pkg.package_code === currentPackageCode ? 'ring-2 ring-indigo-400 bg-gradient-to-br from-indigo-50/30 to-white/10 border-transparent' : 'border-white/10 bg-white/5'}`}
                           >
+                            <Badge className="absolute -top-3 right-4 bg-green-600 hover:bg-green-600 text-white">FREE</Badge>
                             <div className="mb-4">
                               <p className="text-sm uppercase tracking-[0.2em] text-slate-500">{pkg.package_name}</p>
-                              <p className="mt-3 text-3xl font-bold text-slate-900">₦{pkg.price.toLocaleString()}</p>
+                              <p className="mt-3 text-lg font-medium text-slate-400 line-through">₦{pkg.price.toLocaleString()}</p>
+                              <p className="text-3xl font-bold text-green-700">₦0.00</p>
                             </div>
                             <p className="text-slate-600 mb-4">{pkg.description}</p>
                             <div className="space-y-2 text-sm text-slate-700 mb-4">
@@ -380,8 +359,18 @@ const BHRealtors = () => {
                             >
                               {pkg.package_code === selectedPackage.package_code ? 'Selected' : 'Select'}
                             </Button>
-                            {pkg.package_code !== currentPackageCode && packageRank[pkg.package_code] > packageRank[currentPackageCode] && (
-                              <p className="mt-3 text-xs text-slate-500">Upgrade cost: ₦{upgradeAmount.toLocaleString()}</p>
+                            {pkg.package_code === currentPackageCode ? (
+                              <p className="mt-3 text-xs text-slate-500">This is your current package.</p>
+                            ) : isHigherTier ? (
+                              <Button
+                                type="button"
+                                className="w-full mt-2 bg-green-700 hover:bg-green-800"
+                                onClick={() => handleRegisterClick(pkg)}
+                              >
+                                Register Free
+                              </Button>
+                            ) : (
+                              <p className="mt-3 text-xs text-slate-500">Lower tier than your current package.</p>
                             )}
                           </div>
                         );
@@ -401,22 +390,32 @@ const BHRealtors = () => {
                         </div>
                         <div className="flex items-center justify-between">
                           <span>Amount due</span>
-                          <span className="font-semibold">₦{amountDue.toLocaleString()}</span>
+                          <span className="font-semibold">
+                            <span className="text-slate-400 line-through mr-2">₦{selectedPackage.price.toLocaleString()}</span>
+                            <span className="text-green-700">₦{amountDue.toLocaleString()}</span>
+                          </span>
                         </div>
                       </div>
 
                       <div className="mt-6">
                         <Button
                           type="button"
-                          onClick={handleMembershipPurchase}
-                          disabled={!isEligibleForPurchase || purchaseStatus === 'pending'}
-                          className="w-full"
+                          onClick={() => handleRegisterClick(selectedPackage)}
+                          disabled={!isEligibleForPurchase}
+                          className="w-full bg-green-700 hover:bg-green-800"
                         >
                           {purchaseButtonText}
                         </Button>
                         {purchaseError && <p className="mt-3 text-sm text-red-600">{purchaseError}</p>}
                       </div>
                     </div>
+
+                  <RealtorsRegistrationForm
+                    open={registrationFormOpen}
+                    onClose={() => setRegistrationFormOpen(false)}
+                    selectedPackage={selectedPackage}
+                    onComplete={handleRegistrationComplete}
+                  />
 
                   <Dialog open={freeUpgradeModalOpen} onOpenChange={setFreeUpgradeModalOpen}>
                     <DialogContent className="sm:max-w-lg relative">
