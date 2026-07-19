@@ -47,7 +47,14 @@ const slides: Slide[] = [
 
 const AUTO_ROTATE_MS = 5500;
 
-const AuthCarousel: React.FC = () => {
+interface AuthCarouselProps {
+  /** Set false when the carousel fills its container edge-to-edge (e.g. a
+   *  full-height side panel) — rounded corners only make sense when there's
+   *  surrounding margin for them to read as a floating card. */
+  rounded?: boolean;
+}
+
+const AuthCarousel: React.FC<AuthCarouselProps> = ({ rounded = true }) => {
   const [index, setIndex] = useState(0);
 
   const goTo = useCallback((i: number) => {
@@ -62,7 +69,7 @@ const AuthCarousel: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative w-full h-full rounded-3xl shadow-2xl overflow-hidden bg-estate-blue/10">
+    <div className={`relative w-full h-full overflow-hidden bg-estate-blue/10 ${rounded ? 'rounded-3xl shadow-2xl' : ''}`}>
       {slides.map((slide, i) => (
         <div
           key={slide.title}

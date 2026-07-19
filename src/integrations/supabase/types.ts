@@ -151,6 +151,7 @@ export type Database = {
       }
       admin_emails: {
         Row: {
+          attachments: Json | null
           body: string
           created_at: string
           external_ref: string | null
@@ -170,6 +171,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachments?: Json | null
           body?: string
           created_at?: string
           external_ref?: string | null
@@ -189,6 +191,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachments?: Json | null
           body?: string
           created_at?: string
           external_ref?: string | null

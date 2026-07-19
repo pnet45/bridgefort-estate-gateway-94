@@ -148,6 +148,7 @@ export default function AdminEmailCenter() {
       is_starred: e.is_starred,
       folder: e.folder,
       source: e.source,
+      has_attachments: Array.isArray(e.attachments) && e.attachments.length > 0,
       _original: e,
     }));
 
@@ -410,9 +411,9 @@ export default function AdminEmailCenter() {
   const isToolView = ['contacts', 'templates', 'bulk', 'gmail'].includes(activeFolder);
 
   return (
-    <div className={`flex h-[calc(100vh-8rem)] gap-0 rounded-xl border border-border overflow-hidden bg-background ${isResizing ? 'select-none' : ''}`}>
+    <div className={`flex h-[calc(100vh-8rem)] gap-3 p-3 rounded-3xl overflow-hidden bg-white/5 backdrop-blur-2xl border border-white/15 shadow-2xl ${isResizing ? 'select-none' : ''}`}>
       {/* Sidebar */}
-      <div className="border-r border-border p-3 hidden md:block">
+      <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/40 shadow-lg p-3 hidden md:block">
         <GmailSidebar
           activeFolder={activeFolder}
           onFolderChange={(f) => { setActiveFolder(f); setSelectedEmailId(null); setSearchTerm(''); setFullViewEmail(false); }}
@@ -422,13 +423,13 @@ export default function AdminEmailCenter() {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-lg overflow-hidden">
         {/* Top bar */}
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-border shrink-0">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-black/5 shrink-0 bg-white/40">
           <select
             value={activeFolder}
             onChange={(e) => { setActiveFolder(e.target.value as EmailFolder); setSelectedEmailId(null); }}
-            className="md:hidden h-9 rounded-md border border-input bg-background px-2 text-sm"
+            className="md:hidden h-9 rounded-full border border-input bg-white/70 px-3 text-sm"
           >
             {['inbox','starred','sent','drafts','received','gmail','archive','trash','contacts','templates','bulk'].map(f => (
               <option key={f} value={f}>{f.charAt(0).toUpperCase() + f.slice(1)}</option>
@@ -442,18 +443,18 @@ export default function AdminEmailCenter() {
                 placeholder="Search mail..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-9 rounded-full bg-muted/50 border-0"
+                className="pl-9 h-9 rounded-full bg-white/70 border-white/50 shadow-sm"
               />
             </div>
           )}
           <div className="flex-1" />
-          <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={loading || receivedLoading}>
+          <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/60" onClick={handleRefresh} disabled={loading || receivedLoading}>
             <RefreshCw className={`h-4 w-4 ${loading || receivedLoading ? 'animate-spin' : ''}`} />
           </Button>
           <AdminEmailProviderPicker />
           <AdminEmailSettings />
           {counts.unread > 0 && (
-            <Badge variant="destructive" className="text-xs">{counts.unread} unread</Badge>
+            <Badge variant="destructive" className="text-xs rounded-full">{counts.unread} unread</Badge>
           )}
         </div>
 

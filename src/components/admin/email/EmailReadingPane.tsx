@@ -146,28 +146,14 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
     const mimeType = attachment.content_type || 'application/octet-stream';
 
     try {
-      // For Resend inbound emails, fetch via edge function
-      const emailId = email._original?.id;
-      if (attachment.id && emailId) {
+      // Preferred path: attachments stored in Supabase Storage by the
+      // resend-inbound-webhook function have a stable public `url` — just
+      // fetch and save it directly, no expiring signed URLs involved.
+      const storageUrl = attachment.url || attachment.content_url;
+      if (storageUrl) {
         toast({ title: 'Downloading attachment...' } as any);
-        const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
-          body: { action: 'get-attachment', emailId, attachmentId: attachment.id },
-        });
-        if (!error && data?.success && data?.data) {
-          const content = data.data.content || (typeof data.data === 'string' ? data.data : null);
-          if (content) {
-            downloadBlob(content, data.data.content_type || mimeType, filename);
-            return;
-          }
-        }
-        if (error) console.error('Edge function error:', error);
-      }
-
-      // Fallback: direct URL download
-      const url = attachment.url || attachment.content_url;
-      if (url) {
         try {
-          const response = await fetch(url, { mode: 'cors' });
+          const response = await fetch(storageUrl);
           if (response.ok) {
             const blob = await response.blob();
             const blobUrl = window.URL.createObjectURL(blob);
@@ -184,10 +170,28 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
             return;
           }
         } catch {
-          // CORS failed, open in new tab
+          // CORS or network hiccup — fall through to opening it directly.
         }
-        window.open(url, '_blank');
+        window.open(storageUrl, '_blank');
         return;
+      }
+
+      // Legacy fallback for older rows saved before attachments were mirrored
+      // into Storage: proxy through the Resend API via the edge function.
+      const emailId = email._original?.external_ref || email._original?.id;
+      if (attachment.id && emailId) {
+        toast({ title: 'Downloading attachment...' } as any);
+        const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
+          body: { action: 'get-attachment', emailId, attachmentId: attachment.id },
+        });
+        if (!error && data?.success && data?.data) {
+          const content = data.data.content || (typeof data.data === 'string' ? data.data : null);
+          if (content) {
+            downloadBlob(content, data.data.content_type || mimeType, filename);
+            return;
+          }
+        }
+        if (error) console.error('Edge function error:', error);
       }
 
       toast({ title: 'No download source available for this attachment', variant: 'destructive' } as any);
@@ -205,28 +209,28 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
   const content = (
     <div className="flex-1 flex flex-col min-h-0">
       {/* Toolbar */}
-      <div className="flex items-center gap-1 px-4 py-2 border-b border-border shrink-0 flex-wrap">
-        <Button variant="ghost" size="icon" onClick={onBack} title="Back">
+      <div className="flex items-center gap-1 px-4 py-2.5 border-b border-black/5 shrink-0 flex-wrap bg-white/30">
+        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={onBack} title="Back">
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={() => onArchive(email)} title="Archive">
+        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={() => onArchive(email)} title="Archive">
           <Archive className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={() => onDelete(email)} title="Delete" className="text-destructive">
+        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70 text-destructive" onClick={() => onDelete(email)} title="Delete">
           <Trash2 className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={() => onMarkRead(email)} title="Mark as read/unread">
+        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={() => onMarkRead(email)} title="Mark as read/unread">
           <MailOpen className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={handlePrint} title="Print">
+        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={handlePrint} title="Print">
           <Printer className="h-4 w-4" />
         </Button>
         <div className="flex-1" />
-        <Button variant="ghost" size="icon" onClick={() => onStar(email)} title="Star">
+        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={() => onStar(email)} title="Star">
           <Star className={`h-4 w-4 ${email.is_starred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
         </Button>
         {onToggleFullView && (
-          <Button variant="ghost" size="icon" onClick={onToggleFullView} title={isFullView ? 'Exit full view' : 'Full view'}>
+          <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={onToggleFullView} title={isFullView ? 'Exit full view' : 'Full view'}>
             {isFullView ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </Button>
         )}

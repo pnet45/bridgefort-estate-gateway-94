@@ -60,10 +60,10 @@ const GmailSidebar: React.FC<GmailSidebarProps> = ({
           <button
             key={f.id}
             onClick={() => onFolderChange(f.id)}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-r-full text-sm transition-colors ${
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-colors ${
               activeFolder === f.id
-                ? 'bg-primary/20 text-primary font-semibold'
-                : 'text-muted-foreground hover:bg-muted/50'
+                ? 'bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/30'
+                : 'text-muted-foreground hover:bg-white/60'
             }`}
           >
             <f.icon className="h-4 w-4 shrink-0" />
@@ -84,10 +84,10 @@ const GmailSidebar: React.FC<GmailSidebarProps> = ({
           <button
             key={f.id}
             onClick={() => onFolderChange(f.id)}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-r-full text-sm transition-colors ${
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-colors ${
               activeFolder === f.id
-                ? 'bg-primary/20 text-primary font-semibold'
-                : 'text-muted-foreground hover:bg-muted/50'
+                ? 'bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/30'
+                : 'text-muted-foreground hover:bg-white/60'
             }`}
           >
             <f.icon className="h-4 w-4 shrink-0" />

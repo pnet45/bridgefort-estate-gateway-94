@@ -239,7 +239,25 @@ const Auth = ({
 
       const { data, error } = await signUp(email, password, firstName, lastName);
       if (error) throw error;
-      
+
+      // Supabase can return a *truthy* user object with an empty
+      // `identities` array when the email is already registered — this is
+      // deliberate (it avoids leaking which emails exist), but the old code
+      // had no check for it, so it fell straight into the "success" path
+      // below and told people their brand-new account was created and to
+      // check their email, when in fact nothing happened. That silent
+      // failure is very likely a big part of "sign up doesn't work".
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        toast({
+          title: "Account already exists",
+          description: "An account with this email already exists. Please sign in instead, or reset your password if you've forgotten it.",
+          variant: "destructive"
+        });
+        setRecaptchaToken(null);
+        if (recaptchaRef.current) recaptchaRef.current.reset();
+        return;
+      }
+
       if (data.user) {
         const profileUpdate: Record<string, any> = {
           updated_at: new Date().toISOString(),
@@ -284,6 +302,7 @@ const Auth = ({
 
           profileUpdate.is_pbo = true;
           profileUpdate.pbo_referral_code = finalPbo;
+          profileUpdate.current_package = 'associate';
 
           if (data.user?.email) {
             const referralLink = `${window.location.origin}/bridgefort-realtors-login?ref=${finalPbo}`;
@@ -321,19 +340,27 @@ const Auth = ({
             .select('id')
             .eq('pbo_referral_code', sponsorCode.trim())
             .eq('is_pbo', true)
-            .single();
+            .maybeSingle();
 
+          // IMPORTANT: by this point `signUp()` has already created the real
+          // auth account — there is no undoing that. The old code called
+          // `return` here on an invalid code, which abandoned registration
+          // entirely: the auth user existed but their profile was never
+          // created, no success message was shown, and re-submitting the
+          // same email would then fail as "already registered", leaving the
+          // user completely stuck. A bad/mistyped sponsor code should never
+          // be able to break account creation — just skip attaching a
+          // sponsor and let them know, then continue.
           if (sponsorError || !sponsorProfile) {
             toast({
-              title: "Invalid referral code",
-              description: "The referral code provided is not valid. Please check and try again.",
+              title: "Referral code not found",
+              description: "We couldn't find that referral code, so your account was created without a sponsor. You can add one later from your profile.",
               variant: "destructive"
             });
-            return;
+          } else {
+            profileUpdate.referred_by_id = sponsorProfile.id;
+            profileUpdate.referred_by_code = sponsorCode.trim();
           }
-
-          profileUpdate.referred_by_id = sponsorProfile.id;
-          profileUpdate.referred_by_code = sponsorCode.trim();
         }
 
         await supabase
@@ -354,6 +381,15 @@ const Auth = ({
           description: "Please check your email to verify your account."
         });
         navigate(redirectAfterSignUp);
+      } else {
+        // Belt-and-suspenders: signUp() returned no error but also no user.
+        // Rather than silently doing nothing (which just looks like a
+        // broken button to the person filling out the form), surface it.
+        toast({
+          title: "Registration failed",
+          description: "We couldn't create your account. Please try again in a moment.",
+          variant: "destructive"
+        });
       }
     } catch (error: any) {
       if (error.code === 'auth/email-already-in-use') {
@@ -386,35 +422,35 @@ const Auth = ({
       : 'Create Account';
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="bg-estate-blue py-4 text-center text-white">
-        <h1 className="text-2xl font-bold">{resolvedTitle}</h1>
-      </div>
-      
-      {/* Go Back Home button: aligned to left, directly under header */}
-      <div className="w-full px-4 sm:px-6 lg:px-8 mt-4 mb-2 flex justify-start">
-        <Button
-          type="button"
-          variant="outline"
-          className=""
-          onClick={() => navigate('/home')}
-        >
-          Cancel / Go Back Home
-        </Button>
-      </div>
+    <div className="lg:h-screen lg:overflow-hidden flex flex-col lg:grid lg:grid-cols-2">
+      {/* Form column — scrolls internally on short viewports so every field,
+          the reCAPTCHA checkbox, and the submit button always stay reachable
+          no matter how long the form or how short the screen. */}
+      <div className="relative flex flex-col lg:h-screen lg:overflow-y-auto">
+        <div className="bg-estate-blue py-3 px-4 sm:px-6 flex items-center justify-between shrink-0 relative z-10">
+          <h1 className="text-lg sm:text-xl font-bold text-white truncate">{resolvedTitle}</h1>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="bg-white/10 text-white border-white/30 hover:bg-white/20 shrink-0"
+            onClick={() => navigate('/home')}
+          >
+            Cancel
+          </Button>
+        </div>
 
-      <div className="relative flex-grow lg:grid lg:grid-cols-2">
-        {/* Mobile: full-bleed background image behind the glass form card */}
-        <div
-          className="absolute inset-0 lg:hidden bg-cover bg-center"
-          style={{ backgroundImage: "url('/lovable-uploads/5k-daily-family-hero.jpg')" }}
-          aria-hidden="true"
-        />
-        <div className="absolute inset-0 lg:hidden bg-black/55" aria-hidden="true" />
+        <div className="relative flex-1 flex flex-col">
+          {/* Mobile: full-bleed background image behind the glass form card */}
+          <div
+            className="absolute inset-0 lg:hidden bg-cover bg-center"
+            style={{ backgroundImage: "url('/lovable-uploads/5k-daily-family-hero.jpg')" }}
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 lg:hidden bg-black/55" aria-hidden="true" />
 
-        {/* Form column */}
-        <div className="relative z-10 flex items-center justify-center px-4 sm:px-6 py-12">
-          <div className="w-full max-w-md mx-auto bg-white/90 backdrop-blur-md lg:backdrop-blur-none lg:bg-transparent rounded-2xl lg:rounded-none shadow-2xl lg:shadow-none p-6 sm:p-8 lg:p-0">
+          <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
+            <div className="w-full max-w-md mx-auto bg-white/90 backdrop-blur-md lg:backdrop-blur-none lg:bg-transparent rounded-2xl lg:rounded-none shadow-2xl lg:shadow-none p-6 sm:p-8 lg:p-0">
           {isLogin && (
             <div className="mb-6 flex gap-2">
               <Button
@@ -647,17 +683,23 @@ const Auth = ({
               </Link>
             </div>
           )}
+            </div>
           </div>
         </div>
 
-        {/* Desktop: promotional carousel on the right */}
-        <div className="hidden lg:flex items-center p-6 xl:p-10 bg-gradient-to-br from-estate-blue/5 via-transparent to-amber-500/5">
-          <div className="w-full h-[560px] xl:h-[620px]">
-            <AuthCarousel />
-          </div>
+        {/* Copyright + company name, pinned bottom-left of the form column */}
+        <div className="shrink-0 px-4 sm:px-6 py-4 text-xs text-slate-500 relative z-10">
+          © {new Date().getFullYear()} Bridgefort Homes Development Ltd. All rights reserved.
         </div>
       </div>
-      
+
+      {/* Desktop: promotional carousel — full device height, half width,
+          flush with the top of the viewport, staying pinned in place while
+          the form column scrolls beside it. */}
+      <div className="hidden lg:block lg:h-screen lg:sticky lg:top-0">
+        <AuthCarousel rounded={false} />
+      </div>
+
       <Toaster />
     </div>
   );

@@ -1,29 +1,39 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Resend's "Inbound" feature is push-based, not pollable: whenever an email
-// arrives, Resend sends a POST webhook (type "email.received") to whatever
-// endpoint you register for it in the Resend dashboard, signed with Svix.
-// There is no bulk "list all received emails" REST endpoint — the previous
-// implementation (resend-receive-emails "list"/"sync" actions) was calling
-// a URL that doesn't exist, which is why incoming mail never synced even
-// though outgoing mail worked fine (sending uses a real, different endpoint).
+// ─────────────────────────────────────────────────────────────────────────
+// WHY INBOUND MAIL WASN'T ARRIVING — the full picture
 //
-// This function is the correct replacement: register its URL as a webhook
-// endpoint in Resend (Dashboard → Webhooks → Add Endpoint → select the
-// "email.received" event), copy the signing secret it gives you, and set it
-// as the Supabase Edge Function secret RESEND_WEBHOOK_SECRET. From then on,
-// every inbound email lands in `admin_emails` automatically and shows up in
-// the admin inbox in real time via the existing Postgres realtime
-// subscription — no manual "sync" button required.
+// Getting mail INTO Resend at all requires three things to be true, in
+// order, before a single line of application code ever runs:
+//
+//   1. MX records. Resend only receives mail for domains/subdomains that
+//      have an MX record pointing at Resend's mail servers (Dashboard →
+//      Domains → your domain → Receiving, or Dashboard → Emails → Receiving
+//      for the exact record to add). Without this, mail sent to your
+//      address never reaches Resend in the first place — nothing on our
+//      side, no webhook, no API, can "catch" mail that was never routed
+//      there. This is almost certainly the actual blocker if mail still
+//      isn't showing up after the previous fix.
+//   2. A registered webhook endpoint (Dashboard → Webhooks → Add Endpoint →
+//      event `email.received`, pointed at this function's URL). Resend has
+//      no bulk "list received emails" API — receiving is push-only.
+//   3. RESEND_WEBHOOK_SECRET set as a Supabase secret, so this function can
+//      verify the request really came from Resend.
+//
+// Once mail is actually routed to Resend and the webhook is registered,
+// THIS function does the rest: verifies the webhook, fetches the full email
+// body, downloads every attachment and stores it in Supabase Storage (so
+// download links don't expire the way Resend's own signed URLs do after an
+// hour), and inserts everything into admin_emails, which the inbox UI
+// already renders and subscribes to in real time.
+// ─────────────────────────────────────────────────────────────────────────
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, svix-id, svix-timestamp, svix-signature',
 };
 
-// Verifies a Svix-signed webhook body without pulling in the full svix SDK.
-// See https://resend.com/docs/dashboard/webhooks/verify-webhooks-requests
 async function verifySvixSignature(
   payload: string,
   svixId: string,
@@ -31,7 +41,6 @@ async function verifySvixSignature(
   svixSignature: string,
   secret: string
 ): Promise<boolean> {
-  // Secrets are given as "whsec_<base64>"
   const secretBytes = Uint8Array.from(atob(secret.replace(/^whsec_/, '')), (c) => c.charCodeAt(0));
   const signedContent = `${svixId}.${svixTimestamp}.${payload}`;
 
@@ -45,7 +54,6 @@ async function verifySvixSignature(
   const sigBuffer = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signedContent));
   const expected = btoa(String.fromCharCode(...new Uint8Array(sigBuffer)));
 
-  // svix-signature header can contain multiple space-separated "v1,<sig>" values
   const candidates = svixSignature.split(' ').map((s) => s.split(',')[1]).filter(Boolean);
   return candidates.includes(expected);
 }
@@ -75,16 +83,12 @@ serve(async (req) => {
         });
       }
     } else {
-      // No secret configured yet — accept but log loudly so this is easy to
-      // notice and fix, rather than silently dropping every inbound email.
       console.warn('RESEND_WEBHOOK_SECRET is not set — accepting webhook without signature verification.');
     }
 
     const event = JSON.parse(rawBody);
 
     if (event?.type !== 'email.received') {
-      // Ignore any other event types (sent/delivered/bounced/etc) — those
-      // are handled elsewhere. Acknowledge quickly either way.
       return new Response(JSON.stringify({ received: true, ignored: event?.type }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -103,7 +107,6 @@ serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Avoid duplicate inserts on webhook retries.
     const { data: existing } = await supabase
       .from('admin_emails')
       .select('id')
@@ -116,17 +119,17 @@ serve(async (req) => {
       });
     }
 
-    // The webhook payload only carries metadata — fetch the full body via
-    // the Received Emails API using the same email_id.
     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
     let subject = event.data?.subject || '(No Subject)';
     let from = event.data?.from || '';
     let to = Array.isArray(event.data?.to) ? event.data.to[0] : (event.data?.to || 'admin@bridgeforthomes.com');
     let text = '';
     let html: string | undefined;
+    let attachmentMeta: any[] = event.data?.attachments || [];
     const createdAt = event.data?.created_at || event.created_at || new Date().toISOString();
 
     if (RESEND_API_KEY) {
+      // Full body — GET /emails/receiving/{id}
       try {
         const detailResp = await fetch(`https://api.resend.com/emails/receiving/${emailId}`, {
           headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
@@ -138,12 +141,76 @@ serve(async (req) => {
           to = detail.to || to;
           text = detail.text || '';
           html = detail.html || undefined;
+          if (Array.isArray(detail.attachments)) attachmentMeta = detail.attachments;
         } else {
-          console.error('Failed to fetch full inbound email body:', await detailResp.text());
+          console.error('Failed to fetch full inbound email body:', detailResp.status, await detailResp.text());
         }
       } catch (fetchErr) {
         console.error('Error fetching inbound email detail:', fetchErr);
       }
+
+      // Attachments — GET /emails/receiving/{id}/attachments (gives download_url,
+      // valid for 1 hour, so we pull each one down and re-host it in Storage).
+      if (attachmentMeta.length > 0) {
+        try {
+          const attResp = await fetch(`https://api.resend.com/emails/receiving/${emailId}/attachments`, {
+            headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
+          });
+          if (attResp.ok) {
+            const attJson = await attResp.json();
+            const attachmentsWithUrls: any[] = Array.isArray(attJson) ? attJson : (attJson?.data || []);
+            const stored: any[] = [];
+
+            for (const att of attachmentsWithUrls) {
+              try {
+                if (!att.download_url) continue;
+                const fileResp = await fetch(att.download_url);
+                if (!fileResp.ok) {
+                  console.error('Failed to download attachment', att.filename, fileResp.status);
+                  continue;
+                }
+                const fileBuffer = new Uint8Array(await fileResp.arrayBuffer());
+                const storagePath = `${emailId}/${att.id}-${att.filename || 'attachment'}`;
+
+                const { error: uploadError } = await supabase.storage
+                  .from('email-attachments')
+                  .upload(storagePath, fileBuffer, {
+                    contentType: att.content_type || 'application/octet-stream',
+                    upsert: true,
+                  });
+
+                if (uploadError) {
+                  console.error('Error uploading attachment to storage:', uploadError);
+                  continue;
+                }
+
+                const { data: publicUrlData } = supabase.storage
+                  .from('email-attachments')
+                  .getPublicUrl(storagePath);
+
+                stored.push({
+                  id: att.id,
+                  filename: att.filename || 'attachment',
+                  content_type: att.content_type || 'application/octet-stream',
+                  content_disposition: att.content_disposition,
+                  size: fileBuffer.byteLength,
+                  storage_path: storagePath,
+                  url: publicUrlData?.publicUrl,
+                });
+              } catch (attErr) {
+                console.error('Error processing attachment', att?.filename, attErr);
+              }
+            }
+            attachmentMeta = stored;
+          } else {
+            console.error('Failed to list attachments:', attResp.status, await attResp.text());
+          }
+        } catch (attListErr) {
+          console.error('Error fetching attachment list:', attListErr);
+        }
+      }
+    } else {
+      console.warn('RESEND_API_KEY is not set — inbound email will be saved with metadata only, no body or attachments.');
     }
 
     const fromName = typeof from === 'string' ? from : Array.isArray(from) ? from[0] : String(from || '');
@@ -159,6 +226,7 @@ serve(async (req) => {
       folder: 'inbox',
       source: 'resend',
       external_ref: emailId,
+      attachments: attachmentMeta,
       created_at: createdAt,
       updated_at: createdAt,
     });
@@ -171,8 +239,6 @@ serve(async (req) => {
       });
     }
 
-    // Also drop it into contact_messages so it shows up alongside contact
-    // form submissions, matching prior behavior.
     await supabase.from('contact_messages').insert({
       name: fromName || 'Unknown',
       email: fromName || 'unknown@bridgeforthomes.com',
@@ -185,16 +251,13 @@ serve(async (req) => {
       created_at: createdAt,
     });
 
-    return new Response(JSON.stringify({ received: true, inserted: true }), {
+    return new Response(JSON.stringify({ received: true, inserted: true, attachments: attachmentMeta.length }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
     console.error('Error in resend-inbound-webhook:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
-    // Still return 200 for malformed/unexpected payloads so Resend doesn't
-    // endlessly retry something we'll never be able to process — but log
-    // loudly so it's visible in function logs.
     return new Response(JSON.stringify({ received: true, error: message }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
