@@ -26,6 +26,7 @@ import AdminOnlineUsers from '@/components/admin/AdminOnlineUsers';
 import AdminPropertyManagement from '@/components/admin/AdminPropertyManagement';
 import AdminActivityLogs from '@/components/admin/AdminActivityLogs';
 import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import AdminPropertyAnalytics from '@/components/admin/AdminPropertyAnalytics';
 import AdminContentManagement from '@/components/admin/AdminContentManagement';
 import AdminContentHub from '@/components/admin/AdminContentHub';
@@ -33,6 +34,7 @@ import AdminOtherPayments from '@/components/admin/AdminOtherPayments';
 import AdminWithdrawalRequests from '@/components/admin/AdminWithdrawalRequests';
 import AdminRolePermissions from '@/components/admin/AdminRolePermissions';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
+import AdminBirthdayWidget from '@/components/admin/AdminBirthdayWidget';
 import AdminEstateViewsLeaderboard from '@/components/admin/AdminEstateViewsLeaderboard';
 import AdminTravelDashboard from '@/components/admin/AdminTravelDashboard';
 import { toast } from '@/hooks/use-toast';
@@ -154,6 +156,9 @@ const AdminConsole = () => {
                 <AdminNotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={(tab) => setActiveTab(tab)} />
               </div>
 
+              {/* System alerts: birthdays, withdrawal/payment status, renewal reminders */}
+              <NotificationBell audience="admin" triggerClassName="text-slate-400 hover:text-white" />
+
               <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 bg-slate-700/50 rounded-lg">
                 <div className="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center">
                   <span className="text-primary font-medium text-sm">{profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'A'}</span>
@@ -259,6 +264,7 @@ const AdminConsole = () => {
           <TabsContent value="properties"><AdminPropertyManagement /></TabsContent>
 
           <TabsContent value="crm" className="space-y-6">
+            <AdminBirthdayWidget />
             <AdminCRMLeads />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <AdminTaskManager />

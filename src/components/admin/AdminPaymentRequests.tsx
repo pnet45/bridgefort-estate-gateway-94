@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, CreditCard, RefreshCw } from 'lucide-react';
+import { logAdminActivity } from '@/utils/logAdminActivity';
 
 interface PaymentRequest {
   id: string;
@@ -106,6 +107,14 @@ const AdminPaymentRequests: React.FC = () => {
           ? `Your payment of ₦${Number(req.amount).toLocaleString()} has been approved.`
           : `Your payment of ₦${Number(req.amount).toLocaleString()} was rejected. Please contact support.`,
         link: '/cart',
+      });
+
+      await logAdminActivity({
+        actionType: 'payment_request_updated',
+        actionDescription: `Payment request ${status}`,
+        entityType: 'payment_request',
+        entityId: req.id,
+        metadata: { status, amount: req.amount },
       });
 
       toast({ title: `Request ${status}` });

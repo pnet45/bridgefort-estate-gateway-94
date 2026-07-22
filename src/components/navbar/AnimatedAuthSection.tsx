@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import NavbarUserMenu from './NavbarUserMenu';
 // import NavbarLoginIcon from './NavbarLoginIcon'; // Removed
 import CartIcon from '../ecommerce/CartIcon';
+import NotificationBell from '../notifications/NotificationBell';
 
 interface AnimatedAuthSectionProps {
   user: any;
@@ -28,6 +29,18 @@ const AnimatedAuthSection = ({ user, profile, userRole, shouldShowLogin }: Anima
       >
         <CartIcon />
       </div>
+      {user ? (
+        <div 
+          className="animate-fade-in"
+          style={{
+            animationDelay: '1.7s',
+            opacity: 0,
+            animation: 'slideInRight 0.6s ease-out 1.7s forwards'
+          }}
+        >
+          <NotificationBell audience="user" />
+        </div>
+      ) : null}
       {user ? (
         <div 
           className="animate-fade-in"

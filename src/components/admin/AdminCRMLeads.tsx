@@ -14,7 +14,7 @@ import { toast } from '@/hooks/use-toast';
 import {
   Plus, Search, Phone, Mail, User, Calendar, Clock,
   MessageSquare, Trash2, Pencil, CheckCircle, Filter,
-  PhoneCall, MailPlus, Users as UsersIcon, TrendingUp
+  PhoneCall, MailPlus, Users as UsersIcon, TrendingUp, Download
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -207,6 +207,26 @@ const AdminCRMLeads: React.FC = () => {
     won: leads.filter(l => l.status === 'won').length,
   };
 
+  const handleExportCsv = () => {
+    const headers = ['Name', 'Email', 'Phone', 'Source', 'Status', 'Estate Interest', 'Last Contacted', 'Created'];
+    const rows = filtered.map(l => [
+      l.name, l.email || '', l.phone || '', l.source, l.status,
+      l.estate_interest || '', l.last_contacted_at || '', l.created_at,
+    ]);
+    const csv = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `crm-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-4">
       {/* Stats */}
@@ -247,6 +267,9 @@ const AdminCRMLeads: React.FC = () => {
         </Select>
         <Button onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '' }); setIsFormOpen(true); }} className="gap-1">
           <Plus className="h-4 w-4" /> Add Lead
+        </Button>
+        <Button variant="outline" onClick={handleExportCsv} className="gap-1 border-slate-600 text-white hover:bg-slate-700">
+          <Download className="h-4 w-4" /> Export CSV
         </Button>
       </div>
 

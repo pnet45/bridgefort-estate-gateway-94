@@ -9,7 +9,7 @@ export type ContentType =
   | 'training_article'
   | 'services_article';
 
-export type ContentPage = 'blog' | 'services' | 'training' | 'home' | 'about' | 'generic';
+export type ContentPage = 'blog' | 'services' | 'training' | 'home' | 'about' | 'login' | 'generic';
 
 export interface ContentItem {
   id: string;
@@ -54,5 +54,6 @@ export const PAGE_TO_TYPES: Record<ContentPage, ContentType[]> = {
   training: ['training_event', 'past_training_event', 'training_article', 'page_section'],
   home: ['motivation_slide', 'announcement', 'page_section'],
   about: ['page_section'],
+  login: ['page_section'],
   generic: ['page_section'],
 };

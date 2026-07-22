@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Eye, EyeOff, Star } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import ImageUploadField from '@/components/ui/ImageUploadField';
+import AuthCarouselManager from './AuthCarouselManager';
 import {
   ContentItem, ContentPage, ContentType,
   CONTENT_TYPE_LABELS, PAGE_TO_TYPES,
@@ -23,6 +24,7 @@ const PAGES: { value: ContentPage; label: string }[] = [
   { value: 'services', label: 'Services' },
   { value: 'home', label: 'Home' },
   { value: 'about', label: 'About' },
+  { value: 'login', label: 'Login' },
   { value: 'generic', label: 'Generic' },
 ];
 
@@ -108,7 +110,9 @@ const AdminContentHub: React.FC = () => {
             <h2 className="text-xl font-semibold text-white">Content Hub (CMS)</h2>
             <p className="text-sm text-slate-400">Manage every article, post and section across Blog, Training, Services and Home — synced to web & mobile.</p>
           </div>
-          <Button onClick={() => setEditing(empty(activePage))} className="gap-2"><Plus className="h-4 w-4" /> New Item</Button>
+          {activePage !== 'login' && (
+            <Button onClick={() => setEditing(empty(activePage))} className="gap-2"><Plus className="h-4 w-4" /> New Item</Button>
+          )}
         </div>
 
         <Tabs value={activePage} onValueChange={(v) => setActivePage(v as ContentPage)}>
@@ -122,7 +126,9 @@ const AdminContentHub: React.FC = () => {
 
           {PAGES.map(p => (
             <TabsContent key={p.value} value={p.value} className="mt-4 space-y-6">
-              {loading ? (
+              {p.value === 'login' ? (
+                <AuthCarouselManager />
+              ) : loading ? (
                 <p className="text-slate-400">Loading…</p>
               ) : items.length === 0 ? (
                 <p className="text-slate-400">No items yet. Click "New Item" to add one.</p>

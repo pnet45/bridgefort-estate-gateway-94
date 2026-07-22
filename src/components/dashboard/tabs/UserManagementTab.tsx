@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, UserPlus, Shield, Users, Trash2, Unlock, Lock } from 'lucide-react';
+import { logAdminActivity } from '@/utils/logAdminActivity';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 
 interface UserWithRole {
@@ -274,6 +275,14 @@ const UserManagementTab = () => {
         .eq('id', targetUser.id);
 
       if (error) throw error;
+
+      await logAdminActivity({
+        actionType: locking ? 'user_account_locked' : 'user_account_unlocked',
+        actionDescription: `${locking ? 'Locked' : 'Unlocked'} account for ${targetUser.email}`,
+        entityType: 'user',
+        entityId: targetUser.id,
+        metadata: locking ? { reason } : undefined,
+      });
 
       toast.success(locking ? 'Account locked' : 'Account unlocked');
       fetchUsers();

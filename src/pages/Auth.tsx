@@ -476,7 +476,7 @@ const Auth = ({
           <div className="absolute inset-0 lg:hidden bg-black/55" aria-hidden="true" />
 
           <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
-            <div className="w-full max-w-md mx-auto bg-white/90 backdrop-blur-md lg:backdrop-blur-none lg:bg-transparent rounded-2xl lg:rounded-none shadow-2xl lg:shadow-none p-6 sm:p-8 lg:p-0">
+            <div className="w-full max-w-md mx-auto bg-white/75 backdrop-blur-xl lg:backdrop-blur-none lg:bg-transparent border border-white/40 lg:border-0 rounded-2xl lg:rounded-none shadow-[0_8px_40px_rgba(0,0,0,0.45)] lg:shadow-none p-6 sm:p-8 lg:p-0">
           {isLogin && (
             <div className="mb-6 flex gap-2">
               <Button

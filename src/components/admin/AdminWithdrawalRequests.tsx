@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, Wallet, RefreshCw } from 'lucide-react';
+import { logAdminActivity } from '@/utils/logAdminActivity';
 
 interface WithdrawalRequest {
   id: string;
@@ -87,6 +88,14 @@ const AdminWithdrawalRequests: React.FC = () => {
         .eq('id', id);
 
       if (error) throw error;
+
+      await logAdminActivity({
+        actionType: 'withdrawal_request_updated',
+        actionDescription: `Withdrawal request ${status}`,
+        entityType: 'withdrawal_request',
+        entityId: id,
+        metadata: { status },
+      });
 
       toast({ title: `Request ${status}`, description: `The withdrawal request has been marked as ${status}.` });
       await load();

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Slide {
   image: string;
@@ -7,9 +8,10 @@ interface Slide {
   eyebrow: string;
   title: string;
   subtitle: string;
+  link?: string | null;
 }
 
-const slides: Slide[] = [
+const defaultSlides: Slide[] = [
   {
     image: '/lovable-uploads/PropertyHero.png',
     eyebrow: 'Estates',
@@ -56,17 +58,46 @@ interface AuthCarouselProps {
 
 const AuthCarousel: React.FC<AuthCarouselProps> = ({ rounded = true }) => {
   const [index, setIndex] = useState(0);
+  const [slides, setSlides] = useState<Slide[]>(defaultSlides);
+
+  useEffect(() => {
+    // Admin-managed slides (CMS Hub → Login tab) take over as soon as they
+    // load; the hardcoded list above is only a fallback for the moment
+    // before that fetch resolves, or if the table is empty.
+    const loadSlides = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('auth_carousel_slides')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order');
+        if (!error && data && data.length > 0) {
+          setSlides(data.map((row: any) => ({
+            image: row.image_url,
+            eyebrow: row.eyebrow,
+            title: row.title,
+            subtitle: row.subtitle,
+            link: row.link,
+          })));
+          setIndex(0);
+        }
+      } catch (err) {
+        console.error('Error loading auth carousel slides:', err);
+      }
+    };
+    loadSlides();
+  }, []);
 
   const goTo = useCallback((i: number) => {
     setIndex(((i % slides.length) + slides.length) % slides.length);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       setIndex((i) => (i + 1) % slides.length);
     }, AUTO_ROTATE_MS);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   return (
     <div className={`relative w-full h-full overflow-hidden bg-estate-blue/10 ${rounded ? 'rounded-3xl shadow-2xl' : ''}`}>
