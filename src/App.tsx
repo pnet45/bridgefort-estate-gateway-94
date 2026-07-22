@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth';
 import { EcommerceProvider } from '@/contexts/ecommerce';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
+import { Analytics } from '@vercel/analytics/react';
 
 const RECAPTCHA_V3_KEY = (import.meta.env.VITE_RECAPTCHA_V3_SITE_KEY as string | undefined) || '';
 const RecaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
@@ -176,6 +177,7 @@ function App() {
               <CartSidebar />
               <ScrollToTopButton />
             </div>
+            <Analytics />
           </EcommerceProvider>
         </AuthProvider>
         </RecaptchaProvider>
