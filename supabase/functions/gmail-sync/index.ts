@@ -169,16 +169,39 @@ serve(async (req) => {
       }
       case "list-messages": {
         const { labelIds, q, pageToken, maxResults } = body;
-        const params = new URLSearchParams();
-        params.set("maxResults", String(Math.min(Number(maxResults) || 25, 100)));
-        if (labelIds && Array.isArray(labelIds)) {
-          labelIds.forEach((id: string) => params.append("labelIds", id));
-        } else if (typeof labelIds === "string" && labelIds) {
-          params.append("labelIds", labelIds);
+        const buildParams = (includeQuery: boolean) => {
+          const params = new URLSearchParams();
+          params.set("maxResults", String(Math.min(Number(maxResults) || 25, 100)));
+          if (labelIds && Array.isArray(labelIds)) {
+            labelIds.forEach((id: string) => params.append("labelIds", id));
+          } else if (typeof labelIds === "string" && labelIds) {
+            params.append("labelIds", labelIds);
+          }
+          if (includeQuery && q) params.set("q", String(q));
+          if (pageToken) params.set("pageToken", String(pageToken));
+          return params;
+        };
+
+        let list: any;
+        let searchDegraded = false;
+        try {
+          list = await gmailFetch(`/users/me/messages?${buildParams(true).toString()}`);
+        } catch (err: any) {
+          // The connected Gmail account only granted the restricted
+          // "metadata" scope, which doesn't support the `q` search
+          // parameter at all (a hard Google API limitation, not something
+          // we can work around) — fall back to an unfiltered list rather
+          // than failing the whole request, and let the frontend know
+          // search isn't available until Gmail is reconnected with fuller
+          // permissions.
+          if (q && /metadata scope/i.test(String(err.message))) {
+            searchDegraded = true;
+            list = await gmailFetch(`/users/me/messages?${buildParams(false).toString()}`);
+          } else {
+            throw err;
+          }
         }
-        if (q) params.set("q", String(q));
-        if (pageToken) params.set("pageToken", String(pageToken));
-        const list = await gmailFetch(`/users/me/messages?${params.toString()}`);
+
         const ids: { id: string; threadId: string }[] = list.messages || [];
         // Batch fetch metadata for list preview
         const detailed = await Promise.all(
@@ -209,14 +232,51 @@ serve(async (req) => {
           messages: detailed,
           nextPageToken: list.nextPageToken || null,
           resultSizeEstimate: list.resultSizeEstimate || detailed.length,
+          searchDegraded,
         };
         break;
       }
       case "get-message": {
         const { messageId } = body;
         if (!messageId) throw new Error("messageId required");
-        const msg = await gmailFetch(`/users/me/messages/${messageId}?format=full`);
-        data = parseMessage(msg);
+        try {
+          const msg = await gmailFetch(`/users/me/messages/${messageId}?format=full`);
+          data = parseMessage(msg);
+        } catch (err: any) {
+          // Same restricted-scope situation: metadata scope can list emails
+          // and show headers/snippets, but Google will never allow it to
+          // return the full body, no matter how this is called — reading,
+          // deleting, forwarding and replying all need the full message.
+          // Return what IS available (headers/snippet) plus a clear flag
+          // the UI can use to explain why the body is missing, instead of
+          // throwing an unhandled error that blanks the whole page.
+          if (/metadata scope/i.test(String(err.message))) {
+            const meta = await gmailFetch(
+              `/users/me/messages/${messageId}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`
+            );
+            const headers: Record<string, string> = {};
+            (meta.payload?.headers || []).forEach((h: any) => {
+              headers[h.name.toLowerCase()] = h.value;
+            });
+            data = {
+              id: meta.id,
+              threadId: meta.threadId,
+              labelIds: meta.labelIds || [],
+              from: headers["from"] || "",
+              to: headers["to"] || "",
+              subject: headers["subject"] || "(No Subject)",
+              date: headers["date"] || "",
+              text: meta.snippet || "",
+              html: null,
+              attachments: [],
+              scopeRestricted: true,
+              scopeRestrictedMessage:
+                "This Gmail connection only has limited (metadata) access, so the full message body can't be shown. Reconnect Gmail with full mail access to read, delete, forward or reply to messages.",
+            };
+          } else {
+            throw err;
+          }
+        }
         break;
       }
       case "get-attachment": {
@@ -284,9 +344,14 @@ serve(async (req) => {
     });
   } catch (err: any) {
     console.error("gmail-sync error:", err);
-    const msg = err?.message || String(err);
-    const status = msg.includes("[401]") || msg.includes("[403]") ? 403 : 500;
-    return new Response(JSON.stringify({ success: false, error: msg }), {
+    let msg = err?.message || String(err);
+    const isScopeRestricted = /metadata scope/i.test(msg);
+    if (isScopeRestricted) {
+      msg =
+        "This Gmail connection only has limited (metadata) access, which Google does not allow to read, search, delete, forward, reply to, or send messages — only list basic headers. Reconnect Gmail with full mail access (not metadata-only) to use these features.";
+    }
+    const status = /\[401\]|\[403\]/.test(err?.message || "") ? 403 : 500;
+    return new Response(JSON.stringify({ success: false, error: msg, scopeRestricted: isScopeRestricted }), {
       status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

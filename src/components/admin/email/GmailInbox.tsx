@@ -39,6 +39,8 @@ interface GmailMessageFull extends GmailMessageSummary {
   html: string;
   text: string;
   attachments: { id: string; filename: string; content_type: string; size: number }[];
+  scopeRestricted?: boolean;
+  scopeRestrictedMessage?: string;
 }
 
 const SYSTEM_ICON: Record<string, React.ElementType> = {
@@ -215,7 +217,9 @@ export default function GmailInbox() {
 
   const trashMessage = async (id: string) => {
     try {
-      await supabase.functions.invoke('gmail-sync', { body: { action: 'trash-message', messageId: id } });
+      const { data, error } = await supabase.functions.invoke('gmail-sync', { body: { action: 'trash-message', messageId: id } });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to trash message');
       toast.success('Moved to Trash');
       setSelected(null);
       fetchMessages(activeLabel, query, pageToken);
@@ -224,9 +228,11 @@ export default function GmailInbox() {
 
   const archiveMessage = async (id: string) => {
     try {
-      await supabase.functions.invoke('gmail-sync', {
+      const { data, error } = await supabase.functions.invoke('gmail-sync', {
         body: { action: 'modify-message', messageId: id, removeLabelIds: ['INBOX'] },
       });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to archive message');
       toast.success('Archived');
       setSelected(null);
       fetchMessages(activeLabel, query, pageToken);
@@ -236,12 +242,14 @@ export default function GmailInbox() {
   const toggleRead = async (msg: GmailMessageFull) => {
     const unread = msg.labelIds.includes('UNREAD');
     try {
-      await supabase.functions.invoke('gmail-sync', {
+      const { data, error } = await supabase.functions.invoke('gmail-sync', {
         body: {
           action: 'modify-message', messageId: msg.id,
           [unread ? 'removeLabelIds' : 'addLabelIds']: ['UNREAD'],
         },
       });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to update message');
       setSelected({ ...msg, labelIds: unread ? msg.labelIds.filter(l => l !== 'UNREAD') : [...msg.labelIds, 'UNREAD'] });
       fetchMessages(activeLabel, query, pageToken);
     } catch (e: any) { toast.error(e.message); }
@@ -424,6 +432,11 @@ export default function GmailInbox() {
                   <div><strong>To:</strong> {selected.to}</div>
                   {selected.date && <div><strong>Date:</strong> {selected.date}</div>}
                 </div>
+                {selected.scopeRestricted && (
+                  <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    {selected.scopeRestrictedMessage || 'This Gmail connection only has limited access, so the full message cannot be shown.'}
+                  </div>
+                )}
                 {selected.html ? (
                   <div
                     className="prose prose-sm dark:prose-invert max-w-none"
