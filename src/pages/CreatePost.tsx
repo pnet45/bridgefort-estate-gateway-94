@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { Toaster } from '@/components/ui/toaster';
 import { PostForm } from '@/components/blog/PostForm';
 import { supabase } from '@/integrations/supabase/client';
 import { CATEGORIES, INITIAL_POST } from '../components/blog/PostFormConstants';
@@ -117,7 +116,6 @@ const CreatePost = () => {
       </main>
 
       <Footer />
-      <Toaster />
     </div>
   );
 };

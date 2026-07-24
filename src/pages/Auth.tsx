@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { emailService } from '@/services/emailClient';
-import { Toaster } from '@/components/ui/toaster';
 import ReCaptcha from '@/components/ui/ReCaptcha';
 import AuthCarousel from '@/components/auth/AuthCarousel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -744,7 +743,6 @@ const Auth = ({
         </DialogContent>
       </Dialog>
 
-      <Toaster />
     </div>
   );
 };

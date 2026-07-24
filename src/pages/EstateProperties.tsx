@@ -4,7 +4,6 @@ import Footer from '../components/Footer';
 import WhatsAppChat from '../components/WhatsAppChat';
 import PropertyFilters from '../components/properties/PropertyFilters';
 import PropertyGrid from '../components/properties/PropertyGrid';
-import { Toaster } from '@/components/ui/toaster';
 import { PropertyProvider } from '../contexts/property';
 import { MapPin, Layers, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -84,7 +83,6 @@ const EstateProperties = () => {
 
         <Footer />
         <WhatsAppChat />
-        <Toaster />
       </div>
     </PropertyProvider>
   );

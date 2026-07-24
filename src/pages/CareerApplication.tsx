@@ -6,7 +6,6 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { PropertyProvider } from "../contexts/property";
 import WhatsAppChat from "../components/WhatsAppChat";
-import { Toaster } from "@/components/ui/toaster";
 
 // Simple sidebar example - you can expand/replace the content as needed
 const Sidebar = () => (
@@ -53,7 +52,6 @@ const CareerApplication = () => {
           </main>
         </div>
         <Footer />
-        <Toaster />
         <WhatsAppChat />
       </div>
     </PropertyProvider>

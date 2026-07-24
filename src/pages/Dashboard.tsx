@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ClientDashboard from '@/components/dashboard/ClientDashboard';
-import { Toaster } from '@/components/ui/toaster';
 import { Camera } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -95,7 +94,6 @@ const Dashboard = () => {
           </div>
         </div>
         <Footer />
-        <Toaster />
       </div>
     );
   }
@@ -173,7 +171,6 @@ const Dashboard = () => {
         <ClientDashboard />
       </div>
       <Footer />
-      <Toaster />
     </div>
   );
 };

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
-import { Toaster } from '@/components/ui/toaster';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -290,7 +289,6 @@ const AdminConsole = () => {
         </Tabs>
       </main>
 
-      <Toaster />
     </div>
   );
 };

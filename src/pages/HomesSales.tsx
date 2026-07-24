@@ -4,7 +4,6 @@ import Footer from '../components/Footer';
 import WhatsAppChat from '../components/WhatsAppChat';
 import PropertyFilters from '../components/properties/PropertyFilters';
 import PropertyGrid from '../components/properties/PropertyGrid';
-import { Toaster } from '@/components/ui/toaster';
 import { PropertyProvider } from '../contexts/property';
 import { Home, MapPin, Bed, Bath, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -78,7 +77,6 @@ const HomesSales = () => {
 
         <Footer />
         <WhatsAppChat />
-        <Toaster />
       </div>
     </PropertyProvider>
   );

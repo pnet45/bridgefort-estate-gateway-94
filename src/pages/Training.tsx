@@ -10,7 +10,6 @@ import UpcomingEvents from '../components/training/UpcomingEvents';
 import TrainingCTA from '../components/training/TrainingCTA';
 import FeaturedTraining from '../components/training/FeaturedTraining';
 import CenterTrainingSection from '../components/training/CenterTrainingSection';
-import { Toaster } from "@/components/ui/toaster";
 import FeaturedEventsCarousel from '../components/training/FeaturedEventsCarousel';
 import WealthSummit from '../components/training/WealthSummit';
 import UpcomingTrainingEvents from '../components/training/UpcomingTrainingEvents';
@@ -63,7 +62,6 @@ const Training = () => {
       
       <Footer />
       <WhatsAppChat />
-      <Toaster />
     </div>
   );
 };

@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Toaster } from '@/components/ui/toaster';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth';
 import Navbar from '../components/Navbar';
@@ -113,7 +112,6 @@ const ResetPassword = () => {
         </div>
       </div>
       <Footer />
-      <Toaster />
     </>
   );
 };

@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Toaster } from '@/components/ui/toaster';
 import { PropertyProvider } from '../contexts/property';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -32,7 +31,6 @@ const Career = () => {
         {/* Pass apply handler to OpenPositions */}
         <OpenPositions onApply={handleApplyClick} />
         <Footer />
-        <Toaster />
         <WhatsAppChat />
       </div>
     </PropertyProvider>
