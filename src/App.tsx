@@ -22,6 +22,9 @@ import ScrollToTop from '@/components/ScrollToTop';
 import ScrollToTopButton from '@/components/ScrollToTopButton';
 import CartSidebar from '@/components/ecommerce/CartSidebar';
 import GlobalFloatingWidgets from '@/components/GlobalFloatingWidgets';
+import { Toaster as ShadcnToaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from '@/components/ui/sonner';
+import { NotificationModalHost } from '@/components/notifications/NotificationModalHost';
 
 // Pages
 import Index from '@/pages/Index';
@@ -175,6 +178,12 @@ function App() {
               <GlobalFloatingWidgets />
               <CartSidebar />
               <ScrollToTopButton />
+
+              {/* Unified notification system — mounted once so every route is covered.
+                  See src/lib/notifications/notify.ts for the dispatcher. */}
+              <ShadcnToaster />
+              <SonnerToaster />
+              <NotificationModalHost />
             </div>
           </EcommerceProvider>
         </AuthProvider>
