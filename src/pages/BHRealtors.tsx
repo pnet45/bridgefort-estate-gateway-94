@@ -15,6 +15,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
 import RealtorsRegistrationForm from '@/components/bhRealtors/RealtorsRegistrationForm';
+import ReferralLeaderboard from '@/components/bhRealtors/ReferralLeaderboard';
 
 const packageRank: Record<string, number> = {
   associate: 1,
@@ -563,6 +564,8 @@ const BHRealtors = () => {
                 </p>
                 <Badge className="mt-4 bg-estate-blue/10 text-estate-blue">Shared database: Supabase</Badge>
               </div>
+
+              <ReferralLeaderboard />
 
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <h2 className="text-xl font-semibold text-estate-blue">Next steps</h2>

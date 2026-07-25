@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, Wallet, RefreshCw } from 'lucide-react';
 import { logAdminActivity } from '@/utils/logAdminActivity';
+import { notify } from '@/lib/notifications/notify';
 
 interface WithdrawalRequest {
   id: string;
@@ -96,6 +97,30 @@ const AdminWithdrawalRequests: React.FC = () => {
         entityId: id,
         metadata: { status },
       });
+
+      // Let the realtor know — persisted so it shows up in their
+      // NotificationBell whenever they're next active, rather than relying
+      // on them to check back. `silent: true` because the toast this would
+      // normally bridge to is for the *recipient's* session, not the
+      // admin's — the admin already sees the toast below confirming their
+      // own action.
+      if (status === 'paid' || status === 'rejected') {
+        const request = requests.find((r) => r.id === id);
+        if (request) {
+          void notify({
+            title: status === 'paid' ? 'Withdrawal paid' : 'Withdrawal request declined',
+            message:
+              status === 'paid'
+                ? `Your withdrawal request for ₦${Number(request.amount).toLocaleString()} has been paid.`
+                : `Your withdrawal request for ₦${Number(request.amount).toLocaleString()} was declined. Contact support if you have questions.`,
+            persist: true,
+            userId: request.user_id,
+            audience: 'user',
+            type: status === 'paid' ? 'payout' : 'withdrawal',
+            silent: true,
+          });
+        }
+      }
 
       toast({ title: `Request ${status}`, description: `The withdrawal request has been marked as ${status}.` });
       await load();
