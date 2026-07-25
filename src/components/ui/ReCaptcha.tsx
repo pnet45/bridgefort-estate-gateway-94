@@ -38,13 +38,34 @@ const ReCaptcha = forwardRef<ReCAPTCHA, ReCaptchaProps>(
 
     if (!RECAPTCHA_ENABLED) return null;
 
+    // A genuine widget error here (site key registered for the wrong
+    // domain, the script blocked by an extension/network policy, a v2/v3
+    // key mix-up, etc.) is a *configuration* problem, not evidence the
+    // visitor is a bot — and previously it left onChange(null) as the final
+    // word, which permanently disabled the submit button with no way for a
+    // real user to recover. Fail open here too, the same way the
+    // verify-recaptcha edge function already fails open when its secret
+    // isn't configured: log it clearly so the misconfiguration is
+    // diagnosable, but still hand the form a token so people can sign
+    // in/up. The server-side check still applies for anyone who gets a real
+    // reCAPTCHA challenge.
+    const handleErrored = () => {
+      console.error(
+        'reCAPTCHA widget failed to load/render — check that the current domain is registered ' +
+          'for VITE_RECAPTCHA_V2_SITE_KEY in the Google reCAPTCHA admin console, and that the key ' +
+          'is a v2 key (not a v3-only key). Falling back to disabled-token so the form stays usable.'
+      );
+      onError?.();
+      onChange(RECAPTCHA_DISABLED_TOKEN);
+    };
+
     return (
       <ReCAPTCHA
         ref={ref}
         sitekey={V2_SITE_KEY}
         onChange={onChange}
         onExpired={onExpired}
-        onErrored={onError}
+        onErrored={handleErrored}
         size={variant === 'invisible' ? 'invisible' : 'normal'}
         theme="light"
         badge="bottomright"

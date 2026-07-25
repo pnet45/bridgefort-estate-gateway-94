@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,13 +39,11 @@ import AdminTravelDashboard from '@/components/admin/AdminTravelDashboard';
 import { toast } from '@/hooks/use-toast';
 
 const AdminConsole = () => {
-  // Always open the console scrolled to the top. Browsers restore the
-  // previous scroll position on reload/back-navigation by default, which
-  // could otherwise land admins mid-way down this long page.
-  useEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
+  // Always open the console scrolled to the top. This runs in
+  // useLayoutEffect (before paint) rather than useEffect (after paint) so
+  // there's no flash of a scrolled-down frame on mount — global native
+  // scroll restoration is disabled once, app-wide, in ScrollToTop.tsx.
+  useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 

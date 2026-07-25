@@ -388,7 +388,7 @@ const Auth = ({
           }
         }
 
-        await supabase
+        const { error: profileUpsertError } = await supabase
           .from('profiles')
           .upsert(
             {
@@ -400,6 +400,25 @@ const Auth = ({
             },
             { onConflict: 'id' }
           );
+
+        if (profileUpsertError) {
+          // The auth account already exists at this point regardless — but
+          // silently swallowing this (as before) meant a failure here (e.g.
+          // an unapplied migration, a bad column, an RLS denial) looked
+          // identical to success: the user saw "Registration successful!"
+          // while their profile — name, PBO status, referral link — was
+          // never actually saved. Surface it instead so it's fixable rather
+          // than invisible.
+          console.error('Failed to save profile after signup:', profileUpsertError);
+          toast({
+            title: 'Account created, but profile setup failed',
+            description:
+              'Your login was created, but we could not save your profile details. Please contact support so we can fix this — your referral/PBO info may not have been saved.',
+            variant: 'destructive'
+          });
+          navigate(redirectAfterSignUp);
+          return;
+        }
 
         toast({
           title: "Registration successful!",

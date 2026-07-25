@@ -8,7 +8,6 @@ import MobileMenu from './navbar/MobileMenu';
 import NavbarUserMenu from './navbar/NavbarUserMenu';
 import NavbarLoginIcon from './navbar/NavbarLoginIcon';
 import LogoSlideIn from './navbar/LogoSlideIn';
-import CartIcon from './ecommerce/CartIcon';
 import AnimatedNavLinks from './navbar/AnimatedNavLinks';
 import AnimatedAuthSection from './navbar/AnimatedAuthSection';
 import ProfileCompletionWidget from './navbar/ProfileCompletionWidget';
