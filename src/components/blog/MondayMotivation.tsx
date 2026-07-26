@@ -198,7 +198,7 @@ const MondayMotivation = () => {
             return (
               <div 
                 key={post.id} 
-                className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-500 transform hover:scale-105"
+                className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition duration-500 transform"
                 style={{
                   animation: `${index === 0 ? 'slideInFromLeft' : index === 2 ? 'slideInFromRight' : 'scaleIn'} 0.5s ease-out`
                 }}
@@ -207,7 +207,7 @@ const MondayMotivation = () => {
                   <img 
                     src={imageSrc} 
                     alt={post.title} 
-                    className="w-full h-full object-cover transition duration-500 hover:scale-105"
+                    className="w-full h-full object-cover transition duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
                     <div className="p-4 text-white">

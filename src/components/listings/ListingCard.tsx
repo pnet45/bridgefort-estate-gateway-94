@@ -52,7 +52,7 @@ const ListingCard = ({ listing, viewMode = 'grid' }: ListingCardProps) => {
     <Link to={`/listings/${listing.id}`} className="block group">
       <article className="bg-card rounded-xl border border-border overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
         <div className="relative h-52 overflow-hidden">
-          <img src={thumbnail} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <img src={thumbnail} alt={listing.title} className="w-full h-full object-cover transition-transform duration-500" loading="lazy" />
           {listing.is_featured && (
             <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground"><Star className="w-3 h-3 mr-1" />Featured</Badge>
           )}

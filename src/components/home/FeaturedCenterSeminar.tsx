@@ -85,7 +85,7 @@ const FeaturedCenterSeminar = () => {
               <div className="flex flex-wrap gap-4 pt-2">
                 <Button
                   onClick={() => setIsDetailsOpen(true)}
-                  className="bg-estate-red hover:bg-red-600 text-white px-8 py-3 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  className="bg-estate-red hover:bg-red-600 text-white px-8 py-3 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   View Details <ChevronRight className="ml-2 w-5 h-5" />
                 </Button>

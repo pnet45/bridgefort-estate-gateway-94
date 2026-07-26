@@ -108,7 +108,7 @@ const FiveKDailyPromo: React.FC = () => {
               return (
                 <Card key={e.slug} className="border-purple-100 overflow-hidden group">
                   <div className="h-32 bg-gradient-to-br from-purple-700 to-purple-900 flex items-center justify-center relative">
-                    <Sprout className="h-10 w-10 text-yellow-400 opacity-80 transition-transform duration-500 group-hover:scale-125" />
+                    <Sprout className="h-10 w-10 text-yellow-400 opacity-80 transition-transform duration-500" />
                     <Badge className="absolute top-2 right-2 bg-purple-950/70 text-yellow-300 text-[10px]">{e.badge}</Badge>
                   </div>
                   <CardContent className="p-5">

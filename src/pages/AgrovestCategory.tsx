@@ -85,7 +85,7 @@ const AgrovestCategory: React.FC = () => {
                     className="group rounded-xl overflow-hidden border border-green-100 bg-white hover:shadow-lg transition">
                     <div className="aspect-[4/3] overflow-hidden">
                       <img src={r.img} alt={r.name} loading="lazy" decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                        className="w-full h-full object-cover transition-transform" />
                     </div>
                     <div className="p-3">
                       <p className="text-sm font-semibold text-green-900">{r.name}</p>

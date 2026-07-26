@@ -23,7 +23,7 @@ const FeaturedProperty: React.FC<FeaturedPropertyProps> = ({ isLoaded }) => {
             <img 
               src="/lovable-uploads/2f745990-7323-42b1-87f3-eb1a3f2db0ba.png" 
               alt="Flourish Luxury Villas" 
-              className="w-full h-auto rounded-lg shadow-lg hover:scale-105 transition-transform duration-500"
+              className="w-full h-auto rounded-lg shadow-lg transition-transform duration-500"
             />
           </div>
           

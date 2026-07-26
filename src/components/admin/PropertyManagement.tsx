@@ -143,7 +143,7 @@ const PropertyManagement: React.FC = () => {
         <h2 className="text-2xl font-bold">Property Management</h2>
         <Button 
           onClick={handleAddNew}
-          className="bg-estate-blue hover:bg-estate-darkBlue hover:scale-105 transition-all duration-300"
+          className="bg-estate-blue hover:bg-estate-darkBlue transition-all duration-300"
         >
           <Plus size={16} className="mr-2" />
           Add New Property
@@ -191,7 +191,7 @@ const PropertyManagement: React.FC = () => {
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleEdit(estate)}
-                        className="mr-2 hover:scale-110 transition-transform duration-300"
+                        className="mr-2 transition-transform duration-300"
                       >
                         <Pencil size={16} />
                       </Button>
@@ -199,7 +199,7 @@ const PropertyManagement: React.FC = () => {
                         variant="ghost" 
                         size="sm"
                         onClick={() => handleDelete(estate)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 hover:scale-110 transition-all duration-300"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-300"
                       >
                         <Trash2 size={16} />
                       </Button>
@@ -243,7 +243,7 @@ const PropertyManagement: React.FC = () => {
               variant="destructive" 
               onClick={confirmDelete}
               disabled={isDeleting}
-              className="hover:scale-105 transition-transform duration-300"
+              className=" transition-transform duration-300"
             >
               {isDeleting ? (
                 <>

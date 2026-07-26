@@ -57,7 +57,7 @@ const PropertyFilters = () => {
 
         <button
           onClick={toggleFilters}
-          className="flex items-center justify-center py-2 px-4 border border-estate-blue text-estate-blue rounded hover:bg-estate-blue hover:text-white transition-all duration-300 transform hover:scale-105"
+          className="flex items-center justify-center py-2 px-4 border border-estate-blue text-estate-blue rounded hover:bg-estate-blue hover:text-white transition-all duration-300 transform"
         >
           <Filter size={18} className="mr-2 transition-transform duration-300" />
           {showFilters ? 'Hide Filters' : 'Show Filters'}

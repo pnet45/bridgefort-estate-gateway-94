@@ -26,7 +26,7 @@ const AnimatedNavLinks = ({ className = '', onClick }: AnimatedNavLinksProps) =>
     `nav-link relative font-semibold tracking-tight transition-all duration-300 rounded-md px-3 py-2 group overflow-hidden ${
       isActive
         ? 'text-white bg-estate-blue shadow-md shadow-estate-blue/30'
-        : 'text-foreground hover:text-white hover:bg-estate-blue hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-estate-blue/25'
+        : 'text-foreground hover:text-white hover:bg-estate-blue hover:-translate-y-0.5 hover:shadow-lg hover:shadow-estate-blue/25'
     } after:content-[""] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:bg-white after:transition-all after:duration-300 ${
       isActive ? 'after:w-6' : 'after:w-0 hover:after:w-6'
     }`;

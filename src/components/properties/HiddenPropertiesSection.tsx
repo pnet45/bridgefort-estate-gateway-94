@@ -24,7 +24,7 @@ const HiddenPropertiesSection = ({ hiddenProperties, user, onUnhideProperty }: H
         {hiddenProperties.map((property, index) => (
           <div 
             key={property.id} 
-            className="relative animate-fade-in hover:scale-105 transition-all duration-300"
+            className="relative animate-fade-in transition-all duration-300"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             <div className="opacity-50">
@@ -41,7 +41,7 @@ const HiddenPropertiesSection = ({ hiddenProperties, user, onUnhideProperty }: H
             <Button
               variant="outline"
               size="sm"
-              className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300 hover:scale-105"
+              className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm hover:bg-white transition-all duration-300"
               onClick={() => onUnhideProperty(property.id)}
             >
               <Eye size={16} className="mr-1" />

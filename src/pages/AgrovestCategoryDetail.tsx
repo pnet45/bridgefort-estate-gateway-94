@@ -157,7 +157,7 @@ const AgrovestCategoryDetail: React.FC = () => {
                     alt={c.name}
                     loading="lazy"
                     decoding="async"
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-125"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700"
                   />
                 </picture>
                 <div className="absolute inset-0 bg-gradient-to-t from-green-950/90 via-green-950/10 to-transparent" />

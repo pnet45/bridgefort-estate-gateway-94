@@ -379,7 +379,7 @@ const Agrovest: React.FC = () => {
           <div className="grid sm:grid-cols-3 gap-6">
             <Card className="border-green-100 group overflow-hidden">
               <CardContent className="p-8 text-center">
-                <Wheat className="h-10 w-10 text-green-700 mx-auto mb-4 transition-transform duration-500 group-hover:scale-125" />
+                <Wheat className="h-10 w-10 text-green-700 mx-auto mb-4 transition-transform duration-500" />
                 <h3 className="text-xl font-bold text-green-900 mb-3">Cash Crops</h3>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   {['Oil Palm', 'Cocoa', 'Rubber', 'Ginger', 'Lemon', 'Other approved commercial crops'].map((i) => (
@@ -390,7 +390,7 @@ const Agrovest: React.FC = () => {
             </Card>
             <Card className="border-green-100 group overflow-hidden">
               <CardContent className="p-8 text-center">
-                <Leaf className="h-10 w-10 text-green-700 mx-auto mb-4 transition-transform duration-500 group-hover:scale-125" />
+                <Leaf className="h-10 w-10 text-green-700 mx-auto mb-4 transition-transform duration-500" />
                 <h3 className="text-xl font-bold text-green-900 mb-3">Food Crops</h3>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   {['Cassava', 'Maize', 'Vegetables', 'Other staple crops'].map((i) => (
@@ -401,7 +401,7 @@ const Agrovest: React.FC = () => {
             </Card>
             <Card className="border-green-100 group overflow-hidden">
               <CardContent className="p-8 text-center">
-                <Beef className="h-10 w-10 text-green-700 mx-auto mb-4 transition-transform duration-500 group-hover:scale-125" />
+                <Beef className="h-10 w-10 text-green-700 mx-auto mb-4 transition-transform duration-500" />
                 <h3 className="text-xl font-bold text-green-900 mb-3">Livestock</h3>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   {['Poultry', 'Fish Farming', 'Cattle', 'Goat', 'Sheep', 'Other approved livestock'].map((i) => (
@@ -431,7 +431,7 @@ const Agrovest: React.FC = () => {
                 <OptimizedImg
                   src={c.img}
                   alt={c.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-125"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-green-950/90 via-green-950/10 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -455,7 +455,7 @@ const Agrovest: React.FC = () => {
                 <OptimizedImg
                   src={f.img}
                   alt={f.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-125"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-green-950/90 via-green-950/10 to-transparent" />
                 <f.icon className="absolute top-3 right-3 h-5 w-5 text-amber-300" />
@@ -556,7 +556,7 @@ const Agrovest: React.FC = () => {
                 <CardContent className="p-5 text-center">
                   <p className="text-sm font-semibold text-muted-foreground mb-1">{p.year}</p>
                   <p className="text-xs text-muted-foreground mb-3">({p.cadence})</p>
-                  <p className="text-2xl font-extrabold text-green-700 transition-transform duration-300 group-hover:scale-110">
+                  <p className="text-2xl font-extrabold text-green-700 transition-transform duration-300">
                     {p.range}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">Expected Annual Profit</p>

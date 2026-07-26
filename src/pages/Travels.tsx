@@ -216,7 +216,7 @@ const Travels = () => {
                 transition={{ duration: 0.5, delay: i * 0.08 }}
                 className="group bg-card border rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-estate-blue to-estate-red flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-estate-blue to-estate-red flex items-center justify-center mb-4 transition-transform">
                   <v.icon className="text-white" size={26} />
                 </div>
                 <h3 className="font-display text-xl font-semibold mb-2">{v.title}</h3>
@@ -273,11 +273,11 @@ const Travels = () => {
                       <img
                         src={d.img}
                         alt={`${d.city}, ${d.country}`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        className="w-full h-full object-cover transition-transform duration-700"
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-estate-blue via-estate-darkBlue to-estate-red group-hover:scale-110 transition-transform duration-700">
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-estate-blue via-estate-darkBlue to-estate-red transition-transform duration-700">
                         <span className="text-5xl">{d.flag}</span>
                       </div>
                     )}

@@ -209,7 +209,7 @@ const PropertyDetailsDialogFullscreen = ({
                                     <img
                                       src={media}
                                       alt={`${property.title} view ${index + 1}`}
-                                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                      className="w-full h-full object-cover transition-transform duration-500"
                                     />
                                   )}
                                 </div>

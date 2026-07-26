@@ -75,7 +75,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
               animation: `slideInRight 0.35s ease-out ${idx * 40}ms forwards`,
             }}
           >
-            <span className="mr-3 text-gray-500 dark:text-gray-400 group-hover:text-estate-blue group-hover:scale-110 transition-all duration-300">{item.icon}</span>
+            <span className="mr-3 text-gray-500 dark:text-gray-400 group-hover:text-estate-blue transition-all duration-300">{item.icon}</span>
             <span className="font-medium group-hover:text-estate-blue transition-colors">{item.name}</span>
           </Link>
         ))}

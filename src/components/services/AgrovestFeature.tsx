@@ -25,7 +25,7 @@ const AgrovestFeature = () => {
             <img
               src="/lovable-uploads/agrovest-oil-palm-plantation.jpg"
               alt="Bridgefort Agrovest oil palm plantation"
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700"
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-tr from-green-950/50 to-transparent" />

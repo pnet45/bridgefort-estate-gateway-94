@@ -49,7 +49,7 @@ const WhatsAppChat = () => {
         target="_blank"
         rel="noopener noreferrer"
         tabIndex={visible ? 0 : -1}
-        className="bg-green-500 hover:bg-green-600 text-white shadow-lg transition-all duration-300 hover:scale-110 animate-pulse-glow flex items-center justify-center lg:rounded-full rounded-r-full"
+        className="bg-green-500 hover:bg-green-600 text-white shadow-lg transition-all duration-300 animate-pulse-glow flex items-center justify-center lg:rounded-full rounded-r-full"
         aria-label="Chat on WhatsApp"
         style={{
           width: 56,

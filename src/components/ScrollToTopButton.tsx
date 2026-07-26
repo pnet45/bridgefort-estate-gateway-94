@@ -30,7 +30,7 @@ const ScrollToTopButton = () => {
       {isVisible && (
         <Button
           onClick={scrollToTop}
-          className="fixed bottom-24 right-6 z-40 h-12 w-12 rounded-full shadow-lg hover:scale-110 transition-transform"
+          className="fixed bottom-24 right-6 z-40 h-12 w-12 rounded-full shadow-lg transition-transform"
           size="icon"
           aria-label="Scroll to top"
         >

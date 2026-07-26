@@ -35,7 +35,7 @@ const WhyRealEstate = () => {
                 </span>
               </li>
             </ul>
-            <img src="/lovable-uploads/4043b415-520f-4c0e-93af-e5de73770c7d.png" alt="Bridgefort Luxury Apartments Promo" className="w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto rounded-lg shadow-lg mb-6 animate-fade-in hover:scale-105 transition-transform duration-300 block" style={{
+            <img src="/lovable-uploads/4043b415-520f-4c0e-93af-e5de73770c7d.png" alt="Bridgefort Luxury Apartments Promo" className="w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto rounded-lg shadow-lg mb-6 animate-fade-in transition-transform duration-300 block" style={{
             objectFit: 'cover'
           }} />
           </div>

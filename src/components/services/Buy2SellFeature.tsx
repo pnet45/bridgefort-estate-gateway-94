@@ -23,7 +23,7 @@ const BuyAndResellFeature = () => {
           <div className="flex flex-wrap justify-center gap-6">
             <Link 
               to="/buy2sell" 
-              className="bg-estate-red hover:bg-red-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-300 transform hover:scale-105"
+              className="bg-estate-red hover:bg-red-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-300 transform"
             >
               Learn More About Buy and Resell
             </Link>

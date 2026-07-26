@@ -50,7 +50,7 @@ const SuccessStories = () => {
                 <img 
                   src={s.img} 
                   alt={s.title} 
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                  className="w-full h-full object-cover transition-transform duration-300" 
                 />
               </div>
               <div className="p-4 sm:p-6">

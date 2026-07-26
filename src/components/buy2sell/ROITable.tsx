@@ -61,7 +61,7 @@ const ROITable: React.FC<ROITableProps> = ({ isLoaded }) => {
             <img 
               src="/lovable-uploads/aeaad90d-a317-4a58-8cba-912498e233e5.png" 
               alt="Profit Land Trading Table" 
-              className="rounded-lg shadow-lg max-w-full h-auto hover:scale-105 transition-transform duration-500"
+              className="rounded-lg shadow-lg max-w-full h-auto transition-transform duration-500"
               style={{ maxHeight: '500px' }}
             />
           </div>
