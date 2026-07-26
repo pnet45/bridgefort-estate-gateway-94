@@ -31,15 +31,16 @@ serve(async (req) => {
     });
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
+    if (userError || !userData?.user) {
+      console.error('Auth check failed:', userError);
       return new Response(
         JSON.stringify({ error: 'Invalid authentication' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       );
     }
 
-    const authenticatedUserId = claimsData.claims.sub;
+    const authenticatedUserId = userData.user.id;
 
     const { email, amount, metadata, reference } = await req.json();
     console.log('Incoming request:', { email, amount, metadata, reference, user_id: authenticatedUserId });
@@ -82,21 +83,19 @@ serve(async (req) => {
     const paystackData = await response.json();
     console.log('Paystack API response data:', paystackData);
 
-    // Insert a payment record using the authenticated user_id
+    // Note: we deliberately do NOT insert a `payments` row here. That table
+    // requires property_id, plan_type, months, principal_amount, and
+    // several other NOT NULL columns that this generic initialize endpoint
+    // has no way to know — a prior version tried to insert here anyway and
+    // always failed on those constraints (silently, since the result was
+    // never checked). The correct place to create that row is after
+    // Paystack confirms the payment succeeded — see PaymentSuccess.tsx,
+    // which has the full context needed to populate every required field.
     if (paystackData.status && paystackData.data?.reference) {
       const supabaseAdmin = createClient(
         supabaseUrl,
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
-
-      const paymentInsertResult = await supabaseAdmin.from('payments').insert([{
-        order_id: metadata?.custom_fields?.find((cf: any) => cf.variable_name === 'order_id')?.value,
-        paystack_reference: paystackData.data.reference,
-        status: 'pending',
-        amount: amount,
-        user_id: authenticatedUserId, // Use authenticated user, not client-supplied
-      }]);
-      console.log('Inserted payment to supabase:', paymentInsertResult);
 
       const isMembership = metadata?.purchase_type === 'membership';
       if (isMembership) {
@@ -108,7 +107,11 @@ serve(async (req) => {
           paystack_reference: paystackData.data.reference,
           purchase_type: 'membership',
         }]);
-        console.log('Inserted MLM membership purchase:', purchaseInsertResult);
+        if (purchaseInsertResult.error) {
+          console.error('Failed to insert MLM membership purchase:', purchaseInsertResult.error);
+        } else {
+          console.log('Inserted MLM membership purchase:', purchaseInsertResult);
+        }
       }
     }
 

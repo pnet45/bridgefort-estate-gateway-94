@@ -96,7 +96,8 @@ const PaymentSuccess = () => {
 
       if (fields.payment_type !== 'promo_start_plan') return;
 
-      const estateSlug = fields.estate_slug;
+      const estateId = fields.estate_id;
+      const estateName = fields.estate_name;
       const frequency = fields.frequency;
       const tierPrice = Number(fields.tier_price || 0);
       const installmentAmount = Number(fields.installment_amount || 5000);
@@ -106,7 +107,10 @@ const PaymentSuccess = () => {
         .from('payments')
         .insert({
           user_id: user.id,
-          property_id: `5k-daily-${estateSlug}`,
+          // Real estate.id from the actual estate table, not a synthetic
+          // string — this is what lets this plan be traced back to a real
+          // inventory record instead of a hardcoded, disconnected slug.
+          property_id: estateId || `5k-daily-unknown-estate`,
           plan_type: frequency,
           months: 0,
           principal_amount: tierPrice,
@@ -116,7 +120,7 @@ const PaymentSuccess = () => {
           amount_paid: amountPaid,
           balance: Math.max(0, tierPrice - amountPaid),
           status: 'pending', // stays pending until an admin approves it
-          promo_estate_slug: estateSlug,
+          promo_estate_slug: estateId,
           promo_installment_amount: installmentAmount,
         })
         .select()
@@ -130,7 +134,7 @@ const PaymentSuccess = () => {
         amount: amountPaid,
         reference,
         related_payment_id: createdPlan.id,
-        description: `5K Daily Promo — ${estateSlug} (${frequency}) — first installment`,
+        description: `5K Daily Promo — ${estateName || estateId} (${frequency}) — first installment`,
         status: 'pending',
       });
     } catch (err) {

@@ -10,13 +10,24 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { Sprout, Calendar, Clock, Plus, Wallet } from 'lucide-react';
+import { Sprout, Calendar, Clock, Plus, Wallet, Loader2 } from 'lucide-react';
 import {
-  fiveKEstates, getFiveKEstate, frequencyMeta, suggestedInstallment,
+  getFiveKEstate, frequencyMeta, suggestedInstallment,
   estimatePayoffPeriods, PromoFrequency,
 } from '@/data/fiveKDailyPromo';
 import { initializePayment } from '@/integrations/paystack/client';
 import { useEcommerce } from '@/contexts/ecommerce';
+
+interface PromoEstateOption {
+  id: string;
+  name: string;
+  location: string | null;
+  promo_price: number;
+  size: number | null;
+  size_unit: string | null;
+  total_plots: number | null;
+  sold_plots: number | null;
+}
 
 interface PromoPlanRow {
   id: string;
@@ -46,14 +57,47 @@ const LandSavingsPromoTab: React.FC = () => {
   const [plans, setPlans] = useState<PromoPlanRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [estateSlug, setEstateSlug] = useState(fiveKEstates[0].slug);
-  const [tierIndex, setTierIndex] = useState(0);
+  const [estateOptions, setEstateOptions] = useState<PromoEstateOption[]>([]);
+  const [estatesLoading, setEstatesLoading] = useState(true);
+  const [selectedEstateId, setSelectedEstateId] = useState<string>('');
   const [frequency, setFrequency] = useState<PromoFrequency>('daily');
   const [creating, setCreating] = useState(false);
 
-  const estate = getFiveKEstate(estateSlug)!;
-  const tier = estate.tiers[tierIndex] || estate.tiers[0];
+  const estate = estateOptions.find((e) => e.id === selectedEstateId);
   const installment = suggestedInstallment(frequency);
+
+  // Estates enrolled in the 5K Daily Promo are real rows in the `estate`
+  // table (the same one that powers the main property listings), flagged by
+  // having a promo_price set. This replaces the previous hardcoded catalog
+  // in src/data/fiveKDailyPromo.ts, which had no connection to real
+  // inventory at all — selecting an estate here now means an actual estate.id.
+  const fetchPromoEstates = async () => {
+    setEstatesLoading(true);
+    const { data, error } = await supabase
+      .from('estate')
+      .select('id, name, location, promo_price, size, size_unit, total_plots, sold_plots, is_sold_out')
+      .not('promo_price', 'is', null)
+      .order('name');
+
+    if (error) {
+      console.error('Failed to load promo estates:', error);
+      toast({
+        title: 'Could not load promo estates',
+        description: 'Please refresh the page. If this keeps happening, contact support.',
+        variant: 'destructive',
+      });
+      setEstateOptions([]);
+    } else {
+      const available = ((data || []) as any[]).filter((e) => !e.is_sold_out);
+      setEstateOptions(available);
+      if (available.length > 0) setSelectedEstateId((prev) => prev || available[0].id);
+    }
+    setEstatesLoading(false);
+  };
+
+  useEffect(() => {
+    fetchPromoEstates();
+  }, []);
 
   const fetchPlans = async () => {
     if (!user) return;
@@ -78,6 +122,10 @@ const LandSavingsPromoTab: React.FC = () => {
       toast({ title: 'Login required', description: 'Please log in to start a savings plan.', variant: 'destructive' });
       return;
     }
+    if (!estate) {
+      toast({ title: 'Choose an estate', description: 'Please select an estate to start your plan.', variant: 'destructive' });
+      return;
+    }
 
     setCreating(true);
     try {
@@ -95,9 +143,10 @@ const LandSavingsPromoTab: React.FC = () => {
           customer_name: user.email,
           custom_fields: [
             { display_name: 'Payment Type', variable_name: 'payment_type', value: 'promo_start_plan' },
-            { display_name: 'Estate', variable_name: 'estate_slug', value: estate.slug },
+            { display_name: 'Estate ID', variable_name: 'estate_id', value: estate.id },
+            { display_name: 'Estate Name', variable_name: 'estate_name', value: estate.name },
             { display_name: 'Frequency', variable_name: 'frequency', value: frequency },
-            { display_name: 'Target Amount', variable_name: 'tier_price', value: String(tier.price) },
+            { display_name: 'Target Amount', variable_name: 'tier_price', value: String(estate.promo_price) },
             { display_name: 'Installment Amount', variable_name: 'installment_amount', value: String(installment) },
           ],
         },
@@ -157,56 +206,60 @@ const LandSavingsPromoTab: React.FC = () => {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div>
-              <Label className="mb-1 block">Estate</Label>
-              <Select value={estateSlug} onValueChange={(v) => { setEstateSlug(v); setTierIndex(0); }}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {fiveKEstates.map((e) => (
-                    <SelectItem key={e.slug} value={e.slug}>{e.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {estatesLoading ? (
+            <div className="flex items-center justify-center py-6 text-muted-foreground">
+              <Loader2 className="animate-spin mr-2" size={18} /> Loading available estates…
             </div>
-            <div>
-              <Label className="mb-1 block">Plot Size / Price</Label>
-              <Select value={String(tierIndex)} onValueChange={(v) => setTierIndex(Number(v))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {estate.tiers.map((t, i) => (
-                    <SelectItem key={i} value={String(i)}>
-                      {t.sqm}sqm — {formatMoney(t.price)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="mb-1 block">Payment Frequency</Label>
-              <Select value={frequency} onValueChange={(v) => setFrequency(v as PromoFrequency)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          ) : estateOptions.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">
+              No estates are currently enrolled in the 5K Daily Promo. Check back soon.
+            </p>
+          ) : (
+            <>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <Label className="mb-1 block">Estate</Label>
+                  <Select value={selectedEstateId} onValueChange={setSelectedEstateId}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {estateOptions.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>
+                          {e.name}{e.location ? ` — ${e.location}` : ''}
+                          {e.size ? ` (${e.size}${e.size_unit || 'sqm'})` : ''} — {formatMoney(e.promo_price)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="mb-1 block">Payment Frequency</Label>
+                  <Select value={frequency} onValueChange={(v) => setFrequency(v as PromoFrequency)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-          <div className="bg-estate-blue/5 border border-estate-blue/20 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Suggested {frequencyMeta[frequency].label.toLowerCase()} payment</p>
-              <p className="text-2xl font-bold text-estate-blue">{formatMoney(installment)}</p>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              ≈ {estimatePayoffPeriods(tier.price, frequency, installment).installments} payments to reach {formatMoney(tier.price)}
-            </div>
-            <Button onClick={handleCreatePlan} disabled={creating} className="bg-estate-blue hover:bg-estate-darkBlue">
-              <Plus className="mr-2 h-4 w-4" /> {creating ? 'Starting...' : 'Start This Plan'}
-            </Button>
-          </div>
+              {estate && (
+                <div className="bg-estate-blue/5 border border-estate-blue/20 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Suggested {frequencyMeta[frequency].label.toLowerCase()} payment</p>
+                    <p className="text-2xl font-bold text-estate-blue">{formatMoney(installment)}</p>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    ≈ {estimatePayoffPeriods(estate.promo_price, frequency, installment).installments} payments to reach {formatMoney(estate.promo_price)}
+                  </div>
+                  <Button onClick={handleCreatePlan} disabled={creating} className="bg-estate-blue hover:bg-estate-darkBlue">
+                    <Plus className="mr-2 h-4 w-4" /> {creating ? 'Starting...' : 'Start This Plan'}
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -221,7 +274,17 @@ const LandSavingsPromoTab: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {plans.map((plan) => {
-              const planEstate = getFiveKEstate(plan.promo_estate_slug || '');
+              // New plans store a real estate.id (UUID) in promo_estate_slug;
+              // plans created before this fix stored a hardcoded slug from
+              // the old static catalog. Support both so existing plans don't
+              // suddenly lose their display info.
+              const liveEstate = estateOptions.find((e) => e.id === plan.promo_estate_slug);
+              const legacyEstate = liveEstate ? null : getFiveKEstate(plan.promo_estate_slug || '');
+              const planEstate = liveEstate
+                ? { name: liveEstate.name, location: liveEstate.location }
+                : legacyEstate
+                  ? { name: legacyEstate.name, location: legacyEstate.location }
+                  : null;
               const progressPct = plan.total_amount > 0 ? Math.min(100, (plan.amount_paid / plan.total_amount) * 100) : 0;
               const remaining = Math.max(0, plan.total_amount - plan.amount_paid);
               const meta = frequencyMeta[plan.plan_type as PromoFrequency] || frequencyMeta.daily;

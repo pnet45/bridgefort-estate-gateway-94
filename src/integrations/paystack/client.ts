@@ -44,11 +44,34 @@ export const initializePayment = async (paymentData: PaystackPaymentData & { use
     const { data, error } = await supabase.functions.invoke('paystack-initialize', {
       body: safePaymentData
     });
-    if (error) throw new Error(error.message);
+
+    if (error) {
+      // supabase-js only gives us a generic "non-2xx status code" message on
+      // `error` for edge function failures — the actual reason (e.g. "Paystack
+      // secret key not configured", or a Paystack API rejection) is in the
+      // response body, which `error.context` holds. Without this, every
+      // failure surfaced identically as "Failed to initialize payment" no
+      // matter the real cause.
+      let detail: string | undefined;
+      try {
+        const body = await error.context?.json?.();
+        detail = body?.error || body?.message;
+      } catch {
+        // response body wasn't JSON or already consumed — fall back below
+      }
+      throw new Error(detail || error.message || 'Failed to initialize payment');
+    }
+
+    if (data && (data as any).error) {
+      // The edge function can also return 200-with-an-error-shaped-body in
+      // some paths (e.g. Paystack itself rejecting the request) — surface that too.
+      throw new Error((data as any).error);
+    }
+
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Paystack payment error:', error);
-    throw new Error('Failed to initialize payment');
+    throw new Error(error?.message || 'Failed to initialize payment');
   }
 };
 
