@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OverviewTab from './tabs/OverviewTab';
 import PropertiesTab from './tabs/PropertiesTab';
+import SavedSearchesList from './SavedSearchesList';
 import OrdersTab from './tabs/OrdersTab';
 import InspectionsTab from './tabs/InspectionsTab';
 import DocumentationPricingTab from './DocumentationPricingTab';
@@ -119,6 +120,7 @@ const ClientDashboard = () => {
 
         <TabsContent value="properties" className="space-y-6">
           <PropertiesTab />
+          <SavedSearchesList />
         </TabsContent>
 
         <TabsContent value="documentation" className="space-y-6">

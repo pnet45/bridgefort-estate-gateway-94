@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, BellPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { usePropertyContext } from '../contexts/property';
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/auth';
+import { supabase } from '@/integrations/supabase/client';
 
 const PropertySearch = () => {
   const [expanded, setExpanded] = useState(false);
@@ -12,7 +14,55 @@ const PropertySearch = () => {
   const [searchText, setSearchText] = useState('');
   const navigate = useNavigate();
   const { setSearchQuery, setFilters } = usePropertyContext();
+  const { user } = useAuth();
+  const [savingSearch, setSavingSearch] = useState(false);
+  const [searchLabel, setSearchLabel] = useState('');
+  const [showSaveInput, setShowSaveInput] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  const hasCriteria = !!(location || propertyType || priceRange || searchText);
+
+  const handleSaveSearch = async () => {
+    if (!user) {
+      toast({ title: 'Sign in required', description: 'Please sign in to save searches and get alerts.' });
+      return;
+    }
+    if (!searchLabel.trim()) return;
+
+    setSavingSearch(true);
+    let minPrice: number | null = null;
+    let maxPrice: number | null = null;
+    if (priceRange) {
+      const [min, max] = priceRange.split('-');
+      minPrice = min ? Number(min) : null;
+      maxPrice = max ? Number(max.replace('+', '')) : null;
+    }
+
+    // Cast: saved_searches is introduced by a migration and isn't in the
+    // generated Supabase types until they're regenerated against the live schema.
+    const { error } = await (supabase.from('saved_searches') as any).insert({
+      user_id: user.id,
+      label: searchLabel.trim(),
+      location: location || null,
+      type: propertyType || null,
+      min_price: minPrice,
+      max_price: maxPrice,
+    });
+    setSavingSearch(false);
+
+    if (error) {
+      console.error('Failed to save search:', error);
+      toast({ title: 'Could not save search', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    toast({
+      title: 'Search saved',
+      description: "We'll notify you when a new listing matches these criteria.",
+    });
+    setShowSaveInput(false);
+    setSearchLabel('');
+  };
 
   // Close on outside click
   useEffect(() => {
@@ -190,6 +240,48 @@ const PropertySearch = () => {
                 </button>
               </div>
             </div>
+
+            {hasCriteria && (
+              <div className="mt-3 pt-3 border-t border-border flex flex-col sm:flex-row sm:items-center gap-2 animate-fade-in">
+                {!showSaveInput ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowSaveInput(true)}
+                    className="inline-flex items-center gap-1.5 text-sm text-estate-purple hover:text-estate-blue font-medium"
+                  >
+                    <BellPlus size={16} />
+                    Save this search &amp; get alerts for new matches
+                  </button>
+                ) : (
+                  <div className="flex flex-1 gap-2">
+                    <input
+                      type="text"
+                      value={searchLabel}
+                      onChange={(e) => setSearchLabel(e.target.value)}
+                      placeholder="Name this search (e.g. \"Lagos land under 30M\")"
+                      className="input-field flex-1 text-black focus:text-black text-sm"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveSearch}
+                      disabled={savingSearch || !searchLabel.trim()}
+                      className="bg-estate-purple hover:bg-estate-blue text-white text-sm px-4 rounded transition disabled:opacity-50"
+                    >
+                      {savingSearch ? 'Saving…' : 'Save'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowSaveInput(false)}
+                      className="p-2 rounded border border-border hover:bg-muted transition"
+                      aria-label="Cancel save search"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </form>
         </div>
       )}

@@ -9,6 +9,9 @@ import PropertyDetailsDialogFullscreen from './PropertyDetailsDialogFullscreen';
 import ProfileCheckDialog from './ecommerce/ProfileCheckDialog';
 import PropertyRatingBadge from './properties/PropertyRatingBadge';
 import { Property } from '@/contexts/property/types';
+import { useComparison } from '@/contexts/comparison/ComparisonContext';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Scale } from 'lucide-react';
 
 interface PropertyCardProps {
   property: Property;
@@ -21,6 +24,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useEcommerce();
   const { user, profile } = useAuth();
+  const { isSelected, toggle, isFull } = useComparison();
 
   // Get images array - prioritize media array, fallback to imageUrl
   const getImages = () => {
@@ -250,6 +254,28 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
               {property.propertyType}
             </Badge>
           </div>
+          {/* Compare toggle */}
+          <label
+            className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-white/90 rounded-full px-2.5 py-1 text-xs font-medium text-estate-blue cursor-pointer select-none"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={isSelected(property.id)}
+              onCheckedChange={() => {
+                if (!isSelected(property.id) && isFull) {
+                  toast({
+                    title: 'Comparison full',
+                    description: 'You can compare up to 3 properties at a time. Remove one to add another.',
+                  });
+                  return;
+                }
+                toggle(property);
+              }}
+              aria-label={`Add ${property.title} to comparison`}
+            />
+            <Scale size={12} />
+            Compare
+          </label>
         </div>
         {/* Content */}
         <div className="p-6">

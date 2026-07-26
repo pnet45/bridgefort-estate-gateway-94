@@ -25,6 +25,8 @@ import GlobalFloatingWidgets from '@/components/GlobalFloatingWidgets';
 import { Toaster as ShadcnToaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { NotificationModalHost } from '@/components/notifications/NotificationModalHost';
+import { ComparisonProvider } from '@/contexts/comparison/ComparisonContext';
+import ComparisonTray from '@/components/properties/ComparisonTray';
 
 // Pages
 import Index from '@/pages/Index';
@@ -87,6 +89,7 @@ function App() {
         <RecaptchaProvider>
         <AuthProvider>
           <EcommerceProvider>
+          <ComparisonProvider>
             <ScrollToTop />
             <div className="App flex flex-col min-h-screen w-full">
               <Routes>
@@ -184,7 +187,9 @@ function App() {
               <ShadcnToaster />
               <SonnerToaster />
               <NotificationModalHost />
+              <ComparisonTray />
             </div>
+          </ComparisonProvider>
           </EcommerceProvider>
         </AuthProvider>
         </RecaptchaProvider>
