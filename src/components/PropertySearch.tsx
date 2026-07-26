@@ -258,7 +258,7 @@ const PropertySearch = () => {
                       type="text"
                       value={searchLabel}
                       onChange={(e) => setSearchLabel(e.target.value)}
-                      placeholder="Name this search (e.g. \"Lagos land under 30M\")"
+                      placeholder="Name this search (e.g. 'Lagos land under 30M')"
                       className="input-field flex-1 text-black focus:text-black text-sm"
                       autoFocus
                     />
