@@ -136,7 +136,7 @@ const FloatingLoginButton = () => {
           size="icon"
           variant="ghost"
           aria-label="Quick Login"
-          className="bg-estate-blue text-white shadow-lg hover:bg-estate-darkBlue hover:animate-bounce-zoom hover:scale-110 transition-transform"
+          className="bg-estate-blue text-white shadow-lg hover:bg-estate-darkBlue"
           onClick={() => setShowPanel(true)}
         >
           <User size={24} />

@@ -125,9 +125,9 @@ const PropertySearch = () => {
           type="button"
           onClick={() => setExpanded(true)}
           aria-label="Open search"
-          className="group inline-flex items-center gap-2 md:gap-3 bg-white dark:bg-card px-5 py-3 md:px-7 md:py-4 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-estate-purple/20"
+          className="group inline-flex items-center gap-2 md:gap-3 bg-white dark:bg-card px-5 py-3 md:px-7 md:py-4 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 border border-estate-purple/20"
         >
-          <Search size={20} className="text-estate-blue transition-transform group-hover:rotate-12" />
+          <Search size={20} className="text-estate-blue" />
           <span className="font-semibold text-estate-blue text-base md:text-lg">Search</span>
         </button>
       )}
@@ -225,7 +225,7 @@ const PropertySearch = () => {
               <div className="md:col-span-1 flex items-end gap-2 animate-fade-in" style={{ animationDelay: '240ms' }}>
                 <button
                   type="submit"
-                  className="flex-1 bg-estate-blue hover:bg-estate-darkBlue text-white py-2 px-4 rounded flex items-center justify-center transition duration-300 hover:scale-105 focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 bg-estate-blue hover:bg-estate-darkBlue text-white py-2 px-4 rounded flex items-center justify-center transition duration-300 focus:ring-2 focus:ring-purple-500"
                 >
                   <Search size={18} className="mr-2" />
                   Search
