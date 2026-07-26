@@ -193,7 +193,7 @@ const MondayMotivation = () => {
           {visiblePosts.map((post, index) => {
             const imageSrc = post.image_path.startsWith('/') 
               ? post.image_path 
-              : `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/imagbucket/${post.image_path}`;
+              : supabase.storage.from('imagbucket').getPublicUrl(post.image_path).data.publicUrl;
               
             return (
               <div 

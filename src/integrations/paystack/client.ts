@@ -1,3 +1,4 @@
+import { supabase } from '@/integrations/supabase/client';
 
 // Paystack configuration
 export const PAYSTACK_PUBLIC_KEY = 'pk_live_6d09681e7719b416bced07927ea4855f5b9f848e';
@@ -32,11 +33,13 @@ export interface PaystackResponse {
 // Function to initialize payment
 export const initializePayment = async (paymentData: PaystackPaymentData & { user_id?: string }) => {
   try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY
-    );
+    // Reuses the app's single, already-configured Supabase client (see
+    // src/integrations/supabase/client.ts) instead of creating a second one
+    // from import.meta.env.VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY — those
+    // names didn't even match this project's .env (which uses
+    // VITE_SUPABASE_PUBLISHABLE_KEY), and .env values aren't guaranteed to
+    // exist in production unless separately configured on the hosting
+    // platform. This is what caused "SupabaseURL is required".
 
     // user_id is no longer sent - the edge function derives it from the auth token
     const { user_id, ...safePaymentData } = paymentData;
@@ -78,13 +81,7 @@ export const initializePayment = async (paymentData: PaystackPaymentData & { use
 // Function to verify payment
 export const verifyPayment = async (reference: string, user_id?: string) => {
   try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY
-    );
-
-    // user_id is no longer sent - the edge function derives it from the auth token
+    // Same fix as above — reuse the app's existing client.
     const { data, error } = await supabase.functions.invoke('paystack-verify', {
       body: { reference },
     });
