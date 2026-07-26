@@ -40,15 +40,15 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    const userId = claimsData.claims.sub;
+    const userId = userData.user.id;
 
     // Verify admin role
     const serviceClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -86,6 +86,29 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     console.log("Email sent successfully:", emailResponse);
+
+    // Without this, "Sent" was permanently empty for Resend — nothing ever
+    // recorded that a message went out, only that it arrived (via the
+    // inbound webhook). service role bypasses RLS since this is a
+    // system-of-record write, not something the admin's own session needs
+    // direct insert rights for.
+    const adminClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { error: sentInsertError } = await adminClient.from("admin_emails").insert({
+      sender_id: userId,
+      from_email: "noreply@bridgeforthomes.com",
+      from_name: "Bridgefort Homes Development Ltd",
+      to_email: to,
+      subject,
+      body: text || html,
+      html,
+      folder: "sent",
+      source: "resend",
+      is_read: true,
+      external_ref: (emailResponse as any)?.data?.id || (emailResponse as any)?.id || null,
+    });
+    if (sentInsertError) {
+      console.error("Failed to record sent email:", sentInsertError);
+    }
 
     return new Response(JSON.stringify({ success: true, data: emailResponse }), {
       status: 200,

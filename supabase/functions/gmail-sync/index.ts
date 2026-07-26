@@ -1,13 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { gmailFetch, b64UrlDecode, b64UrlEncode, parseMessage } from "../_shared/gmail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
-
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
 const ALLOWED_ACTIONS = new Set([
   "list-labels",
@@ -18,102 +17,7 @@ const ALLOWED_ACTIONS = new Set([
   "trash-message",
   "untrash-message",
   "send-message",
-]);
-
-function requireEnv(name: string): string {
-  const v = Deno.env.get(name);
-  if (!v) throw new Error(`${name} is not configured`);
-  return v;
-}
-
-async function gmailFetch(path: string, init: RequestInit = {}) {
-  const LOVABLE_API_KEY = requireEnv("LOVABLE_API_KEY");
-  const GMAIL_API_KEY = requireEnv("GOOGLE_MAIL_API_KEY");
-  const headers = new Headers(init.headers);
-  headers.set("Authorization", `Bearer ${LOVABLE_API_KEY}`);
-  headers.set("X-Connection-Api-Key", GMAIL_API_KEY);
-  if (init.body && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
-  }
-  const res = await fetch(`${GATEWAY_URL}${path}`, { ...init, headers });
-  const text = await res.text();
-  if (!res.ok) {
-    throw new Error(`Gmail API [${res.status}]: ${text}`);
-  }
-  return text ? JSON.parse(text) : {};
-}
-
-function b64UrlDecode(input: string): Uint8Array {
-  const s = input.replace(/-/g, "+").replace(/_/g, "/");
-  const pad = s.length % 4 === 0 ? "" : "=".repeat(4 - (s.length % 4));
-  const binary = atob(s + pad);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
-}
-
-function b64UrlEncode(bytes: Uint8Array): string {
-  let binary = "";
-  bytes.forEach((b) => (binary += String.fromCharCode(b)));
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-function decodeBody(data?: string): string {
-  if (!data) return "";
-  try {
-    return new TextDecoder("utf-8").decode(b64UrlDecode(data));
-  } catch {
-    return "";
-  }
-}
-
-interface FlatPart {
-  mimeType: string;
-  filename?: string;
-  body?: { data?: string; attachmentId?: string; size?: number };
-}
-
-function walkParts(part: any, out: FlatPart[]) {
-  if (!part) return;
-  out.push({ mimeType: part.mimeType, filename: part.filename, body: part.body });
-  if (Array.isArray(part.parts)) part.parts.forEach((p: any) => walkParts(p, out));
-}
-
-function parseMessage(msg: any) {
-  const headers: Record<string, string> = {};
-  (msg.payload?.headers || []).forEach((h: any) => {
-    headers[h.name.toLowerCase()] = h.value;
-  });
-  const parts: FlatPart[] = [];
-  walkParts(msg.payload, parts);
-  const htmlPart = parts.find((p) => p.mimeType === "text/html" && p.body?.data);
-  const textPart = parts.find((p) => p.mimeType === "text/plain" && p.body?.data);
-  const attachments = parts
-    .filter((p) => p.filename && p.body?.attachmentId)
-    .map((p) => ({
-      id: p.body!.attachmentId!,
-      filename: p.filename!,
-      content_type: p.mimeType,
-      size: p.body!.size || 0,
-    }));
-  return {
-    id: msg.id,
-    threadId: msg.threadId,
-    labelIds: msg.labelIds || [],
-    snippet: msg.snippet || "",
-    internalDate: msg.internalDate,
-    from: headers["from"] || "",
-    to: headers["to"] || "",
-    cc: headers["cc"] || "",
-    subject: headers["subject"] || "(No Subject)",
-    date: headers["date"] || "",
-    text: decodeBody(textPart?.body?.data),
-    html: decodeBody(htmlPart?.body?.data),
-    attachments,
-  };
-}
-
-serve(async (req) => {
+]);serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -132,8 +36,8 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
     const token = authHeader.replace("Bearer ", "");
-    const { data: claims, error: claimsErr } = await authed.auth.getClaims(token);
-    if (claimsErr || !claims?.claims) {
+    const { data: userData, error: userError } = await authed.auth.getUser(token);
+    if (userError || !userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -141,7 +45,7 @@ serve(async (req) => {
     }
     const svc = createClient(supabaseUrl, serviceKey);
     const { data: isAdmin } = await svc.rpc("has_role", {
-      _user_id: claims.claims.sub,
+      _user_id: userData.user.id,
       _role: "admin",
     });
     if (!isAdmin) {
@@ -334,6 +238,30 @@ serve(async (req) => {
           method: "POST",
           body: JSON.stringify({ raw }),
         });
+
+        // Gmail's own Sent folder will have this too, and the next
+        // gmail-sync-to-db run would pick it up — but recording it now
+        // means it shows up in the Email Center immediately rather than
+        // after the next sync.
+        if (data?.id) {
+          const { error: sentInsertError } = await svc.from("admin_emails").upsert(
+            {
+              from_email: "me",
+              to_email: to,
+              subject,
+              body: html.replace(/<[^>]+>/g, "").slice(0, 5000),
+              html,
+              folder: "sent",
+              source: "gmail",
+              is_read: true,
+              external_ref: data.id,
+            },
+            { onConflict: "source,external_ref" }
+          );
+          if (sentInsertError) {
+            console.error("Failed to record sent Gmail message:", sentInsertError);
+          }
+        }
         break;
       }
     }
