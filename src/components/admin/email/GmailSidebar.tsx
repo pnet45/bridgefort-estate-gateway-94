@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Inbox, Send, FileText, Star, Archive, Trash2, PenSquare,
-  Users, LayoutTemplate, Megaphone, Globe, Tag
+  Users, LayoutTemplate, Megaphone, ShieldAlert
 } from 'lucide-react';
 
-export type EmailFolder = 'inbox' | 'starred' | 'sent' | 'drafts' | 'archive' | 'trash' | 'contacts' | 'templates' | 'bulk' | 'received' | 'gmail';
+export type EmailFolder = 'inbox' | 'starred' | 'sent' | 'drafts' | 'spam' | 'archive' | 'trash' | 'contacts' | 'templates' | 'bulk';
 
 interface GmailSidebarProps {
   activeFolder: EmailFolder;
@@ -18,12 +18,31 @@ interface GmailSidebarProps {
     starred: number;
     sent: number;
     drafts: number;
+    spam: number;
     archive: number;
     trash: number;
-    received: number;
     contacts: number;
   };
 }
+
+// Dark, saturated icon colors instead of the previous flat muted-foreground
+// gray — chosen to read clearly against both the light sidebar background
+// and the primary-colored active state.
+const FOLDER_COLORS: Record<string, string> = {
+  inbox: 'text-estate-blue',
+  starred: 'text-estate-gold',
+  sent: 'text-estate-purple',
+  drafts: 'text-slate-600',
+  spam: 'text-estate-red',
+  archive: 'text-slate-700',
+  trash: 'text-slate-800',
+};
+
+const TOOL_COLORS: Record<string, string> = {
+  contacts: 'text-estate-blue',
+  templates: 'text-estate-purple',
+  bulk: 'text-estate-gold',
+};
 
 const GmailSidebar: React.FC<GmailSidebarProps> = ({
   activeFolder, onFolderChange, onCompose, counts
@@ -33,8 +52,7 @@ const GmailSidebar: React.FC<GmailSidebarProps> = ({
     { id: 'starred', label: 'Starred', icon: Star, count: counts.starred },
     { id: 'sent', label: 'Sent', icon: Send, count: counts.sent },
     { id: 'drafts', label: 'Drafts', icon: FileText, count: counts.drafts },
-    { id: 'received', label: 'Received', icon: Globe, count: counts.received },
-    { id: 'gmail', label: 'Gmail Mailbox', icon: Tag },
+    { id: 'spam', label: 'Spam', icon: ShieldAlert, count: counts.spam },
     { id: 'archive', label: 'Archive', icon: Archive, count: counts.archive },
     { id: 'trash', label: 'Trash', icon: Trash2 },
   ];
@@ -63,10 +81,10 @@ const GmailSidebar: React.FC<GmailSidebarProps> = ({
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-colors ${
               activeFolder === f.id
                 ? 'bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/30'
-                : 'text-muted-foreground hover:bg-white/60'
+                : 'text-foreground hover:bg-white/60'
             }`}
           >
-            <f.icon className="h-4 w-4 shrink-0" />
+            <f.icon className={`h-4 w-4 shrink-0 ${activeFolder === f.id ? 'text-primary-foreground' : FOLDER_COLORS[f.id]}`} />
             <span className="flex-1 text-left truncate">{f.label}</span>
             {f.badge != null && f.badge > 0 && (
               <Badge variant="destructive" className="h-5 px-1.5 text-xs">{f.badge}</Badge>
@@ -87,10 +105,10 @@ const GmailSidebar: React.FC<GmailSidebarProps> = ({
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-colors ${
               activeFolder === f.id
                 ? 'bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/30'
-                : 'text-muted-foreground hover:bg-white/60'
+                : 'text-foreground hover:bg-white/60'
             }`}
           >
-            <f.icon className="h-4 w-4 shrink-0" />
+            <f.icon className={`h-4 w-4 shrink-0 ${activeFolder === f.id ? 'text-primary-foreground' : TOOL_COLORS[f.id]}`} />
             <span className="flex-1 text-left truncate">{f.label}</span>
             {f.count != null && f.count > 0 && (
               <span className="text-xs text-muted-foreground">{f.count}</span>

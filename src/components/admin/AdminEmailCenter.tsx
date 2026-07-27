@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,13 +16,21 @@ import GmailSidebar, { EmailFolder } from './email/GmailSidebar';
 import EmailListItem, { UnifiedEmail } from './email/EmailListItem';
 import EmailReadingPane from './email/EmailReadingPane';
 import ComposeDialog from './email/ComposeDialog';
-import GmailInbox from './email/GmailInbox';
 import {
   Mail, Search, RefreshCw, Trash2, Archive, MailOpen,
-  CheckSquare, Star, Users, User, Inbox, GripVertical
+  CheckSquare, Star, Users, User, Inbox, GripVertical, Plug, Loader2
 } from 'lucide-react';
 import AdminEmailSettings from './AdminEmailSettings';
-import AdminEmailProviderPicker from './AdminEmailProviderPicker';
+
+type EmailAccount = 'resend' | 'gmail';
+const ACCOUNT_KEY = 'admin_email_active_account';
+
+// Which admin_emails.source / unified-email source values belong to each
+// account. Resend also absorbs the legacy contact-form and manual-log
+// entries — those don't have a "provider" of their own, and grouping them
+// under Resend (the account tied to this site's own domain/webhook) is more
+// useful than inventing a third account bucket for two historical sources.
+const RESEND_SOURCES = new Set(['resend', 'compose', 'contact_form', 'email_log']);
 
 export default function AdminEmailCenter() {
   const { user } = useAuth();
@@ -43,12 +52,18 @@ export default function AdminEmailCenter() {
   const [listWidth, setListWidth] = useState(420);
   const [isResizing, setIsResizing] = useState(false);
 
-  // DB-backed admin_emails
+  // DB-backed admin_emails — the single source of truth for both Gmail and
+  // Resend mail now (see resend-inbound-webhook, send-email, and
+  // gmail-sync-to-db, which all write here). The previous live
+  // resend-receive-emails fetch and the separate GmailInbox live view are
+  // gone — everything reads from this one table instead.
   const [adminEmails, setAdminEmails] = useState<any[]>([]);
-  // Resend received
-  const [receivedEmails, setReceivedEmails] = useState<any[]>([]);
-  const [receivedLoading, setReceivedLoading] = useState(false);
-  const [receivedDetails, setReceivedDetails] = useState<Record<string, any>>({});
+
+  const [activeAccount, setActiveAccount] = useState<EmailAccount>('resend');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
+  const [connectingGmail, setConnectingGmail] = useState(false);
+  const [syncingGmail, setSyncingGmail] = useState(false);
 
   const fetchAllAdminEmails = useCallback(async () => {
     const { data } = await supabase
@@ -58,59 +73,100 @@ export default function AdminEmailCenter() {
     if (data) setAdminEmails(data);
   }, []);
 
-  const syncReceivedEmails = useCallback(async () => {
-    setReceivedLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
-        body: { action: 'sync' },
-      });
-      if (error) throw error;
-      return data?.data;
-    } catch {
-      return null;
-    } finally {
-      setReceivedLoading(false);
-    }
+  const checkGmailConnection = useCallback(async () => {
+    // gmail_oauth_tokens has no client-readable policy by design (tokens
+    // are edge-function-only) — checking "is anything connected" via
+    // whether any gmail-sourced admin_emails rows exist is a safe proxy
+    // that doesn't need a dedicated status endpoint.
+    const { count } = await supabase
+      .from('admin_emails')
+      .select('*', { count: 'exact', head: true })
+      .eq('source', 'gmail');
+    setGmailConnected((count || 0) > 0);
   }, []);
 
-  const fetchReceivedEmails = useCallback(async () => {
-    setReceivedLoading(true);
+  const connectGmail = async () => {
+    setConnectingGmail(true);
     try {
-      const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
-        body: { action: 'list' },
+      const { data, error } = await supabase.functions.invoke('gmail-oauth-start');
+      if (error || !data?.url) throw new Error(error?.message || 'Could not start Gmail connection');
+      window.location.href = data.url;
+    } catch (e: any) {
+      toast.error(e.message || 'Could not start Gmail connection');
+      setConnectingGmail(false);
+    }
+  };
+
+  const syncGmailNow = async () => {
+    setSyncingGmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('gmail-sync-to-db', {
+        body: { maxPerLabel: 25 },
       });
       if (error) throw error;
-      const emails = Array.isArray(data?.data) ? data.data : data?.data?.data || [];
-      setReceivedEmails(emails);
-    } catch {
-      // silent
-    } finally {
-      setReceivedLoading(false);
-    }
-  }, []);
-
-  const fetchReceivedDetail = useCallback(async (emailId: string) => {
-    if (receivedDetails[emailId]) return;
-    try {
-      const { data } = await supabase.functions.invoke('resend-receive-emails', {
-        body: { action: 'get', emailId },
-      });
-      if (data?.success) {
-        setReceivedDetails(prev => ({ ...prev, [emailId]: data.data }));
+      if (data?.scopeRestricted) {
+        toast.error('Gmail connection only has limited access — reconnect Gmail for full mail sync.');
+      } else {
+        toast.success(`Synced ${data?.synced ?? 0} Gmail messages`);
       }
-    } catch {}
-  }, [receivedDetails]);
+      fetchAllAdminEmails();
+    } catch (e: any) {
+      toast.error(e.message || 'Gmail sync failed');
+    } finally {
+      setSyncingGmail(false);
+    }
+  };
 
   useEffect(() => {
+    const saved = (localStorage.getItem(ACCOUNT_KEY) as EmailAccount) || 'resend';
+    setActiveAccount(saved);
+    checkGmailConnection();
+
+    // Handle the redirect back from gmail-oauth-callback.
+    const connected = searchParams.get('gmail_connected');
+    const connectedEmail = searchParams.get('gmail_email');
+    const gmailError = searchParams.get('gmail_error');
+    if (connected) {
+      toast.success(`Gmail connected: ${connectedEmail || ''}`);
+      setActiveAccount('gmail');
+      localStorage.setItem(ACCOUNT_KEY, 'gmail');
+      syncGmailNow();
+    } else if (gmailError) {
+      const messages: Record<string, string> = {
+        missing_code_or_state: 'Gmail connection was cancelled or incomplete.',
+        invalid_or_expired_state: 'That connection link expired — try connecting again.',
+        expired_state: 'That connection link expired — try connecting again.',
+        token_exchange_failed: 'Google rejected the connection request. Try again.',
+        profile_fetch_failed: 'Connected, but could not read the Gmail account details.',
+        no_refresh_token:
+          'Google did not grant lasting access — disconnect this app in your Google Account security settings, then try connecting again.',
+        storage_failed: 'Connected, but saving the connection failed. Try again.',
+        unexpected_error: 'Something went wrong connecting Gmail. Try again.',
+      };
+      toast.error(messages[gmailError] || `Gmail connection failed: ${gmailError}`);
+    }
+    if (connected || gmailError) {
+      searchParams.delete('gmail_connected');
+      searchParams.delete('gmail_email');
+      searchParams.delete('gmail_error');
+      setSearchParams(searchParams, { replace: true });
+    }
+
     refreshAll();
-    syncReceivedEmails().then(() => fetchAllAdminEmails());
-    fetchReceivedEmails();
+    fetchAllAdminEmails();
     const ch = supabase
       .channel('admin-emails-gmail')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_emails' }, fetchAllAdminEmails)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const switchAccount = (account: EmailAccount) => {
+    setActiveAccount(account);
+    localStorage.setItem(ACCOUNT_KEY, account);
+    setSelectedEmailId(null);
+  };
 
   // Resizable column handler
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -184,26 +240,8 @@ export default function AdminEmailCenter() {
       _original: e,
     }));
 
-    const fromResend: UnifiedEmail[] = receivedEmails.map(e => ({
-      id: `resend-${e.id}`,
-      from_email: e.from || '',
-      from_name: e.from || '',
-      to_email: e.to || 'admin@pwanbridgefort.ng',
-      to_name: '',
-      subject: e.subject || '(No Subject)',
-      body: receivedDetails[e.id]?.text || receivedDetails[e.id]?.body || '',
-      html: receivedDetails[e.id]?.html || undefined,
-      created_at: e.created_at,
-      is_read: false,
-      is_starred: false,
-      folder: 'inbox',
-      source: 'resend',
-      has_attachments: e.attachments?.length > 0,
-      _original: e,
-    }));
-
-    return [...fromAdminEmails, ...fromContactMessages, ...fromEmailLogs, ...fromResend];
-  }, [adminEmails, inboxMessages, sentEmails, receivedEmails, receivedDetails]);
+    return [...fromAdminEmails, ...fromContactMessages, ...fromEmailLogs];
+  }, [adminEmails, inboxMessages, sentEmails]);
 
   // Dedup
   const deduped = useMemo(() => {
@@ -224,15 +262,20 @@ export default function AdminEmailCenter() {
   const getThreadId = (subject: string) => subject.replace(/^(re|fwd|fw):\s*/gi, '').trim().toLowerCase();
 
   const folderEmails = useMemo(() => {
-    let filtered = deduped;
+    // Account filter first: Resend absorbs the legacy contact-form/email-log
+    // sources (see RESEND_SOURCES); Gmail is exactly source === 'gmail'.
+    let filtered = deduped.filter((e) =>
+      activeAccount === 'gmail' ? e.source === 'gmail' : RESEND_SOURCES.has(e.source)
+    );
+
     switch (activeFolder) {
-      case 'inbox': filtered = deduped.filter(e => e.folder === 'inbox'); break;
-      case 'sent': filtered = deduped.filter(e => e.folder === 'sent'); break;
-      case 'drafts': filtered = deduped.filter(e => e.folder === 'drafts'); break;
-      case 'starred': filtered = deduped.filter(e => e.is_starred); break;
-      case 'archive': filtered = deduped.filter(e => e.folder === 'archive'); break;
-      case 'trash': filtered = deduped.filter(e => e.folder === 'trash'); break;
-      case 'received': filtered = deduped.filter(e => e.source === 'resend'); break;
+      case 'inbox': filtered = filtered.filter(e => e.folder === 'inbox'); break;
+      case 'sent': filtered = filtered.filter(e => e.folder === 'sent'); break;
+      case 'drafts': filtered = filtered.filter(e => e.folder === 'drafts'); break;
+      case 'starred': filtered = filtered.filter(e => e.is_starred); break;
+      case 'spam': filtered = filtered.filter(e => e.folder === 'spam'); break;
+      case 'archive': filtered = filtered.filter(e => e.folder === 'archive'); break;
+      case 'trash': filtered = filtered.filter(e => e.folder === 'trash'); break;
       default: filtered = [];
     }
     if (searchTerm) {
@@ -245,7 +288,7 @@ export default function AdminEmailCenter() {
       );
     }
     return filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [deduped, activeFolder, searchTerm]);
+  }, [deduped, activeFolder, activeAccount, searchTerm]);
 
   const selectedEmail = folderEmails.find(e => e.id === selectedEmailId) || null;
   const threadEmails = useMemo(() => {
@@ -256,17 +299,22 @@ export default function AdminEmailCenter() {
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }, [selectedEmail, deduped]);
 
+  const accountEmails = useMemo(
+    () => deduped.filter((e) => (activeAccount === 'gmail' ? e.source === 'gmail' : RESEND_SOURCES.has(e.source))),
+    [deduped, activeAccount]
+  );
+
   const counts = useMemo(() => ({
-    inbox: deduped.filter(e => e.folder === 'inbox').length,
-    unread: deduped.filter(e => e.folder === 'inbox' && !e.is_read).length,
-    starred: deduped.filter(e => e.is_starred).length,
-    sent: deduped.filter(e => e.folder === 'sent').length,
-    drafts: deduped.filter(e => e.folder === 'drafts').length,
-    archive: deduped.filter(e => e.folder === 'archive').length,
-    trash: deduped.filter(e => e.folder === 'trash').length,
-    received: deduped.filter(e => e.source === 'resend').length,
+    inbox: accountEmails.filter(e => e.folder === 'inbox').length,
+    unread: accountEmails.filter(e => e.folder === 'inbox' && !e.is_read).length,
+    starred: accountEmails.filter(e => e.is_starred).length,
+    sent: accountEmails.filter(e => e.folder === 'sent').length,
+    drafts: accountEmails.filter(e => e.folder === 'drafts').length,
+    spam: accountEmails.filter(e => e.folder === 'spam').length,
+    archive: accountEmails.filter(e => e.folder === 'archive').length,
+    trash: accountEmails.filter(e => e.folder === 'trash').length,
     contacts: contacts.length,
-  }), [deduped, contacts]);
+  }), [accountEmails, contacts]);
 
   // Actions
   const toggleStar = async (email: UnifiedEmail) => {
@@ -302,11 +350,8 @@ export default function AdminEmailCenter() {
 
   const handleSelectEmail = (email: UnifiedEmail) => {
     setSelectedEmailId(email.id);
-    if (!email.is_read && !email.id.startsWith('cm-') && !email.id.startsWith('log-') && !email.id.startsWith('resend-')) {
+    if (!email.is_read && !email.id.startsWith('cm-') && !email.id.startsWith('log-')) {
       supabase.from('admin_emails').update({ is_read: true }).eq('id', email.id).then(() => fetchAllAdminEmails());
-    }
-    if (email.id.startsWith('resend-')) {
-      fetchReceivedDetail(email._original.id);
     }
   };
 
@@ -315,32 +360,34 @@ export default function AdminEmailCenter() {
       toast.error('Fill in all required fields');
       return { success: false, error: 'Missing fields' };
     }
-    const result = await sendEmail(to, subj, body, name);
-    if (result.success) {
-      await supabase.from('admin_emails').insert({
-        from_email: 'noreply@bridgeforthomes.com',
-        from_name: 'Bridgefort Homes Development Ltd',
-        to_email: to,
-        to_name: name || null,
-        subject: subj,
-        body,
-        folder: 'sent',
-        is_read: true,
-        source: 'compose',
+
+    let result: { success: boolean; error?: string };
+    if (activeAccount === 'gmail') {
+      const { error } = await supabase.functions.invoke('gmail-sync', {
+        body: { action: 'send-message', to, subject: subj, html: body, cc, bcc },
       });
-      // Send to CC recipients too
-      if (cc) {
+      result = error ? { success: false, error: error.message } : { success: true };
+    } else {
+      // send-email (Resend) already writes its own Sent-folder record to
+      // admin_emails after a successful send — same for gmail-sync's
+      // send-message above — so there's no manual insert needed here
+      // anymore. There used to be one; it would have created a duplicate
+      // "sent" entry alongside the one the edge function now writes itself.
+      result = await sendEmail(to, subj, body, name);
+
+      // CC/BCC only make sense for the Resend path today — Gmail's raw MIME
+      // send above already supports them natively via the cc/bcc fields.
+      if (result.success && cc) {
         const ccEmails = cc.split(',').map(e => e.trim()).filter(Boolean);
-        for (const ccEmail of ccEmails) {
-          await sendEmail(ccEmail, subj, body, '');
-        }
+        for (const ccEmail of ccEmails) await sendEmail(ccEmail, subj, body, '');
       }
-      if (bcc) {
+      if (result.success && bcc) {
         const bccEmails = bcc.split(',').map(e => e.trim()).filter(Boolean);
-        for (const bccEmail of bccEmails) {
-          await sendEmail(bccEmail, subj, body, '');
-        }
+        for (const bccEmail of bccEmails) await sendEmail(bccEmail, subj, body, '');
       }
+    }
+
+    if (result.success) {
       toast.success('Email sent!');
       fetchAllAdminEmails();
     } else {
@@ -404,11 +451,11 @@ export default function AdminEmailCenter() {
 
   const handleRefresh = () => {
     refreshAll();
-    syncReceivedEmails().then(() => fetchAllAdminEmails());
-    fetchReceivedEmails();
+    fetchAllAdminEmails();
+    if (activeAccount === 'gmail') syncGmailNow();
   };
 
-  const isToolView = ['contacts', 'templates', 'bulk', 'gmail'].includes(activeFolder);
+  const isToolView = ['contacts', 'templates', 'bulk'].includes(activeFolder);
 
   return (
     <div className={`flex h-[calc(100vh-8rem)] gap-3 p-3 rounded-3xl overflow-hidden bg-white/5 backdrop-blur-2xl border border-white/15 shadow-2xl ${isResizing ? 'select-none' : ''}`}>
@@ -431,7 +478,7 @@ export default function AdminEmailCenter() {
             onChange={(e) => { setActiveFolder(e.target.value as EmailFolder); setSelectedEmailId(null); }}
             className="md:hidden h-9 rounded-full border border-input bg-white/70 px-3 text-sm"
           >
-            {['inbox','starred','sent','drafts','received','gmail','archive','trash','contacts','templates','bulk'].map(f => (
+            {['inbox','starred','sent','drafts','spam','archive','trash','contacts','templates','bulk'].map(f => (
               <option key={f} value={f}>{f.charAt(0).toUpperCase() + f.slice(1)}</option>
             ))}
           </select>
@@ -448,10 +495,46 @@ export default function AdminEmailCenter() {
             </div>
           )}
           <div className="flex-1" />
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/60" onClick={handleRefresh} disabled={loading || receivedLoading}>
-            <RefreshCw className={`h-4 w-4 ${loading || receivedLoading ? 'animate-spin' : ''}`} />
+
+          {/* Account switcher — governs which mailbox's folders are shown
+              AND which account Compose/Reply sends through. Replaces the
+              old "send via" picker, which only ever affected sending. */}
+          <div className="flex items-center rounded-full bg-white/60 border border-white/50 p-0.5 shadow-sm">
+            <button
+              onClick={() => switchAccount('resend')}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                activeAccount === 'resend' ? 'bg-estate-blue text-white' : 'text-foreground hover:bg-white/60'
+              }`}
+            >
+              Resend
+            </button>
+            <button
+              onClick={() => switchAccount('gmail')}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                activeAccount === 'gmail' ? 'bg-estate-blue text-white' : 'text-foreground hover:bg-white/60'
+              }`}
+            >
+              Gmail
+            </button>
+          </div>
+
+          {activeAccount === 'gmail' && (
+            gmailConnected === false ? (
+              <Button size="sm" variant="outline" onClick={connectGmail} disabled={connectingGmail} className="gap-1.5 rounded-full">
+                {connectingGmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />}
+                Connect Gmail
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" onClick={syncGmailNow} disabled={syncingGmail} className="gap-1.5 rounded-full">
+                <RefreshCw className={`h-3.5 w-3.5 ${syncingGmail ? 'animate-spin' : ''}`} />
+                Sync Gmail
+              </Button>
+            )
+          )}
+
+          <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/60" onClick={handleRefresh} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
-          <AdminEmailProviderPicker />
           <AdminEmailSettings />
           {counts.unread > 0 && (
             <Badge variant="destructive" className="text-xs rounded-full">{counts.unread} unread</Badge>
@@ -509,12 +592,6 @@ export default function AdminEmailCenter() {
           <ScrollArea className="flex-1 p-4">
             <AdminBulkEmail />
           </ScrollArea>
-        )}
-
-        {activeFolder === 'gmail' && (
-          <div className="flex-1 min-h-0">
-            <GmailInbox />
-          </div>
         )}
 
         {/* Email list + reading pane */}

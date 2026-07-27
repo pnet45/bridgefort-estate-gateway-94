@@ -1,0 +1,1018 @@
+--- reconstruct3/bridgefort-estate-gateway-94/src/pages/AdminConsole.tsx	2026-07-27 22:03:12.289675965 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/AdminConsole.tsx	2026-07-27 22:02:13.686818738 +0000
+@@ -1,5 +1,5 @@
+ import React, { useEffect, useLayoutEffect, useState } from 'react';
+-import { useNavigate } from 'react-router-dom';
++import { useNavigate, useSearchParams } from 'react-router-dom';
+ import { useAuth } from '@/contexts/auth';
+ import { supabase } from '@/integrations/supabase/client';
+ import { Button } from '@/components/ui/button';
+@@ -55,7 +55,8 @@
+   const [loading, setLoading] = useState(true);
+   const [pendingCount, setPendingCount] = useState(0);
+   const [notificationOpen, setNotificationOpen] = useState(false);
+-  const [activeTab, setActiveTab] = useState('overview');
++  const [searchParams] = useSearchParams();
++  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
+ 
+   useEffect(() => {
+     const checkAdminAccess = async () => {
+--- original/bridgefort-estate-gateway-94/src/components/admin/email/GmailSidebar.tsx	2026-07-19 06:13:20.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/components/admin/email/GmailSidebar.tsx	2026-07-27 05:15:41.421997500 +0000
+@@ -3,10 +3,10 @@
+ import { Badge } from '@/components/ui/badge';
+ import {
+   Inbox, Send, FileText, Star, Archive, Trash2, PenSquare,
+-  Users, LayoutTemplate, Megaphone, Globe, Tag
++  Users, LayoutTemplate, Megaphone, ShieldAlert
+ } from 'lucide-react';
+ 
+-export type EmailFolder = 'inbox' | 'starred' | 'sent' | 'drafts' | 'archive' | 'trash' | 'contacts' | 'templates' | 'bulk' | 'received' | 'gmail';
++export type EmailFolder = 'inbox' | 'starred' | 'sent' | 'drafts' | 'spam' | 'archive' | 'trash' | 'contacts' | 'templates' | 'bulk';
+ 
+ interface GmailSidebarProps {
+   activeFolder: EmailFolder;
+@@ -18,13 +18,32 @@
+     starred: number;
+     sent: number;
+     drafts: number;
++    spam: number;
+     archive: number;
+     trash: number;
+-    received: number;
+     contacts: number;
+   };
+ }
+ 
++// Dark, saturated icon colors instead of the previous flat muted-foreground
++// gray — chosen to read clearly against both the light sidebar background
++// and the primary-colored active state.
++const FOLDER_COLORS: Record<string, string> = {
++  inbox: 'text-estate-blue',
++  starred: 'text-estate-gold',
++  sent: 'text-estate-purple',
++  drafts: 'text-slate-600',
++  spam: 'text-estate-red',
++  archive: 'text-slate-700',
++  trash: 'text-slate-800',
++};
++
++const TOOL_COLORS: Record<string, string> = {
++  contacts: 'text-estate-blue',
++  templates: 'text-estate-purple',
++  bulk: 'text-estate-gold',
++};
++
+ const GmailSidebar: React.FC<GmailSidebarProps> = ({
+   activeFolder, onFolderChange, onCompose, counts
+ }) => {
+@@ -33,8 +52,7 @@
+     { id: 'starred', label: 'Starred', icon: Star, count: counts.starred },
+     { id: 'sent', label: 'Sent', icon: Send, count: counts.sent },
+     { id: 'drafts', label: 'Drafts', icon: FileText, count: counts.drafts },
+-    { id: 'received', label: 'Received', icon: Globe, count: counts.received },
+-    { id: 'gmail', label: 'Gmail Mailbox', icon: Tag },
++    { id: 'spam', label: 'Spam', icon: ShieldAlert, count: counts.spam },
+     { id: 'archive', label: 'Archive', icon: Archive, count: counts.archive },
+     { id: 'trash', label: 'Trash', icon: Trash2 },
+   ];
+@@ -63,10 +81,10 @@
+             className={`w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-colors ${
+               activeFolder === f.id
+                 ? 'bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/30'
+-                : 'text-muted-foreground hover:bg-white/60'
++                : 'text-foreground hover:bg-white/60'
+             }`}
+           >
+-            <f.icon className="h-4 w-4 shrink-0" />
++            <f.icon className={`h-4 w-4 shrink-0 ${activeFolder === f.id ? 'text-primary-foreground' : FOLDER_COLORS[f.id]}`} />
+             <span className="flex-1 text-left truncate">{f.label}</span>
+             {f.badge != null && f.badge > 0 && (
+               <Badge variant="destructive" className="h-5 px-1.5 text-xs">{f.badge}</Badge>
+@@ -87,10 +105,10 @@
+             className={`w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-colors ${
+               activeFolder === f.id
+                 ? 'bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/30'
+-                : 'text-muted-foreground hover:bg-white/60'
++                : 'text-foreground hover:bg-white/60'
+             }`}
+           >
+-            <f.icon className="h-4 w-4 shrink-0" />
++            <f.icon className={`h-4 w-4 shrink-0 ${activeFolder === f.id ? 'text-primary-foreground' : TOOL_COLORS[f.id]}`} />
+             <span className="flex-1 text-left truncate">{f.label}</span>
+             {f.count != null && f.count > 0 && (
+               <span className="text-xs text-muted-foreground">{f.count}</span>
+--- original/bridgefort-estate-gateway-94/src/components/admin/AdminEmailCenter.tsx	2026-07-19 11:06:00.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/components/admin/AdminEmailCenter.tsx	2026-07-27 11:59:43.608554423 +0000
+@@ -1,4 +1,5 @@
+ import React, { useState, useEffect, useCallback, useMemo } from 'react';
++import { useSearchParams } from 'react-router-dom';
+ import { Input } from '@/components/ui/input';
+ import { Button } from '@/components/ui/button';
+ import { Badge } from '@/components/ui/badge';
+@@ -15,13 +16,21 @@
+ import EmailListItem, { UnifiedEmail } from './email/EmailListItem';
+ import EmailReadingPane from './email/EmailReadingPane';
+ import ComposeDialog from './email/ComposeDialog';
+-import GmailInbox from './email/GmailInbox';
+ import {
+   Mail, Search, RefreshCw, Trash2, Archive, MailOpen,
+-  CheckSquare, Star, Users, User, Inbox, GripVertical
++  CheckSquare, Star, Users, User, Inbox, GripVertical, Plug, Loader2
+ } from 'lucide-react';
+ import AdminEmailSettings from './AdminEmailSettings';
+-import AdminEmailProviderPicker from './AdminEmailProviderPicker';
++
++type EmailAccount = 'resend' | 'gmail';
++const ACCOUNT_KEY = 'admin_email_active_account';
++
++// Which admin_emails.source / unified-email source values belong to each
++// account. Resend also absorbs the legacy contact-form and manual-log
++// entries — those don't have a "provider" of their own, and grouping them
++// under Resend (the account tied to this site's own domain/webhook) is more
++// useful than inventing a third account bucket for two historical sources.
++const RESEND_SOURCES = new Set(['resend', 'compose', 'contact_form', 'email_log']);
+ 
+ export default function AdminEmailCenter() {
+   const { user } = useAuth();
+@@ -43,12 +52,18 @@
+   const [listWidth, setListWidth] = useState(420);
+   const [isResizing, setIsResizing] = useState(false);
+ 
+-  // DB-backed admin_emails
++  // DB-backed admin_emails — the single source of truth for both Gmail and
++  // Resend mail now (see resend-inbound-webhook, send-email, and
++  // gmail-sync-to-db, which all write here). The previous live
++  // resend-receive-emails fetch and the separate GmailInbox live view are
++  // gone — everything reads from this one table instead.
+   const [adminEmails, setAdminEmails] = useState<any[]>([]);
+-  // Resend received
+-  const [receivedEmails, setReceivedEmails] = useState<any[]>([]);
+-  const [receivedLoading, setReceivedLoading] = useState(false);
+-  const [receivedDetails, setReceivedDetails] = useState<Record<string, any>>({});
++
++  const [activeAccount, setActiveAccount] = useState<EmailAccount>('resend');
++  const [searchParams, setSearchParams] = useSearchParams();
++  const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
++  const [connectingGmail, setConnectingGmail] = useState(false);
++  const [syncingGmail, setSyncingGmail] = useState(false);
+ 
+   const fetchAllAdminEmails = useCallback(async () => {
+     const { data } = await supabase
+@@ -58,60 +73,101 @@
+     if (data) setAdminEmails(data);
+   }, []);
+ 
+-  const syncReceivedEmails = useCallback(async () => {
+-    setReceivedLoading(true);
+-    try {
+-      const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
+-        body: { action: 'sync' },
+-      });
+-      if (error) throw error;
+-      return data?.data;
+-    } catch {
+-      return null;
+-    } finally {
+-      setReceivedLoading(false);
+-    }
++  const checkGmailConnection = useCallback(async () => {
++    // gmail_oauth_tokens has no client-readable policy by design (tokens
++    // are edge-function-only) — checking "is anything connected" via
++    // whether any gmail-sourced admin_emails rows exist is a safe proxy
++    // that doesn't need a dedicated status endpoint.
++    const { count } = await supabase
++      .from('admin_emails')
++      .select('*', { count: 'exact', head: true })
++      .eq('source', 'gmail');
++    setGmailConnected((count || 0) > 0);
+   }, []);
+ 
+-  const fetchReceivedEmails = useCallback(async () => {
+-    setReceivedLoading(true);
++  const connectGmail = async () => {
++    setConnectingGmail(true);
+     try {
+-      const { data, error } = await supabase.functions.invoke('resend-receive-emails', {
+-        body: { action: 'list' },
+-      });
+-      if (error) throw error;
+-      const emails = Array.isArray(data?.data) ? data.data : data?.data?.data || [];
+-      setReceivedEmails(emails);
+-    } catch {
+-      // silent
+-    } finally {
+-      setReceivedLoading(false);
++      const { data, error } = await supabase.functions.invoke('gmail-oauth-start');
++      if (error || !data?.url) throw new Error(error?.message || 'Could not start Gmail connection');
++      window.location.href = data.url;
++    } catch (e: any) {
++      toast.error(e.message || 'Could not start Gmail connection');
++      setConnectingGmail(false);
+     }
+-  }, []);
++  };
+ 
+-  const fetchReceivedDetail = useCallback(async (emailId: string) => {
+-    if (receivedDetails[emailId]) return;
++  const syncGmailNow = async () => {
++    setSyncingGmail(true);
+     try {
+-      const { data } = await supabase.functions.invoke('resend-receive-emails', {
+-        body: { action: 'get', emailId },
++      const { data, error } = await supabase.functions.invoke('gmail-sync-to-db', {
++        body: { maxPerLabel: 25 },
+       });
+-      if (data?.success) {
+-        setReceivedDetails(prev => ({ ...prev, [emailId]: data.data }));
++      if (error) throw error;
++      if (data?.scopeRestricted) {
++        toast.error('Gmail connection only has limited access — reconnect Gmail for full mail sync.');
++      } else {
++        toast.success(`Synced ${data?.synced ?? 0} Gmail messages`);
+       }
+-    } catch {}
+-  }, [receivedDetails]);
++      fetchAllAdminEmails();
++    } catch (e: any) {
++      toast.error(e.message || 'Gmail sync failed');
++    } finally {
++      setSyncingGmail(false);
++    }
++  };
+ 
+   useEffect(() => {
++    const saved = (localStorage.getItem(ACCOUNT_KEY) as EmailAccount) || 'resend';
++    setActiveAccount(saved);
++    checkGmailConnection();
++
++    // Handle the redirect back from gmail-oauth-callback.
++    const connected = searchParams.get('gmail_connected');
++    const connectedEmail = searchParams.get('gmail_email');
++    const gmailError = searchParams.get('gmail_error');
++    if (connected) {
++      toast.success(`Gmail connected: ${connectedEmail || ''}`);
++      setActiveAccount('gmail');
++      localStorage.setItem(ACCOUNT_KEY, 'gmail');
++      syncGmailNow();
++    } else if (gmailError) {
++      const messages: Record<string, string> = {
++        missing_code_or_state: 'Gmail connection was cancelled or incomplete.',
++        invalid_or_expired_state: 'That connection link expired — try connecting again.',
++        expired_state: 'That connection link expired — try connecting again.',
++        token_exchange_failed: 'Google rejected the connection request. Try again.',
++        profile_fetch_failed: 'Connected, but could not read the Gmail account details.',
++        no_refresh_token:
++          'Google did not grant lasting access — disconnect this app in your Google Account security settings, then try connecting again.',
++        storage_failed: 'Connected, but saving the connection failed. Try again.',
++        unexpected_error: 'Something went wrong connecting Gmail. Try again.',
++      };
++      toast.error(messages[gmailError] || `Gmail connection failed: ${gmailError}`);
++    }
++    if (connected || gmailError) {
++      searchParams.delete('gmail_connected');
++      searchParams.delete('gmail_email');
++      searchParams.delete('gmail_error');
++      setSearchParams(searchParams, { replace: true });
++    }
++
+     refreshAll();
+-    syncReceivedEmails().then(() => fetchAllAdminEmails());
+-    fetchReceivedEmails();
++    fetchAllAdminEmails();
+     const ch = supabase
+       .channel('admin-emails-gmail')
+       .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_emails' }, fetchAllAdminEmails)
+       .subscribe();
+     return () => { supabase.removeChannel(ch); };
++    // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, []);
+ 
++  const switchAccount = (account: EmailAccount) => {
++    setActiveAccount(account);
++    localStorage.setItem(ACCOUNT_KEY, account);
++    setSelectedEmailId(null);
++  };
++
+   // Resizable column handler
+   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+     e.preventDefault();
+@@ -184,26 +240,8 @@
+       _original: e,
+     }));
+ 
+-    const fromResend: UnifiedEmail[] = receivedEmails.map(e => ({
+-      id: `resend-${e.id}`,
+-      from_email: e.from || '',
+-      from_name: e.from || '',
+-      to_email: e.to || 'admin@pwanbridgefort.ng',
+-      to_name: '',
+-      subject: e.subject || '(No Subject)',
+-      body: receivedDetails[e.id]?.text || receivedDetails[e.id]?.body || '',
+-      html: receivedDetails[e.id]?.html || undefined,
+-      created_at: e.created_at,
+-      is_read: false,
+-      is_starred: false,
+-      folder: 'inbox',
+-      source: 'resend',
+-      has_attachments: e.attachments?.length > 0,
+-      _original: e,
+-    }));
+-
+-    return [...fromAdminEmails, ...fromContactMessages, ...fromEmailLogs, ...fromResend];
+-  }, [adminEmails, inboxMessages, sentEmails, receivedEmails, receivedDetails]);
++    return [...fromAdminEmails, ...fromContactMessages, ...fromEmailLogs];
++  }, [adminEmails, inboxMessages, sentEmails]);
+ 
+   // Dedup
+   const deduped = useMemo(() => {
+@@ -224,15 +262,20 @@
+   const getThreadId = (subject: string) => subject.replace(/^(re|fwd|fw):\s*/gi, '').trim().toLowerCase();
+ 
+   const folderEmails = useMemo(() => {
+-    let filtered = deduped;
++    // Account filter first: Resend absorbs the legacy contact-form/email-log
++    // sources (see RESEND_SOURCES); Gmail is exactly source === 'gmail'.
++    let filtered = deduped.filter((e) =>
++      activeAccount === 'gmail' ? e.source === 'gmail' : RESEND_SOURCES.has(e.source)
++    );
++
+     switch (activeFolder) {
+-      case 'inbox': filtered = deduped.filter(e => e.folder === 'inbox'); break;
+-      case 'sent': filtered = deduped.filter(e => e.folder === 'sent'); break;
+-      case 'drafts': filtered = deduped.filter(e => e.folder === 'drafts'); break;
+-      case 'starred': filtered = deduped.filter(e => e.is_starred); break;
+-      case 'archive': filtered = deduped.filter(e => e.folder === 'archive'); break;
+-      case 'trash': filtered = deduped.filter(e => e.folder === 'trash'); break;
+-      case 'received': filtered = deduped.filter(e => e.source === 'resend'); break;
++      case 'inbox': filtered = filtered.filter(e => e.folder === 'inbox'); break;
++      case 'sent': filtered = filtered.filter(e => e.folder === 'sent'); break;
++      case 'drafts': filtered = filtered.filter(e => e.folder === 'drafts'); break;
++      case 'starred': filtered = filtered.filter(e => e.is_starred); break;
++      case 'spam': filtered = filtered.filter(e => e.folder === 'spam'); break;
++      case 'archive': filtered = filtered.filter(e => e.folder === 'archive'); break;
++      case 'trash': filtered = filtered.filter(e => e.folder === 'trash'); break;
+       default: filtered = [];
+     }
+     if (searchTerm) {
+@@ -245,7 +288,7 @@
+       );
+     }
+     return filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+-  }, [deduped, activeFolder, searchTerm]);
++  }, [deduped, activeFolder, activeAccount, searchTerm]);
+ 
+   const selectedEmail = folderEmails.find(e => e.id === selectedEmailId) || null;
+   const threadEmails = useMemo(() => {
+@@ -256,17 +299,22 @@
+       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+   }, [selectedEmail, deduped]);
+ 
++  const accountEmails = useMemo(
++    () => deduped.filter((e) => (activeAccount === 'gmail' ? e.source === 'gmail' : RESEND_SOURCES.has(e.source))),
++    [deduped, activeAccount]
++  );
++
+   const counts = useMemo(() => ({
+-    inbox: deduped.filter(e => e.folder === 'inbox').length,
+-    unread: deduped.filter(e => e.folder === 'inbox' && !e.is_read).length,
+-    starred: deduped.filter(e => e.is_starred).length,
+-    sent: deduped.filter(e => e.folder === 'sent').length,
+-    drafts: deduped.filter(e => e.folder === 'drafts').length,
+-    archive: deduped.filter(e => e.folder === 'archive').length,
+-    trash: deduped.filter(e => e.folder === 'trash').length,
+-    received: deduped.filter(e => e.source === 'resend').length,
++    inbox: accountEmails.filter(e => e.folder === 'inbox').length,
++    unread: accountEmails.filter(e => e.folder === 'inbox' && !e.is_read).length,
++    starred: accountEmails.filter(e => e.is_starred).length,
++    sent: accountEmails.filter(e => e.folder === 'sent').length,
++    drafts: accountEmails.filter(e => e.folder === 'drafts').length,
++    spam: accountEmails.filter(e => e.folder === 'spam').length,
++    archive: accountEmails.filter(e => e.folder === 'archive').length,
++    trash: accountEmails.filter(e => e.folder === 'trash').length,
+     contacts: contacts.length,
+-  }), [deduped, contacts]);
++  }), [accountEmails, contacts]);
+ 
+   // Actions
+   const toggleStar = async (email: UnifiedEmail) => {
+@@ -302,12 +350,9 @@
+ 
+   const handleSelectEmail = (email: UnifiedEmail) => {
+     setSelectedEmailId(email.id);
+-    if (!email.is_read && !email.id.startsWith('cm-') && !email.id.startsWith('log-') && !email.id.startsWith('resend-')) {
++    if (!email.is_read && !email.id.startsWith('cm-') && !email.id.startsWith('log-')) {
+       supabase.from('admin_emails').update({ is_read: true }).eq('id', email.id).then(() => fetchAllAdminEmails());
+     }
+-    if (email.id.startsWith('resend-')) {
+-      fetchReceivedDetail(email._original.id);
+-    }
+   };
+ 
+   const handleComposeSend = async (to: string, name: string, subj: string, body: string, cc?: string, bcc?: string) => {
+@@ -315,32 +360,34 @@
+       toast.error('Fill in all required fields');
+       return { success: false, error: 'Missing fields' };
+     }
+-    const result = await sendEmail(to, subj, body, name);
+-    if (result.success) {
+-      await supabase.from('admin_emails').insert({
+-        from_email: 'noreply@bridgeforthomes.com',
+-        from_name: 'Bridgefort Homes Development Ltd',
+-        to_email: to,
+-        to_name: name || null,
+-        subject: subj,
+-        body,
+-        folder: 'sent',
+-        is_read: true,
+-        source: 'compose',
++
++    let result: { success: boolean; error?: string };
++    if (activeAccount === 'gmail') {
++      const { error } = await supabase.functions.invoke('gmail-sync', {
++        body: { action: 'send-message', to, subject: subj, html: body, cc, bcc },
+       });
+-      // Send to CC recipients too
+-      if (cc) {
++      result = error ? { success: false, error: error.message } : { success: true };
++    } else {
++      // send-email (Resend) already writes its own Sent-folder record to
++      // admin_emails after a successful send — same for gmail-sync's
++      // send-message above — so there's no manual insert needed here
++      // anymore. There used to be one; it would have created a duplicate
++      // "sent" entry alongside the one the edge function now writes itself.
++      result = await sendEmail(to, subj, body, name);
++
++      // CC/BCC only make sense for the Resend path today — Gmail's raw MIME
++      // send above already supports them natively via the cc/bcc fields.
++      if (result.success && cc) {
+         const ccEmails = cc.split(',').map(e => e.trim()).filter(Boolean);
+-        for (const ccEmail of ccEmails) {
+-          await sendEmail(ccEmail, subj, body, '');
+-        }
++        for (const ccEmail of ccEmails) await sendEmail(ccEmail, subj, body, '');
+       }
+-      if (bcc) {
++      if (result.success && bcc) {
+         const bccEmails = bcc.split(',').map(e => e.trim()).filter(Boolean);
+-        for (const bccEmail of bccEmails) {
+-          await sendEmail(bccEmail, subj, body, '');
+-        }
++        for (const bccEmail of bccEmails) await sendEmail(bccEmail, subj, body, '');
+       }
++    }
++
++    if (result.success) {
+       toast.success('Email sent!');
+       fetchAllAdminEmails();
+     } else {
+@@ -404,11 +451,11 @@
+ 
+   const handleRefresh = () => {
+     refreshAll();
+-    syncReceivedEmails().then(() => fetchAllAdminEmails());
+-    fetchReceivedEmails();
++    fetchAllAdminEmails();
++    if (activeAccount === 'gmail') syncGmailNow();
+   };
+ 
+-  const isToolView = ['contacts', 'templates', 'bulk', 'gmail'].includes(activeFolder);
++  const isToolView = ['contacts', 'templates', 'bulk'].includes(activeFolder);
+ 
+   return (
+     <div className={`flex h-[calc(100vh-8rem)] gap-3 p-3 rounded-3xl overflow-hidden bg-white/5 backdrop-blur-2xl border border-white/15 shadow-2xl ${isResizing ? 'select-none' : ''}`}>
+@@ -431,7 +478,7 @@
+             onChange={(e) => { setActiveFolder(e.target.value as EmailFolder); setSelectedEmailId(null); }}
+             className="md:hidden h-9 rounded-full border border-input bg-white/70 px-3 text-sm"
+           >
+-            {['inbox','starred','sent','drafts','received','gmail','archive','trash','contacts','templates','bulk'].map(f => (
++            {['inbox','starred','sent','drafts','spam','archive','trash','contacts','templates','bulk'].map(f => (
+               <option key={f} value={f}>{f.charAt(0).toUpperCase() + f.slice(1)}</option>
+             ))}
+           </select>
+@@ -448,10 +495,46 @@
+             </div>
+           )}
+           <div className="flex-1" />
+-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/60" onClick={handleRefresh} disabled={loading || receivedLoading}>
+-            <RefreshCw className={`h-4 w-4 ${loading || receivedLoading ? 'animate-spin' : ''}`} />
++
++          {/* Account switcher — governs which mailbox's folders are shown
++              AND which account Compose/Reply sends through. Replaces the
++              old "send via" picker, which only ever affected sending. */}
++          <div className="flex items-center rounded-full bg-white/60 border border-white/50 p-0.5 shadow-sm">
++            <button
++              onClick={() => switchAccount('resend')}
++              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
++                activeAccount === 'resend' ? 'bg-estate-blue text-white' : 'text-foreground hover:bg-white/60'
++              }`}
++            >
++              Resend
++            </button>
++            <button
++              onClick={() => switchAccount('gmail')}
++              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
++                activeAccount === 'gmail' ? 'bg-estate-blue text-white' : 'text-foreground hover:bg-white/60'
++              }`}
++            >
++              Gmail
++            </button>
++          </div>
++
++          {activeAccount === 'gmail' && (
++            gmailConnected === false ? (
++              <Button size="sm" variant="outline" onClick={connectGmail} disabled={connectingGmail} className="gap-1.5 rounded-full">
++                {connectingGmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />}
++                Connect Gmail
++              </Button>
++            ) : (
++              <Button size="sm" variant="outline" onClick={syncGmailNow} disabled={syncingGmail} className="gap-1.5 rounded-full">
++                <RefreshCw className={`h-3.5 w-3.5 ${syncingGmail ? 'animate-spin' : ''}`} />
++                Sync Gmail
++              </Button>
++            )
++          )}
++
++          <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/60" onClick={handleRefresh} disabled={loading}>
++            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+           </Button>
+-          <AdminEmailProviderPicker />
+           <AdminEmailSettings />
+           {counts.unread > 0 && (
+             <Badge variant="destructive" className="text-xs rounded-full">{counts.unread} unread</Badge>
+@@ -511,12 +594,6 @@
+           </ScrollArea>
+         )}
+ 
+-        {activeFolder === 'gmail' && (
+-          <div className="flex-1 min-h-0">
+-            <GmailInbox />
+-          </div>
+-        )}
+-
+         {/* Email list + reading pane */}
+         {!isToolView && (
+           <div className="flex-1 flex min-h-0">
+--- original/bridgefort-estate-gateway-94/src/components/admin/AdminInbox.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/components/admin/AdminInbox.tsx	2026-07-27 12:00:50.015173339 +0000
+@@ -1,184 +1,69 @@
+ import React, { useEffect, useState } from 'react';
+ import { supabase } from '@/integrations/supabase/client';
+-import { useAuth } from '@/contexts/auth';
+ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+ import { Button } from '@/components/ui/button';
+ import { Badge } from '@/components/ui/badge';
+ import { ScrollArea } from '@/components/ui/scroll-area';
+-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+-import { Textarea } from '@/components/ui/textarea';
+-import { Input } from '@/components/ui/input';
+-import { Label } from '@/components/ui/label';
+-import { toast } from '@/hooks/use-toast';
+-import { Mail, MailOpen, Reply, Trash2, User, Clock, RefreshCw } from 'lucide-react';
++import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
++import { Mail, MailOpen, Clock, RefreshCw, Inbox as InboxIcon } from 'lucide-react';
+ import { format } from 'date-fns';
+ 
+-interface ContactMessage {
++interface AdminEmailRow {
+   id: string;
+-  name: string;
+-  email: string;
+-  phone: string;
+-  subject: string;
+-  message: string;
+-  responded: boolean;
+-  responded_at: string | null;
++  from_email: string;
++  from_name: string | null;
++  subject: string | null;
++  body: string | null;
++  html: string | null;
++  is_read: boolean;
++  source: string;
+   created_at: string;
+ }
+ 
++/**
++ * Dashboard overview widget — deliberately narrow scope: only the Inbox
++ * folder, only Gmail + Resend (the two connected mail accounts). Everything
++ * else — Sent/Drafts/Spam/Trash/Archive, contact-form messages, per-account
++ * switching, reply/compose — lives in the full Email Center tab. This is
++ * meant to be a quick glance, not a second inbox client.
++ */
+ const AdminInbox = () => {
+-  const { user } = useAuth();
+-  const [messages, setMessages] = useState<ContactMessage[]>([]);
++  const [messages, setMessages] = useState<AdminEmailRow[]>([]);
+   const [loading, setLoading] = useState(true);
+-  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+-  const [replyContent, setReplyContent] = useState('');
+-  const [replySubject, setReplySubject] = useState('');
+-  const [sending, setSending] = useState(false);
+-  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
++  const [selected, setSelected] = useState<AdminEmailRow | null>(null);
+ 
+-  const fetchMessages = async () => {
++  const fetchInbox = async () => {
+     setLoading(true);
+-    try {
+-      let query = supabase
+-        .from('contact_messages')
+-        .select('*')
+-        .order('created_at', { ascending: false });
++    const { data, error } = await supabase
++      .from('admin_emails')
++      .select('id, from_email, from_name, subject, body, html, is_read, source, created_at')
++      .in('source', ['gmail', 'resend'])
++      .eq('folder', 'inbox')
++      .order('created_at', { ascending: false })
++      .limit(50);
+ 
+-      if (filter === 'unread') {
+-        query = query.eq('responded', false);
+-      } else if (filter === 'read') {
+-        query = query.eq('responded', true);
+-      }
+-
+-      const { data, error } = await query;
+-
+-      if (error) throw error;
+-      setMessages(data || []);
+-    } catch (error) {
+-      console.error('Error fetching messages:', error);
+-      toast({
+-        title: "Error",
+-        description: "Failed to load messages",
+-        variant: "destructive"
+-      });
+-    } finally {
+-      setLoading(false);
+-    }
++    if (!error && data) setMessages(data as AdminEmailRow[]);
++    setLoading(false);
+   };
+ 
+   useEffect(() => {
+-    fetchMessages();
+-
+-    // Real-time subscription
++    fetchInbox();
+     const channel = supabase
+-      .channel('inbox-messages')
+-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, fetchMessages)
++      .channel('admin-inbox-widget')
++      .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_emails' }, fetchInbox)
+       .subscribe();
++    return () => { supabase.removeChannel(channel); };
++  }, []);
+ 
+-    return () => {
+-      supabase.removeChannel(channel);
+-    };
+-  }, [filter]);
+-
+-  const handleReply = async () => {
+-    if (!selectedMessage || !replyContent.trim()) return;
+-
+-    setSending(true);
+-    try {
+-      // Send email via edge function
+-      const { error: emailError } = await supabase.functions.invoke('send-email', {
+-        body: {
+-          to: selectedMessage.email,
+-          subject: replySubject || `Re: ${selectedMessage.subject}`,
+-          html: `
+-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+-              <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; text-align: center;">
+-                <h1 style="color: #fff; margin: 0;">Bridgefort Homes Development Ltd</h1>
+-              </div>
+-              <div style="padding: 30px; background: #fff;">
+-                <p>Dear ${selectedMessage.name},</p>
+-                <div style="white-space: pre-wrap;">${replyContent}</div>
+-                <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+-                <p style="color: #666; font-size: 12px;">
+-                  This is a reply to your message: "${selectedMessage.subject}"
+-                </p>
+-              </div>
+-              <div style="background: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
+-                <p>Bridgefort Homes Development Ltd | 3 Isoko Drive, Off NTA Road, Asaba, Delta State</p>
+-              </div>
+-            </div>
+-          `
+-        }
+-      });
+-
+-      if (emailError) throw emailError;
+-
+-      // Mark as responded
+-      const { error: updateError } = await supabase
+-        .from('contact_messages')
+-        .update({
+-          responded: true,
+-          responded_at: new Date().toISOString(),
+-          responded_by: user?.id
+-        })
+-        .eq('id', selectedMessage.id);
+-
+-      if (updateError) throw updateError;
+-
+-      // Log the email
+-      await supabase.from('email_logs').insert({
+-        recipient_email: selectedMessage.email,
+-        recipient_name: selectedMessage.name,
+-        subject: replySubject || `Re: ${selectedMessage.subject}`,
+-        body: replyContent,
+-        sender_id: user?.id,
+-        status: 'sent'
+-      });
+-
+-      toast({
+-        title: "Reply Sent",
+-        description: `Email sent to ${selectedMessage.email}`
+-      });
+-
+-      setReplyContent('');
+-      setReplySubject('');
+-      setSelectedMessage(null);
+-      fetchMessages();
+-    } catch (error) {
+-      console.error('Error sending reply:', error);
+-      toast({
+-        title: "Error",
+-        description: "Failed to send reply",
+-        variant: "destructive"
+-      });
+-    } finally {
+-      setSending(false);
+-    }
+-  };
+-
+-  const handleDelete = async (id: string) => {
+-    try {
+-      const { error } = await supabase
+-        .from('contact_messages')
+-        .delete()
+-        .eq('id', id);
+-
+-      if (error) throw error;
+-
+-      toast({
+-        title: "Deleted",
+-        description: "Message deleted successfully"
+-      });
+-      fetchMessages();
+-    } catch (error) {
+-      toast({
+-        title: "Error",
+-        description: "Failed to delete message",
+-        variant: "destructive"
+-      });
++  const openMessage = async (message: AdminEmailRow) => {
++    setSelected(message);
++    if (!message.is_read) {
++      await supabase.from('admin_emails').update({ is_read: true }).eq('id', message.id);
++      fetchInbox();
+     }
+   };
+ 
+-  const unreadCount = messages.filter(m => !m.responded).length;
++  const unreadCount = messages.filter((m) => !m.is_read).length;
+ 
+   return (
+     <Card className="bg-slate-800 border-slate-700">
+@@ -186,38 +71,14 @@
+         <div className="flex items-center justify-between">
+           <div className="flex items-center gap-3">
+             <CardTitle className="text-white flex items-center gap-2">
+-              <Mail className="h-5 w-5" />
++              <InboxIcon className="h-5 w-5 text-estate-blue" />
+               Inbox
+             </CardTitle>
+-            {unreadCount > 0 && (
+-              <Badge variant="destructive">{unreadCount} unread</Badge>
+-            )}
+-          </div>
+-          <div className="flex items-center gap-2">
+-            <div className="flex bg-slate-700 rounded-lg p-1">
+-              {(['all', 'unread', 'read'] as const).map((f) => (
+-                <button
+-                  key={f}
+-                  onClick={() => setFilter(f)}
+-                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
+-                    filter === f
+-                      ? 'bg-primary text-primary-foreground'
+-                      : 'text-slate-400 hover:text-white'
+-                  }`}
+-                >
+-                  {f.charAt(0).toUpperCase() + f.slice(1)}
+-                </button>
+-              ))}
+-            </div>
+-            <Button
+-              variant="ghost"
+-              size="icon"
+-              onClick={fetchMessages}
+-              className="text-slate-400 hover:text-white"
+-            >
+-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+-            </Button>
++            {unreadCount > 0 && <Badge variant="destructive">{unreadCount} unread</Badge>}
+           </div>
++          <Button variant="ghost" size="icon" onClick={fetchInbox} className="text-slate-400 hover:text-white">
++            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
++          </Button>
+         </div>
+       </CardHeader>
+       <CardContent className="p-0">
+@@ -231,129 +92,81 @@
+           ) : messages.length === 0 ? (
+             <div className="p-12 text-center">
+               <Mail className="h-12 w-12 mx-auto text-slate-500 mb-4" />
+-              <p className="text-slate-400">No messages found</p>
++              <p className="text-slate-400">No inbox messages yet</p>
+             </div>
+           ) : (
+             <div className="divide-y divide-slate-700">
+               {messages.map((message) => (
+-                <Dialog key={message.id}>
+-                  <DialogTrigger asChild>
+-                    <div
+-                      onClick={() => {
+-                        setSelectedMessage(message);
+-                        setReplySubject(`Re: ${message.subject}`);
+-                      }}
+-                      className={`p-4 hover:bg-slate-700/50 cursor-pointer transition-colors ${
+-                        !message.responded ? 'bg-slate-700/30' : ''
+-                      }`}
+-                    >
+-                      <div className="flex items-start justify-between gap-4">
+-                        <div className="flex items-start gap-3 flex-1 min-w-0">
+-                          <div className={`p-2 rounded-full ${
+-                            message.responded 
+-                              ? 'bg-slate-600' 
+-                              : 'bg-primary/20'
+-                          }`}>
+-                            {message.responded ? (
+-                              <MailOpen className="h-4 w-4 text-slate-400" />
+-                            ) : (
+-                              <Mail className="h-4 w-4 text-primary" />
+-                            )}
+-                          </div>
+-                          <div className="flex-1 min-w-0">
+-                            <div className="flex items-center gap-2">
+-                              <span className="font-medium text-white truncate">
+-                                {message.name}
+-                              </span>
+-                              {!message.responded && (
+-                                <Badge variant="default" className="text-xs">New</Badge>
+-                              )}
+-                            </div>
+-                            <p className="text-sm text-primary truncate">{message.subject}</p>
+-                            <p className="text-sm text-slate-400 truncate">{message.message}</p>
+-                          </div>
+-                        </div>
+-                        <div className="text-xs text-slate-500 whitespace-nowrap">
+-                          {format(new Date(message.created_at), 'MMM d, h:mm a')}
+-                        </div>
++                <div
++                  key={message.id}
++                  onClick={() => openMessage(message)}
++                  className={`p-4 hover:bg-slate-700/50 cursor-pointer transition-colors ${
++                    !message.is_read ? 'bg-slate-700/30' : ''
++                  }`}
++                >
++                  <div className="flex items-start justify-between gap-4">
++                    <div className="flex items-start gap-3 flex-1 min-w-0">
++                      <div className={`p-2 rounded-full ${message.is_read ? 'bg-slate-600' : 'bg-primary/20'}`}>
++                        {message.is_read ? (
++                          <MailOpen className="h-4 w-4 text-slate-400" />
++                        ) : (
++                          <Mail className="h-4 w-4 text-primary" />
++                        )}
+                       </div>
+-                    </div>
+-                  </DialogTrigger>
+-                  <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
+-                    <DialogHeader>
+-                      <DialogTitle className="text-white">{message.subject}</DialogTitle>
+-                    </DialogHeader>
+-                    <div className="space-y-4">
+-                      <div className="flex items-center gap-4 text-sm text-slate-400">
+-                        <div className="flex items-center gap-1">
+-                          <User className="h-4 w-4" />
+-                          {message.name}
+-                        </div>
+-                        <div>{message.email}</div>
+-                        <div>{message.phone}</div>
+-                        <div className="flex items-center gap-1">
+-                          <Clock className="h-4 w-4" />
+-                          {format(new Date(message.created_at), 'PPp')}
++                      <div className="flex-1 min-w-0">
++                        <div className="flex items-center gap-2">
++                          <span className="font-medium text-white truncate">
++                            {message.from_name || message.from_email}
++                          </span>
++                          <Badge variant="outline" className="text-[10px] capitalize border-slate-600 text-slate-400">
++                            {message.source}
++                          </Badge>
++                          {!message.is_read && <Badge variant="default" className="text-xs">New</Badge>}
+                         </div>
++                        <p className="text-sm text-primary truncate">{message.subject || '(No Subject)'}</p>
++                        <p className="text-sm text-slate-400 truncate">{message.body}</p>
+                       </div>
+-                      
+-                      <div className="bg-slate-700/50 rounded-lg p-4">
+-                        <p className="text-slate-200 whitespace-pre-wrap">{message.message}</p>
+-                      </div>
+-
+-                      {message.responded ? (
+-                        <Badge variant="secondary" className="bg-green-500/20 text-green-400">
+-                          Replied on {format(new Date(message.responded_at!), 'PPp')}
+-                        </Badge>
+-                      ) : (
+-                        <div className="space-y-4 border-t border-slate-700 pt-4">
+-                          <h4 className="font-medium text-white flex items-center gap-2">
+-                            <Reply className="h-4 w-4" />
+-                            Reply
+-                          </h4>
+-                          <div className="space-y-2">
+-                            <Label className="text-slate-400">Subject</Label>
+-                            <Input
+-                              value={replySubject}
+-                              onChange={(e) => setReplySubject(e.target.value)}
+-                              className="bg-slate-700 border-slate-600 text-white"
+-                            />
+-                          </div>
+-                          <div className="space-y-2">
+-                            <Label className="text-slate-400">Message</Label>
+-                            <Textarea
+-                              value={replyContent}
+-                              onChange={(e) => setReplyContent(e.target.value)}
+-                              placeholder="Type your reply..."
+-                              rows={6}
+-                              className="bg-slate-700 border-slate-600 text-white"
+-                            />
+-                          </div>
+-                          <div className="flex justify-between">
+-                            <Button
+-                              variant="destructive"
+-                              onClick={() => handleDelete(message.id)}
+-                            >
+-                              <Trash2 className="h-4 w-4 mr-2" />
+-                              Delete
+-                            </Button>
+-                            <Button
+-                              onClick={handleReply}
+-                              disabled={!replyContent.trim() || sending}
+-                            >
+-                              {sending ? 'Sending...' : 'Send Reply'}
+-                            </Button>
+-                          </div>
+-                        </div>
+-                      )}
+                     </div>
+-                  </DialogContent>
+-                </Dialog>
++                    <div className="text-xs text-slate-500 whitespace-nowrap">
++                      {format(new Date(message.created_at), 'MMM d, h:mm a')}
++                    </div>
++                  </div>
++                </div>
+               ))}
+             </div>
+           )}
+         </ScrollArea>
+       </CardContent>
++
++      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
++        <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
++          {selected && (
++            <>
++              <DialogHeader>
++                <DialogTitle className="text-white">{selected.subject || '(No Subject)'}</DialogTitle>
++              </DialogHeader>
++              <div className="flex items-center gap-4 text-sm text-slate-400">
++                <span>{selected.from_name || selected.from_email}</span>
++                <Badge variant="outline" className="text-[10px] capitalize border-slate-600">{selected.source}</Badge>
++                <div className="flex items-center gap-1">
++                  <Clock className="h-4 w-4" />
++                  {format(new Date(selected.created_at), 'PPp')}
++                </div>
++              </div>
++              <div className="bg-slate-700/50 rounded-lg p-4 max-h-96 overflow-y-auto">
++                {selected.html ? (
++                  <div className="text-slate-200" dangerouslySetInnerHTML={{ __html: selected.html }} />
++                ) : (
++                  <p className="text-slate-200 whitespace-pre-wrap">{selected.body}</p>
++                )}
++              </div>
++              <p className="text-xs text-slate-500 text-center">
++                Reply from the full Email Center tab for reply/forward/folder actions.
++              </p>
++            </>
++          )}
++        </DialogContent>
++      </Dialog>
+     </Card>
+   );
+ };
