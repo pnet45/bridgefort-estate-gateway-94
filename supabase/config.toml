@@ -39,6 +39,9 @@ verify_jwt = false
 [functions.send-email]
 verify_jwt = false
 
+[functions.gmail-oauth-callback]
+verify_jwt = false
+
 [functions.resend-receive-emails]
 verify_jwt = false
 

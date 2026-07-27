@@ -67,7 +67,7 @@ const ALLOWED_ACTIONS = new Set([
     let data: any;
     switch (action) {
       case "list-labels": {
-        const res = await gmailFetch(`/users/me/labels`);
+        const res = await gmailFetch(svc, `/users/me/labels`);
         data = res.labels || [];
         break;
       }
@@ -89,7 +89,7 @@ const ALLOWED_ACTIONS = new Set([
         let list: any;
         let searchDegraded = false;
         try {
-          list = await gmailFetch(`/users/me/messages?${buildParams(true).toString()}`);
+          list = await gmailFetch(svc, `/users/me/messages?${buildParams(true).toString()}`);
         } catch (err: any) {
           // The connected Gmail account only granted the restricted
           // "metadata" scope, which doesn't support the `q` search
@@ -100,7 +100,7 @@ const ALLOWED_ACTIONS = new Set([
           // permissions.
           if (q && /metadata scope/i.test(String(err.message))) {
             searchDegraded = true;
-            list = await gmailFetch(`/users/me/messages?${buildParams(false).toString()}`);
+            list = await gmailFetch(svc, `/users/me/messages?${buildParams(false).toString()}`);
           } else {
             throw err;
           }
@@ -110,7 +110,7 @@ const ALLOWED_ACTIONS = new Set([
         // Batch fetch metadata for list preview
         const detailed = await Promise.all(
           ids.map(async (m) => {
-            const meta = await gmailFetch(
+            const meta = await gmailFetch(svc,
               `/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`
             );
             const headers: Record<string, string> = {};
@@ -144,7 +144,7 @@ const ALLOWED_ACTIONS = new Set([
         const { messageId } = body;
         if (!messageId) throw new Error("messageId required");
         try {
-          const msg = await gmailFetch(`/users/me/messages/${messageId}?format=full`);
+          const msg = await gmailFetch(svc, `/users/me/messages/${messageId}?format=full`);
           data = parseMessage(msg);
         } catch (err: any) {
           // Same restricted-scope situation: metadata scope can list emails
@@ -155,7 +155,7 @@ const ALLOWED_ACTIONS = new Set([
           // the UI can use to explain why the body is missing, instead of
           // throwing an unhandled error that blanks the whole page.
           if (/metadata scope/i.test(String(err.message))) {
-            const meta = await gmailFetch(
+            const meta = await gmailFetch(svc,
               `/users/me/messages/${messageId}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`
             );
             const headers: Record<string, string> = {};
@@ -186,7 +186,7 @@ const ALLOWED_ACTIONS = new Set([
       case "get-attachment": {
         const { messageId, attachmentId } = body;
         if (!messageId || !attachmentId) throw new Error("messageId and attachmentId required");
-        const att = await gmailFetch(
+        const att = await gmailFetch(svc,
           `/users/me/messages/${messageId}/attachments/${attachmentId}`
         );
         // Convert base64url to standard base64 for browser downloadBlob helper
@@ -199,7 +199,7 @@ const ALLOWED_ACTIONS = new Set([
       case "modify-message": {
         const { messageId, addLabelIds, removeLabelIds } = body;
         if (!messageId) throw new Error("messageId required");
-        data = await gmailFetch(`/users/me/messages/${messageId}/modify`, {
+        data = await gmailFetch(svc, `/users/me/messages/${messageId}/modify`, {
           method: "POST",
           body: JSON.stringify({
             addLabelIds: addLabelIds || [],
@@ -211,13 +211,13 @@ const ALLOWED_ACTIONS = new Set([
       case "trash-message": {
         const { messageId } = body;
         if (!messageId) throw new Error("messageId required");
-        data = await gmailFetch(`/users/me/messages/${messageId}/trash`, { method: "POST" });
+        data = await gmailFetch(svc, `/users/me/messages/${messageId}/trash`, { method: "POST" });
         break;
       }
       case "untrash-message": {
         const { messageId } = body;
         if (!messageId) throw new Error("messageId required");
-        data = await gmailFetch(`/users/me/messages/${messageId}/untrash`, { method: "POST" });
+        data = await gmailFetch(svc, `/users/me/messages/${messageId}/untrash`, { method: "POST" });
         break;
       }
       case "send-message": {
@@ -234,7 +234,7 @@ const ALLOWED_ACTIONS = new Set([
           html,
         ].filter(Boolean);
         const raw = b64UrlEncode(new TextEncoder().encode(lines.join("\r\n")));
-        data = await gmailFetch(`/users/me/messages/send`, {
+        data = await gmailFetch(svc, `/users/me/messages/send`, {
           method: "POST",
           body: JSON.stringify({ raw }),
         });

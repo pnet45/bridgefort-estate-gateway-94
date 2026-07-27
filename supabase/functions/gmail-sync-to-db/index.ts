@@ -75,14 +75,14 @@ serve(async (req) => {
 
     for (const label of LABELS_TO_SYNC) {
       try {
-        const list = await gmailFetch(
+        const list = await gmailFetch(svc,
           `/users/me/messages?maxResults=${maxPerLabel}&labelIds=${label}`
         );
         const ids: { id: string }[] = list.messages || [];
 
         for (const { id } of ids) {
           try {
-            const full = await gmailFetch(`/users/me/messages/${id}?format=full`);
+            const full = await gmailFetch(svc, `/users/me/messages/${id}?format=full`);
             const parsed = parseMessage(full);
             const folder = gmailLabelsToFolder(parsed.labelIds);
 

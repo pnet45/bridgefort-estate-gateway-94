@@ -1,8 +1,16 @@
 // Shared Gmail helpers used by both gmail-sync (live API passthrough for the
 // UI) and gmail-sync-to-db (pulls messages into admin_emails). Keeping this
 // in one place means a fix or change only has to happen once.
+//
+// This talks to Google's Gmail API directly using OAuth tokens stored in
+// public.gmail_oauth_tokens (see migration 20260801000000 and the
+// gmail-oauth-callback function) — it no longer depends on Lovable's
+// connector gateway, which only ever had metadata-scope access and can't be
+// reconnected without Lovable platform access.
 
-export const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+export const GMAIL_API_URL = "https://gmail.googleapis.com/gmail/v1";
 
 export function requireEnv(name: string): string {
   const v = Deno.env.get(name);
@@ -10,16 +18,80 @@ export function requireEnv(name: string): string {
   return v;
 }
 
-export async function gmailFetch(path: string, init: RequestInit = {}) {
-  const LOVABLE_API_KEY = requireEnv("LOVABLE_API_KEY");
-  const GMAIL_API_KEY = requireEnv("GOOGLE_MAIL_API_KEY");
+/**
+ * Returns a currently-valid access token for the connected Gmail account,
+ * refreshing it first if it's expired (or about to expire). Throws a clear
+ * "not connected" error if no account has been connected yet, so callers
+ * can surface a "Connect Gmail" prompt instead of a cryptic API error.
+ */
+export async function getValidAccessToken(svc: ReturnType<typeof createClient>): Promise<string> {
+  const { data: tokenRow, error } = await svc
+    .from("gmail_oauth_tokens")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw new Error(`Failed to read Gmail token: ${error.message}`);
+  if (!tokenRow) throw new Error("Gmail is not connected yet. Connect a Gmail account first.");
+
+  const expiresAt = new Date(tokenRow.expires_at as string).getTime();
+  const isExpiringSoon = expiresAt - Date.now() < 60_000; // refresh a minute early
+
+  if (!isExpiringSoon) {
+    return tokenRow.access_token as string;
+  }
+
+  // Refresh it.
+  const clientId = requireEnv("GOOGLE_CLIENT_ID");
+  const clientSecret = requireEnv("GOOGLE_CLIENT_SECRET");
+
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: tokenRow.refresh_token as string,
+      grant_type: "refresh_token",
+    }),
+  });
+  const refreshed = await res.json();
+  if (!res.ok) {
+    throw new Error(
+      `Failed to refresh Gmail token: ${refreshed.error_description || refreshed.error || res.status}`
+    );
+  }
+
+  const newExpiresAt = new Date(Date.now() + refreshed.expires_in * 1000).toISOString();
+  const { error: updateError } = await svc
+    .from("gmail_oauth_tokens")
+    .update({ access_token: refreshed.access_token, expires_at: newExpiresAt })
+    .eq("id", tokenRow.id as string);
+  if (updateError) {
+    console.error("Failed to persist refreshed Gmail token:", updateError);
+  }
+
+  return refreshed.access_token as string;
+}
+
+/**
+ * Calls the Gmail API directly. `svc` must be a service-role Supabase client
+ * (needed to read/refresh the stored token — gmail_oauth_tokens has no
+ * client-accessible RLS policies by design).
+ */
+export async function gmailFetch(
+  svc: ReturnType<typeof createClient>,
+  path: string,
+  init: RequestInit = {}
+) {
+  const accessToken = await getValidAccessToken(svc);
   const headers = new Headers(init.headers);
-  headers.set("Authorization", `Bearer ${LOVABLE_API_KEY}`);
-  headers.set("X-Connection-Api-Key", GMAIL_API_KEY);
+  headers.set("Authorization", `Bearer ${accessToken}`);
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-  const res = await fetch(`${GATEWAY_URL}${path}`, { ...init, headers });
+  const res = await fetch(`${GMAIL_API_URL}${path}`, { ...init, headers });
   const text = await res.text();
   if (!res.ok) {
     throw new Error(`Gmail API [${res.status}]: ${text}`);
