@@ -1,0 +1,499 @@
+--- baseline5/bridgefort-estate-gateway-94/supabase/functions/_shared/gmail.ts	2026-07-27 04:47:26.499212050 +0000
++++ project/bridgefort-estate-gateway-94/supabase/functions/_shared/gmail.ts	2026-07-27 04:43:57.411615952 +0000
+@@ -1,8 +1,16 @@
+ // Shared Gmail helpers used by both gmail-sync (live API passthrough for the
+ // UI) and gmail-sync-to-db (pulls messages into admin_emails). Keeping this
+ // in one place means a fix or change only has to happen once.
++//
++// This talks to Google's Gmail API directly using OAuth tokens stored in
++// public.gmail_oauth_tokens (see migration 20260801000000 and the
++// gmail-oauth-callback function) — it no longer depends on Lovable's
++// connector gateway, which only ever had metadata-scope access and can't be
++// reconnected without Lovable platform access.
+ 
+-export const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
++import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
++
++export const GMAIL_API_URL = "https://gmail.googleapis.com/gmail/v1";
+ 
+ export function requireEnv(name: string): string {
+   const v = Deno.env.get(name);
+@@ -10,16 +18,80 @@
+   return v;
+ }
+ 
+-export async function gmailFetch(path: string, init: RequestInit = {}) {
+-  const LOVABLE_API_KEY = requireEnv("LOVABLE_API_KEY");
+-  const GMAIL_API_KEY = requireEnv("GOOGLE_MAIL_API_KEY");
++/**
++ * Returns a currently-valid access token for the connected Gmail account,
++ * refreshing it first if it's expired (or about to expire). Throws a clear
++ * "not connected" error if no account has been connected yet, so callers
++ * can surface a "Connect Gmail" prompt instead of a cryptic API error.
++ */
++export async function getValidAccessToken(svc: ReturnType<typeof createClient>): Promise<string> {
++  const { data: tokenRow, error } = await svc
++    .from("gmail_oauth_tokens")
++    .select("*")
++    .order("created_at", { ascending: false })
++    .limit(1)
++    .maybeSingle();
++
++  if (error) throw new Error(`Failed to read Gmail token: ${error.message}`);
++  if (!tokenRow) throw new Error("Gmail is not connected yet. Connect a Gmail account first.");
++
++  const expiresAt = new Date(tokenRow.expires_at as string).getTime();
++  const isExpiringSoon = expiresAt - Date.now() < 60_000; // refresh a minute early
++
++  if (!isExpiringSoon) {
++    return tokenRow.access_token as string;
++  }
++
++  // Refresh it.
++  const clientId = requireEnv("GOOGLE_CLIENT_ID");
++  const clientSecret = requireEnv("GOOGLE_CLIENT_SECRET");
++
++  const res = await fetch("https://oauth2.googleapis.com/token", {
++    method: "POST",
++    headers: { "Content-Type": "application/x-www-form-urlencoded" },
++    body: new URLSearchParams({
++      client_id: clientId,
++      client_secret: clientSecret,
++      refresh_token: tokenRow.refresh_token as string,
++      grant_type: "refresh_token",
++    }),
++  });
++  const refreshed = await res.json();
++  if (!res.ok) {
++    throw new Error(
++      `Failed to refresh Gmail token: ${refreshed.error_description || refreshed.error || res.status}`
++    );
++  }
++
++  const newExpiresAt = new Date(Date.now() + refreshed.expires_in * 1000).toISOString();
++  const { error: updateError } = await svc
++    .from("gmail_oauth_tokens")
++    .update({ access_token: refreshed.access_token, expires_at: newExpiresAt })
++    .eq("id", tokenRow.id as string);
++  if (updateError) {
++    console.error("Failed to persist refreshed Gmail token:", updateError);
++  }
++
++  return refreshed.access_token as string;
++}
++
++/**
++ * Calls the Gmail API directly. `svc` must be a service-role Supabase client
++ * (needed to read/refresh the stored token — gmail_oauth_tokens has no
++ * client-accessible RLS policies by design).
++ */
++export async function gmailFetch(
++  svc: ReturnType<typeof createClient>,
++  path: string,
++  init: RequestInit = {}
++) {
++  const accessToken = await getValidAccessToken(svc);
+   const headers = new Headers(init.headers);
+-  headers.set("Authorization", `Bearer ${LOVABLE_API_KEY}`);
+-  headers.set("X-Connection-Api-Key", GMAIL_API_KEY);
++  headers.set("Authorization", `Bearer ${accessToken}`);
+   if (init.body && !headers.has("Content-Type")) {
+     headers.set("Content-Type", "application/json");
+   }
+-  const res = await fetch(`${GATEWAY_URL}${path}`, { ...init, headers });
++  const res = await fetch(`${GMAIL_API_URL}${path}`, { ...init, headers });
+   const text = await res.text();
+   if (!res.ok) {
+     throw new Error(`Gmail API [${res.status}]: ${text}`);
+--- baseline5/bridgefort-estate-gateway-94/supabase/functions/gmail-sync/index.ts	2026-07-27 04:47:26.504392266 +0000
++++ project/bridgefort-estate-gateway-94/supabase/functions/gmail-sync/index.ts	2026-07-27 04:44:30.292822302 +0000
+@@ -67,7 +67,7 @@
+     let data: any;
+     switch (action) {
+       case "list-labels": {
+-        const res = await gmailFetch(`/users/me/labels`);
++        const res = await gmailFetch(svc, `/users/me/labels`);
+         data = res.labels || [];
+         break;
+       }
+@@ -89,7 +89,7 @@
+         let list: any;
+         let searchDegraded = false;
+         try {
+-          list = await gmailFetch(`/users/me/messages?${buildParams(true).toString()}`);
++          list = await gmailFetch(svc, `/users/me/messages?${buildParams(true).toString()}`);
+         } catch (err: any) {
+           // The connected Gmail account only granted the restricted
+           // "metadata" scope, which doesn't support the `q` search
+@@ -100,7 +100,7 @@
+           // permissions.
+           if (q && /metadata scope/i.test(String(err.message))) {
+             searchDegraded = true;
+-            list = await gmailFetch(`/users/me/messages?${buildParams(false).toString()}`);
++            list = await gmailFetch(svc, `/users/me/messages?${buildParams(false).toString()}`);
+           } else {
+             throw err;
+           }
+@@ -110,7 +110,7 @@
+         // Batch fetch metadata for list preview
+         const detailed = await Promise.all(
+           ids.map(async (m) => {
+-            const meta = await gmailFetch(
++            const meta = await gmailFetch(svc,
+               `/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`
+             );
+             const headers: Record<string, string> = {};
+@@ -144,7 +144,7 @@
+         const { messageId } = body;
+         if (!messageId) throw new Error("messageId required");
+         try {
+-          const msg = await gmailFetch(`/users/me/messages/${messageId}?format=full`);
++          const msg = await gmailFetch(svc, `/users/me/messages/${messageId}?format=full`);
+           data = parseMessage(msg);
+         } catch (err: any) {
+           // Same restricted-scope situation: metadata scope can list emails
+@@ -155,7 +155,7 @@
+           // the UI can use to explain why the body is missing, instead of
+           // throwing an unhandled error that blanks the whole page.
+           if (/metadata scope/i.test(String(err.message))) {
+-            const meta = await gmailFetch(
++            const meta = await gmailFetch(svc,
+               `/users/me/messages/${messageId}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`
+             );
+             const headers: Record<string, string> = {};
+@@ -186,7 +186,7 @@
+       case "get-attachment": {
+         const { messageId, attachmentId } = body;
+         if (!messageId || !attachmentId) throw new Error("messageId and attachmentId required");
+-        const att = await gmailFetch(
++        const att = await gmailFetch(svc,
+           `/users/me/messages/${messageId}/attachments/${attachmentId}`
+         );
+         // Convert base64url to standard base64 for browser downloadBlob helper
+@@ -199,7 +199,7 @@
+       case "modify-message": {
+         const { messageId, addLabelIds, removeLabelIds } = body;
+         if (!messageId) throw new Error("messageId required");
+-        data = await gmailFetch(`/users/me/messages/${messageId}/modify`, {
++        data = await gmailFetch(svc, `/users/me/messages/${messageId}/modify`, {
+           method: "POST",
+           body: JSON.stringify({
+             addLabelIds: addLabelIds || [],
+@@ -211,13 +211,13 @@
+       case "trash-message": {
+         const { messageId } = body;
+         if (!messageId) throw new Error("messageId required");
+-        data = await gmailFetch(`/users/me/messages/${messageId}/trash`, { method: "POST" });
++        data = await gmailFetch(svc, `/users/me/messages/${messageId}/trash`, { method: "POST" });
+         break;
+       }
+       case "untrash-message": {
+         const { messageId } = body;
+         if (!messageId) throw new Error("messageId required");
+-        data = await gmailFetch(`/users/me/messages/${messageId}/untrash`, { method: "POST" });
++        data = await gmailFetch(svc, `/users/me/messages/${messageId}/untrash`, { method: "POST" });
+         break;
+       }
+       case "send-message": {
+@@ -234,7 +234,7 @@
+           html,
+         ].filter(Boolean);
+         const raw = b64UrlEncode(new TextEncoder().encode(lines.join("\r\n")));
+-        data = await gmailFetch(`/users/me/messages/send`, {
++        data = await gmailFetch(svc, `/users/me/messages/send`, {
+           method: "POST",
+           body: JSON.stringify({ raw }),
+         });
+--- baseline5/bridgefort-estate-gateway-94/supabase/functions/gmail-sync-to-db/index.ts	2026-07-27 04:47:26.505900191 +0000
++++ project/bridgefort-estate-gateway-94/supabase/functions/gmail-sync-to-db/index.ts	2026-07-27 04:44:30.293279958 +0000
+@@ -75,14 +75,14 @@
+ 
+     for (const label of LABELS_TO_SYNC) {
+       try {
+-        const list = await gmailFetch(
++        const list = await gmailFetch(svc,
+           `/users/me/messages?maxResults=${maxPerLabel}&labelIds=${label}`
+         );
+         const ids: { id: string }[] = list.messages || [];
+ 
+         for (const { id } of ids) {
+           try {
+-            const full = await gmailFetch(`/users/me/messages/${id}?format=full`);
++            const full = await gmailFetch(svc, `/users/me/messages/${id}?format=full`);
+             const parsed = parseMessage(full);
+             const folder = gmailLabelsToFolder(parsed.labelIds);
+ 
+--- original/bridgefort-estate-gateway-94/supabase/config.toml	2026-07-18 17:41:48.000000000 +0000
++++ project/bridgefort-estate-gateway-94/supabase/config.toml	2026-07-27 04:47:06.751292523 +0000
+@@ -39,6 +39,9 @@
+ [functions.send-email]
+ verify_jwt = false
+ 
++[functions.gmail-oauth-callback]
++verify_jwt = false
++
+ [functions.resend-receive-emails]
+ verify_jwt = false
+ 
+--- /dev/null	2026-07-23 23:47:22.115734315 +0000
++++ project/bridgefort-estate-gateway-94/supabase/migrations/20260801000000_gmail_oauth_tokens.sql	2026-07-27 04:45:31.594018180 +0000
+@@ -0,0 +1,45 @@
++-- Storage for direct Gmail OAuth tokens (replaces the Lovable connector
++-- gateway, which only ever had metadata-scope access and can no longer be
++-- reconnected since Lovable access was lost). This table is intentionally
++-- NOT readable/writable by any client role — only edge functions, using the
++-- service role key, ever touch it. Tokens are sensitive; there's no reason
++-- for them to be reachable from the browser at all, so RLS is enabled with
++-- zero policies for authenticated/anon rather than trying to write a "only
++-- admins" policy that the client could still query against.
++
++CREATE TABLE IF NOT EXISTS public.gmail_oauth_tokens (
++  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
++  email text NOT NULL UNIQUE, -- the Gmail address this token is for
++  access_token text NOT NULL,
++  refresh_token text NOT NULL,
++  expires_at timestamptz NOT NULL,
++  connected_by uuid REFERENCES public.profiles(id),
++  created_at timestamptz NOT NULL DEFAULT now(),
++  updated_at timestamptz NOT NULL DEFAULT now()
++);
++
++ALTER TABLE public.gmail_oauth_tokens ENABLE ROW LEVEL SECURITY;
++-- No policies added deliberately — this table is edge-function-only.
++
++DROP TRIGGER IF EXISTS trg_gmail_oauth_tokens_updated_at ON public.gmail_oauth_tokens;
++CREATE TRIGGER trg_gmail_oauth_tokens_updated_at
++BEFORE UPDATE ON public.gmail_oauth_tokens
++FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
++
++-- gmail-oauth-callback is necessarily a public endpoint (Google redirects
++-- the browser there directly — it can't attach a Supabase Authorization
++-- header). Without something tying that callback back to a specific,
++-- recently-initiated request from an authenticated admin, anyone could hit
++-- the callback URL with a code from their own Google account and have your
++-- database store OAuth tokens for THEIR Gmail instead of yours. This table
++-- is that tie: gmail-oauth-start creates a one-time, short-lived state
++-- value scoped to the admin who requested it; the callback consumes it
++-- exactly once and rejects anything else.
++CREATE TABLE IF NOT EXISTS public.gmail_oauth_state (
++  state text PRIMARY KEY,
++  requested_by uuid REFERENCES public.profiles(id),
++  created_at timestamptz NOT NULL DEFAULT now(),
++  used boolean NOT NULL DEFAULT false
++);
++ALTER TABLE public.gmail_oauth_state ENABLE ROW LEVEL SECURITY;
++-- No client policies here either — edge-function-only, same reasoning as gmail_oauth_tokens.
+--- /dev/null	2026-07-23 23:47:22.115734315 +0000
++++ project/bridgefort-estate-gateway-94/supabase/functions/gmail-oauth-start/index.ts	2026-07-27 04:45:55.107206617 +0000
+@@ -0,0 +1,84 @@
++import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
++import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
++import { requireEnv } from "../_shared/gmail.ts";
++
++const corsHeaders = {
++  "Access-Control-Allow-Origin": "*",
++  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
++};
++
++serve(async (req) => {
++  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
++
++  try {
++    const authHeader = req.headers.get("Authorization");
++    if (!authHeader?.startsWith("Bearer ")) {
++      return new Response(JSON.stringify({ error: "Unauthorized" }), {
++        status: 401,
++        headers: { ...corsHeaders, "Content-Type": "application/json" },
++      });
++    }
++
++    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
++    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
++    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
++
++    const authed = createClient(supabaseUrl, anonKey, {
++      global: { headers: { Authorization: authHeader } },
++    });
++    const token = authHeader.replace("Bearer ", "");
++    const { data: userData, error: userError } = await authed.auth.getUser(token);
++    if (userError || !userData?.user) {
++      return new Response(JSON.stringify({ error: "Unauthorized" }), {
++        status: 401,
++        headers: { ...corsHeaders, "Content-Type": "application/json" },
++      });
++    }
++
++    const svc = createClient(supabaseUrl, serviceKey);
++    const { data: isAdmin } = await svc.rpc("has_role", {
++      _user_id: userData.user.id,
++      _role: "admin",
++    });
++    if (!isAdmin) {
++      return new Response(JSON.stringify({ error: "Forbidden" }), {
++        status: 403,
++        headers: { ...corsHeaders, "Content-Type": "application/json" },
++      });
++    }
++
++    // One-time state token, tied to this admin, expires implicitly by only
++    // being accepted within a few minutes (checked in the callback).
++    const state = crypto.randomUUID();
++    const { error: stateError } = await svc.from("gmail_oauth_state").insert({
++      state,
++      requested_by: userData.user.id,
++    });
++    if (stateError) throw new Error(`Failed to create OAuth state: ${stateError.message}`);
++
++    const clientId = requireEnv("GOOGLE_CLIENT_ID");
++    const redirectUri = `${supabaseUrl}/functions/v1/gmail-oauth-callback`;
++
++    const params = new URLSearchParams({
++      client_id: clientId,
++      redirect_uri: redirectUri,
++      response_type: "code",
++      scope: "https://www.googleapis.com/auth/gmail.modify",
++      access_type: "offline", // required to get a refresh_token back
++      prompt: "consent", // forces Google to re-issue a refresh_token even on reconnect
++      state,
++    });
++
++    const url = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
++
++    return new Response(JSON.stringify({ url }), {
++      headers: { ...corsHeaders, "Content-Type": "application/json" },
++    });
++  } catch (error: any) {
++    console.error("gmail-oauth-start error:", error);
++    return new Response(JSON.stringify({ error: error.message }), {
++      status: 500,
++      headers: { ...corsHeaders, "Content-Type": "application/json" },
++    });
++  }
++});
+--- /dev/null	2026-07-23 23:47:22.115734315 +0000
++++ project/bridgefort-estate-gateway-94/supabase/functions/gmail-oauth-callback/index.ts	2026-07-27 04:46:44.639209561 +0000
+@@ -0,0 +1,124 @@
++import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
++import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
++import { requireEnv } from "../_shared/gmail.ts";
++
++// Deliberately public — Google's redirect is a plain browser GET request
++// with no Authorization header, so this can't require a Supabase JWT the
++// way every other function here does. Security instead comes from the
++// one-time `state` token (see gmail-oauth-start and the gmail_oauth_state
++// table): only a request carrying a state value that was just issued to an
++// authenticated admin, and not already used, is accepted.
++
++function redirectTo(appUrl: string, params: Record<string, string>) {
++  const url = new URL(`${appUrl}/admin-console`);
++  url.searchParams.set("tab", "emails");
++  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
++  return new Response(null, { status: 302, headers: { Location: url.toString() } });
++}
++
++serve(async (req) => {
++  const url = new URL(req.url);
++  const code = url.searchParams.get("code");
++  const state = url.searchParams.get("state");
++  const oauthError = url.searchParams.get("error");
++
++  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
++  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
++  const appUrl = Deno.env.get("APP_URL") || "https://www.bridgeforthomes.com";
++  const svc = createClient(supabaseUrl, serviceKey);
++
++  if (oauthError) {
++    return redirectTo(appUrl, { gmail_error: oauthError });
++  }
++  if (!code || !state) {
++    return redirectTo(appUrl, { gmail_error: "missing_code_or_state" });
++  }
++
++  try {
++    // Consume the state exactly once. If it's missing, already used, or
++    // older than 10 minutes, reject — this is what stops a stray or
++    // malicious hit on this URL from storing tokens for the wrong account.
++    const { data: stateRow, error: stateError } = await svc
++      .from("gmail_oauth_state")
++      .select("*")
++      .eq("state", state)
++      .eq("used", false)
++      .maybeSingle();
++
++    if (stateError || !stateRow) {
++      return redirectTo(appUrl, { gmail_error: "invalid_or_expired_state" });
++    }
++    const ageMs = Date.now() - new Date(stateRow.created_at as string).getTime();
++    if (ageMs > 10 * 60 * 1000) {
++      return redirectTo(appUrl, { gmail_error: "expired_state" });
++    }
++
++    await svc.from("gmail_oauth_state").update({ used: true }).eq("state", state);
++
++    const clientId = requireEnv("GOOGLE_CLIENT_ID");
++    const clientSecret = requireEnv("GOOGLE_CLIENT_SECRET");
++    const redirectUri = `${supabaseUrl}/functions/v1/gmail-oauth-callback`;
++
++    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
++      method: "POST",
++      headers: { "Content-Type": "application/x-www-form-urlencoded" },
++      body: new URLSearchParams({
++        code,
++        client_id: clientId,
++        client_secret: clientSecret,
++        redirect_uri: redirectUri,
++        grant_type: "authorization_code",
++      }),
++    });
++    const tokenData = await tokenRes.json();
++    if (!tokenRes.ok) {
++      console.error("Gmail token exchange failed:", tokenData);
++      return redirectTo(appUrl, { gmail_error: "token_exchange_failed" });
++    }
++
++    // Need the actual Gmail address this token belongs to, since
++    // gmail_oauth_tokens.email is the unique key (supports multiple
++    // connected accounts down the line without a schema change).
++    const profileRes = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/profile", {
++      headers: { Authorization: `Bearer ${tokenData.access_token}` },
++    });
++    const profileData = await profileRes.json();
++    const email = profileData.emailAddress;
++    if (!profileRes.ok || !email) {
++      console.error("Failed to fetch connected Gmail profile:", profileData);
++      return redirectTo(appUrl, { gmail_error: "profile_fetch_failed" });
++    }
++
++    if (!tokenData.refresh_token) {
++      // Happens if this exact Google account already granted consent
++      // before and Google decided not to re-issue a refresh_token. Since
++      // gmail-oauth-start always sends prompt=consent specifically to avoid
++      // this, seeing it anyway usually means Google is not honoring that —
++      // rare, but surfacing it clearly is better than silently storing a
++      // token that will stop working the moment the access token expires.
++      return redirectTo(appUrl, { gmail_error: "no_refresh_token" });
++    }
++
++    const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
++
++    const { error: upsertError } = await svc.from("gmail_oauth_tokens").upsert(
++      {
++        email,
++        access_token: tokenData.access_token,
++        refresh_token: tokenData.refresh_token,
++        expires_at: expiresAt,
++        connected_by: stateRow.requested_by,
++      },
++      { onConflict: "email" }
++    );
++    if (upsertError) {
++      console.error("Failed to store Gmail tokens:", upsertError);
++      return redirectTo(appUrl, { gmail_error: "storage_failed" });
++    }
++
++    return redirectTo(appUrl, { gmail_connected: "1", gmail_email: email });
++  } catch (error: any) {
++    console.error("gmail-oauth-callback error:", error);
++    return redirectTo(appUrl, { gmail_error: "unexpected_error" });
++  }
++});
