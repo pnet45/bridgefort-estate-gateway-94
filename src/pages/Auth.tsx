@@ -634,19 +634,22 @@ const Auth = ({
               </>
             )}
             
-            {/* reCAPTCHA */}
-            <div className="flex justify-center">
+            {/* reCAPTCHA temporarily disabled — it was blocking real users
+                from completing signup/login. To re-enable: uncomment this
+                block and restore `!recaptchaToken` in the Button's disabled
+                condition below. */}
+            {/* <div className="flex justify-center">
               <ReCaptcha
                 ref={recaptchaRef}
                 onChange={(token) => setRecaptchaToken(token)}
                 onExpired={() => setRecaptchaToken(null)}
                 onError={() => setRecaptchaToken(null)}
               />
-            </div>
+            </div> */}
 
             <Button 
               type="submit" 
-              disabled={loading || !recaptchaToken || (!isLogin && !agreedToTerms)} 
+              disabled={loading || (!isLogin && !agreedToTerms)} 
               className="w-full bg-estate-blue hover:bg-estate-darkBlue"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
