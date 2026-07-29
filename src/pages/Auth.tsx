@@ -222,7 +222,7 @@ const Auth = ({
     if (password !== confirmPassword) {
       toast({
         title: "Password mismatch",
-        description: "Passwords do not match"
+        description: "Passwords do not match, check agan!"
       });
       return;
     }
@@ -236,30 +236,30 @@ const Auth = ({
       return;
     }
 
-    if (!recaptchaToken) {
-      toast({
-        title: "reCAPTCHA Required",
-        description: "Please complete the reCAPTCHA verification",
-        variant: "destructive"
-      });
-      return;
-    }
+    //if (!recaptchaToken) {
+      //toast({
+        //title: "reCAPTCHA Required",
+        //description: "Please complete the reCAPTCHA verification",
+        //variant: "destructive"
+      //});
+      //return;
+    //}
 
     setLoading(true);
     try {
       // Verify reCAPTCHA first
-      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
-      if (!isRecaptchaValid) {
-        toast({
-          title: "reCAPTCHA Failed",
-          description: "Please complete the reCAPTCHA verification again",
-          variant: "destructive"
-        });
-        setRecaptchaToken(null);
-        if (recaptchaRef.current) {
-          recaptchaRef.current.reset();
-        }
-        return;
+      //const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+      //if (!isRecaptchaValid) {
+        //toast({
+          //title: "reCAPTCHA Failed",
+          //description: "Please complete the reCAPTCHA verification again",
+          //variant: "destructive"
+        //});
+        //setRecaptchaToken(null);
+        //if (recaptchaRef.current) {
+          //recaptchaRef.current.reset();
+        //}
+        //return;
       }
 
       const { data, error } = await signUp(email, password, firstName, lastName);
