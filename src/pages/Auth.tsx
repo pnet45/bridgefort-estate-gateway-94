@@ -102,32 +102,37 @@ const Auth = ({
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!recaptchaToken) {
-      toast({
-        title: "reCAPTCHA Required",
-        description: "Please complete the reCAPTCHA verification",
-        variant: "destructive"
-      });
-      return;
-    }
+
+    // reCAPTCHA temporarily disabled — it was blocking real users from
+    // signing in/up (see handleSignUp for the same change). To re-enable:
+    // restore the `!recaptchaToken` guard below and the verifyRecaptcha()
+    // call, and remove the `disabled={loading || ...}` override on the
+    // buttons that dropped `!recaptchaToken`.
+    // if (!recaptchaToken) {
+    //   toast({
+    //     title: "reCAPTCHA Required",
+    //     description: "Please complete the reCAPTCHA verification",
+    //     variant: "destructive"
+    //   });
+    //   return;
+    // }
 
     setLoading(true);
     try {
-      // Verify reCAPTCHA first
-      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
-      if (!isRecaptchaValid) {
-        toast({
-          title: "reCAPTCHA Failed",
-          description: "Please complete the reCAPTCHA verification again",
-          variant: "destructive"
-        });
-        setRecaptchaToken(null);
-        if (recaptchaRef.current) {
-          recaptchaRef.current.reset();
-        }
-        return;
-      }
+      // reCAPTCHA verification disabled — see note above.
+      // const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+      // if (!isRecaptchaValid) {
+      //   toast({
+      //     title: "reCAPTCHA Failed",
+      //     description: "Please complete the reCAPTCHA verification again",
+      //     variant: "destructive"
+      //   });
+      //   setRecaptchaToken(null);
+      //   if (recaptchaRef.current) {
+      //     recaptchaRef.current.reset();
+      //   }
+      //   return;
+      // }
 
       // Realtors and Client login both just use email + password. The PBO/
       // Realtor code is only relevant at signup (to credit whoever referred
@@ -222,7 +227,7 @@ const Auth = ({
     if (password !== confirmPassword) {
       toast({
         title: "Password mismatch",
-        description: "Passwords do not match, check agan!"
+        description: "Passwords do not match"
       });
       return;
     }
@@ -236,31 +241,32 @@ const Auth = ({
       return;
     }
 
-    //if (!recaptchaToken) {
-      //toast({
-        //title: "reCAPTCHA Required",
-        //description: "Please complete the reCAPTCHA verification",
-        //variant: "destructive"
-      //});
-      //return;
-    //}
+    // reCAPTCHA temporarily disabled — see the matching note in handleSignIn.
+    // if (!recaptchaToken) {
+    //   toast({
+    //     title: "reCAPTCHA Required",
+    //     description: "Please complete the reCAPTCHA verification",
+    //     variant: "destructive"
+    //   });
+    //   return;
+    // }
 
     setLoading(true);
     try {
-      // Verify reCAPTCHA first
-      //const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
-      //if (!isRecaptchaValid) {
-        //toast({
-          //title: "reCAPTCHA Failed",
-          //description: "Please complete the reCAPTCHA verification again",
-          //variant: "destructive"
-        //});
-        //setRecaptchaToken(null);
-        //if (recaptchaRef.current) {
-          //recaptchaRef.current.reset();
-        //}
-        //return;
-      }
+      // reCAPTCHA verification disabled — see note in handleSignIn.
+      // const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+      // if (!isRecaptchaValid) {
+      //   toast({
+      //     title: "reCAPTCHA Failed",
+      //     description: "Please complete the reCAPTCHA verification again",
+      //     variant: "destructive"
+      //   });
+      //   setRecaptchaToken(null);
+      //   if (recaptchaRef.current) {
+      //     recaptchaRef.current.reset();
+      //   }
+      //   return;
+      // }
 
       const { data, error } = await signUp(email, password, firstName, lastName);
       if (error) throw error;
