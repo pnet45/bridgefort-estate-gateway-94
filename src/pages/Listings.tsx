@@ -78,7 +78,7 @@ const Listings = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-1 pt-16 lg:pt-20">
+      <main className="flex-1 pt-[88px] lg:pt-[104px]">
         {/* Hero */}
         <section className="bg-gradient-to-br from-primary/10 via-background to-accent/10 py-10 lg:py-16">
           <div className="container-custom flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">

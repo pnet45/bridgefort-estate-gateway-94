@@ -25,8 +25,8 @@ const Home = () => {
     <div className="flex flex-col min-h-screen bg-aurora-mesh">
       <Navbar />
 
-      {/* Hero Section - below fixed navbar */}
-      <div className="pt-16 lg:pt-20">
+      {/* Hero Section - begins immediately below the fixed navbar (navbar is h-[88px] lg:h-[104px]) */}
+      <div className="pt-[88px] lg:pt-[104px]">
         <HomeHeroImage />
       </div>
 

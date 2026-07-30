@@ -49,20 +49,36 @@ const CartSidebar = () => {
 
         <div className="flex flex-col h-full">
           {cart.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <ShoppingBag size={48} className="mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600">Your cart is empty</p>
+            <div className="flex-1 flex items-center justify-center px-6">
+              <div className="text-center max-w-xs mx-auto">
+                <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-estate-blue/10">
+                  <ShoppingBag size={40} className="text-estate-blue" strokeWidth={1.5} />
+                </div>
+                <h3 className="text-base font-semibold text-foreground mb-2">
+                  Your cart is empty
+                </h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Looks like you haven't added any plots or properties yet. Explore our listings to find your next investment.
+                </p>
+                <Button
+                  className="bg-estate-blue hover:bg-estate-darkBlue text-white"
+                  onClick={() => {
+                    setIsCartOpen(false);
+                    navigate('/properties');
+                  }}
+                >
+                  Browse Estates
+                </Button>
               </div>
             </div>
           ) : (
             <>
               <div className="flex-1 overflow-y-auto space-y-4 py-4">
                 {cart.map((item) => (
-                  <div key={item.plot.id} className="border rounded-lg p-4">
+                  <div key={item.plot.id} className="border border-border rounded-lg p-4 transition-colors hover:border-estate-blue/30 hover:bg-muted/40">
                     <div className="flex gap-3">
                       <div 
-                        className="w-16 h-16 bg-cover bg-center rounded-md flex-shrink-0"
+                        className="w-16 h-16 bg-cover bg-center rounded-md flex-shrink-0 border border-border"
                         style={{ backgroundImage: `url(${item.plot.imageUrl})` }}
                       />
                       <div className="flex-1 min-w-0">

@@ -1,7 +1,7 @@
 
 const PropertyHero = () => {
   return (
-    <section className="relative pt-16 lg:pt-20">
+    <section className="relative pt-[88px] lg:pt-[104px]">
       <div className="h-[50vh] bg-cover bg-center" style={{ backgroundImage: 'url(/lovable-uploads/5f92d89a-e9fc-4c84-a49d-72cb376b8510.png)' }}>
         <div className="absolute inset-0 hero-overlay flex items-center">
           <div className="container-custom text-white">

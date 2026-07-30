@@ -71,7 +71,7 @@ const ListingDetails = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-1 pt-16 lg:pt-20">
+      <main className="flex-1 pt-[88px] lg:pt-[104px]">
         {/* Breadcrumb */}
         <div className="container-custom py-4">
           <Link to="/listings" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1">

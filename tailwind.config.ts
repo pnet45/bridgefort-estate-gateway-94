@@ -78,44 +78,13 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
-        roll: {
-          '0%': { transform: 'translateX(0) rotate(0deg)' },
-          '50%': { transform: 'translateX(6px) rotate(3deg)' },
-          '100%': { transform: 'translateX(0) rotate(0deg)' },
-        },
-        'bounce-zoom': {
-          '0%': { transform: 'scale(1) translateY(0)' },
-          '30%': { transform: 'scale(1.06) translateY(-6px)' },
-          '60%': { transform: 'scale(0.995) translateY(0)' },
-          '100%': { transform: 'scale(1) translateY(0)' },
-        },
-        'focus-zoom': {
-          '0%': { transform: 'scale(1)' },
-          '100%': { transform: 'scale(1.035)' },
-        },
-        'roll-in': {
-          '0%': { transform: 'translateX(-60px) rotate(-8deg)', opacity: '0' },
-          '60%': { transform: 'translateX(6px) rotate(2deg)', opacity: '1' },
-          '100%': { transform: 'translateX(0) rotate(0deg)', opacity: '1' },
-        },
-        'drop-in': {
-          '0%': { transform: 'translateY(-40px) scale(0.96)', opacity: '0' },
-          '60%': { transform: 'translateY(8px) scale(1.01)', opacity: '1' },
-          '80%': { transform: 'translateY(-3px) scale(0.998)' },
-          '100%': { transform: 'translateY(0) scale(1)', opacity: '1' },
-        },
-        'card-bob': {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-5px)' },
+        'fly-in': {
+          '0%': { transform: 'translateY(24px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       },
       animation: {
-        roll: 'roll 420ms cubic-bezier(0.22, 1, 0.36, 1)',
-        'bounce-zoom': 'bounce-zoom 700ms cubic-bezier(.2,.8,.2,1)',
-        'focus-zoom': 'focus-zoom 160ms ease-out',
-        'roll-in': 'roll-in 650ms cubic-bezier(.2,.8,.2,1) both',
-        'drop-in': 'drop-in 700ms cubic-bezier(.2,.8,.2,1) both',
-        'card-bob': 'card-bob 3.2s ease-in-out infinite',
+        'fly-in': 'fly-in 500ms cubic-bezier(0.22, 1, 0.36, 1) both',
       },
     },
   },

@@ -23,7 +23,7 @@ const BlogHeader = () => {
   }, [heroImages.length]);
 
   return (
-    <section className="relative pt-16 lg:pt-20">
+    <section className="relative pt-[88px] lg:pt-[104px]">
       <div className="h-[40vh] bg-cover bg-center transition-all duration-1000 ease-in-out" style={{
         backgroundImage: `url(${heroImages[currentSlide]})`
       }}>

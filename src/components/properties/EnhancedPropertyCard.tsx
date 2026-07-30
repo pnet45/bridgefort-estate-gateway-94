@@ -43,7 +43,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
   return (
     <>
       <Card
-        className={`group relative overflow-hidden cursor-pointer transition-all duration-500 animate-roll-in hover:shadow-2xl hover:-translate-y-1 transform ${
+        className={`group relative overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 transform ${
           isHovered ? 'shadow-2xl -translate-y-1' : 'shadow-lg'
         } ${!isAvailable ? 'opacity-75' : ''}`}
         onMouseEnter={() => setIsHovered(true)}
@@ -61,7 +61,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
             src={property.imageUrl}
             alt={property.title}
             className={`w-full h-full object-cover transition-all duration-700 ${
-              isHovered ? 'scale-110 brightness-110' : 'scale-100'
+              isHovered ? 'scale-105 brightness-105' : 'scale-100'
             }`}
             loading="lazy"
             onError={(e) => {

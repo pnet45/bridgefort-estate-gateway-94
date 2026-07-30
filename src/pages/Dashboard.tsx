@@ -87,7 +87,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="pt-16 lg:pt-20 container mx-auto px-4 py-8">
+        <div className="pt-[88px] lg:pt-[104px] container mx-auto px-4 py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
             <p className="text-gray-600">Please log in to access your dashboard.</p>
@@ -101,7 +101,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="pt-16 lg:pt-20">
+      <div className="pt-[88px] lg:pt-[104px]">
         {/* User Info Header */}
         <div className="bg-white border-b">
           <div className="container mx-auto px-4 py-6">

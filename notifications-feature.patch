@@ -1,0 +1,740 @@
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/App.tsx project/bridgefort-estate-gateway-94/src/App.tsx
+--- original/bridgefort-estate-gateway-94/src/App.tsx	2026-07-18 12:26:26.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/App.tsx	2026-07-24 21:08:36.018794456 +0000
+@@ -22,6 +22,9 @@
+ import ScrollToTopButton from '@/components/ScrollToTopButton';
+ import CartSidebar from '@/components/ecommerce/CartSidebar';
+ import GlobalFloatingWidgets from '@/components/GlobalFloatingWidgets';
++import { Toaster as ShadcnToaster } from '@/components/ui/toaster';
++import { Toaster as SonnerToaster } from '@/components/ui/sonner';
++import { NotificationModalHost } from '@/components/notifications/NotificationModalHost';
+ 
+ // Pages
+ import Index from '@/pages/Index';
+@@ -175,6 +178,12 @@
+               <GlobalFloatingWidgets />
+               <CartSidebar />
+               <ScrollToTopButton />
++
++              {/* Unified notification system — mounted once so every route is covered.
++                  See src/lib/notifications/notify.ts for the dispatcher. */}
++              <ShadcnToaster />
++              <SonnerToaster />
++              <NotificationModalHost />
+             </div>
+           </EcommerceProvider>
+         </AuthProvider>
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/components/notifications/NotificationModalHost.tsx project/bridgefort-estate-gateway-94/src/components/notifications/NotificationModalHost.tsx
+--- original/bridgefort-estate-gateway-94/src/components/notifications/NotificationModalHost.tsx	1970-01-01 00:00:00.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/components/notifications/NotificationModalHost.tsx	2026-07-24 21:08:15.687651068 +0000
+@@ -0,0 +1,61 @@
++import { useRef, useSyncExternalStore } from 'react';
++import {
++  Dialog,
++  DialogContent,
++  DialogHeader,
++  DialogTitle,
++  DialogDescription,
++  DialogFooter,
++} from '@/components/ui/dialog';
++import { Button } from '@/components/ui/button';
++import { subscribeModals, getModalSnapshot, dismissModal } from '@/lib/notifications/modal-store';
++import { useFocusRegistration } from '@/hooks/useFocusRegistration';
++
++/**
++ * Renders notifications fired via `notify({ kind: 'modal' })` (or any
++ * `severity: 'critical'` notification, which auto-resolves to a modal).
++ * Mount exactly once, at the app root — see App.tsx.
++ *
++ * Built on the existing Radix-based <Dialog>, so focus-trap-on-open and
++ * focus-return-on-close are handled by Radix itself. While a modal
++ * notification is open, it also registers with the focus registry so a
++ * related toast/snackbar firing afterward (e.g. "still waiting on your
++ * confirmation") can redirect focus back into it.
++ */
++export function NotificationModalHost() {
++  const queue = useSyncExternalStore(subscribeModals, getModalSnapshot, getModalSnapshot);
++  const current = queue[0];
++  const contentRef = useRef<HTMLDivElement>(null);
++
++  useFocusRegistration(contentRef, { active: !!current, id: current?.id });
++
++  if (!current) return null;
++
++  const close = () => dismissModal(current.id);
++
++  return (
++    <Dialog open onOpenChange={(open) => !open && close()}>
++      <DialogContent ref={contentRef}>
++        <DialogHeader>
++          <DialogTitle>{current.title}</DialogTitle>
++          {current.message && <DialogDescription>{current.message}</DialogDescription>}
++        </DialogHeader>
++        <DialogFooter>
++          {current.actionLabel && (
++            <Button
++              onClick={() => {
++                current.onAction?.();
++                close();
++              }}
++            >
++              {current.actionLabel}
++            </Button>
++          )}
++          <Button variant="secondary" onClick={close}>
++            {current.actionLabel ? 'Dismiss' : 'OK'}
++          </Button>
++        </DialogFooter>
++      </DialogContent>
++    </Dialog>
++  );
++}
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/hooks/useFocusRegistration.ts project/bridgefort-estate-gateway-94/src/hooks/useFocusRegistration.ts
+--- original/bridgefort-estate-gateway-94/src/hooks/useFocusRegistration.ts	1970-01-01 00:00:00.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/hooks/useFocusRegistration.ts	2026-07-24 21:07:35.675651983 +0000
+@@ -0,0 +1,56 @@
++import { useEffect } from 'react';
++import type { RefObject } from 'react';
++import { registerFocusTarget } from '@/lib/notifications/focus-registry';
++
++interface UseFocusRegistrationOptions {
++  /** Only register while this is true (e.g. a modal's `open` state). Default: true. */
++  active?: boolean;
++  /** Identifier, useful for debugging which target last received focus. */
++  id?: string;
++  /**
++   * Custom focus behavior. By default: focus the first invalid field inside
++   * the container if one exists, otherwise the first focusable element.
++   */
++  focus?: () => void;
++}
++
++function defaultFocus(container: HTMLElement) {
++  const invalid = container.querySelector<HTMLElement>(
++    '[aria-invalid="true"], [data-invalid="true"]'
++  );
++  const target =
++    invalid ??
++    container.querySelector<HTMLElement>(
++      'input, textarea, select, button, [href], [tabindex]:not([tabindex="-1"])'
++    );
++  target?.focus();
++}
++
++/**
++ * Registers a form or modal container as the "active" focus target. While
++ * registered, `notify({ focusActiveForm: true })` calls will move keyboard
++ * focus into it (first invalid field, or first focusable element).
++ *
++ * Usage: call inside any modal/dialog/form component, passing a ref to its
++ * outermost container.
++ */
++export function useFocusRegistration(
++  containerRef: RefObject<HTMLElement>,
++  options: UseFocusRegistrationOptions = {}
++) {
++  const { active = true, id = 'anonymous', focus } = options;
++
++  useEffect(() => {
++    if (!active) return;
++    const el = containerRef.current;
++    if (!el) return;
++
++    const unregister = registerFocusTarget({
++      id,
++      focus: focus ?? (() => defaultFocus(el)),
++    });
++
++    return unregister;
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++  }, [active, id, containerRef.current]);
++}
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/lib/notifications/focus-registry.ts project/bridgefort-estate-gateway-94/src/lib/notifications/focus-registry.ts
+--- original/bridgefort-estate-gateway-94/src/lib/notifications/focus-registry.ts	1970-01-01 00:00:00.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/lib/notifications/focus-registry.ts	2026-07-24 21:07:27.507652170 +0000
+@@ -0,0 +1,45 @@
++/**
++ * Focus registry
++ * ----------------
++ * A tiny stack of "active" forms/modals. Any open modal or form that cares
++ * about focus management registers itself here (see `useFocusRegistration`).
++ * When a notification fires with `focusActiveForm: true`, we move keyboard
++ * focus into the most recently registered (topmost) target — e.g. a
++ * validation-error toast can send focus back to the first invalid field in
++ * the open modal/form, instead of leaving focus stranded on a dismiss button
++ * or nowhere at all.
++ *
++ * This is deliberately independent of any single dialog implementation:
++ * Radix's own focus trap already handles focus-on-open / focus-return-on-close
++ * for modals it renders. This registry is for the cross-cutting case — a
++ * toast/snackbar elsewhere on the page needing to redirect focus back into
++ * whatever the user was already working in.
++ */
++
++export interface FocusTarget {
++  id: string;
++  /** Move keyboard focus to the right element within this target. */
++  focus: () => void;
++}
++
++const stack: FocusTarget[] = [];
++
++export function registerFocusTarget(target: FocusTarget): () => void {
++  stack.push(target);
++  return () => {
++    const i = stack.lastIndexOf(target);
++    if (i >= 0) stack.splice(i, 1);
++  };
++}
++
++/** Focuses the topmost registered target. Returns false if none are registered. */
++export function focusActiveTarget(): boolean {
++  const top = stack[stack.length - 1];
++  if (!top) return false;
++  top.focus();
++  return true;
++}
++
++export function hasActiveTarget(): boolean {
++  return stack.length > 0;
++}
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/lib/notifications/modal-store.ts project/bridgefort-estate-gateway-94/src/lib/notifications/modal-store.ts
+--- original/bridgefort-estate-gateway-94/src/lib/notifications/modal-store.ts	1970-01-01 00:00:00.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/lib/notifications/modal-store.ts	2026-07-24 21:07:48.799651683 +0000
+@@ -0,0 +1,42 @@
++import type { ModalNotification } from './types';
++
++/**
++ * Minimal external store (subscribe/getSnapshot) for imperatively-triggered
++ * modal notifications, so `notify({ kind: 'modal' })` can be called from
++ * anywhere (event handlers, async callbacks) without prop-drilling. Read via
++ * `useSyncExternalStore` in NotificationModalHost, which is mounted once at
++ * the app root.
++ */
++
++type Listener = () => void;
++
++let queue: ModalNotification[] = [];
++const listeners = new Set<Listener>();
++
++function emit() {
++  listeners.forEach((l) => l());
++}
++
++export function pushModal(input: Omit<ModalNotification, 'id'>): string {
++  const id =
++    typeof crypto !== 'undefined' && 'randomUUID' in crypto
++      ? crypto.randomUUID()
++      : `modal_${Date.now()}_${Math.random().toString(36).slice(2)}`;
++  queue = [...queue, { id, ...input }];
++  emit();
++  return id;
++}
++
++export function dismissModal(id: string) {
++  queue = queue.filter((m) => m.id !== id);
++  emit();
++}
++
++export function subscribeModals(listener: Listener): () => void {
++  listeners.add(listener);
++  return () => listeners.delete(listener);
++}
++
++export function getModalSnapshot(): ModalNotification[] {
++  return queue;
++}
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/lib/notifications/notify.ts project/bridgefort-estate-gateway-94/src/lib/notifications/notify.ts
+--- original/bridgefort-estate-gateway-94/src/lib/notifications/notify.ts	1970-01-01 00:00:00.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/lib/notifications/notify.ts	2026-07-24 21:08:03.739651341 +0000
+@@ -0,0 +1,124 @@
++import { toast as sonnerToast } from '@/components/ui/sonner';
++import { supabase } from '@/integrations/supabase/client';
++import { pushModal } from './modal-store';
++import { focusActiveTarget } from './focus-registry';
++import type { NotifyInput, NotifyKind } from './types';
++
++/**
++ * Decides which of the four notification kinds fits a given input, when the
++ * caller hasn't forced one explicitly:
++ *
++ *   1. severity: 'critical'   -> modal      (must be acknowledged, blocks input)
++ *   2. persist: true          -> stateful   (needs a durable record / bell entry)
++ *   3. actionLabel present    -> snackbar   (transient + an action, e.g. "Undo")
++ *   4. otherwise              -> toast      (transient, no action needed)
++ */
++export function resolveKind(input: NotifyInput): NotifyKind {
++  if (input.kind) return input.kind;
++  if (input.severity === 'critical') return 'modal';
++  if (input.persist) return 'stateful';
++  if (input.actionLabel) return 'snackbar';
++  return 'toast';
++}
++
++function fireToast(input: NotifyInput) {
++  const description = input.message;
++  switch (input.severity) {
++    case 'success':
++      sonnerToast.success(input.title, { description });
++      break;
++    case 'error':
++      sonnerToast.error(input.title, { description });
++      break;
++    case 'warning':
++      sonnerToast.warning(input.title, { description });
++      break;
++    default:
++      sonnerToast(input.title, { description });
++  }
++}
++
++function fireSnackbar(input: NotifyInput) {
++  sonnerToast(input.title, {
++    description: input.message,
++    position: 'bottom-left',
++    duration: 6000,
++    action: input.actionLabel
++      ? { label: input.actionLabel, onClick: () => input.onAction?.() }
++      : undefined,
++  });
++}
++
++function fireModal(input: NotifyInput) {
++  pushModal({
++    title: input.title,
++    message: input.message,
++    severity: input.severity,
++    actionLabel: input.actionLabel,
++    onAction: input.onAction,
++  });
++}
++
++async function fireStateful(input: NotifyInput) {
++  const { error } = await supabase.from('notifications').insert({
++    user_id: input.userId ?? null,
++    audience: input.audience ?? 'user',
++    type: input.type ?? input.severity ?? 'info',
++    title: input.title,
++    message: input.message ?? null,
++    link: input.link ?? null,
++  });
++  if (error) {
++    console.error('notify(): failed to persist stateful notification', error);
++  }
++  // Persisting alone is silent (it just shows up in the bell later). Most
++  // callers also want the user to notice it now, so bridge to a toast unless
++  // explicitly suppressed.
++  if (!input.silent) {
++    fireToast(input);
++  }
++}
++
++/**
++ * Single entry point for firing a notification. Picks toast / snackbar /
++ * modal / stateful automatically (see `resolveKind`), or honors an explicit
++ * `kind`. Pass `focusActiveForm: true` to move keyboard focus into whatever
++ * modal/form is currently registered (see focus-registry.ts) once the
++ * notification has been presented — useful for validation errors.
++ */
++export async function notify(input: NotifyInput): Promise<void> {
++  const kind = resolveKind(input);
++
++  switch (kind) {
++    case 'toast':
++      fireToast(input);
++      break;
++    case 'snackbar':
++      fireSnackbar(input);
++      break;
++    case 'modal':
++      fireModal(input);
++      break;
++    case 'stateful':
++      await fireStateful(input);
++      break;
++  }
++
++  if (input.focusActiveForm) {
++    // Defer one frame so the toast/modal has painted before we move focus.
++    requestAnimationFrame(() => focusActiveTarget());
++  }
++}
++
++// Convenience wrappers for call sites that already know which kind they want.
++export const notifyToast = (input: Omit<NotifyInput, 'kind'>) =>
++  notify({ ...input, kind: 'toast' });
++
++export const notifySnackbar = (input: Omit<NotifyInput, 'kind'>) =>
++  notify({ ...input, kind: 'snackbar' });
++
++export const notifyModal = (input: Omit<NotifyInput, 'kind'>) =>
++  notify({ ...input, kind: 'modal' });
++
++export const notifyStateful = (input: Omit<NotifyInput, 'kind' | 'persist'>) =>
++  notify({ ...input, kind: 'stateful', persist: true });
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/lib/notifications/types.ts project/bridgefort-estate-gateway-94/src/lib/notifications/types.ts
+--- original/bridgefort-estate-gateway-94/src/lib/notifications/types.ts	1970-01-01 00:00:00.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/lib/notifications/types.ts	2026-07-24 21:07:20.271652336 +0000
+@@ -0,0 +1,51 @@
++/**
++ * Shared types for the unified notification system.
++ *
++ * Four notification kinds, matching the categories used across the app:
++ *  - toast:     transient, auto-dismissing, top of screen (sonner)
++ *  - snackbar:  transient but action-bearing, bottom of screen (sonner)
++ *  - modal:     blocking dialog that requires acknowledgement (Radix Dialog)
++ *  - stateful:  persisted row in `notifications`, read by NotificationBell
++ */
++
++export type NotifyKind = 'toast' | 'snackbar' | 'modal' | 'stateful';
++
++export type NotifySeverity = 'info' | 'success' | 'warning' | 'error' | 'critical';
++
++export interface NotifyInput {
++  /** Short headline. */
++  title: string;
++  /** Optional supporting copy. */
++  message?: string;
++  /** Force a specific presentation. If omitted, `resolveKind` picks one. */
++  kind?: NotifyKind;
++  severity?: NotifySeverity;
++  /** Label for a snackbar/modal action button (e.g. "Undo", "Review"). */
++  actionLabel?: string;
++  onAction?: () => void;
++  /** Persist to the `notifications` table (forces kind: 'stateful' unless overridden). */
++  persist?: boolean;
++  /** Only relevant when persisting. */
++  audience?: 'user' | 'admin';
++  userId?: string;
++  link?: string;
++  /** Maps to `notifications.type`, also used by NotificationBell to pick an icon. */
++  type?: string;
++  /**
++   * If true, once the notification has been presented, move keyboard focus
++   * into the active form/modal (see focus-registry.ts) — e.g. a validation
++   * toast should return focus to the first invalid field.
++   */
++  focusActiveForm?: boolean;
++  /** Suppress the bridging toast that normally accompanies a stateful notification. */
++  silent?: boolean;
++}
++
++export interface ModalNotification {
++  id: string;
++  title: string;
++  message?: string;
++  severity?: NotifySeverity;
++  actionLabel?: string;
++  onAction?: () => void;
++}
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/AdminAuth.tsx project/bridgefort-estate-gateway-94/src/pages/AdminAuth.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/AdminAuth.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/AdminAuth.tsx	2026-07-24 21:08:47.260100897 +0000
+@@ -6,7 +6,6 @@
+ import { Input } from '@/components/ui/input';
+ import { Label } from '@/components/ui/label';
+ import { toast } from '@/hooks/use-toast';
+-import { Toaster } from '@/components/ui/toaster';
+ import ReCaptcha from '@/components/ui/ReCaptcha';
+ import { supabase } from '@/integrations/supabase/client';
+ import { Shield, Lock, ArrowLeft, AlertTriangle, Check, X, UserPlus } from 'lucide-react';
+@@ -706,7 +705,6 @@
+         <p>© {new Date().getFullYear()} Bridgefort Homes Development Ltd.</p>
+       </div>
+       
+-      <Toaster />
+     </div>
+   );
+ };
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/AdminConsole.tsx project/bridgefort-estate-gateway-94/src/pages/AdminConsole.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/AdminConsole.tsx	2026-07-21 05:40:24.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/AdminConsole.tsx	2026-07-24 21:08:47.212001302 +0000
+@@ -2,7 +2,6 @@
+ import { useNavigate } from 'react-router-dom';
+ import { useAuth } from '@/contexts/auth';
+ import { supabase } from '@/integrations/supabase/client';
+-import { Toaster } from '@/components/ui/toaster';
+ import { Button } from '@/components/ui/button';
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ import { 
+@@ -290,7 +289,6 @@
+         </Tabs>
+       </main>
+ 
+-      <Toaster />
+     </div>
+   );
+ };
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/ApartmentRentals.tsx project/bridgefort-estate-gateway-94/src/pages/ApartmentRentals.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/ApartmentRentals.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/ApartmentRentals.tsx	2026-07-24 21:08:47.239967917 +0000
+@@ -4,7 +4,6 @@
+ import WhatsAppChat from '../components/WhatsAppChat';
+ import PropertyFilters from '../components/properties/PropertyFilters';
+ import PropertyGrid from '../components/properties/PropertyGrid';
+-import { Toaster } from '@/components/ui/toaster';
+ import { PropertyProvider } from '../contexts/property';
+ import { Building2, Key, Calendar } from 'lucide-react';
+ import { Link } from 'react-router-dom';
+@@ -84,7 +83,6 @@
+ 
+         <Footer />
+         <WhatsAppChat />
+-        <Toaster />
+       </div>
+     </PropertyProvider>
+   );
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/Auth.tsx project/bridgefort-estate-gateway-94/src/pages/Auth.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/Auth.tsx	2026-07-21 05:37:48.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/Auth.tsx	2026-07-24 21:08:47.249582684 +0000
+@@ -8,7 +8,6 @@
+ import { Label } from '@/components/ui/label';
+ import { toast } from '@/hooks/use-toast';
+ import { emailService } from '@/services/emailClient';
+-import { Toaster } from '@/components/ui/toaster';
+ import ReCaptcha from '@/components/ui/ReCaptcha';
+ import AuthCarousel from '@/components/auth/AuthCarousel';
+ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+@@ -744,7 +743,6 @@
+         </DialogContent>
+       </Dialog>
+ 
+-      <Toaster />
+     </div>
+   );
+ };
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/Blog.tsx project/bridgefort-estate-gateway-94/src/pages/Blog.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/Blog.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/Blog.tsx	2026-07-24 21:08:47.279379576 +0000
+@@ -3,7 +3,6 @@
+ import Navbar from '../components/Navbar';
+ import Footer from '../components/Footer';
+ import WhatsAppChat from '../components/WhatsAppChat';
+-import { Toaster } from "@/components/ui/toaster";
+ import BlogHeader from '../components/blog/BlogHeader';
+ import BlogPosts from '../components/blog/BlogPosts';
+ import BlogCategories from '../components/blog/BlogCategories';
+@@ -87,7 +86,6 @@
+ 
+       <Footer />
+       <WhatsAppChat />
+-      <Toaster />
+     </div>
+   );
+ };
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/Career.tsx project/bridgefort-estate-gateway-94/src/pages/Career.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/Career.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/Career.tsx	2026-07-24 21:08:47.263650346 +0000
+@@ -1,6 +1,5 @@
+ 
+ import React from 'react';
+-import { Toaster } from '@/components/ui/toaster';
+ import { PropertyProvider } from '../contexts/property';
+ import Navbar from '../components/Navbar';
+ import Footer from '../components/Footer';
+@@ -32,7 +31,6 @@
+         {/* Pass apply handler to OpenPositions */}
+         <OpenPositions onApply={handleApplyClick} />
+         <Footer />
+-        <Toaster />
+         <WhatsAppChat />
+       </div>
+     </PropertyProvider>
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/CareerApplication.tsx project/bridgefort-estate-gateway-94/src/pages/CareerApplication.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/CareerApplication.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/CareerApplication.tsx	2026-07-24 21:08:47.220105485 +0000
+@@ -6,7 +6,6 @@
+ import Footer from "../components/Footer";
+ import { PropertyProvider } from "../contexts/property";
+ import WhatsAppChat from "../components/WhatsAppChat";
+-import { Toaster } from "@/components/ui/toaster";
+ 
+ // Simple sidebar example - you can expand/replace the content as needed
+ const Sidebar = () => (
+@@ -53,7 +52,6 @@
+           </main>
+         </div>
+         <Footer />
+-        <Toaster />
+         <WhatsAppChat />
+       </div>
+     </PropertyProvider>
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/CreatePost.tsx project/bridgefort-estate-gateway-94/src/pages/CreatePost.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/CreatePost.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/CreatePost.tsx	2026-07-24 21:08:47.234746295 +0000
+@@ -2,7 +2,6 @@
+ import React, { useState } from 'react';
+ import { useNavigate } from 'react-router-dom';
+ import { v4 as uuidv4 } from 'uuid';
+-import { Toaster } from '@/components/ui/toaster';
+ import { PostForm } from '@/components/blog/PostForm';
+ import { supabase } from '@/integrations/supabase/client';
+ import { CATEGORIES, INITIAL_POST } from '../components/blog/PostFormConstants';
+@@ -117,7 +116,6 @@
+       </main>
+ 
+       <Footer />
+-      <Toaster />
+     </div>
+   );
+ };
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/Dashboard.tsx project/bridgefort-estate-gateway-94/src/pages/Dashboard.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/Dashboard.tsx	2026-07-20 06:11:56.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/Dashboard.tsx	2026-07-24 21:08:47.230194432 +0000
+@@ -5,7 +5,6 @@
+ import Navbar from '@/components/Navbar';
+ import Footer from '@/components/Footer';
+ import ClientDashboard from '@/components/dashboard/ClientDashboard';
+-import { Toaster } from '@/components/ui/toaster';
+ import { Camera } from 'lucide-react';
+ import { toast } from 'sonner';
+ 
+@@ -95,7 +94,6 @@
+           </div>
+         </div>
+         <Footer />
+-        <Toaster />
+       </div>
+     );
+   }
+@@ -173,7 +171,6 @@
+         <ClientDashboard />
+       </div>
+       <Footer />
+-      <Toaster />
+     </div>
+   );
+ };
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/EditPost.tsx project/bridgefort-estate-gateway-94/src/pages/EditPost.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/EditPost.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/EditPost.tsx	2026-07-24 21:08:47.283050465 +0000
+@@ -2,7 +2,6 @@
+ import React, { useState, useEffect } from 'react';
+ import { useNavigate, useParams } from 'react-router-dom';
+ import { v4 as uuidv4 } from 'uuid';
+-import { Toaster } from '@/components/ui/toaster';
+ import { PostForm } from '@/components/blog/PostForm';
+ import { supabase } from '@/integrations/supabase/client';
+ import { CATEGORIES } from '../components/blog/PostFormConstants';
+@@ -184,7 +183,6 @@
+       </main>
+ 
+       <Footer />
+-      <Toaster />
+     </div>
+   );
+ };
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/EstateProperties.tsx project/bridgefort-estate-gateway-94/src/pages/EstateProperties.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/EstateProperties.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/EstateProperties.tsx	2026-07-24 21:08:47.255176952 +0000
+@@ -4,7 +4,6 @@
+ import WhatsAppChat from '../components/WhatsAppChat';
+ import PropertyFilters from '../components/properties/PropertyFilters';
+ import PropertyGrid from '../components/properties/PropertyGrid';
+-import { Toaster } from '@/components/ui/toaster';
+ import { PropertyProvider } from '../contexts/property';
+ import { MapPin, Layers, TrendingUp } from 'lucide-react';
+ import { Link } from 'react-router-dom';
+@@ -84,7 +83,6 @@
+ 
+         <Footer />
+         <WhatsAppChat />
+-        <Toaster />
+       </div>
+     </PropertyProvider>
+   );
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/HomesSales.tsx project/bridgefort-estate-gateway-94/src/pages/HomesSales.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/HomesSales.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/HomesSales.tsx	2026-07-24 21:08:47.270059073 +0000
+@@ -4,7 +4,6 @@
+ import WhatsAppChat from '../components/WhatsAppChat';
+ import PropertyFilters from '../components/properties/PropertyFilters';
+ import PropertyGrid from '../components/properties/PropertyGrid';
+-import { Toaster } from '@/components/ui/toaster';
+ import { PropertyProvider } from '../contexts/property';
+ import { Home, MapPin, Bed, Bath, DollarSign } from 'lucide-react';
+ import { Link } from 'react-router-dom';
+@@ -78,7 +77,6 @@
+ 
+         <Footer />
+         <WhatsAppChat />
+-        <Toaster />
+       </div>
+     </PropertyProvider>
+   );
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/OTPResetPassword.tsx project/bridgefort-estate-gateway-94/src/pages/OTPResetPassword.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/OTPResetPassword.tsx	2026-07-20 20:10:02.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/OTPResetPassword.tsx	2026-07-24 21:08:47.198734416 +0000
+@@ -4,7 +4,6 @@
+ import { Button } from '@/components/ui/button';
+ import { Input } from '@/components/ui/input';
+ import { Label } from '@/components/ui/label';
+-import { Toaster } from '@/components/ui/toaster';
+ import { toast } from '@/hooks/use-toast';
+ import { supabase } from '@/integrations/supabase/client';
+ import Navbar from '../components/Navbar';
+@@ -250,7 +249,6 @@
+         </div>
+       </div>
+       <Footer />
+-      <Toaster />
+     </>
+   );
+ };
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/Properties.tsx project/bridgefort-estate-gateway-94/src/pages/Properties.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/Properties.tsx	2026-07-16 20:54:38.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/Properties.tsx	2026-07-24 21:08:47.286884544 +0000
+@@ -6,7 +6,6 @@
+ import PropertyList from '../components/properties/PropertyList';
+ import SubscriptionGuide from '../components/properties/SubscriptionGuide';
+ import PurchaseGuide from '../components/properties/PurchaseGuide';
+-import { Toaster } from '@/components/ui/toaster';
+ import { PropertyProvider } from '../contexts/property';
+ 
+ const Properties = () => {
+@@ -40,7 +39,6 @@
+ 
+         <Footer />
+         <WhatsAppChat />
+-        <Toaster />
+       </div>
+     </PropertyProvider>
+   );
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/ResetPassword.tsx project/bridgefort-estate-gateway-94/src/pages/ResetPassword.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/ResetPassword.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/ResetPassword.tsx	2026-07-24 21:08:47.275009621 +0000
+@@ -4,7 +4,6 @@
+ import { Button } from '@/components/ui/button';
+ import { Input } from '@/components/ui/input';
+ import { Label } from '@/components/ui/label';
+-import { Toaster } from '@/components/ui/toaster';
+ import { toast } from '@/hooks/use-toast';
+ import { useAuth } from '@/contexts/auth';
+ import Navbar from '../components/Navbar';
+@@ -113,7 +112,6 @@
+         </div>
+       </div>
+       <Footer />
+-      <Toaster />
+     </>
+   );
+ };
+diff -ruN '--exclude=node_modules' '--exclude=dist' '--exclude=.git' original/bridgefort-estate-gateway-94/src/pages/Training.tsx project/bridgefort-estate-gateway-94/src/pages/Training.tsx
+--- original/bridgefort-estate-gateway-94/src/pages/Training.tsx	2026-07-09 15:26:40.000000000 +0000
++++ project/bridgefort-estate-gateway-94/src/pages/Training.tsx	2026-07-24 21:08:47.244512377 +0000
+@@ -10,7 +10,6 @@
+ import TrainingCTA from '../components/training/TrainingCTA';
+ import FeaturedTraining from '../components/training/FeaturedTraining';
+ import CenterTrainingSection from '../components/training/CenterTrainingSection';
+-import { Toaster } from "@/components/ui/toaster";
+ import FeaturedEventsCarousel from '../components/training/FeaturedEventsCarousel';
+ import WealthSummit from '../components/training/WealthSummit';
+ import UpcomingTrainingEvents from '../components/training/UpcomingTrainingEvents';
+@@ -63,7 +62,6 @@
+       
+       <Footer />
+       <WhatsAppChat />
+-      <Toaster />
+     </div>
+   );
+ };
