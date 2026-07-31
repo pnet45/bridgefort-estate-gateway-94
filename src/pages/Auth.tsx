@@ -12,7 +12,8 @@ import ReCaptcha from '@/components/ui/ReCaptcha';
 import AuthCarousel from '@/components/auth/AuthCarousel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Lock } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, setRememberMe } from '@/integrations/supabase/client';
+import PasswordStrengthChecklist, { isPasswordStrong } from '@/components/ui/PasswordStrengthChecklist';
 
 type AuthProps = {
   pageTitle?: string;
@@ -42,6 +43,7 @@ const Auth = ({
   const [accountLockedOpen, setAccountLockedOpen] = useState(false);
   const [lockedReason, setLockedReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMeState] = useState(true);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<any>(null);
   const { signIn, signUp, signInWithGoogle } = useAuth();
@@ -138,6 +140,7 @@ const Auth = ({
       // Realtor code is only relevant at signup (to credit whoever referred
       // the new user) — requiring it again at every login was blocking
       // people who could otherwise sign in fine.
+      setRememberMe(rememberMe);
       const signInResult = await signIn(email, password);
       
       if (signInResult.error) {
@@ -223,7 +226,16 @@ const Auth = ({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (!isPasswordStrong(password)) {
+      toast({
+        title: "Password too weak",
+        description: "Your password needs an uppercase letter, a lowercase letter, a number, a special character, and more than 6 characters. Check the list under the password field.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast({
         title: "Password mismatch",
@@ -268,6 +280,7 @@ const Auth = ({
       //   return;
       // }
 
+      setRememberMe(true);
       const { data, error } = await signUp(email, password, firstName, lastName);
       if (error) throw error;
 
@@ -568,7 +581,24 @@ const Auth = ({
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              {!isLogin && password.length > 0 && (
+                <PasswordStrengthChecklist password={password} />
+              )}
             </div>
+            {isLogin && (
+              <div className="flex items-center gap-2">
+                <input
+                  id="rememberMe"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMeState(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
+                />
+                <Label htmlFor="rememberMe" className="text-sm font-normal cursor-pointer">
+                  Remember me on this device
+                </Label>
+              </div>
+            )}
             {!isLogin && (
               <>
                 <div>
