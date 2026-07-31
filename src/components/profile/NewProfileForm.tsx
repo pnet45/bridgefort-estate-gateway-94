@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import KYCUploadField from './KYCUploadField';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import ReCaptcha from '@/components/ui/ReCaptcha';
+import { notifyProfileUpdated } from '@/lib/profileEvents';
 
 const NewProfileForm = () => {
   const { user } = useAuth();
@@ -233,6 +234,7 @@ const NewProfileForm = () => {
         title: "Profile Updated",
         description: "Your comprehensive profile & KYC were saved successfully!"
       });
+      notifyProfileUpdated();
 
       navigate('/dashboard');
     } catch (error) {
@@ -261,6 +263,12 @@ const NewProfileForm = () => {
       }
       
       try {
+        // Email is already known from the authenticated session - never make
+        // the user re-type it, even before their profiles row exists.
+        if (user.email) {
+          setFormData(prev => ({ ...prev, email: user.email as string }));
+        }
+
         const { data: profileData, error } = await supabase
           .from('profiles')
           .select('*')

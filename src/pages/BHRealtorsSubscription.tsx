@@ -133,7 +133,7 @@ const BHRealtorsSubscription: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-indigo-50 via-white to-slate-50">
       <Navbar />
       <main className="flex-grow pt-28 pb-16">
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container-custom max-w-6xl">
           <div className="text-center mb-8">
             <Badge className="bg-yellow-400 text-indigo-950 mb-3">PROMO • 5K DAILY</Badge>
             <h1 className="text-3xl md:text-5xl font-extrabold text-indigo-900 mb-2">

@@ -20,7 +20,7 @@ const AgrovestCategory: React.FC = () => {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        <main className="flex-grow pt-28 pb-16 container mx-auto px-4 text-center">
+        <main className="flex-grow pt-28 pb-16 container-custom text-center">
           <h1 className="text-2xl font-bold mb-2">Category not found</h1>
           <Link to="/agrovest" className="text-green-700 underline">Back to Agrovest</Link>
         </main>
@@ -39,7 +39,7 @@ const AgrovestCategory: React.FC = () => {
           <img src={cat.img} alt={cat.name} loading="eager" decoding="async"
             className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-green-950 via-green-950/60 to-transparent" />
-          <div className="container mx-auto px-4 relative z-10 h-full flex flex-col justify-end pb-8">
+          <div className="container-custom relative z-10 h-full flex flex-col justify-end pb-8">
             <Link to="/agrovest" className="text-green-100 hover:text-white text-sm inline-flex items-center gap-1 mb-3">
               <ArrowLeft className="h-4 w-4" /> Back to Agrovest
             </Link>
@@ -49,7 +49,7 @@ const AgrovestCategory: React.FC = () => {
         </section>
 
         <section className="section-padding">
-          <div className="container mx-auto px-4 max-w-5xl grid lg:grid-cols-[1.4fr_1fr] gap-8">
+          <div className="container-custom max-w-5xl grid lg:grid-cols-[1.4fr_1fr] gap-8">
             <div>
               <h2 className="text-2xl font-bold text-green-900 mb-3">Overview</h2>
               <p className="text-slate-700 leading-relaxed mb-6">{cat.description}</p>
@@ -77,7 +77,7 @@ const AgrovestCategory: React.FC = () => {
 
         {related.length > 0 && (
           <section className="section-padding bg-green-50/50">
-            <div className="container mx-auto px-4 max-w-5xl">
+            <div className="container-custom max-w-5xl">
               <h2 className="text-xl font-bold text-green-900 mb-6">Related {cat.kind === 'crop' ? 'crops' : 'facilities'}</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {related.map((r) => (

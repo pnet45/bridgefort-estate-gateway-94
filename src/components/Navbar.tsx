@@ -12,6 +12,7 @@ import AnimatedNavLinks from './navbar/AnimatedNavLinks';
 import AnimatedAuthSection from './navbar/AnimatedAuthSection';
 import ProfileCompletionWidget from './navbar/ProfileCompletionWidget';
 import DarkModeToggle from './navbar/DarkModeToggle';
+import { onProfileUpdated } from '@/lib/profileEvents';
 
 const Navbar = () => {
   const { user, userRole } = useAuth();
@@ -28,6 +29,12 @@ const Navbar = () => {
       fetchProfile();
     }
   }, [user]);
+
+  // Refresh immediately when a profile picture/details are updated elsewhere
+  // (Dashboard quick-upload, Profile/KYC form, etc.) instead of requiring a reload.
+  useEffect(() => onProfileUpdated(() => {
+    if (user) fetchProfile();
+  }), [user]);
 
   const fetchProfile = async () => {
     try {

@@ -382,7 +382,7 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
             previewAttachment.endsWith('.pdf') ? (
               <iframe src={previewAttachment} className="w-full h-[80vh]" />
             ) : (
-              <img src={previewAttachment} alt="Attachment preview" className="max-w-full max-h-[80vh] object-contain mx-auto" />
+              <img src={previewAttachment} alt="Attachment preview" className="max-w-full max-h-[80vh] object-contain mx-auto" loading="lazy" decoding="async" />
             )
           )}
         </DialogContent>

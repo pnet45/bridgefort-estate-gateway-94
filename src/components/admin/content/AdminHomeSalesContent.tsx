@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Home, Plus } from 'lucide-react';
 
 const AdminHomeSalesContent = () => {
+  const navigate = useNavigate();
   const [homes, setHomes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,14 +29,24 @@ const AdminHomeSalesContent = () => {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-        <Home className="h-5 w-5" /> Homes for Sale ({homes.length})
-      </h3>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          <Home className="h-5 w-5" /> Homes for Sale ({homes.length})
+        </h3>
+        <Button onClick={() => navigate('/admin?tab=properties&new=home')} className="gap-2">
+          <Plus className="h-4 w-4" /> Create Home Sale Listing
+        </Button>
+      </div>
       <p className="text-slate-400 text-sm">
-        Homes are managed via the Properties tab. Filter by property_category = 'home' and is_for_sale = true.
+        Homes are listed here automatically once created with category "home" and marked for sale.
       </p>
       {homes.length === 0 ? (
-        <p className="text-slate-500 text-center py-8">No homes for sale found. Add them in the Properties tab with category "home".</p>
+        <div className="text-center py-8">
+          <p className="text-slate-500 mb-4">No homes for sale yet.</p>
+          <Button variant="outline" onClick={() => navigate('/admin?tab=properties&new=home')} className="gap-2">
+            <Plus className="h-4 w-4" /> Create your first listing
+          </Button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {homes.map(home => (

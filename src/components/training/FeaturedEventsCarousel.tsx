@@ -77,7 +77,7 @@ const FeaturedEventsCarousel = () => {
               {featuredEvents.map(event => <CarouselItem key={event.id} className="basis-full">
                   <Card className="overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border-0 h-full">
                     <div className="relative">
-                      <img src={event.image || '/lovable-uploads/pbo.png'} alt={event.title} className="w-full h-72 object-center object-contain" />
+                      <img src={event.image || '/lovable-uploads/pbo.png'} alt={event.title} className="w-full h-72 object-center object-contain" loading="lazy" decoding="async" />
                       <div className="absolute top-3 left-3 bg-estate-blue text-white text-xs uppercase font-bold py-1 px-2 rounded">
                         {event.category}
                       </div>

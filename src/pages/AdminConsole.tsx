@@ -58,6 +58,16 @@ const AdminConsole = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
 
+  // Keep the active tab in sync with the URL after mount too (e.g. the
+  // "Create Content" shortcuts on the CMS tabs navigate to ?tab=properties
+  // while the console is already open, which wouldn't otherwise re-render).
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && tab !== activeTab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     const checkAdminAccess = async () => {
       if (!user) { navigate('/admin-login'); return; }

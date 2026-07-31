@@ -59,7 +59,7 @@ const Profile = () => {
       <Navbar />
       
       <main className="flex-grow pt-28 pb-12">
-        <div className="container mx-auto px-4">
+        <div className="container-custom">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-estate-blue mb-2">
               {profileExists ? 'Update Your Profile' : 'Complete Your Profile'}

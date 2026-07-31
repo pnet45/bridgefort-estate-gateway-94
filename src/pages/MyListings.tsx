@@ -77,7 +77,7 @@ const MyListings = () => {
                   <div className="w-full sm:w-48 shrink-0 space-y-2">
                     <div className="w-full h-32 bg-muted rounded flex items-center justify-center overflow-hidden">
                       {l.photos?.[0] ? (
-                        <img src={l.photos[0]} alt={l.title} className="w-full h-full object-cover" />
+                        <img src={l.photos[0]} alt={l.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                       ) : (
                         <ImageIcon className="w-8 h-8 text-muted-foreground" />
                       )}
@@ -85,7 +85,7 @@ const MyListings = () => {
                     {l.photos?.length > 1 && (
                       <div className="grid grid-cols-4 gap-1">
                         {l.photos.slice(1, 5).map((p: string, i: number) => (
-                          <img key={i} src={p} alt={`${l.title} ${i + 2}`} className="w-full h-10 object-cover rounded border" />
+                          <img key={i} src={p} alt={`${l.title} ${i + 2}`} className="w-full h-10 object-cover rounded border" loading="lazy" decoding="async" />
                         ))}
                       </div>
                     )}

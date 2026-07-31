@@ -129,7 +129,7 @@ const AuthCarouselManager: React.FC = () => {
               <CardContent className="p-4 flex items-center gap-4">
                 <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
                 {s.image_url ? (
-                  <img src={s.image_url} alt={s.title} className="h-14 w-20 object-cover rounded-md shrink-0" />
+                  <img src={s.image_url} alt={s.title} className="h-14 w-20 object-cover rounded-md shrink-0" loading="lazy" decoding="async" />
                 ) : (
                   <div className="h-14 w-20 rounded-md bg-muted flex items-center justify-center shrink-0">
                     <ImageIcon className="h-5 w-5 text-muted-foreground" />

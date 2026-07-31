@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import ClientDashboard from '@/components/dashboard/ClientDashboard';
 import { Camera } from 'lucide-react';
 import { toast } from 'sonner';
+import { notifyProfileUpdated, onProfileUpdated } from '@/lib/profileEvents';
 
 const Dashboard = () => {
   const { user, userRole } = useAuth();
@@ -20,6 +21,11 @@ const Dashboard = () => {
       fetchProfile();
     }
   }, [user]);
+
+  // Pick up profile changes made elsewhere (e.g. the KYC/Profile form) without a reload.
+  useEffect(() => onProfileUpdated(() => {
+    if (user) fetchProfile();
+  }), [user]);
 
   const fetchProfile = async () => {
     try {
@@ -75,6 +81,7 @@ const Dashboard = () => {
 
       toast.success('Profile picture updated!');
       fetchProfile();
+      notifyProfileUpdated();
     } catch (err: any) {
       toast.error('Failed to update profile picture');
       console.error(err);
@@ -87,7 +94,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="pt-[88px] lg:pt-[104px] container mx-auto px-4 py-8">
+        <div className="pt-[88px] lg:pt-[104px] container-custom py-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
             <p className="text-gray-600">Please log in to access your dashboard.</p>
@@ -104,7 +111,7 @@ const Dashboard = () => {
       <div className="pt-[88px] lg:pt-[104px]">
         {/* User Info Header */}
         <div className="bg-white border-b">
-          <div className="container mx-auto px-4 py-6">
+          <div className="container-custom py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* Clickable profile picture */}
@@ -114,7 +121,7 @@ const Dashboard = () => {
                 >
                   <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 bg-muted flex items-center justify-center">
                     {profile?.profile_picture_url ? (
-                      <img src={profile.profile_picture_url} alt="Profile" className="h-full w-full object-cover" />
+                      <img src={profile.profile_picture_url} alt="Profile" className="h-full w-full object-cover" loading="lazy" decoding="async" />
                     ) : (
                       <span className="text-2xl font-bold text-primary">
                         {(profile?.first_name || user.email || 'U')[0].toUpperCase()}

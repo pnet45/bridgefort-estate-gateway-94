@@ -255,7 +255,7 @@ const BHRealtors = () => {
           aria-hidden="true"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1a0638] via-[#1a0638]/60 to-transparent" />
-        <div className="container mx-auto px-4 relative z-10 text-center">
+        <div className="container-custom relative z-10 text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-yellow-400/40 px-4 py-1.5 text-xs uppercase tracking-[0.25em] text-yellow-300 mb-5">
             <Sparkles className="h-3.5 w-3.5" /> Bridgefort Homes Development Ltd
           </span>
@@ -301,7 +301,7 @@ const BHRealtors = () => {
       </section>
 
       <main className="flex-grow pb-12">
-        <div className="container mx-auto px-4 pt-8">
+        <div className="container-custom pt-8">
           <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr] items-start">
             <section className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md p-8 shadow-lg ring-1 ring-white/5">
               <div className="mb-6">

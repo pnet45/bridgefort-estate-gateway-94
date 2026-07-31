@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,6 +58,8 @@ const AdminPropertyManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedEstate, setSelectedEstate] = useState<Estate | undefined>(undefined);
+  const [pendingCategory, setPendingCategory] = useState<{ property_category: string; is_for_sale?: boolean; is_for_rent?: boolean } | undefined>(undefined);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [estateToDelete, setEstateToDelete] = useState<Estate | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -157,8 +160,31 @@ const AdminPropertyManagement: React.FC = () => {
 
   const handleAddNew = () => {
     setSelectedEstate(undefined);
+    setPendingCategory(undefined);
     setIsFormOpen(true);
   };
+
+  // Supports "Create Content" shortcuts from the CMS Homes Sales / Apartments
+  // for Rent tabs (?tab=properties&new=home | ?new=apartment), which land here
+  // and should open straight into a pre-categorized Add Property form.
+  useEffect(() => {
+    const newType = searchParams.get('new');
+    if (newType === 'home') {
+      setSelectedEstate(undefined);
+      setPendingCategory({ property_category: 'home', is_for_sale: true, is_for_rent: false });
+      setIsFormOpen(true);
+    } else if (newType === 'apartment') {
+      setSelectedEstate(undefined);
+      setPendingCategory({ property_category: 'apartment', is_for_sale: false, is_for_rent: true });
+      setIsFormOpen(true);
+    }
+    if (newType) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('new');
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleEdit = (estate: Estate) => {
     setSelectedEstate(estate);
@@ -377,7 +403,7 @@ const AdminPropertyManagement: React.FC = () => {
         </ScrollArea>
       )}
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if (!open) setPendingCategory(undefined); }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-800 border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-white">
@@ -386,6 +412,7 @@ const AdminPropertyManagement: React.FC = () => {
           </DialogHeader>
           <PropertyForm 
             estate={selectedEstate as any} 
+            initialCategory={pendingCategory}
             onCancel={() => setIsFormOpen(false)}
             onSuccess={handleFormSuccess}
           />

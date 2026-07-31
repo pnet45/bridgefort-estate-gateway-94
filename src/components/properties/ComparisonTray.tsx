@@ -59,7 +59,7 @@ const ComparisonTray = () => {
                   <th className="text-left p-2 text-muted-foreground font-medium w-32">&nbsp;</th>
                   {items.map((p) => (
                     <th key={p.id} className="p-2 text-left min-w-[180px]">
-                      <img src={p.imageUrl} alt={p.title} className="w-full h-24 object-cover rounded-lg mb-2" />
+                      <img src={p.imageUrl} alt={p.title} className="w-full h-24 object-cover rounded-lg mb-2" loading="lazy" decoding="async" />
                       <p className="font-semibold text-foreground">{p.title}</p>
                     </th>
                   ))}

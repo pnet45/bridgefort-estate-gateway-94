@@ -270,7 +270,7 @@ const ListingForm = ({ listingId, initialData }: Props) => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {form.photos.map((url: string, i: number) => (
               <div key={i} className="relative group">
-                <img src={url} alt={`Photo ${i + 1}`} className="w-full h-24 object-cover rounded border" />
+                <img src={url} alt={`Photo ${i + 1}`} className="w-full h-24 object-cover rounded border" loading="lazy" decoding="async" />
                 <button type="button" onClick={() => removePhoto(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
                   <X className="w-3 h-3" />
                 </button>

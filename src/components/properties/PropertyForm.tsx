@@ -22,9 +22,16 @@ interface PropertyFormProps {
   estate?: Estate;
   onCancel: () => void;
   onSuccess: () => void;
+  /** Seeds category/listing-type fields when creating a new (non-editing) listing,
+   *  e.g. from the "Create Content" shortcuts on the Homes Sales / Apartments tabs. */
+  initialCategory?: {
+    property_category: EstateFormData['property_category'];
+    is_for_sale?: boolean;
+    is_for_rent?: boolean;
+  };
 }
 
-export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, onSuccess }) => {
+export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, onSuccess, initialCategory }) => {
   const isEditing = !!estate;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<EstateFormData>({
@@ -76,8 +83,15 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
       setSizeUnit((estate as any).size_unit || 'sqm');
       setIsSoldOut((estate as any).is_sold_out || false);
       fetchDocPricing(estate.id);
+    } else if (initialCategory) {
+      setFormData(prev => ({
+        ...prev,
+        property_category: initialCategory.property_category,
+        is_for_sale: initialCategory.is_for_sale ?? prev.is_for_sale,
+        is_for_rent: initialCategory.is_for_rent ?? prev.is_for_rent,
+      }));
     }
-  }, [estate]);
+  }, [estate, initialCategory]);
 
   const fetchDocPricing = async (estateId: string) => {
     try {

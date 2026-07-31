@@ -139,7 +139,7 @@ const AdminHeroSlidesContent = () => {
           <Card key={slide.id} className={`border-slate-600 ${slide.is_active ? 'bg-slate-700' : 'bg-slate-800 opacity-60'}`}>
             <CardContent className="p-3 flex items-center gap-3">
               <GripVertical className="h-4 w-4 text-slate-500 flex-shrink-0" />
-              <img src={slide.image_url} alt="" className="h-14 w-24 object-cover rounded flex-shrink-0" onError={(e) => { (e.target as HTMLImageElement).src = '/lovable-uploads/PropertyHero.png'; }} />
+              <img src={slide.image_url} alt="" className="h-14 w-24 object-cover rounded flex-shrink-0" loading="lazy" decoding="async" onError={(e) => { (e.target as HTMLImageElement).src = '/lovable-uploads/PropertyHero.png'; }} />
 
               {editingId === slide.id ? (
                 <div className="flex-1 space-y-2">

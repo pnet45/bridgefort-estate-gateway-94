@@ -179,7 +179,7 @@ const BHRealtorsWithdraw: React.FC = () => {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        <main className="flex-grow pt-28 pb-12 container mx-auto px-4">
+        <main className="flex-grow pt-28 pb-12 container-custom">
           <p className="text-gray-700">Please sign in to withdraw your commission.</p>
           <Link to="/bridgefort-realtors-login"><Button className="mt-4">Go to Realtors Login</Button></Link>
         </main>
@@ -192,7 +192,7 @@ const BHRealtorsWithdraw: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Navbar />
       <main className="flex-grow pt-28 pb-12">
-        <div className="container mx-auto px-4 max-w-3xl">
+        <div className="container-custom max-w-3xl">
           <button
             onClick={() => navigate('/bh-realtors')}
             className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-estate-blue mb-6"

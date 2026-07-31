@@ -91,7 +91,7 @@ const ClientDashboard = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container-custom py-8">
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="flex flex-wrap h-auto gap-1 p-1 bg-muted/50 rounded-lg mb-4">
           <TabsTrigger value="overview" className="text-xs md:text-sm">Overview</TabsTrigger>

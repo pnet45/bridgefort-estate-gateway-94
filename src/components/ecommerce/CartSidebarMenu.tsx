@@ -24,13 +24,13 @@ interface CartSidebarMenuProps {
 
 const menuItems: MenuItem[] = [
   { id: "cart", label: "Shopping Cart", icon: Home },
+  { id: "promo", label: "5K Daily Promo", icon: Sprout },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "properties", label: "My Properties", icon: Home },
   { id: "documents", label: "My Documents", icon: FileText },
   { id: "inspections", label: "Property Inspections", icon: Eye },
   { id: "payments", label: "My Payments", icon: CreditCard },
   { id: "installments", label: "My Installments", icon: Calendar },
-  { id: "promo", label: "5K Daily Promo", icon: Sprout },
 ];
 
 const CartSidebarMenu: React.FC<CartSidebarMenuProps> = ({

@@ -122,7 +122,7 @@ const FeaturedCenterSeminar = () => {
             <div className="space-y-4">
               <h3 className="text-xl font-bold">Special Guest Speaker</h3>
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                <img src="/images/dalvin-silva-seminar.jpeg" alt="Dalvin Silva" className="w-16 h-16 rounded-full object-cover border-2 border-estate-red" />
+                <img src="/images/dalvin-silva-seminar.jpeg" alt="Dalvin Silva" className="w-16 h-16 rounded-full object-cover border-2 border-estate-red" loading="lazy" decoding="async" />
                 <div>
                   <p className="font-bold text-lg">Amb. Dalvin Silva</p>
                   <p className="text-muted-foreground">MD/CEO, Bridgefort Homes Development Ltd.</p>

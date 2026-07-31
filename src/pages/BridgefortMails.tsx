@@ -167,7 +167,7 @@ export default function BridgefortMails() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-8 pt-24">
+      <main className="flex-1 container-custom py-8 pt-24">
         <div className="flex items-center gap-3 mb-6">
           <Mail className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">Bridgefort Mail Center</h1>

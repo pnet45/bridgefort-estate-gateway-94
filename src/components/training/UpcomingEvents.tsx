@@ -101,7 +101,7 @@ const UpcomingEvents = () => {
   const renderEventCard = (event: TrainingEvent, isPast: boolean) => (
     <Card key={event.id} className="overflow-hidden shadow-lg hover:shadow-xl transition duration-300 border-0">
       <div className="relative">
-        <img src={event.image || '/lovable-uploads/pbo.png'} alt={event.title} className="w-full h-60 object-cover object-center" />
+        <img src={event.image || '/lovable-uploads/pbo.png'} alt={event.title} className="w-full h-60 object-cover object-center" loading="lazy" decoding="async" />
         <div className="absolute top-3 left-3 bg-estate-blue text-white text-xs uppercase font-bold py-1 px-2 rounded">
           {event.category}
         </div>

@@ -40,7 +40,7 @@ const WhyRealEstate = () => {
           }} />
           </div>
           <div>
-            <img alt="Real Estate Investment" className="w-full h-auto rounded-lg shadow-lg mb-8 hover:scale-[1.02] transition-transform duration-300 object-scale-down" src="/lovable-uploads/0894eeae-21d6-4870-ada2-1d871b045dee.jpg" />
+            <img alt="Real Estate Investment" className="w-full h-auto rounded-lg shadow-lg mb-8 hover:scale-[1.02] transition-transform duration-300 object-scale-down" src="/lovable-uploads/0894eeae-21d6-4870-ada2-1d871b045dee.jpg" loading="lazy" decoding="async" />
             <h3 className="text-2xl font-bold mb-4">Why Choose Bridgefort Homes Development Ltd?</h3>
             <p className="text-gray-700 mb-6">
               At Bridgefort Homes Development Ltd, we stand out because of our unwavering commitment to excellence, transparency, and customer satisfaction. With estates strategically located in high-demand areas, we ensure our clients get maximum returns on investment (ROI) while enjoying the peace of mind that comes with secure land ownership.

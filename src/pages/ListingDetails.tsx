@@ -82,7 +82,7 @@ const ListingDetails = () => {
         {/* Gallery */}
         <div className="container-custom">
           <div className="relative rounded-2xl overflow-hidden bg-muted h-64 sm:h-96 lg:h-[500px]">
-            <img src={photos[activePhoto]} alt={listing.title} className="w-full h-full object-cover" />
+            <img src={photos[activePhoto]} alt={listing.title} className="w-full h-full object-cover" loading="eager" decoding="async" fetchPriority="high" />
             {photos.length > 1 && (
               <>
                 <button onClick={() => setActivePhoto(p => (p - 1 + photos.length) % photos.length)} className="absolute left-3 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 hover:bg-background transition">
@@ -110,7 +110,7 @@ const ListingDetails = () => {
             <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
               {photos.map((p, i) => (
                 <button key={i} onClick={() => setActivePhoto(i)} className={`flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition ${i === activePhoto ? 'border-primary' : 'border-transparent'}`}>
-                  <img src={p} alt="" className="w-full h-full object-cover" />
+                  <img src={p} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 </button>
               ))}
             </div>
