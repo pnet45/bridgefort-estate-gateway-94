@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Lock } from 'lucide-react';
 import { supabase, setRememberMe } from '@/integrations/supabase/client';
 import PasswordStrengthChecklist, { isPasswordStrong } from '@/components/ui/PasswordStrengthChecklist';
+import { validateEmailFormat } from '@/lib/emailValidation';
 
 type AuthProps = {
   pageTitle?: string;
@@ -29,6 +30,7 @@ const Auth = ({
   const [isLogin, setIsLogin] = useState(true);
   const [isPBO, setIsPBO] = useState(false);
   const [email, setEmail] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
   const [password, setPassword] = useState('');
   const [pboCode, setPboCode] = useState('');
   const [sponsorCode, setSponsorCode] = useState('');
@@ -226,6 +228,17 @@ const Auth = ({
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const emailCheck = validateEmailFormat(email);
+    if (!emailCheck.valid) {
+      setEmailTouched(true);
+      toast({
+        title: "Invalid email",
+        description: emailCheck.message,
+        variant: "destructive"
+      });
+      return;
+    }
 
     if (!isPasswordStrong(password)) {
       toast({
@@ -569,8 +582,13 @@ const Auth = ({
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => setEmailTouched(true)}
                 required
+                aria-invalid={!isLogin && emailTouched && email.length > 0 && !validateEmailFormat(email).valid}
               />
+              {!isLogin && emailTouched && email.length > 0 && !validateEmailFormat(email).valid && (
+                <p className="text-xs text-destructive mt-1">{validateEmailFormat(email).message}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="password">Password</Label>

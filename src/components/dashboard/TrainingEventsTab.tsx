@@ -267,6 +267,7 @@ const TrainingEventsTab = () => {
               <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
+          maxLength={1000}
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}

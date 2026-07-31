@@ -133,7 +133,8 @@ const CenterTrainingBookingForm = ({ open, onClose }: CenterTrainingBookingFormP
                 <FormItem>
                   <FormLabel>Address</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Enter center address" {...field} />
+                    <Textarea
+          maxLength={300} placeholder="Enter center address" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

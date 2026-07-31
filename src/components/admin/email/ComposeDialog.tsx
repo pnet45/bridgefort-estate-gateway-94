@@ -182,6 +182,7 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
             />
           </div>
           <Textarea
+          maxLength={5000}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Compose email..."

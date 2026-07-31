@@ -12,6 +12,7 @@ const MessageTextarea: React.FC<MessageTextareaProps> = ({ value, onChange }) =>
   <div className="space-y-2">
     <Label htmlFor="message">Additional Message</Label>
     <Textarea
+          maxLength={1000}
       id="message"
       placeholder="Any specific requirements or questions..."
       value={value}

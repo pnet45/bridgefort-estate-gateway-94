@@ -178,6 +178,7 @@ const ContactForm = () => {
           <div>
             <Label htmlFor="message">Message *</Label>
             <Textarea
+          maxLength={2000}
               id="message"
               name="message"
               value={formData.message}

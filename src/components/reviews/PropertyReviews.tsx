@@ -292,6 +292,7 @@ const PropertyReviews = ({ propertyId, propertyType = 'estate' }: PropertyReview
             <StarRating rating={newRating} onChange={setNewRating} />
           </div>
           <Textarea
+          maxLength={1000}
             placeholder="Share your experience with this property..."
             value={newText}
             onChange={e => setNewText(e.target.value)}
@@ -325,6 +326,7 @@ const PropertyReviews = ({ propertyId, propertyType = 'estate' }: PropertyReview
             {replyTo === review.id && (
               <div className="ml-6 md:ml-10 pl-4 mb-4">
                 <Textarea
+          maxLength={500}
                   placeholder="Write your reply..."
                   value={replyText}
                   onChange={e => setReplyText(e.target.value)}

@@ -192,6 +192,7 @@ const AdminNotices = () => {
                 <div>
                   <Label className="text-slate-400">Content</Label>
                   <Textarea
+          maxLength={2000}
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                     rows={4}

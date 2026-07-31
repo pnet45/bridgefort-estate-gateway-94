@@ -177,7 +177,8 @@ const AuthCarouselManager: React.FC = () => {
               </div>
               <div>
                 <Label>Subtitle</Label>
-                <Textarea value={editing.subtitle || ''} onChange={(e) => setEditing((v) => ({ ...v, subtitle: e.target.value }))} rows={2} />
+                <Textarea
+          maxLength={300} value={editing.subtitle || ''} onChange={(e) => setEditing((v) => ({ ...v, subtitle: e.target.value }))} rows={2} />
               </div>
               <div>
                 <Label>Link (optional)</Label>

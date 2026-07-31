@@ -118,6 +118,7 @@ export const PostForm: React.FC<PostFormProps> = ({
         <div>
           <Label htmlFor="excerpt">Excerpt (Brief Summary) *</Label>
           <Textarea
+          maxLength={300}
             id="excerpt"
             name="excerpt"
             value={formValues.excerpt}
@@ -130,7 +131,8 @@ export const PostForm: React.FC<PostFormProps> = ({
         
         <div>
           <Label htmlFor="content">Content *</Label>
-          <Textarea 
+          <Textarea
+          maxLength={20000} 
             id="content"
             name="content"
             value={formValues.content}

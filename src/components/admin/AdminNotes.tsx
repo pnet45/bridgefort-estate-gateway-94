@@ -173,6 +173,7 @@ const AdminNotes = () => {
                 </div>
                 <div>
                   <Textarea
+          maxLength={2000}
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                     placeholder="Write your note..."

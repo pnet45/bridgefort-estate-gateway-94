@@ -306,6 +306,7 @@ const AdminApprovalTab = ({ onCountChange }: AdminApprovalTabProps) => {
             <div className="space-y-2">
               <Label htmlFor="reason" className="text-slate-300">Rejection Reason</Label>
               <Textarea
+          maxLength={500}
                 id="reason"
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}

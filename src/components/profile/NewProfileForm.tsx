@@ -16,6 +16,8 @@ import KYCUploadField from './KYCUploadField';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import ReCaptcha from '@/components/ui/ReCaptcha';
 import { notifyProfileUpdated } from '@/lib/profileEvents';
+import { PhoneInput } from '@/components/ui/PhoneInput';
+import { validateEmailFormat } from '@/lib/emailValidation';
 
 const NewProfileForm = () => {
   const { user } = useAuth();
@@ -25,6 +27,7 @@ const NewProfileForm = () => {
   const [activeTab, setActiveTab] = useState('personal');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [emailTouched, setEmailTouched] = useState(false);
   const recaptchaRef = useRef<any>(null);
 
   const [formData, setFormData] = useState({
@@ -477,10 +480,10 @@ const NewProfileForm = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="phoneNumber">Phone Number *</Label>
-                    <Input
+                    <PhoneInput
                       id="phoneNumber"
                       value={formData.phoneNumber}
-                      onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                      onChange={(value) => handleInputChange('phoneNumber', value)}
                       required
                     />
                   </div>
@@ -492,8 +495,15 @@ const NewProfileForm = () => {
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
+                      onBlur={() => setEmailTouched(true)}
                       required
+                      aria-invalid={emailTouched && formData.email.length > 0 && !validateEmailFormat(formData.email).valid}
                     />
+                    {emailTouched && formData.email.length > 0 && !validateEmailFormat(formData.email).valid ? (
+                      <p className="text-xs text-destructive">{validateEmailFormat(formData.email).message}</p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">We'll use this to send updates about your account.</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -703,6 +713,7 @@ const NewProfileForm = () => {
                     <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="employerAddress">Employer/Business Address *</Label>
                       <Textarea
+          maxLength={300}
                         id="employerAddress"
                         value={formData.employerAddress}
                         onChange={(e) => handleInputChange('employerAddress', e.target.value)}
@@ -766,6 +777,7 @@ const NewProfileForm = () => {
                         <div className="space-y-2 md:col-span-2">
                           <Label htmlFor="companyAddress">Company's Address *</Label>
                           <Textarea
+          maxLength={300}
                             id="companyAddress"
                             value={formData.companyAddress}
                             onChange={(e) => handleInputChange('companyAddress', e.target.value)}
@@ -899,6 +911,7 @@ const NewProfileForm = () => {
                         <div className="mt-4">
                           <Label htmlFor="politicalExposureDetails">If 'YES', Specify:</Label>
                           <Textarea
+          maxLength={500}
                             id="politicalExposureDetails"
                             value={formData.politicalExposureDetails}
                             onChange={(e) => handleInputChange('politicalExposureDetails', e.target.value)}
@@ -932,6 +945,7 @@ const NewProfileForm = () => {
                         <div className="mt-4">
                           <Label htmlFor="financialCrimesDetails">If 'YES', explain:</Label>
                           <Textarea
+          maxLength={500}
                             id="financialCrimesDetails"
                             value={formData.financialCrimesDetails}
                             onChange={(e) => handleInputChange('financialCrimesDetails', e.target.value)}
@@ -991,10 +1005,10 @@ const NewProfileForm = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="referrerPhone">Referrer Phone Number</Label>
-                      <Input
+                      <PhoneInput
                         id="referrerPhone"
                         value={formData.referrerPhone}
-                        onChange={(e) => handleInputChange('referrerPhone', e.target.value)}
+                        onChange={(value) => handleInputChange('referrerPhone', value)}
                         placeholder="Enter referrer's phone number"
                       />
                     </div>

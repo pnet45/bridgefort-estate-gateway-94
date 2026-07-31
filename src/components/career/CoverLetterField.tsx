@@ -12,6 +12,7 @@ const CoverLetterField: React.FC<CoverLetterFieldProps> = ({ value, onChange }) 
   <div className="space-y-2">
     <Label htmlFor="cover_letter" className="text-gray-900">Cover Letter</Label>
     <Textarea
+          maxLength={3000}
       id="cover_letter"
       value={value}
       onChange={(e) => onChange(e.target.value)}

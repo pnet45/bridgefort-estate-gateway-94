@@ -176,6 +176,7 @@ const AdminCalendar = () => {
                   <div>
                     <Label className="text-slate-400">Description</Label>
                     <Textarea
+          maxLength={1000}
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       className="bg-slate-700 border-slate-600 text-white"

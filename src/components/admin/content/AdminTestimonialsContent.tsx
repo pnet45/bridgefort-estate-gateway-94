@@ -78,7 +78,8 @@ const AdminTestimonialsContent = () => {
               <div><Label className="text-slate-300">Name</Label><Input value={form.name} onChange={e => setForm({...form, name: e.target.value})} /></div>
               <div><Label className="text-slate-300">Role</Label><Input value={form.role} onChange={e => setForm({...form, role: e.target.value})} placeholder="e.g., Property Owner" /></div>
             </div>
-            <div><Label className="text-slate-300">Testimonial</Label><Textarea value={form.content} onChange={e => setForm({...form, content: e.target.value})} rows={3} /></div>
+            <div><Label className="text-slate-300">Testimonial</Label><Textarea
+          maxLength={500} value={form.content} onChange={e => setForm({...form, content: e.target.value})} rows={3} /></div>
             <div className="flex items-center gap-2">
               <Label className="text-slate-300">Rating:</Label>
               {[1,2,3,4,5].map(r => (

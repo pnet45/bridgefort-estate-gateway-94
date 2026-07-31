@@ -235,6 +235,7 @@ export default function BridgefortMails() {
                   <div className="space-y-2">
                     <Label htmlFor="body">Message *</Label>
                     <Textarea
+          maxLength={5000}
                       id="body"
                       placeholder="Write your email message here..."
                       value={body}

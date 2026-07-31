@@ -359,6 +359,7 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
               />
             </div>
             <Textarea
+          maxLength={5000}
               value={replyBody}
               onChange={(e) => setReplyBody(e.target.value)}
               placeholder={mode === 'forward' ? 'Add a message...' : 'Type your reply...'}

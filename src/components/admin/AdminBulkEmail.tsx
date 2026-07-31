@@ -465,6 +465,7 @@ export default function AdminBulkEmail() {
                   <div className="space-y-2">
                     <Label className="text-slate-300">Email Body *</Label>
                     <Textarea
+          maxLength={5000}
                       value={body}
                       onChange={(e) => setBody(e.target.value)}
                       placeholder="Write your message... Use {{name}}, {{email}}, {{date}} for personalization"
@@ -495,6 +496,7 @@ export default function AdminBulkEmail() {
                     <div className="space-y-2">
                       <Label className="text-slate-300">Email Addresses</Label>
                       <Textarea
+          maxLength={3000}
                         value={customEmails}
                         onChange={(e) => setCustomEmails(e.target.value)}
                         placeholder="Enter emails separated by commas or new lines"

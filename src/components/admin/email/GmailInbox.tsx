@@ -470,7 +470,8 @@ export default function GmailInbox() {
                       </div>
                       <div>
                         <Label className="text-xs text-muted-foreground">Message</Label>
-                        <Textarea value={replyBody} onChange={(e) => setReplyBody(e.target.value)} rows={8} className="mt-1" />
+                        <Textarea
+          maxLength={5000} value={replyBody} onChange={(e) => setReplyBody(e.target.value)} rows={8} className="mt-1" />
                       </div>
                       <div className="flex items-center gap-2">
                         <Button disabled={sendingReply || !replyTo.trim() || !replySubject.trim() || !replyBody.trim()} onClick={() => sendGmailMessage(replyTo, replySubject, replyBody, replyCc, replyBcc)}>

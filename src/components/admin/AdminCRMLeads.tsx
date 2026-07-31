@@ -475,7 +475,8 @@ const AdminCRMLeads: React.FC = () => {
             </div>
             <div>
               <Label className="text-slate-300">Notes</Label>
-              <Textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} className="bg-slate-700 border-slate-600 text-white" rows={3} />
+              <Textarea
+          maxLength={2000} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} className="bg-slate-700 border-slate-600 text-white" rows={3} />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancel</Button>

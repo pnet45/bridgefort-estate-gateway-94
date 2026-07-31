@@ -244,6 +244,7 @@ export default function AdminEmailTemplates({ onSelectTemplate }: AdminEmailTemp
                 <div className="space-y-2">
                   <Label className="text-slate-300">Email Body *</Label>
                   <Textarea
+          maxLength={5000}
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                     placeholder="Write your email content here... Use {{name}} for personalization"

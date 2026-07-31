@@ -506,7 +506,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         
         <div className="space-y-2">
           <Label htmlFor="description">Description</Label>
-          <Textarea 
+          <Textarea
+          maxLength={3000} 
             id="description" 
             name="description" 
             value={formData.description || ''} 

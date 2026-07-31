@@ -206,8 +206,10 @@ const AdminContentHub: React.FC = () => {
                 <div><Label>Category</Label><Input value={editing.category || ''} onChange={e => setEditing({ ...editing, category: e.target.value })} /></div>
               </div>
               <div><Label>Subtitle</Label><Input value={editing.subtitle || ''} onChange={e => setEditing({ ...editing, subtitle: e.target.value })} /></div>
-              <div><Label>Excerpt</Label><Textarea rows={2} value={editing.excerpt || ''} onChange={e => setEditing({ ...editing, excerpt: e.target.value })} /></div>
-              <div><Label>Body / Content</Label><Textarea rows={8} value={editing.body || ''} onChange={e => setEditing({ ...editing, body: e.target.value })} /></div>
+              <div><Label>Excerpt</Label><Textarea
+          maxLength={300} rows={2} value={editing.excerpt || ''} onChange={e => setEditing({ ...editing, excerpt: e.target.value })} /></div>
+              <div><Label>Body / Content</Label><Textarea
+          maxLength={20000} rows={8} value={editing.body || ''} onChange={e => setEditing({ ...editing, body: e.target.value })} /></div>
               <div className="grid grid-cols-1 gap-3">
                 <ImageUploadField
                   label="Image / Thumbnail"
