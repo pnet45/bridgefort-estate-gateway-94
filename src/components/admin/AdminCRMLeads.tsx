@@ -76,6 +76,9 @@ const AdminCRMLeads: React.FC = () => {
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [showFollowUpForm, setShowFollowUpForm] = useState(false);
+  // Earliest pending (not-yet-completed) follow-up per lead, so "next action"
+  // is visible on every card without opening each lead individually.
+  const [nextActionByLead, setNextActionByLead] = useState<Record<string, FollowUp>>({});
 
   const [form, setForm] = useState({
     name: '', email: '', phone: '', source: 'website', status: 'new',
@@ -92,6 +95,21 @@ const AdminCRMLeads: React.FC = () => {
       .select('*')
       .order('created_at', { ascending: false });
     if (!error) setLeads(data || []);
+
+    // Pull every pending follow-up (across all leads) in one query, then keep
+    // only the earliest one per lead - that's each lead's "next action".
+    const { data: pendingFollowUps } = await supabase
+      .from('crm_follow_ups')
+      .select('*')
+      .is('completed_at', null)
+      .order('scheduled_at', { ascending: true });
+
+    const nextByLead: Record<string, FollowUp> = {};
+    (pendingFollowUps || []).forEach((fup: FollowUp) => {
+      if (!nextByLead[fup.lead_id]) nextByLead[fup.lead_id] = fup;
+    });
+    setNextActionByLead(nextByLead);
+
     setLoading(false);
   }, []);
 
@@ -170,6 +188,7 @@ const AdminCRMLeads: React.FC = () => {
     setShowFollowUpForm(false);
     setFollowUpForm({ scheduled_at: '', action_type: 'call', notes: '' });
     fetchLeadDetails(selectedLead.id);
+    fetchLeads();
   };
 
   const handleCompleteFollowUp = async (fup: FollowUp) => {
@@ -192,6 +211,30 @@ const AdminCRMLeads: React.FC = () => {
     fetchLeadDetails(selectedLead.id);
   };
 
+  const renderNextAction = (leadId: string) => {
+    const next = nextActionByLead[leadId];
+    if (!next) return null;
+
+    const scheduled = new Date(next.scheduled_at);
+    const now = new Date();
+    const isOverdue = scheduled < now;
+    const isToday = scheduled.toDateString() === now.toDateString();
+
+    const colorClass = isOverdue
+      ? 'bg-red-500/20 text-red-400'
+      : isToday
+        ? 'bg-amber-500/20 text-amber-400'
+        : 'bg-slate-500/20 text-slate-300';
+
+    return (
+      <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded ${colorClass}`}>
+        <Clock className="h-3 w-3" />
+        {isOverdue ? 'Overdue: ' : 'Next: '}
+        {next.action_type} · {format(scheduled, 'MMM d, h:mm a')}
+      </span>
+    );
+  };
+
   const filtered = leads.filter(l => {
     const matchSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (l.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -205,6 +248,7 @@ const AdminCRMLeads: React.FC = () => {
     new: leads.filter(l => l.status === 'new').length,
     qualified: leads.filter(l => l.status === 'qualified').length,
     won: leads.filter(l => l.status === 'won').length,
+    overdue: Object.values(nextActionByLead).filter(f => new Date(f.scheduled_at) < new Date()).length,
   };
 
   const handleExportCsv = () => {
@@ -230,12 +274,13 @@ const AdminCRMLeads: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
           { label: 'Total Leads', value: stats.total, icon: UsersIcon, color: 'text-blue-400' },
           { label: 'New', value: stats.new, icon: Plus, color: 'text-green-400' },
           { label: 'Qualified', value: stats.qualified, icon: TrendingUp, color: 'text-purple-400' },
           { label: 'Won', value: stats.won, icon: CheckCircle, color: 'text-emerald-400' },
+          { label: 'Overdue', value: stats.overdue, icon: Clock, color: 'text-red-400' },
         ].map(s => (
           <Card key={s.label} className="bg-slate-700/50 border-slate-600">
             <CardContent className="p-4 flex items-center gap-3">
@@ -295,6 +340,14 @@ const AdminCRMLeads: React.FC = () => {
                             {lead.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{lead.phone}</span>}
                           </div>
                           {lead.estate_interest && <p className="text-xs text-slate-500 mt-1">Interest: {lead.estate_interest}</p>}
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {renderNextAction(lead.id)}
+                            {lead.last_contacted_at && (
+                              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-slate-700/60 text-slate-400">
+                                <PhoneCall className="h-3 w-3" /> Last contact: {format(new Date(lead.last_contacted_at), 'MMM d')}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex gap-1 shrink-0">
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400"
