@@ -53,6 +53,14 @@ const Auth = ({
   const navigate = useNavigate();
   const location = useLocation();
 
+  // `?next=/some/path` — used by the OAuth consent screen so a signed-out user
+  // is returned to the authorization request instead of the dashboard.
+  const nextParam = (() => {
+    const raw = new URLSearchParams(location.search).get('next');
+    return raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : null;
+  })();
+
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const refCode = params.get('ref');
