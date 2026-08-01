@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   Loader2, Clipboard, Share2, Users, Trophy, Gift, Handshake, Target,
-  Sparkles, Star, TrendingUp, Award, X, MessageCircle, Send, Mail,
+  Sparkles, Star, TrendingUp, Award, X, MessageCircle, Send, Mail, QrCode, Download,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
@@ -181,6 +181,63 @@ const BHRealtors = () => {
     } catch (error) {
       console.error('Copy failed', error);
       setCopyStatus('Unable to copy link.');
+    }
+  };
+
+  // QR code for the referral link. Generated via a public QR image API rather
+  // than a hand-rolled encoder or a new npm dependency - a QR code is a
+  // precise error-correction-coded matrix, and getting that wrong produces a
+  // code that silently fails to scan. This is the same approach used by most
+  // "share this link" features.
+  const qrCodeUrl = shareLink
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&data=${encodeURIComponent(shareLink)}`
+    : '';
+  const [qrDownloading, setQrDownloading] = useState(false);
+  const [qrLoadFailed, setQrLoadFailed] = useState(false);
+
+  const handleDownloadQr = async () => {
+    if (!qrCodeUrl) return;
+    setQrDownloading(true);
+    try {
+      const response = await fetch(qrCodeUrl);
+      if (!response.ok) throw new Error('QR image request failed');
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `bridgefort-referral-${profile?.pbo_referral_code || 'qr'}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error('QR download failed', error);
+      toast({
+        title: 'Download failed',
+        description: 'Could not download the QR code image. Please check your connection and try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setQrDownloading(false);
+    }
+  };
+
+  const handleShareQr = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Join Bridgefort Homes Realtors',
+          text: `Join Bridgefort Homes Realtors with my referral link: ${shareLink}`,
+          url: shareLink,
+        });
+      } catch (error) {
+        // AbortError just means the user closed the native share sheet - not a real failure
+        if ((error as Error)?.name !== 'AbortError') {
+          console.error('Share failed', error);
+        }
+      }
+    } else {
+      await handleCopyLink();
     }
   };
 
@@ -377,6 +434,52 @@ const BHRealtors = () => {
                           <Mail className="h-4 w-4" />
                         </a>
                       </div>
+                      {profile?.pbo_referral_code && (
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 pt-2 border-t border-slate-100 mt-2">
+                          <div className="shrink-0 rounded-2xl border border-slate-200 bg-white p-3">
+                            {qrLoadFailed ? (
+                              <div className="h-[160px] w-[160px] flex flex-col items-center justify-center text-center text-xs text-slate-400 gap-2">
+                                <QrCode className="h-8 w-8" />
+                                QR code unavailable right now
+                              </div>
+                            ) : (
+                              <img
+                                src={qrCodeUrl}
+                                alt="QR code for your referral link"
+                                width={160}
+                                height={160}
+                                loading="lazy"
+                                onError={() => setQrLoadFailed(true)}
+                              />
+                            )}
+                          </div>
+                          <div className="flex flex-col gap-2 justify-center">
+                            <p className="text-sm text-slate-600">
+                              Let people scan this to open your referral link directly - handy for in-person
+                              invites, flyers, or business cards.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleDownloadQr}
+                                disabled={qrDownloading || qrLoadFailed}
+                                className="gap-2"
+                              >
+                                {qrDownloading ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Download className="h-4 w-4" />
+                                )}
+                                Download JPG
+                              </Button>
+                              <Button type="button" variant="outline" onClick={handleShareQr} className="gap-2">
+                                <Share2 className="h-4 w-4" /> Share
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       {!profile?.pbo_referral_code && (
                         <p className="text-sm text-amber-700">
                           Your referral code is not yet set. Register as a PBO to receive a personal referral link.

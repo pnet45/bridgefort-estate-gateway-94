@@ -1,6 +1,7 @@
 
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, MessageSquare } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, MessageSquare } from 'lucide-react';
+import { XIcon, TikTokIcon } from '@/components/icons/BrandIcons';
 import NewsletterForm from './NewsletterForm';
 
 const Footer = () => {
@@ -17,19 +18,25 @@ const Footer = () => {
             </div>
             <p className="text-gray-300 mb-4">Your Gateway to Premium Real Estate Investments</p>
             <div className="flex space-x-4">
-              <a href="https://facebook.com/pwanbridgefortestates" className="text-gray-300 hover:text-estate-blue transition duration-300">
+              <a href="https://facebook.com/bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on Facebook" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <Facebook size={20} />
               </a>
-              <a href="https://x.com/pwanbridgefort.official" className="text-gray-300 hover:text-estate-blue transition duration-300">
-                <Twitter size={20} />
+              <a href="https://x.com/bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on X" className="text-gray-300 hover:text-estate-blue transition duration-300">
+                <XIcon size={20} />
               </a>
-              <a href="https://instagram.com/pwanbridgefort.official" className="text-gray-300 hover:text-estate-blue transition duration-300">
+              <a href="https://instagram.com/bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on Instagram" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <Instagram size={20} />
               </a>
-              <a href="https://linkedln.com/pwanbridgefort.official" className="text-gray-300 hover:text-estate-blue transition duration-300">
+              <a href="https://linkedin.com/company/bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on LinkedIn" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <Linkedin size={20} />
               </a>
-              <a href="https://wa.me/+2348070710688" className="text-gray-300 hover:text-estate-blue transition duration-300">
+              <a href="https://tiktok.com/@bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on TikTok" className="text-gray-300 hover:text-estate-blue transition duration-300">
+                <TikTokIcon size={20} />
+              </a>
+              <a href="https://youtube.com/@bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on YouTube" className="text-gray-300 hover:text-estate-blue transition duration-300">
+                <Youtube size={20} />
+              </a>
+              <a href="https://wa.me/+2348070710688" target="_blank" rel="noopener noreferrer" aria-label="Chat with Bridgefort Homes on WhatsApp" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <MessageSquare size={20} />
               </a>
             </div>

@@ -34,6 +34,7 @@ const Auth = ({
   const [password, setPassword] = useState('');
   const [pboCode, setPboCode] = useState('');
   const [sponsorCode, setSponsorCode] = useState('');
+  const [sponsorCodeLocked, setSponsorCodeLocked] = useState(false);
   const [isRegisteringAsPBO, setIsRegisteringAsPBO] = useState(false);
   const [referralMessage, setReferralMessage] = useState('');
   const [referralEmailNotice, setReferralEmailNotice] = useState('');
@@ -58,6 +59,8 @@ const Auth = ({
 
     if (refCode) {
       setSponsorCode(refCode);
+      setSponsorCodeLocked(true);
+      setIsLogin(false);
       setReferralMessage('Referral code loaded from link. It will be applied on signup.');
     }
   }, [location.search]);
@@ -646,16 +649,23 @@ const Auth = ({
                 </p>
 
                 <div>
-                  <Label htmlFor="sponsorCode">Referral Code (Optional)</Label>
+                  <Label htmlFor="sponsorCode" className="flex items-center gap-1.5">
+                    Referral Code (Optional)
+                    {sponsorCodeLocked && <Lock className="h-3 w-3 text-slate-400" />}
+                  </Label>
                   <Input
                     type="text"
                     id="sponsorCode"
                     placeholder="Enter the referral code you received"
                     value={sponsorCode}
                     onChange={(e) => setSponsorCode(e.target.value)}
+                    readOnly={sponsorCodeLocked}
+                    className={sponsorCodeLocked ? 'bg-muted cursor-not-allowed' : undefined}
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    If you have a sponsoring PBO, enter their code so they receive credit for your signup.
+                    {sponsorCodeLocked
+                      ? "This code came from your referral link and can't be changed here."
+                      : 'If you have a sponsoring PBO, enter their code so they receive credit for your signup.'}
                   </p>
                   {referralMessage && <p className="text-xs text-emerald-600 mt-1">{referralMessage}</p>}
                   {referralEmailSent !== null && (
