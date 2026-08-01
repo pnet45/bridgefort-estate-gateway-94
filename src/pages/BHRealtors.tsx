@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import {
   Loader2, Clipboard, Share2, Users, Trophy, Gift, Handshake, Target,
   Sparkles, Star, TrendingUp, Award, X, MessageCircle, Send, Mail, QrCode, Download,
+  RefreshCw, Wallet, Clock3, CheckCircle2, XCircle, AlertCircle,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
@@ -37,6 +38,8 @@ const BHRealtors = () => {
   const [freeUpgradeMessage, setFreeUpgradeMessage] = useState('');
   const [registrationFormOpen, setRegistrationFormOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<BhRealtorsPackage>(bhRealtorsPackages[0]);
+  const [withdrawalHistory, setWithdrawalHistory] = useState<Array<any>>([]);
+  const [refreshingBalance, setRefreshingBalance] = useState(false);
 
   const currentPackageCode = profile?.current_package || 'associate';
   const currentPackage = bhRealtorsPackages.find((pkg) => pkg.package_code === currentPackageCode) ?? bhRealtorsPackages[0];
@@ -171,6 +174,7 @@ const BHRealtors = () => {
     };
 
     loadDownline();
+    loadWithdrawalHistory(user.id);
   }, [user]);
 
   const handleCopyLink = async () => {
@@ -238,6 +242,48 @@ const BHRealtors = () => {
       }
     } else {
       await handleCopyLink();
+    }
+  };
+
+  const loadWithdrawalHistory = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('withdrawal_requests')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (!error) {
+        setWithdrawalHistory(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading withdrawal history:', error);
+    }
+  };
+
+  const handleRefreshWallet = async () => {
+    if (!user) return;
+    setRefreshingBalance(true);
+    try {
+      await refreshProfile();
+      await loadWithdrawalHistory(user.id);
+    } finally {
+      setRefreshingBalance(false);
+    }
+  };
+
+  const getWithdrawalStatusClasses = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'approved':
+        return 'bg-blue-100 text-blue-700 border border-blue-200';
+      case 'paid':
+        return 'bg-emerald-100 text-emerald-700 border border-emerald-200';
+      case 'rejected':
+        return 'bg-red-100 text-red-700 border border-red-200';
+      case 'pending':
+      default:
+        return 'bg-amber-100 text-amber-700 border border-amber-200';
     }
   };
 
@@ -386,10 +432,63 @@ const BHRealtors = () => {
                       <p className="mt-2 text-slate-600">Current package value: ₦{currentPackagePrice.toLocaleString()}</p>
                     </div>
                     <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-                      <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Wallet balance</p>
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Wallet balance</p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-2.5"
+                          onClick={handleRefreshWallet}
+                          disabled={refreshingBalance}
+                        >
+                          <RefreshCw className={`h-3.5 w-3.5 mr-1 ${refreshingBalance ? 'animate-spin' : ''}`} />
+                          {refreshingBalance ? 'Refreshing' : 'Refresh'}
+                        </Button>
+                      </div>
                       <p className="mt-2 text-2xl font-semibold text-slate-900">₦{walletBalance.toLocaleString()}</p>
                       <p className="mt-2 text-slate-600">Available commission balance</p>
                     </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-200 bg-white p-6 mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold text-estate-blue flex items-center gap-2">
+                        <Wallet className="h-5 w-5" /> Withdrawal history
+                      </h2>
+                      <span className="text-xs text-slate-500">Latest requests</span>
+                    </div>
+
+                    {withdrawalHistory.length === 0 ? (
+                      <p className="text-sm text-slate-500">No withdrawal requests yet. Your most recent payouts will appear here.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {withdrawalHistory.map((request) => {
+                          const status = String(request.status || 'pending');
+                          const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+
+                          return (
+                            <div key={request.id} className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                              <div>
+                                <p className="font-semibold text-slate-800">₦{Number(request.amount || 0).toLocaleString()}</p>
+                                <p className="text-xs text-slate-500">
+                                  {new Date(request.created_at).toLocaleString()}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {status === 'paid' ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> :
+                                  status === 'rejected' ? <XCircle className="h-4 w-4 text-red-600" /> :
+                                  status === 'approved' ? <Clock3 className="h-4 w-4 text-blue-600" /> :
+                                  <AlertCircle className="h-4 w-4 text-amber-600" />}
+                                <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${getWithdrawalStatusClasses(status)}`}>
+                                  {statusText}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   <div className="rounded-3xl border border-slate-200 bg-white p-6 mb-8">

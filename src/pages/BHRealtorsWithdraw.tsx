@@ -29,7 +29,7 @@ interface WithdrawalRow {
 }
 
 const BHRealtorsWithdraw: React.FC = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
   const [walletBalance, setWalletBalance] = useState(0);
@@ -44,52 +44,54 @@ const BHRealtorsWithdraw: React.FC = () => {
   const [verifyingPassword, setVerifyingPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isRefreshingBalance, setIsRefreshingBalance] = useState(false);
   const [history, setHistory] = useState<WithdrawalRow[]>([]);
 
   useEffect(() => {
     document.title = 'Withdraw Commission | BHRealtors';
   }, []);
 
-  useEffect(() => {
+  const loadData = async () => {
     if (!user) return;
+    setLoading(true);
+    try {
+      const { data: profileRow } = await supabase
+        .from('profiles')
+        .select('wallet_balance, banking_details')
+        .eq('id', user.id)
+        .single();
 
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const { data: profileRow } = await supabase
-          .from('profiles')
-          .select('wallet_balance, banking_details')
-          .eq('id', user.id)
-          .single();
+      const nextBalance = Number(profileRow?.wallet_balance ?? 0);
+      setWalletBalance(nextBalance);
 
-        setWalletBalance(Number(profileRow?.wallet_balance ?? 0));
-
-        if (profileRow?.banking_details) {
-          try {
-            setBank(JSON.parse(profileRow.banking_details));
-          } catch {
-            setBank(null);
-          }
+      if (profileRow?.banking_details) {
+        try {
+          setBank(JSON.parse(profileRow.banking_details));
+        } catch {
+          setBank(null);
         }
-
-        const { data: requests } = await supabase
-          .from('withdrawal_requests')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        setHistory((requests || []) as WithdrawalRow[]);
-      } catch (error) {
-        console.error('Error loading withdrawal data:', error);
-      } finally {
-        setLoading(false);
       }
-    };
 
+      const { data: requests } = await supabase
+        .from('withdrawal_requests')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      setHistory((requests || []) as WithdrawalRow[]);
+    } catch (error) {
+      console.error('Error loading withdrawal data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadData();
   }, [user]);
 
   const numericAmount = Number(amount);
+  const remainingAfterWithdrawal = Math.max(walletBalance - numericAmount, 0);
   const amountError = !amount
     ? null
     : !numericAmount || numericAmount <= 0
@@ -115,6 +117,25 @@ const BHRealtorsWithdraw: React.FC = () => {
   };
 
   const canSubmit = !submitting && !!bank && !amountError && !!amount && !!password && passwordVerified === true;
+
+  const handleRefreshBalance = async () => {
+    if (!user) return;
+    setIsRefreshingBalance(true);
+    try {
+      await refreshProfile();
+      const { data: profileRow } = await supabase
+        .from('profiles')
+        .select('wallet_balance')
+        .eq('id', user.id)
+        .single();
+
+      if (profileRow) {
+        setWalletBalance(Number(profileRow.wallet_balance ?? 0));
+      }
+    } finally {
+      setIsRefreshingBalance(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,7 +173,6 @@ const BHRealtorsWithdraw: React.FC = () => {
 
     setSubmitting(true);
     try {
-      // Re-verify the account password before allowing a withdrawal request.
       const { error: authError } = await supabase.auth.signInWithPassword({
         email: user.email,
         password,
@@ -163,6 +183,15 @@ const BHRealtorsWithdraw: React.FC = () => {
         setSubmitting(false);
         return;
       }
+
+      const newWalletBalance = Math.max(walletBalance - numericAmount, 0);
+
+      const { error: balanceError } = await supabase
+        .from('profiles')
+        .update({ wallet_balance: newWalletBalance })
+        .eq('id', user.id);
+
+      if (balanceError) throw balanceError;
 
       const { error: insertError } = await supabase.from('withdrawal_requests').insert({
         user_id: user.id,
@@ -175,21 +204,18 @@ const BHRealtorsWithdraw: React.FC = () => {
 
       if (insertError) throw insertError;
 
+      setWalletBalance(newWalletBalance);
+      await refreshProfile();
       toast({
         title: 'Withdrawal request submitted',
-        description: 'Your request is pending admin approval. You will be notified once it is processed.',
+        description: 'Your request is pending admin approval. Your available balance has been updated immediately.',
       });
 
       setAmount('');
       setPassword('');
       setPasswordVerified(null);
 
-      const { data: requests } = await supabase
-        .from('withdrawal_requests')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      setHistory((requests || []) as WithdrawalRow[]);
+      await loadData();
     } catch (error: any) {
       console.error('Withdrawal request error:', error);
       toast({ title: 'Request failed', description: error?.message || 'Please try again.', variant: 'destructive' });
@@ -242,7 +268,13 @@ const BHRealtorsWithdraw: React.FC = () => {
             <div className="space-y-6">
               {/* Balance card */}
               <div className="rounded-3xl border border-slate-200 bg-white p-6">
-                <p className="text-sm uppercase tracking-[0.2em] text-slate-500 mb-2">Available balance</p>
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Available balance</p>
+                  <Button type="button" variant="outline" size="sm" className="h-8 px-2.5" onClick={handleRefreshBalance} disabled={isRefreshingBalance}>
+                    <Loader2 className={`h-3.5 w-3.5 mr-1 ${isRefreshingBalance ? 'animate-spin' : ''}`} />
+                    {isRefreshingBalance ? 'Refreshing' : 'Refresh'}
+                  </Button>
+                </div>
                 <div className="flex items-center gap-3">
                   <p className="text-3xl font-bold text-estate-blue">
                     {balanceHidden ? '₦••••••' : `₦${walletBalance.toLocaleString()}`}
@@ -256,6 +288,16 @@ const BHRealtorsWithdraw: React.FC = () => {
                     {balanceHidden ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
+                {amount && Number(amount) > 0 ? (
+                  <p className="mt-3 text-sm text-slate-600">
+                    After this request, your remaining balance will be{' '}
+                    <span className="font-semibold text-estate-blue">
+                      ₦{remainingAfterWithdrawal.toLocaleString()}
+                    </span>
+                  </p>
+                ) : (
+                  <p className="mt-3 text-sm text-slate-500">Enter an amount to see the projected remaining balance.</p>
+                )}
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
