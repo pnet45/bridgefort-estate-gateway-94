@@ -18,7 +18,7 @@ const Footer = () => {
             </div>
             <p className="text-gray-300 mb-4">Your Gateway to Premium Real Estate Investments</p>
             <div className="flex space-x-4">
-              <a href="https://facebook.com/bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on Facebook" className="text-gray-300 hover:text-estate-blue transition duration-300">
+              <a href="https://web.facebook.com/people/Bridgefort-Homes/61591513100267/" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on Facebook" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <Facebook size={20} />
               </a>
               <a href="https://x.com/bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on X" className="text-gray-300 hover:text-estate-blue transition duration-300">
