@@ -32,6 +32,8 @@ export interface UserProfile {
   kyc_docs?: any;
   referred_by_id?: string | null;
   referred_by_code?: string | null;
+  registration_expires_at?: string | null;
+  renewal_reminder_sent_at?: string | null;
 }
 
 export interface AuthContextType {
