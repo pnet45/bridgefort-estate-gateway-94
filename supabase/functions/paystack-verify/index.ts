@@ -150,7 +150,9 @@ serve(async (req) => {
 
       if (!purchaseResult.error && purchaseResult.data) {
         const purchase = purchaseResult.data;
-        const purchaseAmount = Number(purchase.amount ?? 0);
+        // Commissions must be based on the amount Paystack confirms was paid,
+        // never the client-supplied amount recorded at initialization time.
+        const purchaseAmount = paidAmount > 0 ? paidAmount : Number(purchase.amount ?? 0);
 
         if (purchase.status === 'pending') {
           await supabaseAdmin
