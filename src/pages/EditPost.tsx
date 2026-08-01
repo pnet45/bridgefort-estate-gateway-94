@@ -124,7 +124,7 @@ const EditPost = () => {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "An error occurred while updating the post",
+        description: error.message || "We couldn't save your changes. Check your connection and try again — if it keeps happening, contact support.",
         variant: "destructive"
       });
       console.error('Error updating post:', error);

@@ -314,7 +314,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
       console.error("Error saving estate:", error);
       toast({
         title: "Error saving estate",
-        description: error.message || "An error occurred while saving the estate",
+        description: error.message || "We couldn't save this property. Check your connection and try again — if it keeps happening, contact support.",
         variant: "destructive"
       });
     } finally {

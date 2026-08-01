@@ -18,6 +18,7 @@ const RecaptchaProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     <>{children}</>
   );
 import PrivateRoute from '@/components/PrivateRoute';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import ScrollToTop from '@/components/ScrollToTop';
 import ScrollToTopButton from '@/components/ScrollToTopButton';
 import CartSidebar from '@/components/ecommerce/CartSidebar';
@@ -77,8 +78,6 @@ import TravelBookingStatus from '@/pages/TravelBookingStatus';
 import Agrovest from '@/pages/Agrovest';
 import AgrovestCategoryDetail from '@/pages/AgrovestCategoryDetail';
 import FiveKDailyPromo from '@/pages/FiveKDailyPromo';
-import OAuthConsent from '@/pages/OAuthConsent';
-
 
 import './App.css';
 
@@ -94,6 +93,7 @@ function App() {
           <ComparisonProvider>
             <ScrollToTop />
             <div className="App flex flex-col min-h-screen w-full">
+              <ErrorBoundary>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/home" element={<Home />} />
@@ -115,8 +115,6 @@ function App() {
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:id" element={<BlogPost />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
-
                 <Route path="/bridgefort-realtors-login" element={<BridgefortRealtorsAuth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
@@ -181,6 +179,7 @@ function App() {
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </ErrorBoundary>
               
               <GlobalFloatingWidgets />
               <CartSidebar />

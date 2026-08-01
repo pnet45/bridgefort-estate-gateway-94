@@ -88,7 +88,7 @@ const CreatePost = () => {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "An error occurred while creating the post",
+        description: error.message || "We couldn't create this post. Check your connection and try again — if it keeps happening, contact support.",
         variant: "destructive"
       });
       console.error('Error creating post:', error);
