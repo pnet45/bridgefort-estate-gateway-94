@@ -53,6 +53,14 @@ const Auth = ({
   const navigate = useNavigate();
   const location = useLocation();
 
+  // `?next=/some/path` — used by the OAuth consent screen so a signed-out user
+  // is returned to the authorization request instead of the dashboard.
+  const nextParam = (() => {
+    const raw = new URLSearchParams(location.search).get('next');
+    return raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : null;
+  })();
+
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const refCode = params.get('ref');
@@ -193,7 +201,9 @@ const Auth = ({
         // Realtors Login toggle), route based on the account's actual type
         // rather than which tab happened to be selected, so a client never
         // lands on the BHRealtors dashboard and vice versa.
-        if (pageTitle) {
+        if (nextParam) {
+          navigate(nextParam);
+        } else if (pageTitle) {
           navigate(redirectAfterSignIn);
         } else {
           let destination = '/dashboard';
@@ -451,7 +461,7 @@ const Auth = ({
               'Your login was created, but we could not save your profile details. Please contact support so we can fix this — your referral/PBO info may not have been saved.',
             variant: 'destructive'
           });
-          navigate(redirectAfterSignUp);
+          navigate(nextParam ?? redirectAfterSignUp);
           return;
         }
 
@@ -459,7 +469,7 @@ const Auth = ({
           title: "Registration successful!",
           description: "Please check your email to verify your account."
         });
-        navigate(redirectAfterSignUp);
+        navigate(nextParam ?? redirectAfterSignUp);
       } else {
         // Belt-and-suspenders: signUp() returned no error but also no user.
         // Rather than silently doing nothing (which just looks like a
@@ -735,6 +745,7 @@ const Auth = ({
               onClick={async () => {
                 setLoading(true);
                 try {
+                  if (nextParam) sessionStorage.setItem('bf-post-auth-next', nextParam);
                   const { error } = await signInWithGoogle();
                   if (error) {
                     toast({

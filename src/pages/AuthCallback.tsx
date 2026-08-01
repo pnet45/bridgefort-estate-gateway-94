@@ -16,6 +16,15 @@ const AuthCallback = () => {
       settled = true;
 
       // Client vs Realtor: same distinction used across the rest of the app.
+      // Honour a consent/return path preserved before the provider round-trip.
+      const preservedNext = sessionStorage.getItem('bf-post-auth-next');
+      sessionStorage.removeItem('bf-post-auth-next');
+      if (preservedNext && preservedNext.startsWith('/') && !preservedNext.startsWith('//')) {
+        toast({ title: 'Welcome!', description: email ? `Signed in as ${email}` : 'Signed in successfully' });
+        navigate(preservedNext, { replace: true });
+        return;
+      }
+
       let destination = '/dashboard';
       try {
         const { data: profileRow } = await supabase

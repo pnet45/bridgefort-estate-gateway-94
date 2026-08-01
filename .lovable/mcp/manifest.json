@@ -1,0 +1,199 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://xyvspvtdaacqfmfocvhw.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "bridgefort",
+      "version": "0.1.0",
+      "title": "bridgefort"
+    },
+    "tools": [
+      {
+        "name": "search_estates",
+        "title": "Search estates",
+        "description": "Search Bridgefort land estates by name, location, or availability. Returns pricing, plot sizes and stock.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free text matched against estate name, title and location."
+            },
+            "location": {
+              "type": "string",
+              "description": "Filter by location, e.g. 'Asaba' or 'Ibeju-Lekki'."
+            },
+            "available_only": {
+              "type": "boolean",
+              "description": "Exclude sold-out estates. Defaults to true."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max results (default 10)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_listings",
+        "title": "Search property listings",
+        "description": "Search approved, published residential and commercial property listings by city, price and bedrooms.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free text matched against listing title, city and estate."
+            },
+            "city": {
+              "type": "string",
+              "description": "Filter by city, e.g. 'Lagos'."
+            },
+            "min_bedrooms": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20,
+              "description": "Minimum number of bedrooms."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max results (default 10)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_my_profile",
+        "title": "Get my profile",
+        "description": "Return the signed-in user's Bridgefort profile: name, contact details, realtor status and rank.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_listings",
+        "title": "List my listings",
+        "description": "List property listings created by the signed-in user, including pending, approved and rejected ones.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "moderation_status": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "approved",
+                "rejected"
+              ],
+              "description": "Filter by moderation status."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max results (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_notifications",
+        "title": "List my notifications",
+        "description": "List in-app notifications for the signed-in user, newest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "unread_only": {
+              "type": "boolean",
+              "description": "Only return unread notifications."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max results (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "mark_notification_read",
+        "title": "Mark notification read",
+        "description": "Mark one of the signed-in user's in-app notifications as read.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "notification_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "ID of the notification to mark as read."
+            }
+          },
+          "required": [
+            "notification_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

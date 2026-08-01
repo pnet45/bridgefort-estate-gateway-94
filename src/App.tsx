@@ -77,6 +77,8 @@ import TravelBookingStatus from '@/pages/TravelBookingStatus';
 import Agrovest from '@/pages/Agrovest';
 import AgrovestCategoryDetail from '@/pages/AgrovestCategoryDetail';
 import FiveKDailyPromo from '@/pages/FiveKDailyPromo';
+import OAuthConsent from '@/pages/OAuthConsent';
+
 
 import './App.css';
 
@@ -113,6 +115,8 @@ function App() {
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:id" element={<BlogPost />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+
                 <Route path="/bridgefort-realtors-login" element={<BridgefortRealtorsAuth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
