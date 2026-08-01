@@ -66,6 +66,62 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
+      // ---- Amount verification -------------------------------------------
+      // Paystack reports the amount actually charged, in kobo. We must compare
+      // it to the authoritative price stored server-side before marking
+      // anything as paid; otherwise a caller can initialize a ₦1 charge for a
+      // real order/membership reference and have it recorded as fully paid.
+      const paidAmount = Number(data.data.amount ?? 0) / 100;
+      const currency = String(data.data.currency ?? 'NGN');
+
+      const expectedAmounts: number[] = [];
+
+      const orderLookup = await supabaseAdmin
+        .from('orders')
+        .select('id, total_amount')
+        .eq('payment_reference', reference)
+        .maybeSingle();
+      if (!orderLookup.error && orderLookup.data?.total_amount != null) {
+        expectedAmounts.push(Number(orderLookup.data.total_amount));
+      }
+
+      const pendingPurchase = await supabaseAdmin
+        .from('mlm_membership_purchases')
+        .select('id, package_code')
+        .eq('paystack_reference', reference)
+        .maybeSingle();
+      if (!pendingPurchase.error && pendingPurchase.data?.package_code) {
+        const pkg = await supabaseAdmin
+          .from('mlm_packages')
+          .select('price')
+          .eq('package_code', pendingPurchase.data.package_code)
+          .maybeSingle();
+        if (!pkg.error && pkg.data?.price != null) {
+          expectedAmounts.push(Number(pkg.data.price));
+        }
+      }
+
+      const tolerance = 1; // allow ₦1 of rounding slack
+      const underpaid = expectedAmounts.some(
+        (expected) => expected > 0 && paidAmount + tolerance < expected
+      );
+
+      if (currency !== 'NGN' || underpaid) {
+        console.error('Payment amount mismatch', { reference, paidAmount, expectedAmounts, currency });
+
+        await supabaseAdmin
+          .from('payments')
+          .update({ status: 'amount_mismatch' })
+          .eq('paystack_reference', reference);
+
+        return new Response(
+          JSON.stringify({ status: false, message: 'Payment amount does not match the amount owed. Please contact support.' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+      // ---------------------------------------------------------------------
+
+
       // Update orders table if this payment belongs to an order
       await supabaseAdmin
         .from('orders')
@@ -94,7 +150,9 @@ serve(async (req) => {
 
       if (!purchaseResult.error && purchaseResult.data) {
         const purchase = purchaseResult.data;
-        const purchaseAmount = Number(purchase.amount ?? 0);
+        // Commissions must be based on the amount Paystack confirms was paid,
+        // never the client-supplied amount recorded at initialization time.
+        const purchaseAmount = paidAmount > 0 ? paidAmount : Number(purchase.amount ?? 0);
 
         if (purchase.status === 'pending') {
           await supabaseAdmin

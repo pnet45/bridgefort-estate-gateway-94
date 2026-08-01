@@ -42,7 +42,33 @@ serve(async (req) => {
 
     const authenticatedUserId = userData.user.id;
 
-    const { email, amount, metadata, reference } = await req.json();
+    const { email, amount: clientAmount, metadata, reference } = await req.json();
+    let amount = Number(clientAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid amount' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
+    // For membership purchases the authoritative price lives server-side —
+    // never trust the amount computed by the client.
+    if (metadata?.purchase_type === 'membership' && metadata?.package_code) {
+      const adminClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+      const { data: pkg } = await adminClient
+        .from('mlm_packages')
+        .select('price')
+        .eq('package_code', metadata.package_code)
+        .maybeSingle();
+      if (!pkg?.price) {
+        return new Response(
+          JSON.stringify({ error: 'Unknown membership package' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+      amount = Number(pkg.price);
+    }
+
     console.log('Incoming request:', { email, amount, metadata, reference, user_id: authenticatedUserId });
 
     const PAYSTACK_SECRET_KEY = Deno.env.get('PAYSTACK_SECRET_KEY');

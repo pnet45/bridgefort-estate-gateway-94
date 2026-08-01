@@ -53,6 +53,13 @@ export type Database = {
             foreignKeyName: "admin_activity_logs_admin_id_fkey"
             columns: ["admin_id"]
             isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "admin_activity_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -106,6 +113,13 @@ export type Database = {
             foreignKeyName: "admin_calendar_events_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "admin_calendar_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -144,6 +158,13 @@ export type Database = {
             foreignKeyName: "admin_chat_messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "admin_chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -151,6 +172,7 @@ export type Database = {
       }
       admin_emails: {
         Row: {
+          account_email: string | null
           attachments: Json | null
           body: string
           created_at: string
@@ -171,6 +193,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_email?: string | null
           attachments?: Json | null
           body?: string
           created_at?: string
@@ -191,6 +214,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_email?: string | null
           attachments?: Json | null
           body?: string
           created_at?: string
@@ -217,6 +241,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "admin_emails"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_emails_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
           },
           {
             foreignKeyName: "admin_emails_sender_id_fkey"
@@ -259,6 +290,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "admin_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
           {
             foreignKeyName: "admin_notes_created_by_fkey"
             columns: ["created_by"]
@@ -307,6 +345,13 @@ export type Database = {
             foreignKeyName: "admin_notices_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "admin_notices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -338,6 +383,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "admin_presence_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
           {
             foreignKeyName: "admin_presence_user_id_fkey"
             columns: ["user_id"]
@@ -395,6 +447,13 @@ export type Database = {
             foreignKeyName: "admin_shared_files_uploaded_by_fkey"
             columns: ["uploaded_by"]
             isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "admin_shared_files_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -442,8 +501,22 @@ export type Database = {
             foreignKeyName: "admin_tasks_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "admin_tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
           },
           {
             foreignKeyName: "admin_tasks_created_by_fkey"
@@ -505,6 +578,173 @@ export type Database = {
           state?: string | null
           status?: string | null
           submitted_at?: string | null
+        }
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          data_accessed: Json | null
+          id: string
+          operation: string
+          table_name: string
+          timestamp: string | null
+          user_id: string | null
+        }
+        Insert: {
+          data_accessed?: Json | null
+          id?: string
+          operation: string
+          table_name: string
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          data_accessed?: Json | null
+          id?: string
+          operation?: string
+          table_name?: string
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      auth_carousel_slides: {
+        Row: {
+          created_at: string
+          eyebrow: string
+          id: string
+          image_url: string
+          is_active: boolean
+          link: string | null
+          sort_order: number
+          subtitle: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          eyebrow?: string
+          id?: string
+          image_url: string
+          is_active?: boolean
+          link?: string | null
+          sort_order?: number
+          subtitle?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          eyebrow?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          link?: string | null
+          sort_order?: number
+          subtitle?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bh_subscription_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          paid_at: string
+          paystack_reference: string | null
+          status: string
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          paid_at?: string
+          paystack_reference?: string | null
+          status?: string
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          paid_at?: string
+          paystack_reference?: string | null
+          status?: string
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bh_subscription_payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "bh_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bh_subscriptions: {
+        Row: {
+          created_at: string
+          estate_name: string
+          estate_slug: string
+          expected_end_date: string
+          frequency: string
+          id: string
+          installment_amount: number
+          next_due_date: string
+          paid_amount: number
+          paid_installments: number
+          plot_size: string
+          start_date: string
+          status: string
+          total_amount: number
+          total_installments: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          estate_name: string
+          estate_slug: string
+          expected_end_date: string
+          frequency: string
+          id?: string
+          installment_amount: number
+          next_due_date?: string
+          paid_amount?: number
+          paid_installments?: number
+          plot_size: string
+          start_date?: string
+          status?: string
+          total_amount: number
+          total_installments: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          estate_name?: string
+          estate_slug?: string
+          expected_end_date?: string
+          frequency?: string
+          id?: string
+          installment_amount?: number
+          next_due_date?: string
+          paid_amount?: number
+          paid_installments?: number
+          plot_size?: string
+          start_date?: string
+          status?: string
+          total_amount?: number
+          total_installments?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -772,6 +1012,13 @@ export type Database = {
             foreignKeyName: "crm_follow_ups_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "crm_follow_ups_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -810,6 +1057,13 @@ export type Database = {
           lead_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_lead_activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
           {
             foreignKeyName: "crm_lead_activities_created_by_fkey"
             columns: ["created_by"]
@@ -870,6 +1124,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
           {
             foreignKeyName: "crm_leads_assigned_to_fkey"
             columns: ["assigned_to"]
@@ -963,6 +1224,13 @@ export type Database = {
             foreignKeyName: "email_campaigns_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "email_campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1046,6 +1314,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "email_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
           {
             foreignKeyName: "email_templates_created_by_fkey"
             columns: ["created_by"]
@@ -1294,6 +1569,90 @@ export type Database = {
           ip_address?: string | null
         }
         Relationships: []
+      }
+      gmail_oauth_state: {
+        Row: {
+          created_at: string
+          requested_by: string | null
+          state: string
+          used: boolean
+        }
+        Insert: {
+          created_at?: string
+          requested_by?: string | null
+          state: string
+          used?: boolean
+        }
+        Update: {
+          created_at?: string
+          requested_by?: string | null
+          state?: string
+          used?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gmail_oauth_state_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "gmail_oauth_state_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gmail_oauth_tokens: {
+        Row: {
+          access_token: string
+          connected_by: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          refresh_token: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          connected_by?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          refresh_token: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          connected_by?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          refresh_token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gmail_oauth_tokens_connected_by_fkey"
+            columns: ["connected_by"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "gmail_oauth_tokens_connected_by_fkey"
+            columns: ["connected_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hero_slides: {
         Row: {
@@ -1588,10 +1947,166 @@ export type Database = {
             foreignKeyName: "listings_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "listings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
+      }
+      mlm_commissions: {
+        Row: {
+          beneficiary_id: string
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          description: string | null
+          id: string
+          source_purchase_id: string
+          sponsor_level: number
+          status: string
+        }
+        Insert: {
+          beneficiary_id: string
+          commission_amount: number
+          commission_rate: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          source_purchase_id: string
+          sponsor_level: number
+          status?: string
+        }
+        Update: {
+          beneficiary_id?: string
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          source_purchase_id?: string
+          sponsor_level?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mlm_commissions_beneficiary_id_fkey"
+            columns: ["beneficiary_id"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "mlm_commissions_beneficiary_id_fkey"
+            columns: ["beneficiary_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mlm_commissions_source_purchase_id_fkey"
+            columns: ["source_purchase_id"]
+            isOneToOne: false
+            referencedRelation: "mlm_membership_purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mlm_membership_purchases: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          package_code: string
+          paystack_reference: string | null
+          purchase_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          package_code: string
+          paystack_reference?: string | null
+          purchase_type?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          package_code?: string
+          paystack_reference?: string | null
+          purchase_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mlm_membership_purchases_package_code_fkey"
+            columns: ["package_code"]
+            isOneToOne: false
+            referencedRelation: "mlm_packages"
+            referencedColumns: ["package_code"]
+          },
+          {
+            foreignKeyName: "mlm_membership_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "mlm_membership_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mlm_packages: {
+        Row: {
+          created_at: string
+          description: string
+          direct_commission_pct: number
+          indirect_commission_pct: number
+          package_code: string
+          package_name: string
+          price: number
+          withdrawable: boolean
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          direct_commission_pct: number
+          indirect_commission_pct: number
+          package_code: string
+          package_name: string
+          price: number
+          withdrawable?: boolean
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          direct_commission_pct?: number
+          indirect_commission_pct?: number
+          package_code?: string
+          package_name?: string
+          price?: number
+          withdrawable?: boolean
+        }
+        Relationships: []
       }
       newsletter_subscribers: {
         Row: {
@@ -1632,6 +2147,42 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           subscribed_at?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          audience: string
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string | null
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          audience?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          title?: string
+          type?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1703,6 +2254,62 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      payment_requests: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          processed_at: string | null
+          processed_by: string | null
+          reference: string | null
+          related_payment_id: string | null
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reference?: string | null
+          related_payment_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          reference?: string | null
+          related_payment_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_requests_related_payment_id_fkey"
+            columns: ["related_payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_transactions: {
         Row: {
@@ -1892,21 +2499,20 @@ export type Database = {
           birthday_reminder_sent_year: number | null
           created_at: string | null
           current_package: string | null
+          current_rank: string | null
           current_residence: string | null
           date_of_birth: string | null
           employer_address: string | null
           employer_country: string | null
           employer_name: string | null
           employment_status: string | null
-          registration_date: string | null
-          registration_expires_at: string | null
-          renewal_reminder_sent_at: string | null
           first_name: string | null
           gender: string | null
           id: string
           id_expiry: string | null
           id_number: string | null
           id_type: string | null
+          is_active: boolean | null
           is_foreigner: boolean | null
           is_pbo: boolean | null
           kyc_docs: Json | null
@@ -1923,17 +2529,27 @@ export type Database = {
           next_of_kin_relationship: string | null
           occupation: string | null
           pbo_referral_code: string | null
+          personally_sponsored_count: number | null
           phone_number: string | null
           profile_completed: boolean | null
           profile_completion_percentage: number | null
           profile_picture_url: string | null
+          referred_by_code: string | null
+          referred_by_id: string | null
+          registration_date: string | null
+          registration_expires_at: string | null
+          renewal_reminder_sent_at: string | null
           residence_permit: string | null
           source_of_income: string | null
           spouse_name: string | null
           state_of_origin: string | null
+          team_size: number | null
           terms_accepted: boolean | null
+          total_commissions: number | null
+          total_personal_volume: number | null
           updated_at: string | null
           visa_status: string | null
+          wallet_balance: number | null
         }
         Insert: {
           account_locked?: boolean
@@ -1946,21 +2562,20 @@ export type Database = {
           birthday_reminder_sent_year?: number | null
           created_at?: string | null
           current_package?: string | null
+          current_rank?: string | null
           current_residence?: string | null
           date_of_birth?: string | null
           employer_address?: string | null
           employer_country?: string | null
           employer_name?: string | null
           employment_status?: string | null
-          registration_date?: string | null
-          registration_expires_at?: string | null
-          renewal_reminder_sent_at?: string | null
           first_name?: string | null
           gender?: string | null
           id: string
           id_expiry?: string | null
           id_number?: string | null
           id_type?: string | null
+          is_active?: boolean | null
           is_foreigner?: boolean | null
           is_pbo?: boolean | null
           kyc_docs?: Json | null
@@ -1977,17 +2592,27 @@ export type Database = {
           next_of_kin_relationship?: string | null
           occupation?: string | null
           pbo_referral_code?: string | null
+          personally_sponsored_count?: number | null
           phone_number?: string | null
           profile_completed?: boolean | null
           profile_completion_percentage?: number | null
           profile_picture_url?: string | null
+          referred_by_code?: string | null
+          referred_by_id?: string | null
+          registration_date?: string | null
+          registration_expires_at?: string | null
+          renewal_reminder_sent_at?: string | null
           residence_permit?: string | null
           source_of_income?: string | null
           spouse_name?: string | null
           state_of_origin?: string | null
+          team_size?: number | null
           terms_accepted?: boolean | null
+          total_commissions?: number | null
+          total_personal_volume?: number | null
           updated_at?: string | null
           visa_status?: string | null
+          wallet_balance?: number | null
         }
         Update: {
           account_locked?: boolean
@@ -2000,21 +2625,20 @@ export type Database = {
           birthday_reminder_sent_year?: number | null
           created_at?: string | null
           current_package?: string | null
+          current_rank?: string | null
           current_residence?: string | null
           date_of_birth?: string | null
           employer_address?: string | null
           employer_country?: string | null
           employer_name?: string | null
           employment_status?: string | null
-          registration_date?: string | null
-          registration_expires_at?: string | null
-          renewal_reminder_sent_at?: string | null
           first_name?: string | null
           gender?: string | null
           id?: string
           id_expiry?: string | null
           id_number?: string | null
           id_type?: string | null
+          is_active?: boolean | null
           is_foreigner?: boolean | null
           is_pbo?: boolean | null
           kyc_docs?: Json | null
@@ -2031,19 +2655,44 @@ export type Database = {
           next_of_kin_relationship?: string | null
           occupation?: string | null
           pbo_referral_code?: string | null
+          personally_sponsored_count?: number | null
           phone_number?: string | null
           profile_completed?: boolean | null
           profile_completion_percentage?: number | null
           profile_picture_url?: string | null
+          referred_by_code?: string | null
+          referred_by_id?: string | null
+          registration_date?: string | null
+          registration_expires_at?: string | null
+          renewal_reminder_sent_at?: string | null
           residence_permit?: string | null
           source_of_income?: string | null
           spouse_name?: string | null
           state_of_origin?: string | null
+          team_size?: number | null
           terms_accepted?: boolean | null
+          total_commissions?: number | null
+          total_personal_volume?: number | null
           updated_at?: string | null
           visa_status?: string | null
+          wallet_balance?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_id_fkey"
+            columns: ["referred_by_id"]
+            isOneToOne: false
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_id_fkey"
+            columns: ["referred_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       property_analytics: {
         Row: {
@@ -2208,6 +2857,42 @@ export type Database = {
           permission_key?: string
           role?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      saved_searches: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          location: string | null
+          max_price: number | null
+          min_price: number | null
+          property_category: string | null
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          location?: string | null
+          max_price?: number | null
+          min_price?: number | null
+          property_category?: string | null
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          location?: string | null
+          max_price?: number | null
+          min_price?: number | null
+          property_category?: string | null
+          type?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -2490,174 +3175,6 @@ export type Database = {
         }
         Relationships: []
       }
-      withdrawal_requests: {
-        Row: {
-          account_name: string
-          account_number: string
-          admin_notes: string | null
-          amount: number
-          bank_name: string
-          created_at: string
-          id: string
-          processed_at: string | null
-          processed_by: string | null
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          account_name: string
-          account_number: string
-          admin_notes?: string | null
-          amount: number
-          bank_name: string
-          created_at?: string
-          id?: string
-          processed_at?: string | null
-          processed_by?: string | null
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          account_name?: string
-          account_number?: string
-          admin_notes?: string | null
-          amount?: number
-          bank_name?: string
-          created_at?: string
-          id?: string
-          processed_at?: string | null
-          processed_by?: string | null
-          status?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      notifications: {
-        Row: {
-          audience: string
-          created_at: string
-          id: string
-          is_read: boolean
-          link: string | null
-          message: string | null
-          title: string
-          type: string
-          user_id: string | null
-        }
-        Insert: {
-          audience?: string
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          link?: string | null
-          message?: string | null
-          title: string
-          type: string
-          user_id?: string | null
-        }
-        Update: {
-          audience?: string
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          link?: string | null
-          message?: string | null
-          title?: string
-          type?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      payment_requests: {
-        Row: {
-          admin_notes: string | null
-          amount: number
-          created_at: string
-          description: string | null
-          id: string
-          processed_at: string | null
-          processed_by: string | null
-          reference: string | null
-          related_payment_id: string | null
-          status: string
-          type: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          admin_notes?: string | null
-          amount: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          processed_at?: string | null
-          processed_by?: string | null
-          reference?: string | null
-          related_payment_id?: string | null
-          status?: string
-          type?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          admin_notes?: string | null
-          amount?: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          processed_at?: string | null
-          processed_by?: string | null
-          reference?: string | null
-          related_payment_id?: string | null
-          status?: string
-          type?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      auth_carousel_slides: {
-        Row: {
-          created_at: string
-          eyebrow: string
-          id: string
-          image_url: string
-          is_active: boolean
-          link: string | null
-          sort_order: number
-          subtitle: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          eyebrow?: string
-          id?: string
-          image_url: string
-          is_active?: boolean
-          link?: string | null
-          sort_order?: number
-          subtitle?: string
-          title?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          eyebrow?: string
-          id?: string
-          image_url?: string
-          is_active?: boolean
-          link?: string | null
-          sort_order?: number
-          subtitle?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -2706,9 +3223,63 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_requests: {
+        Row: {
+          account_name: string
+          account_number: string
+          admin_notes: string | null
+          amount: number
+          bank_name: string
+          created_at: string
+          id: string
+          processed_at: string | null
+          processed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          admin_notes?: string | null
+          amount: number
+          bank_name: string
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          admin_notes?: string | null
+          amount?: number
+          bank_name?: string
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      pbo_referral_leaderboard: {
+        Row: {
+          current_package: string | null
+          downline_count: number | null
+          first_name: string | null
+          last_initial: string | null
+          pbo_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cleanup_old_login_attempts: { Args: never; Returns: undefined }
@@ -2732,6 +3303,14 @@ export type Database = {
               last_name: string
             }[]
           }
+      get_withdrawal_funnel_stats: {
+        Args: never
+        Returns: {
+          request_count: number
+          status: string
+          total_amount: number
+        }[]
+      }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_account_locked: {
         Args: {

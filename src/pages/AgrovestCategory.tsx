@@ -29,14 +29,14 @@ const AgrovestCategory: React.FC = () => {
     );
   }
 
-  const related = agrovestCategories.filter((c) => c.slug !== cat.slug && c.kind === cat.kind).slice(0, 4);
+  const related = agrovestCategories.filter((c) => c.slug !== cat.slug && c.tag === cat.tag).slice(0, 4);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <Navbar />
       <main className="flex-grow pt-24">
         <section className="relative h-[46vh] min-h-[320px] w-full overflow-hidden">
-          <img src={cat.img} alt={cat.name} loading="eager" decoding="async"
+          <img src={cat.image} alt={cat.name} loading="eager" decoding="async"
             className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-green-950 via-green-950/60 to-transparent" />
           <div className="container-custom relative z-10 h-full flex flex-col justify-end pb-8">
@@ -78,13 +78,13 @@ const AgrovestCategory: React.FC = () => {
         {related.length > 0 && (
           <section className="section-padding bg-green-50/50">
             <div className="container-custom max-w-5xl">
-              <h2 className="text-xl font-bold text-green-900 mb-6">Related {cat.kind === 'crop' ? 'crops' : 'facilities'}</h2>
+              <h2 className="text-xl font-bold text-green-900 mb-6">Related {cat.tag === 'Facility' ? 'facilities' : 'crops'}</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {related.map((r) => (
                   <Link key={r.slug} to={`/agrovest/${r.slug}`}
                     className="group rounded-xl overflow-hidden border border-green-100 bg-white hover:shadow-lg transition">
                     <div className="aspect-[4/3] overflow-hidden">
-                      <img src={r.img} alt={r.name} loading="lazy" decoding="async"
+                      <img src={r.image} alt={r.name} loading="lazy" decoding="async"
                         className="w-full h-full object-cover transition-transform" />
                     </div>
                     <div className="p-3">

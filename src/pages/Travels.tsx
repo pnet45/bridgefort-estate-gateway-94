@@ -610,7 +610,7 @@ const Travels = () => {
               <Link to="/contact">Start Planning</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-estate-blue text-base font-semibold">
-              <a href="https://wa.me/+2348030624059" text="Hello!|I would like to know more about how I can plan my travels" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+              <a href="https://wa.me/2348030624059?text=Hello!%20I%20would%20like%20to%20know%20more%20about%20how%20I%20can%20plan%20my%20travels" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
             </Button>
           </div>
         </div>
