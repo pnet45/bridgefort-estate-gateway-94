@@ -27,7 +27,7 @@ const Footer = () => {
               <a href="https://instagram.com/bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on Instagram" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <Instagram size={20} />
               </a>
-              <a href="https://linkedin.com/company/bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on LinkedIn" className="text-gray-300 hover:text-estate-blue transition duration-300">
+              <a href="https://www.linkedin.com/in/bridgeforthomes/" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on LinkedIn" className="text-gray-300 hover:text-estate-blue transition duration-300">
                 <Linkedin size={20} />
               </a>
               <a href="https://tiktok.com/@bridgeforthomes" target="_blank" rel="noopener noreferrer" aria-label="Bridgefort Homes on TikTok" className="text-gray-300 hover:text-estate-blue transition duration-300">
