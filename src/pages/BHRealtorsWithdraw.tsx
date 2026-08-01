@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import {
-  ArrowLeft, Eye, EyeOff, Landmark, Loader2, Clock, AlertTriangle, ShieldCheck,
+  ArrowLeft, Eye, EyeOff, Landmark, Loader2, Clock, AlertTriangle, ShieldCheck, Check, X,
 } from 'lucide-react';
 
 interface BankDetails {
@@ -37,6 +37,11 @@ const BHRealtorsWithdraw: React.FC = () => {
   const [bank, setBank] = useState<BankDetails | null>(null);
   const [amount, setAmount] = useState('');
   const [password, setPassword] = useState('');
+  // null = not checked yet, true/false = last verification result for the
+  // current password value. Reset to null whenever the password is edited
+  // so a stale "verified" state can never carry over to a new value.
+  const [passwordVerified, setPasswordVerified] = useState<boolean | null>(null);
+  const [verifyingPassword, setVerifyingPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [history, setHistory] = useState<WithdrawalRow[]>([]);
@@ -83,6 +88,33 @@ const BHRealtorsWithdraw: React.FC = () => {
 
     loadData();
   }, [user]);
+
+  const numericAmount = Number(amount);
+  const amountError = !amount
+    ? null
+    : !numericAmount || numericAmount <= 0
+      ? 'Enter an amount greater than ₦0.'
+      : numericAmount > walletBalance
+        ? `This exceeds your available balance of ₦${walletBalance.toLocaleString()}.`
+        : null;
+
+  const handlePasswordBlur = async () => {
+    if (!password || !user?.email) return;
+    setVerifyingPassword(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password,
+      });
+      setPasswordVerified(!error);
+    } catch {
+      setPasswordVerified(false);
+    } finally {
+      setVerifyingPassword(false);
+    }
+  };
+
+  const canSubmit = !submitting && !!bank && !amountError && !!amount && !!password && passwordVerified === true;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +182,7 @@ const BHRealtorsWithdraw: React.FC = () => {
 
       setAmount('');
       setPassword('');
+      setPasswordVerified(null);
 
       const { data: requests } = await supabase
         .from('withdrawal_requests')
@@ -238,8 +271,14 @@ const BHRealtorsWithdraw: React.FC = () => {
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="e.g. 20000"
                     required
+                    aria-invalid={!!amountError}
+                    className={amountError ? 'border-destructive focus-visible:ring-destructive' : undefined}
                   />
-                  <p className="text-xs text-slate-500 mt-2">Maximum: ₦{walletBalance.toLocaleString()}</p>
+                  {amountError ? (
+                    <p className="text-xs text-destructive mt-2">{amountError}</p>
+                  ) : (
+                    <p className="text-xs text-slate-500 mt-2">Maximum: ₦{walletBalance.toLocaleString()}</p>
+                  )}
                 </div>
 
                 {/* Bank details (read only) */}
@@ -293,15 +332,38 @@ const BHRealtorsWithdraw: React.FC = () => {
                     id="wd-password"
                     type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordVerified(null); // any edit invalidates the last check
+                    }}
+                    onBlur={handlePasswordBlur}
                     placeholder="Your account password"
                     required
+                    aria-invalid={passwordVerified === false}
+                    className={passwordVerified === false ? 'border-destructive focus-visible:ring-destructive' : undefined}
                   />
+                  <div className="mt-2 min-h-[1rem]">
+                    {verifyingPassword ? (
+                      <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Verifying password…
+                      </p>
+                    ) : passwordVerified === true ? (
+                      <p className="text-xs text-emerald-600 flex items-center gap-1.5">
+                        <Check className="h-3.5 w-3.5" /> Password verified
+                      </p>
+                    ) : passwordVerified === false ? (
+                      <p className="text-xs text-destructive flex items-center gap-1.5">
+                        <X className="h-3.5 w-3.5" /> Incorrect password. Please try again.
+                      </p>
+                    ) : (
+                      <p className="text-xs text-slate-400">We verify your password before submitting, for your security.</p>
+                    )}
+                  </div>
                 </div>
 
                 <Button
                   type="submit"
-                  disabled={submitting || !bank}
+                  disabled={!canSubmit}
                   className="w-full bg-estate-blue hover:bg-estate-darkBlue"
                 >
                   {submitting ? (
