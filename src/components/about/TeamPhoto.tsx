@@ -17,7 +17,7 @@ const TeamPhoto = () => {
             loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/lovable-uploads/PropertyHero.png';
+              target.src = '/public/images/Bridgefort-team.jpg';
             }}
           />
         </div>
