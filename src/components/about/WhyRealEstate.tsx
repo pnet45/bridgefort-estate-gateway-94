@@ -1,6 +1,6 @@
 import React from 'react';
 const WhyRealEstate = () => {
-  return <section className="section-padding bg-gray-50 my-0">
+  return <section className="section-padding my-0">
       <div className="container-custom">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>

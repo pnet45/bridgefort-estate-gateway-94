@@ -67,12 +67,12 @@ const CoreValues = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {coreValues.map((value, index) => <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+          {coreValues.map((value, index) => <div key={index} className="glass-card p-6 rounded-2xl">
               <div className="flex items-center mb-4">
                 <span className="text-2xl font-bold text-estate-blue mr-2">{value.letter}</span>
                 <h3 className="text-xl font-semibold">– {value.value}</h3>
               </div>
-              <p className="text-gray-700">{value.description}</p>
+              <p className="text-muted-foreground">{value.description}</p>
             </div>)}
         </div>
       </div>

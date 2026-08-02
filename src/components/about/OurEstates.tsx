@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 const OurEstates = () => {
-  return <section className="section-padding bg-gradient-to-r from-blue-50 to-purple-50">
+  return <section className="section-padding">
       <div className="container-custom">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold mb-4 text-estate-blue">Our Estates: A World of Opportunity</h2>
@@ -11,7 +11,7 @@ const OurEstates = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center">
+          <div className="glass-card p-6 rounded-2xl text-center">
             <div className="h-64 mb-4 overflow-hidden rounded-md">
               <img src="/lovable-uploads/dfe26401-712e-4dfd-b08f-69abac4fec61.png" alt="Residential Estate" className="w-full h-full object-cover" loading="lazy" decoding="async" />
             </div>
@@ -21,7 +21,7 @@ const OurEstates = () => {
             </p>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center">
+          <div className="glass-card p-6 rounded-2xl text-center">
             <div className="h-64 mb-4 overflow-hidden rounded-md">
               <img src="/lovable-uploads/2d407224-4f01-42be-9972-34d176414967.png" alt="Commercial Estate" className="w-full h-full object-cover" loading="lazy" decoding="async" />
             </div>
@@ -31,7 +31,7 @@ const OurEstates = () => {
             </p>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center">
+          <div className="glass-card p-6 rounded-2xl text-center">
             <div className="h-64 mb-4 overflow-hidden rounded-md">
               <img src="/lovable-uploads/c16c53fa-e9b8-4d11-829b-fbf589bfdb5a.png" alt="Land Banking" className="w-full h-full object-cover" loading="lazy" decoding="async" />
             </div>

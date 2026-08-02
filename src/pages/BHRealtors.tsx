@@ -17,6 +17,7 @@ import { toast } from '@/hooks/use-toast';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
 import RealtorsRegistrationForm from '@/components/bhRealtors/RealtorsRegistrationForm';
 import ReferralLeaderboard from '@/components/bhRealtors/ReferralLeaderboard';
+import DownlineTree from '@/components/bhRealtors/DownlineTree';
 
 const packageRank: Record<string, number> = {
   associate: 1,
@@ -29,7 +30,6 @@ const BHRealtors = () => {
   const [shareLink, setShareLink] = useState('');
   const [memberCount, setMemberCount] = useState<number | null>(null);
   const [pboCount, setPboCount] = useState<number | null>(null);
-  const [downlineMembers, setDownlineMembers] = useState<Array<any>>([]);
   const [copyStatus, setCopyStatus] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [purchaseError, setPurchaseError] = useState('');
@@ -154,26 +154,6 @@ const BHRealtors = () => {
 
   useEffect(() => {
     if (!user) return;
-
-    const loadDownline = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, email, created_at, is_pbo, pbo_referral_code')
-          .eq('referred_by_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          throw error;
-        }
-
-        setDownlineMembers(data || []);
-      } catch (error) {
-        console.error('Error loading BHRealtors downline:', error);
-      }
-    };
-
-    loadDownline();
     loadWithdrawalHistory(user.id);
   }, [user]);
 
@@ -732,9 +712,9 @@ const BHRealtors = () => {
                         <Button className="w-full mt-4 bg-estate-blue hover:bg-estate-darkBlue">Withdraw</Button>
                       </Link>
                     </div>
-                    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-                      <h2 className="text-xl font-semibold text-estate-blue">Direct referrals</h2>
-                      <p className="mt-2 text-slate-600">You currently have {downlineMembers.length} direct referral{downlineMembers.length === 1 ? '' : 's'}.</p>
+                    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 lg:col-span-2">
+                      <h2 className="text-xl font-semibold text-estate-blue mb-4">Your Referral Tree</h2>
+                      <DownlineTree rootUserId={user.id} />
                     </div>
                   </div>
                 </>
