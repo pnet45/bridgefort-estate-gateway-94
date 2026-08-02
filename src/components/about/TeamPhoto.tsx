@@ -11,13 +11,13 @@ const TeamPhoto = () => {
         
         <div className="rounded-lg overflow-hidden shadow-xl">
           <img 
-            src="/public/images/Bridgefort-team.jpg" 
+            src="/images/Bridgefort-team.jpg" 
             alt="Bridgefort Homes Development Ltd Team" 
             className="w-full h-auto object-cover"
             loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/public/images/Bridgefort-team.jpg';
+              target.src = '/images/Bridgefort-team.jpg';
             }}
           />
         </div>
