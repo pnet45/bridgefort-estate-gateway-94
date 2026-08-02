@@ -16,14 +16,16 @@ import MessageTextarea from "./input/MessageTextarea";
 
 interface InspectionBookingFormProps {
   onBookingCreated?: () => void;
+  /** Prefills the estate dropdown - e.g. when opened from that estate's own detail page. */
+  initialEstateName?: string;
 }
 
-const InspectionBookingForm = ({ onBookingCreated }: InspectionBookingFormProps) => {
+const InspectionBookingForm = ({ onBookingCreated, initialEstateName }: InspectionBookingFormProps) => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [estates, setEstates] = useState<any[]>([]);
   const [formData, setFormData] = useState({
-    estate_name: '',
+    estate_name: initialEstateName || '',
     inspection_date: '',
     inspection_time: '',
     message: ''
@@ -32,6 +34,12 @@ const InspectionBookingForm = ({ onBookingCreated }: InspectionBookingFormProps)
   useEffect(() => {
     fetchEstates();
   }, []);
+
+  useEffect(() => {
+    if (initialEstateName) {
+      setFormData(prev => ({ ...prev, estate_name: initialEstateName }));
+    }
+  }, [initialEstateName]);
 
   const fetchEstates = async () => {
     try {

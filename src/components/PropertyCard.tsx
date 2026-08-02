@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapPin, Users, Layers, Bed, Bath, Home, Maximize, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEcommerce } from '@/contexts/ecommerce';
 import { useAuth } from '@/contexts/auth';
 import { toast } from '@/hooks/use-toast';
-import PropertyDetailsDialogFullscreen from './PropertyDetailsDialogFullscreen';
 import ProfileCheckDialog from './ecommerce/ProfileCheckDialog';
 import PropertyRatingBadge from './properties/PropertyRatingBadge';
 import { Property } from '@/contexts/property/types';
@@ -18,7 +18,7 @@ interface PropertyCardProps {
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const navigate = useNavigate();
   const [showProfileCheck, setShowProfileCheck] = useState(false);
   const [profileCheckMessage, setProfileCheckMessage] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -147,7 +147,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   };
 
   const handleCardClick = () => {
-    setIsDetailsOpen(true);
+    navigate(`/properties/estates/${property.id}`);
   };
 
   const occupancyRate = ((property.totalPlots - property.availablePlots) / property.totalPlots) * 100;
@@ -354,7 +354,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
               className="flex-1 border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
-                setIsDetailsOpen(true);
+                navigate(`/properties/estates/${property.id}`);
               }}
             >
               View Details
@@ -379,19 +379,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           </div>
         )}
       </div>
-      <PropertyDetailsDialogFullscreen
-        isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
-        property={{
-          id: property.id,
-          title: property.title,
-          location: property.location,
-          price: property.price,
-          imageUrl: property.imageUrl,
-          propertyType: property.propertyType
-        }}
-      />
-      
       <ProfileCheckDialog 
         isOpen={showProfileCheck}
         onClose={() => setShowProfileCheck(false)}

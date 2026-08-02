@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Property } from '@/contexts/property/types';
 import { MapPin, Bed, Bath, Square, Eye, Heart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import PropertyDetailsDialog from '../PropertyDetailsDialog';
 import PropertyRatingBadge from './PropertyRatingBadge';
 
 interface EnhancedPropertyCardProps {
@@ -16,15 +16,15 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
   property, 
   onViewDetails 
 }) => {
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
 
   const handleViewDetails = () => {
     if (onViewDetails) {
       onViewDetails(property);
     } else {
-      setShowDetails(true);
+      navigate(`/properties/estates/${property.id}`);
     }
   };
 
@@ -41,8 +41,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
   const isAvailable = property.availablePlots && property.availablePlots > 0;
 
   return (
-    <>
-      <Card
+    <Card
         className={`group relative overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 transform ${
           isHovered ? 'shadow-2xl -translate-y-1' : 'shadow-lg'
         } ${!isAvailable ? 'opacity-75' : ''}`}
@@ -202,15 +201,6 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
           </div>
         </CardContent>
       </Card>
-
-      {showDetails && (
-        <PropertyDetailsDialog
-          property={property}
-          isOpen={showDetails}
-          onClose={() => setShowDetails(false)}
-        />
-      )}
-    </>
   );
 };
 
