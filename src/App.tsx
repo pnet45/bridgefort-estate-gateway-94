@@ -1,6 +1,6 @@
 
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth';
 import { EcommerceProvider } from '@/contexts/ecommerce';
@@ -84,16 +84,18 @@ import './App.css';
 
 const queryClient = new QueryClient();
 
-function App() {
+function AppLayout() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname === '/admin-console' || location.pathname.startsWith('/admin-console?');
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <RecaptchaProvider>
+      <RecaptchaProvider>
         <AuthProvider>
           <EcommerceProvider>
-          <ComparisonProvider>
-            <ScrollToTop />
-            <div className="App flex flex-col min-h-screen w-full">
+            <ComparisonProvider>
+              <ScrollToTop />
+              <div className="App flex flex-col min-h-screen w-full">
               <ErrorBoundary>
                 <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-slate-600">Loading…</div>}>
                   <Routes>
@@ -185,7 +187,7 @@ function App() {
                 </Suspense>
               </ErrorBoundary>
               
-              <GlobalFloatingWidgets />
+              {!isAdminRoute && <GlobalFloatingWidgets />}
               <CartSidebar />
               <ScrollToTopButton />
 
@@ -197,11 +199,18 @@ function App() {
               <ComparisonTray />
             </div>
           </ComparisonProvider>
-          </EcommerceProvider>
-        </AuthProvider>
-        </RecaptchaProvider>
-      </Router>
+        </EcommerceProvider>
+      </AuthProvider>
+    </RecaptchaProvider>
     </QueryClientProvider>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppLayout />
+    </Router>
   );
 }
 
