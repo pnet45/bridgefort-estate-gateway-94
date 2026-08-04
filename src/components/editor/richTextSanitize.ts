@@ -36,7 +36,7 @@ export const RICH_TEXT_SANITIZE_CONFIG = {
     // Alignment/formatting hints Tiptap attaches to block nodes
     'data-align',
     // Images
-    'src', 'alt', 'width', 'height',
+    'src', 'alt', 'width', 'height', 'loading',
     // Tables
     'colspan', 'rowspan', 'colwidth',
   ],

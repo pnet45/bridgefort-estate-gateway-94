@@ -1,6 +1,6 @@
 
 import React from "react";
-import DOMPurify from "dompurify";
+import { sanitizeRichText } from "@/components/editor/richTextSanitize";
 
 /**
  * BlogPostContent
@@ -45,10 +45,7 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ htmlContent }) => {
     `;
   }
 
-  const sanitizedHtml = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'strong', 'em', 'a', 'img', 'span', 'br', 'div', 'blockquote'],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'style', 'target', 'rel', 'loading'],
-  });
+  const sanitizedHtml = sanitizeRichText(html);
 
   return (
     <div

@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/editor/RichTextEditor';
 import { CATEGORIES } from './PostFormConstants';
 import { FileUploadPreview } from './FileUploadPreview';
+import { toast } from '@/hooks/use-toast';
 
 interface PostFormProps {
   initialValues: {
@@ -80,8 +82,22 @@ export const PostForm: React.FC<PostFormProps> = ({
     }
   };
 
+  const isContentEmpty = (html: string) => {
+    const hasMedia = /<img|<table/i.test(html);
+    const textOnly = html.replace(/<[^>]*>/g, '').trim();
+    return !hasMedia && textOnly.length === 0;
+  };
+
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isContentEmpty(formValues.content)) {
+      toast({
+        title: 'Content is required',
+        description: 'Please write something in the post content before saving.',
+        variant: 'destructive',
+      });
+      return;
+    }
     onSubmit({
       ...formValues,
       fileSelected
@@ -131,16 +147,15 @@ export const PostForm: React.FC<PostFormProps> = ({
         
         <div>
           <Label htmlFor="content">Content *</Label>
-          <Textarea
-          maxLength={20000} 
-            id="content"
-            name="content"
-            value={formValues.content}
-            onChange={handleInputChange}
-            className="mt-1 min-h-[300px]"
-            placeholder="Write your post content here"
-            required
-          />
+          <div className="mt-1">
+            <RichTextEditor
+              value={formValues.content}
+              onChange={(html) => setFormValues(prev => ({ ...prev, content: html }))}
+              placeholder="Write your post content here"
+              maxLength={20000}
+              minHeightClassName="min-h-[300px]"
+            />
+          </div>
         </div>
         
         <div>
