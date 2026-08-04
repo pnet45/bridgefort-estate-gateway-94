@@ -10,8 +10,14 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import CharacterCount from '@tiptap/extension-character-count';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import { CustomTableCell, CustomTableHeader } from './extensions/CustomTableCell';
+import { ResizableImage } from './extensions/ResizableImage';
+import { uploadEditorImage } from './editorImageUpload';
 import EditorToolbar from './EditorToolbar';
 import { sanitizeRichText } from './richTextSanitize';
+import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface RichTextEditorProps {
@@ -67,6 +73,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       Placeholder.configure({ placeholder }),
       TaskList,
       TaskItem.configure({ nested: true }),
+      ResizableImage.configure({ inline: false }),
+      Table.configure({ resizable: true }),
+      TableRow,
+      CustomTableHeader,
+      CustomTableCell,
       ...(maxLength ? [CharacterCount.configure({ limit: maxLength })] : []),
     ],
     content: value,
@@ -81,8 +92,38 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           minHeightClassName
         ),
       },
+      handlePaste: (view, event: ClipboardEvent) => {
+        const files = Array.from(event.clipboardData?.files || []).filter((f): f is File => f.type.startsWith('image/'));
+        if (files.length === 0) return false;
+        event.preventDefault();
+        files.forEach((file) => handleImageFile(file));
+        return true;
+      },
+      handleDrop: (view, event: DragEvent) => {
+        const files = Array.from(event.dataTransfer?.files || []).filter((f): f is File => f.type.startsWith('image/'));
+        if (files.length === 0) return false;
+        event.preventDefault();
+        files.forEach((file) => handleImageFile(file));
+        return true;
+      },
     },
   });
+
+  async function handleImageFile(file: File) {
+    const { url, error } = await uploadEditorImage(file);
+    if (error || !url) {
+      toast({
+        title: 'Image upload failed',
+        description: error || "We couldn't upload this image. Please try again.",
+        variant: 'destructive',
+      });
+      return;
+    }
+    editor?.chain().focus().insertContent({
+      type: 'resizableImage',
+      attrs: { src: url, alt: file.name.replace(/\.[^.]+$/, ''), width: '100%', align: 'center', caption: '' },
+    }).run();
+  }
 
   // Keep the editor in sync if `value` changes externally (e.g. loading a
   // different record into the same mounted editor instance).
@@ -103,8 +144,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div className={cn('rounded-md border border-input bg-background overflow-hidden', className)}>
-      <EditorToolbar editor={editor} />
-      <EditorContent editor={editor} />
+      <EditorToolbar editor={editor} onInsertImage={handleImageFile} />
+      <div className="overflow-x-auto">
+        <EditorContent editor={editor} />
+      </div>
       {typeof maxLength === 'number' && (
         <div className={cn(
           'px-4 py-1.5 text-xs text-right border-t border-border',

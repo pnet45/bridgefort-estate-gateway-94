@@ -731,3 +731,52 @@
   }
   .admin-theme ::-webkit-scrollbar-thumb:hover { background: hsl(271 70% 50%); }
 }
+
+/* Rich text editor (Tiptap) - table editing styles.
+   Standard boilerplate for @tiptap/extension-table's resizable columns and
+   cell selection highlighting; scoped to .ProseMirror so it only applies
+   inside the editor itself, never to rendered/saved content elsewhere. */
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+.ProseMirror td,
+.ProseMirror th {
+  min-width: 1em;
+  border: 2px solid hsl(var(--border));
+  padding: 6px 8px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+.ProseMirror th {
+  font-weight: 600;
+  text-align: left;
+  background-color: hsl(var(--muted));
+}
+.ProseMirror .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(59, 130, 246, 0.15);
+  pointer-events: none;
+}
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: hsl(var(--estate-blue));
+  pointer-events: none;
+}
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}

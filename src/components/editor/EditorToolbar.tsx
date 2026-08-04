@@ -3,10 +3,11 @@ import { Editor } from '@tiptap/react';
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough, Superscript as SuperscriptIcon,
   Subscript as SubscriptIcon, Eraser, AlignLeft, AlignCenter, AlignRight, AlignJustify,
-  List, ListOrdered, ListChecks, Quote, Code, Link2, Link2Off, Undo2, Redo2,
+  List, ListOrdered, ListChecks, Quote, Code, Link2, Link2Off, Undo2, Redo2, ImagePlus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import TableControls from './TableControls';
 import { cn } from '@/lib/utils';
 
 interface ToolbarButtonProps {
@@ -50,11 +51,14 @@ const HEADING_OPTIONS = [
 
 interface EditorToolbarProps {
   editor: Editor | null;
+  /** Called with the chosen file when the user picks one via the Image toolbar button. */
+  onInsertImage?: (file: File) => void;
 }
 
-const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
+const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, onInsertImage }) => {
   const [linkPromptOpen, setLinkPromptOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   if (!editor) return null;
 
@@ -171,6 +175,33 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor }) => {
         <ToolbarButton label="Code block" active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
           <Code className="h-4 w-4" />
         </ToolbarButton>
+
+        <ToolbarDivider />
+
+        {/* Tables */}
+        <TableControls editor={editor} />
+
+        <ToolbarDivider />
+
+        {/* Image */}
+        {onInsertImage && (
+          <>
+            <ToolbarButton label="Insert image" onClick={() => fileInputRef.current?.click()}>
+              <ImagePlus className="h-4 w-4" />
+            </ToolbarButton>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onInsertImage(file);
+                e.target.value = ''; // allow picking the same file again later
+              }}
+            />
+          </>
+        )}
 
         <ToolbarDivider />
 

@@ -23,6 +23,10 @@ export const RICH_TEXT_SANITIZE_CONFIG = {
     'hr',
     // Task list output from @tiptap/extension-task-item
     'label', 'input',
+    // Image output from the custom ResizableImage node
+    'figure', 'figcaption', 'img',
+    // Table output from @tiptap/extension-table
+    'table', 'tbody', 'tr', 'th', 'td',
   ],
   ALLOWED_ATTR: [
     'class', 'style',
@@ -31,6 +35,10 @@ export const RICH_TEXT_SANITIZE_CONFIG = {
     'type', 'checked', 'disabled', 'data-type', 'data-checked',
     // Alignment/formatting hints Tiptap attaches to block nodes
     'data-align',
+    // Images
+    'src', 'alt', 'width', 'height',
+    // Tables
+    'colspan', 'rowspan', 'colwidth',
   ],
   ALLOW_DATA_ATTR: false,
 };
