@@ -211,27 +211,27 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
     <div className="flex-1 flex flex-col min-h-0">
       {/* Toolbar */}
       <div className="flex items-center gap-1 px-4 py-2.5 border-b border-black/5 shrink-0 flex-wrap bg-white/30">
-        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={onBack} title="Back">
+        <Button variant="secondary" size="icon" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700" onClick={onBack} title="Back">
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={() => onArchive(email)} title="Archive">
+        <Button variant="secondary" size="icon" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700" onClick={() => onArchive(email)} title="Archive">
           <Archive className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70 text-destructive" onClick={() => onDelete(email)} title="Delete">
+        <Button variant="secondary" size="icon" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-destructive" onClick={() => onDelete(email)} title="Delete">
           <Trash2 className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={() => onMarkRead(email)} title="Mark as read/unread">
+        <Button variant="secondary" size="icon" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700" onClick={() => onMarkRead(email)} title="Mark as read/unread">
           <MailOpen className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={handlePrint} title="Print">
+        <Button variant="secondary" size="icon" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700" onClick={handlePrint} title="Print">
           <Printer className="h-4 w-4" />
         </Button>
         <div className="flex-1" />
-        <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={() => onStar(email)} title="Star">
+        <Button variant="secondary" size="icon" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700" onClick={() => onStar(email)} title="Star">
           <Star className={`h-4 w-4 ${email.is_starred ? 'fill-yellow-400 text-yellow-400' : ''}`} />
         </Button>
         {onToggleFullView && (
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/70" onClick={onToggleFullView} title={isFullView ? 'Exit full view' : 'Full view'}>
+          <Button variant="secondary" size="icon" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700" onClick={onToggleFullView} title={isFullView ? 'Exit full view' : 'Full view'}>
             {isFullView ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </Button>
         )}
@@ -269,10 +269,10 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
                   </div>
                 </div>
                 <div className="flex gap-1 shrink-0">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleReply} title="Reply">
+                  <Button variant="default" size="icon" className="h-8 w-8 bg-slate-900 hover:bg-slate-800 text-white" onClick={handleReply} title="Reply">
                     <Reply className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleForward} title="Forward">
+                  <Button variant="default" size="icon" className="h-8 w-8 bg-slate-900 hover:bg-slate-800 text-white" onClick={handleForward} title="Forward">
                     <Forward className="h-4 w-4" />
                   </Button>
                 </div>
@@ -321,13 +321,13 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
         {/* Reply / Forward area */}
         {mode === null ? (
           <div className="px-6 py-4 flex gap-2 flex-wrap">
-            <Button variant="outline" size="sm" onClick={handleReply} className="gap-1">
+            <Button variant="default" size="sm" onClick={handleReply} className="gap-1 bg-slate-900 hover:bg-slate-800 text-white">
               <Reply className="h-4 w-4" /> Reply
             </Button>
-            <Button variant="outline" size="sm" onClick={handleReplyAll} className="gap-1">
+            <Button variant="default" size="sm" onClick={handleReplyAll} className="gap-1 bg-slate-900 hover:bg-slate-800 text-white">
               <ReplyAll className="h-4 w-4" /> Reply All
             </Button>
-            <Button variant="outline" size="sm" onClick={handleForward} className="gap-1">
+            <Button variant="default" size="sm" onClick={handleForward} className="gap-1 bg-slate-900 hover:bg-slate-800 text-white">
               <Forward className="h-4 w-4" /> Forward
             </Button>
           </div>
@@ -368,11 +368,11 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
               maxHeightClassName="max-h-[260px]"
             />
             <div className="flex gap-2">
-              <Button onClick={handleSend} disabled={sending || (isReplyBodyEmpty && mode !== 'forward') || (mode === 'forward' && !forwardTo.trim())} className="gap-1">
+              <Button onClick={handleSend} disabled={sending || (isReplyBodyEmpty && mode !== 'forward') || (mode === 'forward' && !forwardTo.trim())} className="gap-1 bg-slate-900 hover:bg-slate-800 text-white">
                 {sending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 Send
               </Button>
-              <Button variant="ghost" onClick={() => setMode(null)}>Cancel</Button>
+              <Button variant="secondary" onClick={() => setMode(null)} className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700">Cancel</Button>
             </div>
           </div>
         )}

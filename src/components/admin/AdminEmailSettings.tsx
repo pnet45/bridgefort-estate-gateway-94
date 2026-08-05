@@ -60,7 +60,7 @@ const AdminEmailSettings = ({ onSettingsChange }: EmailSettingsProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" title="Email Settings">
+        <Button variant="secondary" size="icon" title="Email Settings" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700">
           <Settings className="h-4 w-4" />
         </Button>
       </DialogTrigger>
