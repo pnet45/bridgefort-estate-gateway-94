@@ -32,3 +32,11 @@ export const motivationData = [
     image: "/lovable-uploads/Happy new week.png"
   }
 ];
+
+export const homepageMotivationData = motivationData.filter((entry) => {
+  const title = entry.title || "";
+  return (
+    title.startsWith("Rise and Grind") ||
+    title.startsWith("New Week, Fresh Listings, Fresh Leads")
+  );
+});

@@ -1,11 +1,13 @@
 
 import { useEffect, useState } from "react";
-import { motivationData } from "./motivationData";
+import { homepageMotivationData } from "./motivationData";
 
 export const useMotivationSlider = () => {
   const [current, setCurrent] = useState(0);
   const [loadingImages, setLoadingImages] = useState(true);
   const [fade, setFade] = useState(true);
+
+  const activeMotivationData = homepageMotivationData;
 
   const preloadImages = (srcs: string[], onComplete: () => void) => {
     let loaded = 0;
@@ -25,11 +27,14 @@ export const useMotivationSlider = () => {
   };
 
   useEffect(() => {
-    const imagePaths = motivationData.map((d) => d.image);
+    const imagePaths = activeMotivationData.map((d) => d.image);
+    if (imagePaths.length === 0) {
+      setLoadingImages(false);
+      return;
+    }
     preloadImages(imagePaths, () => setLoadingImages(false));
-  }, []);
+  }, [activeMotivationData]);
 
-  // Fade dissolve effect on slide change
   useEffect(() => {
     setFade(false);
     const to = setTimeout(() => setFade(true), 150);
@@ -37,17 +42,18 @@ export const useMotivationSlider = () => {
   }, [current]);
 
   useEffect(() => {
+    if (activeMotivationData.length <= 1) return;
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % motivationData.length);
+      setCurrent((prev) => (prev + 1) % activeMotivationData.length);
     }, 10000);
     return () => clearInterval(timer);
-  }, []);
+  }, [activeMotivationData]);
 
   return {
     current,
     setCurrent,
     loadingImages,
     fade,
-    currentData: motivationData[current]
+    currentData: activeMotivationData[current] || activeMotivationData[0]
   };
 };

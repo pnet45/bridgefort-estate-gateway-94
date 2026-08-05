@@ -1,6 +1,6 @@
 
 import React from "react";
-import { motivationData } from "./motivationData";
+import { homepageMotivationData } from "./motivationData";
 
 interface MotivationIndicatorsProps {
   current: number;
@@ -9,7 +9,7 @@ interface MotivationIndicatorsProps {
 
 const MotivationIndicators = ({ current, onSlideChange }: MotivationIndicatorsProps) => (
   <div className="absolute bottom-4 left-0 right-0 flex justify-center z-10">
-    {motivationData.map((_, idx) => (
+    {homepageMotivationData.map((_, idx) => (
       <button
         key={idx}
         onClick={() => onSlideChange(idx)}
