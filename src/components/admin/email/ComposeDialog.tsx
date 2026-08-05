@@ -195,15 +195,15 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-t border-border">
           <div className="flex gap-2">
-            <Button onClick={handleSend} disabled={sending || !to.trim() || !subject.trim()} className="gap-1 rounded-full">
+            <Button onClick={handleSend} disabled={sending || !to.trim() || !subject.trim()} className="gap-1 rounded-full bg-slate-900 hover:bg-slate-800 text-white">
               {sending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               Send
             </Button>
-            <Button variant="outline" size="sm" onClick={handleSaveDraft} className="gap-1">
+            <Button variant="secondary" size="sm" onClick={handleSaveDraft} className="gap-1 rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700">
               <Save className="h-4 w-4" /> Draft
             </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => { onDiscard(); onOpenChange(false); }}>
+          <Button variant="secondary" size="icon" onClick={() => { onDiscard(); onOpenChange(false); }} className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>

@@ -304,11 +304,11 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
                   {att.content_type && <div className="text-xs text-muted-foreground">{att.content_type}</div>}
                   <div className="flex gap-2">
                     {isPreviewable(att.filename) && att.url && (
-                      <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={() => setPreviewAttachment(att.url)}>
+                      <Button variant="default" size="sm" className="gap-1 text-xs bg-slate-900 hover:bg-slate-800 text-white" onClick={() => setPreviewAttachment(att.url)}>
                         <Eye className="h-3 w-3" /> Preview
                       </Button>
                     )}
-                    <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={() => handleDownloadAttachment(att)}>
+                    <Button variant="default" size="sm" className="gap-1 text-xs bg-slate-900 hover:bg-slate-800 text-white" onClick={() => handleDownloadAttachment(att)}>
                       <Download className="h-3 w-3" /> Download
                     </Button>
                   </div>
