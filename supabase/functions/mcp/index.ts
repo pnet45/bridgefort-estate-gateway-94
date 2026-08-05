@@ -7,7 +7,7 @@ import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.26.1";
 
 // src/lib/mcp/tools/search-estates.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.1";
-import { z } from "npm:zod@^3.25.76";
+import { z } from "npm:zod@^3.23.8";
 
 // src/lib/mcp/supabase.ts
 import { createClient } from "npm:@supabase/supabase-js@^2.110.0";
@@ -92,7 +92,7 @@ var search_estates_default = defineTool({
 
 // src/lib/mcp/tools/search-listings.ts
 import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.1";
-import { z as z2 } from "npm:zod@^3.25.76";
+import { z as z2 } from "npm:zod@^3.23.8";
 var search_listings_default = defineTool2({
   name: "search_listings",
   title: "Search property listings",
@@ -151,7 +151,7 @@ var get_my_profile_default = defineTool3({
 
 // src/lib/mcp/tools/list-my-listings.ts
 import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.1";
-import { z as z3 } from "npm:zod@^3.25.76";
+import { z as z3 } from "npm:zod@^3.23.8";
 var list_my_listings_default = defineTool4({
   name: "list_my_listings",
   title: "List my listings",
@@ -181,7 +181,7 @@ var list_my_listings_default = defineTool4({
 
 // src/lib/mcp/tools/list-my-notifications.ts
 import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.1";
-import { z as z4 } from "npm:zod@^3.25.76";
+import { z as z4 } from "npm:zod@^3.23.8";
 var list_my_notifications_default = defineTool5({
   name: "list_my_notifications",
   title: "List my notifications",
@@ -209,7 +209,7 @@ var list_my_notifications_default = defineTool5({
 
 // src/lib/mcp/tools/mark-notification-read.ts
 import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.1";
-import { z as z5 } from "npm:zod@^3.25.76";
+import { z as z5 } from "npm:zod@^3.23.8";
 var mark_notification_read_default = defineTool6({
   name: "mark_notification_read",
   title: "Mark notification read",
