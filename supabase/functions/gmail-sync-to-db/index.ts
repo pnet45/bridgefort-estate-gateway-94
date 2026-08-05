@@ -64,6 +64,28 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
+      const { data: connectedGmail, error: gmailLookupError } = await svc
+        .from("gmail_oauth_tokens")
+        .select("email")
+        .eq("connected_by", userData.user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const targetMailbox = connectedGmail?.email || "admin@pwanbridgefort.ng";
+      const { data: isAuthorizedMailbox, error: mailboxError } = await svc.rpc("user_mailbox_access", {
+        _user_id: userData.user.id,
+        _mailbox_email: targetMailbox,
+        _provider: "gmail",
+      });
+
+      if (gmailLookupError || mailboxError || !isAuthorizedMailbox) {
+        return new Response(JSON.stringify({ error: "Forbidden: mailbox access denied" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const body = await req.json().catch(() => ({}));

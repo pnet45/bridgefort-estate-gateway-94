@@ -64,6 +64,20 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    const targetMailbox = "admin@pwanbridgefort.ng";
+    const { data: isMailboxAuthorized, error: mailboxError } = await serviceClient.rpc("user_mailbox_access", {
+      _user_id: userId,
+      _mailbox_email: targetMailbox,
+      _provider: "resend",
+    });
+
+    if (mailboxError || !isMailboxAuthorized) {
+      return new Response(JSON.stringify({ error: "Forbidden: mailbox access denied" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
     const { to, subject, html, text }: EmailRequest = await req.json();
     console.log(`Admin ${userId} sending email to: ${to}, subject: ${subject}`);
 
