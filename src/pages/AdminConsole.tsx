@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +10,7 @@ import {
   DollarSign, Settings, Plane, Wallet, Network
 } from 'lucide-react';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
+import { getAllowedAdminTabs } from '@/lib/rbac';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalsHub from '@/components/admin/AdminApprovalsHub';
 import AdminEmailCenter from '@/components/admin/AdminEmailCenter';
@@ -66,11 +67,16 @@ const AdminConsole = () => {
   const { user, userRole, signOut, permissions, hasPermission } = useAuth();
   const { isSuperAdmin } = useIsSuperAdmin();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const allowedTabs = useMemo(() => {
+    const tabs = new Set(getAllowedAdminTabs(permissions));
+    if (isSuperAdmin) tabs.add('travels');
+    return Array.from(tabs);
+  }, [permissions, isSuperAdmin]);
   const [profile, setProfile] = useState<AdminProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
-  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
 
   // Keep the active tab in sync with the URL after mount too (e.g. the
@@ -82,6 +88,21 @@ const AdminConsole = () => {
       setActiveTab(tab);
     }
   }, [searchParams, activeTab]);
+
+  useEffect(() => {
+    if (!allowedTabs.length) {
+      navigate('/dashboard');
+      return;
+    }
+
+    if (!allowedTabs.includes(activeTab)) {
+      const fallbackTab = allowedTabs[0];
+      setActiveTab(fallbackTab);
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.set('tab', fallbackTab);
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [allowedTabs, activeTab, navigate, searchParams, setSearchParams]);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
