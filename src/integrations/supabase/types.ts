@@ -3286,6 +3286,12 @@ export type Database = {
       clear_failed_logins: { Args: { clear_email: string }; Returns: undefined }
       count_users: { Args: never; Returns: number }
       delete_user_profile: { Args: { user_id: number }; Returns: undefined }
+      get_downline_ids: {
+        Args: { root_id: string }
+        Returns: {
+          id: string
+        }[]
+      }
       get_user_profile:
         | { Args: never; Returns: undefined }
         | {
