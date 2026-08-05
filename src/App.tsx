@@ -79,6 +79,7 @@ const TravelBookingStatus = lazy(() => import('@/pages/TravelBookingStatus'));
 const Agrovest = lazy(() => import('@/pages/Agrovest'));
 const AgrovestCategoryDetail = lazy(() => import('@/pages/AgrovestCategoryDetail'));
 const FiveKDailyPromo = lazy(() => import('@/pages/FiveKDailyPromo'));
+const Gallery = lazy(() => import('@/pages/Gallery'));
 
 import './App.css';
 
@@ -107,6 +108,7 @@ function AppLayout() {
 		    <Route path="/properties/estates/:id" element={<EstateDetails />} />
                     <Route path="/properties/apartments" element={<ApartmentRentals />} />
                     <Route path="/homes-sales" element={<HomesSales />} />
+                    <Route path="/gallery" element={<Gallery />} />
                     <Route path="/services" element={<Services />} />
                     <Route path="/training" element={<Training />} />
                     <Route path="/agrovest" element={<Agrovest />} />

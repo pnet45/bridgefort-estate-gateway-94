@@ -11,6 +11,7 @@ import {
   Phone,
   BookOpen,
   Briefcase,
+  Image as ImageIcon,
   LogOut,
   LogIn,
   Landmark,
@@ -41,6 +42,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
   const menuItems = [
     { name: 'Home', icon: <Home size={20} />, path: '/' },
     { name: 'About Us', icon: <Info size={20} />, path: '/about' },
+    { name: 'Gallery', icon: <ImageIcon size={20} />, path: '/gallery' },
     { name: 'Estate Lands', icon: <Building size={20} />, path: '/properties/estates' },
     { name: 'Homes Sales', icon: <Home size={20} />, path: '/homes-sales' },
     { name: 'Apartments for Rent', icon: <Building size={20} />, path: '/properties/apartments' },
