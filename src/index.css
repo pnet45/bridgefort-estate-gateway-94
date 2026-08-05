@@ -586,7 +586,7 @@
   .admin-theme .bg-slate-500,
   .admin-theme .bg-slate-700\/50,
   .admin-theme .bg-slate-800\/50,
-  .admin-theme header.bg-slate-800 {
+  .admin-theme header {
     --foreground: 0 0% 98%;
     --card-foreground: 0 0% 98%;
     --popover-foreground: 0 0% 98%;
@@ -641,7 +641,7 @@
   }
 
   /* ── Header: sticky glass navbar ── */
-  .admin-theme header.bg-slate-800 {
+  .admin-theme header {
     background: hsl(271 45% 8% / 0.9) !important;
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);

@@ -39,6 +39,21 @@ import AdminEstateViewsLeaderboard from '@/components/admin/AdminEstateViewsLead
 import AdminTravelDashboard from '@/components/admin/AdminTravelDashboard';
 import { toast } from '@/hooks/use-toast';
 
+type AdminProfile = {
+  id?: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+};
+
+type TawkWindow = Window & {
+  Tawk_API?: {
+    hideWidget?: () => void;
+    showWidget?: () => void;
+    onLoad?: () => void;
+  };
+};
+
 const AdminConsole = () => {
   // Always open the console scrolled to the top. This runs in
   // useLayoutEffect (before paint) rather than useEffect (after paint) so
@@ -51,7 +66,7 @@ const AdminConsole = () => {
   const { user, userRole, signOut } = useAuth();
   const { isSuperAdmin } = useIsSuperAdmin();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<AdminProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -66,7 +81,7 @@ const AdminConsole = () => {
     if (tab && tab !== activeTab) {
       setActiveTab(tab);
     }
-  }, [searchParams]);
+  }, [searchParams, activeTab]);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -92,7 +107,7 @@ const AdminConsole = () => {
   // while the admin is still on this page. It's restored on unmount so it
   // still shows up for admins once they navigate back to the public site.
   useEffect(() => {
-    const w = window as any;
+    const w = window as TawkWindow;
 
     const hideTawk = () => {
       if (w.Tawk_API?.hideWidget) {
