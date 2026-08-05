@@ -499,11 +499,11 @@ export default function AdminEmailCenter() {
           {/* Account switcher — governs which mailbox's folders are shown
               AND which account Compose/Reply sends through. Replaces the
               old "send via" picker, which only ever affected sending. */}
-          <div className="flex items-center rounded-full bg-white/60 border border-white/50 p-0.5 shadow-sm">
+          <div className="flex items-center rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-0.5 shadow-sm">
             <button
               onClick={() => switchAccount('resend')}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                activeAccount === 'resend' ? 'bg-estate-blue text-white' : 'text-foreground hover:bg-white/60'
+                activeAccount === 'resend' ? 'bg-slate-900 text-white' : 'text-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               Resend
@@ -511,7 +511,7 @@ export default function AdminEmailCenter() {
             <button
               onClick={() => switchAccount('gmail')}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                activeAccount === 'gmail' ? 'bg-estate-blue text-white' : 'text-foreground hover:bg-white/60'
+                activeAccount === 'gmail' ? 'bg-slate-900 text-white' : 'text-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
               Gmail
@@ -520,19 +520,19 @@ export default function AdminEmailCenter() {
 
           {activeAccount === 'gmail' && (
             gmailConnected === false ? (
-              <Button size="sm" variant="outline" onClick={connectGmail} disabled={connectingGmail} className="gap-1.5 rounded-full">
+              <Button size="sm" variant="default" onClick={connectGmail} disabled={connectingGmail} className="gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white">
                 {connectingGmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />}
                 Connect Gmail
               </Button>
             ) : (
-              <Button size="sm" variant="outline" onClick={syncGmailNow} disabled={syncingGmail} className="gap-1.5 rounded-full">
+              <Button size="sm" variant="default" onClick={syncGmailNow} disabled={syncingGmail} className="gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white">
                 <RefreshCw className={`h-3.5 w-3.5 ${syncingGmail ? 'animate-spin' : ''}`} />
                 Sync Gmail
               </Button>
             )
           )}
 
-          <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/60" onClick={handleRefresh} disabled={loading}>
+          <Button variant="secondary" size="icon" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700" onClick={handleRefresh} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
           <AdminEmailSettings />
