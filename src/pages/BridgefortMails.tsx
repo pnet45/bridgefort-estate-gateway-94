@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/editor/RichTextEditor';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -99,9 +99,11 @@ export default function BridgefortMails() {
     }
   };
 
+  const isBodyEmpty = (html: string) => html.replace(/<[^>]*>/g, '').trim().length === 0;
+
   const handleSendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recipientEmail || !subject || !body) {
+    if (!recipientEmail || !subject || isBodyEmpty(body)) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -234,14 +236,12 @@ export default function BridgefortMails() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="body">Message *</Label>
-                    <Textarea
-          maxLength={5000}
-                      id="body"
-                      placeholder="Write your email message here..."
+                    <RichTextEditor
                       value={body}
-                      onChange={(e) => setBody(e.target.value)}
-                      rows={10}
-                      required
+                      onChange={setBody}
+                      placeholder="Write your email message here..."
+                      maxLength={5000}
+                      minHeightClassName="min-h-[220px]"
                     />
                   </div>
                   <Button type="submit" disabled={sending} className="w-full md:w-auto">

@@ -30,6 +30,8 @@ interface RichTextEditorProps {
   /** Disables editing (e.g. while a form is submitting) without unmounting the editor. */
   disabled?: boolean;
   minHeightClassName?: string;
+  /** Caps the editor's own height and scrolls internally - use inside dialogs/constrained layouts (e.g. email compose) so long content doesn't grow the container unboundedly. */
+  maxHeightClassName?: string;
 }
 
 /**
@@ -54,6 +56,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className,
   disabled = false,
   minHeightClassName = 'min-h-[200px]',
+  maxHeightClassName,
 }) => {
   const editor = useEditor({
     extensions: [
@@ -145,7 +148,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   return (
     <div className={cn('rounded-md border border-input bg-background overflow-hidden', className)}>
       <EditorToolbar editor={editor} onInsertImage={handleImageFile} />
-      <div className="overflow-x-auto">
+      <div className={cn('overflow-x-auto', maxHeightClassName && `${maxHeightClassName} overflow-y-auto`)}>
         <EditorContent editor={editor} />
       </div>
       {typeof maxLength === 'number' && (

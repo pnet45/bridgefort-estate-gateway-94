@@ -12,7 +12,7 @@ const sanitizeHtml = (dirty: string) => DOMPurify.sanitize(dirty || '', SANITIZE
 const escapeHtml = (s: string) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/editor/RichTextEditor';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +50,7 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
 }) => {
   const [mode, setMode] = useState<ReplyMode>(null);
   const [replyBody, setReplyBody] = useState('');
+  const isReplyBodyEmpty = replyBody.replace(/<[^>]*>/g, '').trim().length === 0;
   const [forwardTo, setForwardTo] = useState('');
   const [replySubject, setReplySubject] = useState('');
   const [previewAttachment, setPreviewAttachment] = useState<string | null>(null);
@@ -358,15 +359,16 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
                 className="h-9"
               />
             </div>
-            <Textarea
-          maxLength={5000}
+            <RichTextEditor
               value={replyBody}
-              onChange={(e) => setReplyBody(e.target.value)}
+              onChange={setReplyBody}
               placeholder={mode === 'forward' ? 'Add a message...' : 'Type your reply...'}
-              rows={6}
+              maxLength={5000}
+              minHeightClassName="min-h-[130px]"
+              maxHeightClassName="max-h-[260px]"
             />
             <div className="flex gap-2">
-              <Button onClick={handleSend} disabled={sending || (!replyBody.trim() && mode !== 'forward') || (mode === 'forward' && !forwardTo.trim())} className="gap-1">
+              <Button onClick={handleSend} disabled={sending || (isReplyBodyEmpty && mode !== 'forward') || (mode === 'forward' && !forwardTo.trim())} className="gap-1">
                 {sending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 Send
               </Button>

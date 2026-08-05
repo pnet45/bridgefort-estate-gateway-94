@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/editor/RichTextEditor';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -470,8 +470,15 @@ export default function GmailInbox() {
                       </div>
                       <div>
                         <Label className="text-xs text-muted-foreground">Message</Label>
-                        <Textarea
-          maxLength={5000} value={replyBody} onChange={(e) => setReplyBody(e.target.value)} rows={8} className="mt-1" />
+                        <div className="mt-1">
+                          <RichTextEditor
+                            value={replyBody}
+                            onChange={setReplyBody}
+                            maxLength={5000}
+                            minHeightClassName="min-h-[150px]"
+                            maxHeightClassName="max-h-[300px]"
+                          />
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Button disabled={sendingReply || !replyTo.trim() || !replySubject.trim() || !replyBody.trim()} onClick={() => sendGmailMessage(replyTo, replySubject, replyBody, replyCc, replyBcc)}>

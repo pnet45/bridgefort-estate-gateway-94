@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/editor/RichTextEditor';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Send, RefreshCw, Save, Trash2, ChevronDown, ChevronUp, LayoutTemplate } from 'lucide-react';
@@ -181,13 +181,17 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
               className="border-0 shadow-none focus-visible:ring-0 h-8"
             />
           </div>
-          <Textarea
-          maxLength={5000}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder="Compose email..."
-            className="flex-1 min-h-[200px] border-0 shadow-none focus-visible:ring-0 resize-none"
-          />
+          <div className="flex-1 min-h-0">
+            <RichTextEditor
+              value={body}
+              onChange={setBody}
+              placeholder="Compose email..."
+              maxLength={5000}
+              minHeightClassName="min-h-[180px]"
+              maxHeightClassName="max-h-[320px]"
+              className="border-0 rounded-none"
+            />
+          </div>
         </div>
         <div className="flex items-center justify-between px-4 py-3 border-t border-border">
           <div className="flex gap-2">
