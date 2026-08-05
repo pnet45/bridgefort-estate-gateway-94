@@ -87,7 +87,7 @@ const AdminConsole = () => {
 
   // Tawk.to loads via a raw <script> tag in index.html on a delay, independent
   // of React Router, so it can't be conditionally rendered like our other
-  // floating widgets. Instead we hide it through its own API: immediately if
+  // floating widgets. Instead I hide it through its own API: immediately if
   // it has already loaded, and via onLoad in case it finishes loading later
   // while the admin is still on this page. It's restored on unmount so it
   // still shows up for admins once they navigate back to the public site.
@@ -229,7 +229,7 @@ const AdminConsole = () => {
             </TabsTrigger>
             <TabsTrigger value="mlm-funnel" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <Network className="h-4 w-4" />
-              <span>MLM Funnel</span>
+              <span>BHRealtors Funnel</span>
             </TabsTrigger>
             <TabsTrigger value="activity" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
               <Activity className="h-4 w-4" />
