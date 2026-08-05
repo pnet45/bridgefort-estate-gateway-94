@@ -36,18 +36,18 @@ const managementTeam = [{
 
 const ManagementTeam = () => {
   return (
-    <section className="section-padding bg-gradient-to-r from-gray-50 to-gray-100">
+    <section className="section-padding bg-muted">
       <div className="container-custom">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold mb-4 text-estate-blue">MEET OUR MANAGEMENT TEAM</h2>
-          <p className="text-gray-600 max-w-3xl mx-auto">
+          <p className="text-muted-foreground max-w-3xl mx-auto">
             Led by industry experts committed to excellence and innovation in real estate.
           </p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {managementTeam.map((member, index) => (
-            <div key={index} className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+            <div key={index} className="bg-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
               <div className="relative h-80 md:h-64 lg:h-80">
                 <img 
                   src={member.imageUrl} 
@@ -56,18 +56,18 @@ const ManagementTeam = () => {
                 />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold mb-1">{member.name}</h3>
+                <h3 className="text-xl font-bold mb-1 text-card-foreground">{member.name}</h3>
                 <p className="text-estate-blue font-medium mb-4">{member.role}</p>
-                <p className="text-gray-700 mb-4">{member.bio}</p>
+                <p className="text-muted-foreground mb-4">{member.bio}</p>
                 
                 <div className="flex space-x-3 mt-4">
-                  <a href={member.social.linkedin} className="text-gray-500 hover:text-estate-blue transition-colors">
+                  <a href={member.social.linkedin} className="text-muted-foreground hover:text-estate-blue transition-colors">
                     <Linkedin size={18} />
                   </a>
-                  <a href={`mailto:${member.social.email}`} className="text-gray-500 hover:text-estate-blue transition-colors">
+                  <a href={`mailto:${member.social.email}`} className="text-muted-foreground hover:text-estate-blue transition-colors">
                     <Mail size={18} />
                   </a>
-                  <a href={`tel:${member.social.phone}`} className="text-gray-500 hover:text-estate-blue transition-colors">
+                  <a href={`tel:${member.social.phone}`} className="text-muted-foreground hover:text-estate-blue transition-colors">
                     <Phone size={18} />
                   </a>
                 </div>
