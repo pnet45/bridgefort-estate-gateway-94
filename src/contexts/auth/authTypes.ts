@@ -41,8 +41,12 @@ export interface AuthContextType {
   session: Session | null;
   profile: UserProfile | null;
   userRole: string | null;
+  roles: string[];
+  permissions: string[];
   loading: boolean;
   isLoading: boolean; // Add alias for compatibility
+  hasPermission: (permission: string | string[]) => boolean;
+  hasMailboxAccess: (mailboxEmail: string | null | undefined, provider?: 'gmail' | 'resend' | string) => Promise<boolean>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: any; data?: any }>;
   signOut: () => Promise<{ error: any }>;

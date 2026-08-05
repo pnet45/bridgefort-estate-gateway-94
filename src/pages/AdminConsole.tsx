@@ -63,7 +63,7 @@ const AdminConsole = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const { user, userRole, signOut } = useAuth();
+  const { user, userRole, signOut, permissions, hasPermission } = useAuth();
   const { isSuperAdmin } = useIsSuperAdmin();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<AdminProfile | null>(null);
@@ -86,11 +86,13 @@ const AdminConsole = () => {
   useEffect(() => {
     const checkAdminAccess = async () => {
       if (!user) { navigate('/admin-login'); return; }
-      const { data: isAdmin, error } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
-      if (error || !isAdmin) {
+
+      const isAllowed = hasPermission('admin:view_dashboard') || hasPermission('admin:all') || userRole === 'admin' || userRole === 'super_admin';
+      if (!isAllowed) {
         toast({ title: "Access Denied", description: "You don't have permission to access the admin console", variant: "destructive" });
         navigate('/dashboard'); return;
       }
+
       const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       setProfile(profileData);
       const { count } = await supabase.from('pending_admin_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending');
@@ -98,7 +100,7 @@ const AdminConsole = () => {
       setLoading(false);
     };
     checkAdminAccess();
-  }, [user, navigate]);
+  }, [user, navigate, userRole, hasPermission, permissions]);
 
   // Tawk.to loads via a raw <script> tag in index.html on a delay, independent
   // of React Router, so it can't be conditionally rendered like our other
@@ -211,62 +213,88 @@ const AdminConsole = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-slate-800 border border-slate-700 p-1 flex flex-wrap h-auto gap-1 justify-start">
             {/* Row 1 - Primary tabs */}
-            <TabsTrigger value="overview" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <LayoutDashboard className="h-4 w-4" />
-              <span>Dashboard</span>
-            </TabsTrigger>
-            <TabsTrigger value="properties" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <Building className="h-4 w-4" />
-              <span>Properties</span>
-            </TabsTrigger>
-            <TabsTrigger value="crm" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <CheckSquare className="h-4 w-4" />
-              <span>CRM</span>
-            </TabsTrigger>
-            <TabsTrigger value="users" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <Users className="h-4 w-4" />
-              <span>Users</span>
-            </TabsTrigger>
-            <TabsTrigger value="approvals" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm relative" style={{ color: '#fff' }}>
-              <UserCheck className="h-4 w-4" />
-              <span>Approvals</span>
-              {pendingCount > 0 && (
-                <span className="ml-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="emails" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <Mail className="h-4 w-4" />
-              <span>Emails</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <TrendingUp className="h-4 w-4" />
-              <span>Analytics</span>
-            </TabsTrigger>
-            <TabsTrigger value="mlm-funnel" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <Network className="h-4 w-4" />
-              <span>BHRealtors Funnel</span>
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <Activity className="h-4 w-4" />
-              <span>Activity</span>
-            </TabsTrigger>
-            <TabsTrigger value="content" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <FileText className="h-4 w-4" />
-              <span>Content</span>
-            </TabsTrigger>
-            <TabsTrigger value="cms" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <FileText className="h-4 w-4" />
-              <span>CMS Hub</span>
-            </TabsTrigger>
-            <TabsTrigger value="other-payments" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <DollarSign className="h-4 w-4" />
-              <span>Other Payments</span>
-            </TabsTrigger>
-            <TabsTrigger value="permissions" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-              <Settings className="h-4 w-4" />
-              <span>Permissions</span>
-            </TabsTrigger>
-            {isSuperAdmin && (
+            {hasPermission('admin:view_dashboard') && (
+              <TabsTrigger value="overview" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Dashboard</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_properties') && (
+              <TabsTrigger value="properties" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <Building className="h-4 w-4" />
+                <span>Properties</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_crm') && (
+              <TabsTrigger value="crm" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <CheckSquare className="h-4 w-4" />
+                <span>CRM</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_users') && (
+              <TabsTrigger value="users" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <Users className="h-4 w-4" />
+                <span>Users</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_approvals') && (
+              <TabsTrigger value="approvals" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm relative" style={{ color: '#fff' }}>
+                <UserCheck className="h-4 w-4" />
+                <span>Approvals</span>
+                {pendingCount > 0 && (
+                  <span className="ml-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>
+                )}
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_email_center') && (
+              <TabsTrigger value="emails" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <Mail className="h-4 w-4" />
+                <span>Emails</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_analytics') && (
+              <TabsTrigger value="analytics" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <TrendingUp className="h-4 w-4" />
+                <span>Analytics</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_mlm_funnel') && (
+              <TabsTrigger value="mlm-funnel" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <Network className="h-4 w-4" />
+                <span>BHRealtors Funnel</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_activity') && (
+              <TabsTrigger value="activity" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <Activity className="h-4 w-4" />
+                <span>Activity</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_content') && (
+              <TabsTrigger value="content" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <FileText className="h-4 w-4" />
+                <span>Content</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_cms') && (
+              <TabsTrigger value="cms" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <FileText className="h-4 w-4" />
+                <span>CMS Hub</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:view_other_payments') && (
+              <TabsTrigger value="other-payments" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <DollarSign className="h-4 w-4" />
+                <span>Other Payments</span>
+              </TabsTrigger>
+            )}
+            {hasPermission('admin:manage_permissions') && (
+              <TabsTrigger value="permissions" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
+                <Settings className="h-4 w-4" />
+                <span>Permissions</span>
+              </TabsTrigger>
+            )}
+            {(isSuperAdmin || hasPermission('admin:view_travels')) && (
               <TabsTrigger value="travels" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
                 <Plane className="h-4 w-4" />
                 <span>Travels</span>

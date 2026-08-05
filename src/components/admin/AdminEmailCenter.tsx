@@ -33,7 +33,8 @@ const ACCOUNT_KEY = 'admin_email_active_account';
 const RESEND_SOURCES = new Set(['resend', 'compose', 'contact_form', 'email_log']);
 
 export default function AdminEmailCenter() {
-  const { user } = useAuth();
+  const { user, hasMailboxAccess, hasPermission } = useAuth();
+  const [mailboxAccessDenied, setMailboxAccessDenied] = useState(false);
   const {
     sentEmails, inboxMessages, contacts, loading, sending,
     unreadCount, sendEmail, replyToMessage, deleteEmailLog,
@@ -86,6 +87,12 @@ export default function AdminEmailCenter() {
   }, []);
 
   const connectGmail = async () => {
+    const allowed = await hasMailboxAccess('admin@pwanbridgefort.ng', 'gmail');
+    if (!allowed && !hasPermission('admin:all')) {
+      toast.error('You do not have permission to connect this Gmail account.');
+      return;
+    }
+
     setConnectingGmail(true);
     try {
       const { data, error } = await supabase.functions.invoke('gmail-oauth-start');
@@ -98,6 +105,12 @@ export default function AdminEmailCenter() {
   };
 
   const syncGmailNow = async () => {
+    const allowed = await hasMailboxAccess('admin@pwanbridgefort.ng', 'gmail');
+    if (!allowed && !hasPermission('admin:all')) {
+      toast.error('You do not have permission to sync this Gmail account.');
+      return;
+    }
+
     setSyncingGmail(true);
     try {
       const { data, error } = await supabase.functions.invoke('gmail-sync-to-db', {
@@ -121,6 +134,18 @@ export default function AdminEmailCenter() {
     const saved = (localStorage.getItem(ACCOUNT_KEY) as EmailAccount) || 'resend';
     setActiveAccount(saved);
     checkGmailConnection();
+
+    const verifyMailboxAccess = async () => {
+      if (!user) return;
+      const allowed = await hasMailboxAccess('admin@pwanbridgefort.ng', 'resend');
+      if (!allowed && !hasPermission('admin:all')) {
+        setMailboxAccessDenied(true);
+        return;
+      }
+      setMailboxAccessDenied(false);
+    };
+
+    verifyMailboxAccess();
 
     // Handle the redirect back from gmail-oauth-callback.
     const connected = searchParams.get('gmail_connected');
@@ -162,7 +187,15 @@ export default function AdminEmailCenter() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const switchAccount = (account: EmailAccount) => {
+  const switchAccount = async (account: EmailAccount) => {
+    const mailboxEmail = account === 'gmail' ? 'admin@pwanbridgefort.ng' : 'admin@pwanbridgefort.ng';
+    const allowed = await hasMailboxAccess(mailboxEmail, account);
+    if (!allowed && !hasPermission('admin:all')) {
+      toast.error('You do not have permission to access this mailbox.');
+      return;
+    }
+
+    setMailboxAccessDenied(false);
     setActiveAccount(account);
     localStorage.setItem(ACCOUNT_KEY, account);
     setSelectedEmailId(null);
