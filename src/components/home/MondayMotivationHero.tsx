@@ -1,9 +1,17 @@
 
-import React from "react";
 import { useMotivationSlider } from "./motivation/useMotivationSlider";
 import MotivationCard from "./motivation/MotivationCard";
 import MotivationBadge from "./motivation/MotivationBadge";
 import MotivationIndicators from "./motivation/MotivationIndicators";
+
+type MotivationHeroData = {
+  title: string;
+  text: string;
+  author: string;
+  image: string;
+  link?: string;
+  badgeLabel?: string;
+};
 
 const MondayMotivationHero = () => {
   const { current, setCurrent, loadingImages, fade, currentData } = useMotivationSlider();
@@ -18,7 +26,14 @@ const MondayMotivationHero = () => {
     );
   }
 
-  const { title, text, author, image, link } = currentData as any;
+  const {
+    title,
+    text,
+    author,
+    image,
+    link,
+    badgeLabel = "Monday Motivation",
+  } = currentData as MotivationHeroData;
   const isRiseAndGrind = title.startsWith("Rise and Grind");
   const isNewWeek = title.startsWith("New Week, Fresh Listings, Fresh Leads");
 
