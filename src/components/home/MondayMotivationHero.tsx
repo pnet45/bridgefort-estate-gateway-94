@@ -21,8 +21,6 @@ const MondayMotivationHero = () => {
   const { title, text, author, image, link } = currentData as any;
   const isRiseAndGrind = title.startsWith("Rise and Grind");
   const isNewWeek = title.startsWith("New Week, Fresh Listings, Fresh Leads");
-  const isValentine = title.startsWith("Valentine 2026");
-  const badgeLabel = isValentine ? "Valentine Special" : "Monday Motivation";
 
   if (isRiseAndGrind || isNewWeek) {
     return (
