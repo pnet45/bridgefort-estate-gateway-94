@@ -604,7 +604,7 @@ export default function AdminEmailCenter() {
                   className={`${selectedEmailId ? 'hidden md:flex' : 'flex'} flex-col shrink-0 border-r border-border`}
                   style={{ width: selectedEmailId ? listWidth : '100%', maxWidth: selectedEmailId ? '60%' : '100%' }}
                 >
-                  <ScrollArea className="flex-1">
+                  <ScrollArea className="h-auto">
                     {loading && folderEmails.length === 0 ? (
                       <div className="p-4 space-y-3">
                         {[...Array(8)].map((_, i) => (
