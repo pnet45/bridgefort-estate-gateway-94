@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import React, { useEffect, useRef } from 'react';
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Superscript from '@tiptap/extension-superscript';
@@ -58,6 +58,24 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   minHeightClassName = 'min-h-[200px]',
   maxHeightClassName,
 }) => {
+  // Debounced so the expensive work (serializing the whole document to HTML,
+  // running it through DOMPurify, and pushing a state update up to the
+  // parent form) doesn't run on every single keystroke or every intermediate
+  // event while dragging a table column to resize it - both were previously
+  // synchronous on every event, which is what made typing and dragging feel
+  // slow. The live editor itself (toolbar button states, character counter)
+  // still updates instantly regardless, since Tiptap re-renders this
+  // component on every transaction independent of this debounce.
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const flushChange = (currentEditor: Editor) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = undefined;
+    }
+    onChange(sanitizeRichText(currentEditor.getHTML()));
+  };
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -86,7 +104,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     content: value,
     editable: !disabled,
     onUpdate: ({ editor }) => {
-      onChange(sanitizeRichText(editor.getHTML()));
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = setTimeout(() => flushChange(editor), 300);
+    },
+    onBlur: ({ editor }) => {
+      flushChange(editor);
     },
     editorProps: {
       attributes: {
@@ -141,6 +163,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   useEffect(() => {
     if (editor) editor.setEditable(!disabled);
   }, [disabled, editor]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, []);
 
   const charCount = editor?.storage.characterCount?.characters?.() ?? 0;
   const nearLimit = typeof maxLength === 'number' && maxLength - charCount <= Math.max(10, maxLength * 0.1);

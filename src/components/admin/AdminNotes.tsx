@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/editor/RichTextEditor';
+import { sanitizeRichText } from '@/components/editor/richTextSanitize';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
@@ -172,13 +173,12 @@ const AdminNotes = () => {
                   />
                 </div>
                 <div>
-                  <Textarea
-          maxLength={2000}
+                  <RichTextEditor
                     value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    onChange={(html) => setFormData({ ...formData, content: html })}
                     placeholder="Write your note..."
-                    rows={6}
-                    className="bg-slate-700 border-slate-600 text-white"
+                    maxLength={2000}
+                    minHeightClassName="min-h-[150px]"
                   />
                 </div>
                 <div>
@@ -233,7 +233,10 @@ const AdminNotes = () => {
                     <h4 className="font-medium text-white">{note.title}</h4>
                   </div>
                   {note.content && (
-                    <p className="text-sm text-slate-300 mb-3 line-clamp-3">{note.content}</p>
+                    <div
+                      className="text-sm text-slate-300 mb-3 line-clamp-3 prose prose-sm prose-invert max-w-none [&_*]:my-0"
+                      dangerouslySetInnerHTML={{ __html: sanitizeRichText(note.content) }}
+                    />
                   )}
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-400">

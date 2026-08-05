@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/editor/RichTextEditor';
+import { sanitizeRichText } from '@/components/editor/richTextSanitize';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -395,7 +396,12 @@ const AdminCRMLeads: React.FC = () => {
                     {selectedLead.email && <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> {selectedLead.email}</p>}
                     {selectedLead.phone && <p className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> {selectedLead.phone}</p>}
                     {selectedLead.estate_interest && <p className="flex items-center gap-2"><User className="h-3.5 w-3.5" /> {selectedLead.estate_interest}</p>}
-                    {selectedLead.notes && <p className="text-slate-400 mt-2">{selectedLead.notes}</p>}
+                    {selectedLead.notes && (
+                      <div
+                        className="text-slate-400 mt-2 prose prose-sm prose-invert max-w-none"
+                        dangerouslySetInnerHTML={{ __html: sanitizeRichText(selectedLead.notes) }}
+                      />
+                    )}
                   </div>
 
                   {/* Quick Actions */}
@@ -528,8 +534,12 @@ const AdminCRMLeads: React.FC = () => {
             </div>
             <div>
               <Label className="text-slate-300">Notes</Label>
-              <Textarea
-          maxLength={2000} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} className="bg-slate-700 border-slate-600 text-white" rows={3} />
+              <RichTextEditor
+                value={form.notes}
+                onChange={(html) => setForm(p => ({ ...p, notes: html }))}
+                maxLength={2000}
+                minHeightClassName="min-h-[100px]"
+              />
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancel</Button>
