@@ -104,11 +104,11 @@ const GmailSidebar: React.FC<GmailSidebarProps> = ({
             onClick={() => onFolderChange(f.id)}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-colors ${
               activeFolder === f.id
-                ? 'bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/30'
+                ? 'bg-slate-900 text-white font-semibold shadow-md'
                 : 'text-foreground hover:bg-white/60'
             }`}
           >
-            <f.icon className={`h-4 w-4 shrink-0 ${activeFolder === f.id ? 'text-primary-foreground' : TOOL_COLORS[f.id]}`} />
+            <f.icon className={`h-4 w-4 shrink-0 ${activeFolder === f.id ? 'text-white' : TOOL_COLORS[f.id]}`} />
             <span className="flex-1 text-left truncate">{f.label}</span>
             {f.count != null && f.count > 0 && (
               <span className="text-xs text-muted-foreground">{f.count}</span>
