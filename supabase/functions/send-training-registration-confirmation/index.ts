@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -26,7 +27,44 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { name, email, eventTitle, eventDate, phone }: RegistrationConfirmationRequest = await req.json();
 
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return new Response(JSON.stringify({ error: "Invalid email" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // This endpoint may only confirm a registration that actually exists —
+    // otherwise it can be abused as an open mail relay to send templated
+    // mail with attacker-controlled content to arbitrary addresses.
+    const svc = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const { data: registration, error: regError } = await svc
+      .from("training_registrations")
+      .select("id, name, email, phone")
+      .ilike("email", email)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (regError) {
+      console.error("Registration lookup failed:", regError);
+    }
+    if (!registration) {
+      return new Response(
+        JSON.stringify({ error: "No matching registration found for this email" }),
+        { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Only trusted, stored values are echoed back into the email body.
+    const safeName = registration.name || name || "there";
+    const safePhone = registration.phone || phone || "";
+
     console.log("Sending training registration confirmation to:", email);
+
 
     const emailResponse = await resend.emails.send({
       from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
