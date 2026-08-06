@@ -210,7 +210,6 @@ serve(async (req) => {
       amount_paid: 0,
       balance: totalAmount,
       status: "pending",
-      paystack_reference: reference,
     });
     if (planError) console.warn("Payment plan row not created:", planError.message);
 
