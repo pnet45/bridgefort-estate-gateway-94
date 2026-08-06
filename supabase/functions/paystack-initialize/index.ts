@@ -43,18 +43,40 @@ serve(async (req) => {
     const authenticatedUserId = userData.user.id;
 
     const { email, amount: clientAmount, metadata, reference } = await req.json();
+    const adminClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+
     let amount = Number(clientAmount);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid amount' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
+
+    // Authoritative pricing. A client-supplied amount is only ever a fallback
+    // for flows that have no server-side record yet, and it is rejected
+    // outright whenever a matching order exists for the reference.
+    const { data: order } = reference
+      ? await adminClient
+          .from('orders')
+          .select('id, user_id, total_amount, payment_status')
+          .eq('payment_reference', reference)
+          .maybeSingle()
+      : { data: null };
+
+    if (order) {
+      if (order.user_id !== authenticatedUserId) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
+        );
+      }
+      if (order.payment_status === 'paid') {
+        return new Response(
+          JSON.stringify({ error: 'This order has already been paid' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+      amount = Number(order.total_amount);
     }
 
     // For membership purchases the authoritative price lives server-side —
     // never trust the amount computed by the client.
     if (metadata?.purchase_type === 'membership' && metadata?.package_code) {
-      const adminClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
       const { data: pkg } = await adminClient
         .from('mlm_packages')
         .select('price')
@@ -68,6 +90,14 @@ serve(async (req) => {
       }
       amount = Number(pkg.price);
     }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid amount' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
 
     console.log('Incoming request:', { email, amount, metadata, reference, user_id: authenticatedUserId });
 

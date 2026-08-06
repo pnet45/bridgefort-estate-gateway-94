@@ -63,18 +63,10 @@ const PaymentSuccess = () => {
         setPaymentDetails(data.data);
         clearCart(); // Clear cart on successful payment
 
-        // 5K Daily Promo installments are tagged as PROMO_<paymentsRowId>_<ts>
-        // in the reference, so we can credit the right savings plan here.
-        if (reference.startsWith('PROMO_')) {
-          await creditPromoInstallment(reference, data.data.amount / 100);
-        }
-
-        // Starting a brand-new 5K Daily Promo plan: the plan row and its
-        // admin-approval payment request are only created here, after the
-        // first payment is confirmed successful — never before.
-        if (reference.startsWith('STARTPLAN_')) {
-          await createPlanFromPayment(reference, data.data);
-        }
+        // 5K Daily Promo plans (STARTPLAN_ / PROMO_ references) are created
+        // and credited entirely inside the paystack-verify edge function,
+        // using prices read from the estate record and the amount Paystack
+        // confirms was paid — the browser never writes those rows.
       } else {
         setVerificationStatus('failed');
       }
@@ -84,101 +76,6 @@ const PaymentSuccess = () => {
     }
   };
 
-  const createPlanFromPayment = async (reference: string, paystackData: any) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const fields: Record<string, string> = {};
-      (paystackData?.metadata?.custom_fields || []).forEach((f: any) => {
-        fields[f.variable_name] = f.value;
-      });
-
-      if (fields.payment_type !== 'promo_start_plan') return;
-
-      const estateId = fields.estate_id;
-      const estateName = fields.estate_name;
-      const frequency = fields.frequency;
-      const tierPrice = Number(fields.tier_price || 0);
-      const installmentAmount = Number(fields.installment_amount || 5000);
-      const amountPaid = paystackData.amount / 100;
-
-      const { data: createdPlan, error: planError } = await supabase
-        .from('payments')
-        .insert({
-          user_id: user.id,
-          // Real estate.id from the actual estate table, not a synthetic
-          // string — this is what lets this plan be traced back to a real
-          // inventory record instead of a hardcoded, disconnected slug.
-          property_id: estateId || `5k-daily-unknown-estate`,
-          plan_type: frequency,
-          months: 0,
-          principal_amount: tierPrice,
-          interest_percent: 0,
-          interest_amount: 0,
-          total_amount: tierPrice,
-          amount_paid: amountPaid,
-          balance: Math.max(0, tierPrice - amountPaid),
-          status: 'pending', // stays pending until an admin approves it
-          promo_estate_slug: estateId,
-          promo_installment_amount: installmentAmount,
-        })
-        .select()
-        .single();
-
-      if (planError) throw planError;
-
-      await supabase.from('payment_requests').insert({
-        user_id: user.id,
-        type: '5k_daily_promo',
-        amount: amountPaid,
-        reference,
-        related_payment_id: createdPlan.id,
-        description: `5K Daily Promo — ${estateName || estateId} (${frequency}) — first installment`,
-        status: 'pending',
-      });
-    } catch (err) {
-      console.error('Error creating plan from payment:', err);
-    }
-  };
-
-  const creditPromoInstallment = async (reference: string, amountPaid: number) => {
-    try {
-      const parts = reference.split('_');
-      const planId = parts[1];
-      if (!planId) return;
-
-      const { data: plan, error: fetchError } = await supabase
-        .from('payments')
-        .select('*')
-        .eq('id', planId)
-        .single();
-      if (fetchError || !plan) return;
-
-      const newAmountPaid = (plan.amount_paid || 0) + amountPaid;
-      const newBalance = Math.max(0, plan.total_amount - newAmountPaid);
-
-      await supabase
-        .from('payments')
-        .update({
-          amount_paid: newAmountPaid,
-          balance: newBalance,
-          status: newBalance <= 0 ? 'completed' : 'active',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', planId);
-
-      await supabase.from('payment_transactions').insert({
-        payment_id: planId,
-        user_id: plan.user_id,
-        amount: amountPaid,
-        channel: 'paystack',
-        notes: '5K Daily Promo installment',
-      });
-    } catch (e) {
-      console.error('Error crediting promo installment:', e);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">

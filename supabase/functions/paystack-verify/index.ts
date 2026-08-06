@@ -122,11 +122,120 @@ serve(async (req) => {
       // ---------------------------------------------------------------------
 
 
+      // ---- 5K Daily Promo savings plans -----------------------------------
+      // These used to be created/credited by the browser after redirect, with
+      // the target price and installment taken from client metadata. Both are
+      // now derived server-side from the estate record and the amount Paystack
+      // confirms was paid.
+      const fields: Record<string, string> = {};
+      (data.data?.metadata?.custom_fields || []).forEach((f: any) => {
+        if (f?.variable_name) fields[f.variable_name] = f.value;
+      });
+
+      if (String(reference).startsWith('STARTPLAN_') && fields.payment_type === 'promo_start_plan') {
+        const estateId = fields.estate_id;
+        const frequency = ['daily', 'weekly', 'monthly'].includes(fields.frequency) ? fields.frequency : 'daily';
+
+        const { data: existingPlan } = await supabaseAdmin
+          .from('payments')
+          .select('id')
+          .eq('user_id', authenticatedUserId)
+          .eq('promo_estate_slug', estateId)
+          .eq('plan_type', frequency)
+          .maybeSingle();
+
+        const { data: estateRow } = estateId
+          ? await supabaseAdmin.from('estate').select('name, promo_price, actual_price').eq('id', estateId).maybeSingle()
+          : { data: null };
+
+        const targetPrice = Number(estateRow?.promo_price ?? estateRow?.actual_price ?? 0);
+
+        if (!existingPlan && targetPrice > 0) {
+          const installmentAmount = paidAmount;
+          const { data: createdPlan } = await supabaseAdmin
+            .from('payments')
+            .insert({
+              user_id: authenticatedUserId,
+              property_id: estateId,
+              plan_type: frequency,
+              months: 0,
+              principal_amount: targetPrice,
+              interest_percent: 0,
+              interest_amount: 0,
+              total_amount: targetPrice,
+              amount_paid: paidAmount,
+              balance: Math.max(0, targetPrice - paidAmount),
+              status: 'pending',
+              promo_estate_slug: estateId,
+              promo_installment_amount: installmentAmount,
+            })
+            .select()
+            .single();
+
+          if (createdPlan) {
+            await supabaseAdmin.from('payment_requests').insert({
+              user_id: authenticatedUserId,
+              type: '5k_daily_promo',
+              amount: paidAmount,
+              reference,
+              related_payment_id: createdPlan.id,
+              description: `5K Daily Promo — ${estateRow?.name ?? estateId} (${frequency}) — first installment`,
+              status: 'pending',
+            });
+          }
+        }
+      }
+
+      if (String(reference).startsWith('PROMO_')) {
+        const planId = String(reference).split('_')[1];
+        const { data: plan } = planId
+          ? await supabaseAdmin
+              .from('payments')
+              .select('id, user_id, total_amount, amount_paid')
+              .eq('id', planId)
+              .maybeSingle()
+          : { data: null };
+
+        // Only the plan owner may credit their own plan, and only once per
+        // reference (guarded by the transaction row below).
+        if (plan && plan.user_id === authenticatedUserId) {
+          const { data: alreadyCredited } = await supabaseAdmin
+            .from('payment_transactions')
+            .select('id')
+            .eq('payment_id', plan.id)
+            .eq('notes', `5K Daily Promo installment (${reference})`)
+            .maybeSingle();
+
+          if (!alreadyCredited) {
+            const newAmountPaid = Number(plan.amount_paid ?? 0) + paidAmount;
+            const newBalance = Math.max(0, Number(plan.total_amount ?? 0) - newAmountPaid);
+            await supabaseAdmin
+              .from('payments')
+              .update({
+                amount_paid: newAmountPaid,
+                balance: newBalance,
+                status: newBalance <= 0 ? 'completed' : 'active',
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', plan.id);
+
+            await supabaseAdmin.from('payment_transactions').insert({
+              payment_id: plan.id,
+              user_id: plan.user_id,
+              amount: paidAmount,
+              channel: 'paystack',
+              notes: `5K Daily Promo installment (${reference})`,
+            });
+          }
+        }
+      }
+      // ---------------------------------------------------------------------
+
       // Update orders table if this payment belongs to an order
       await supabaseAdmin
         .from('orders')
         .update({
-          payment_status: 'completed',
+          payment_status: 'paid',
           updated_at: new Date().toISOString()
         })
         .eq('payment_reference', reference);
@@ -140,6 +249,7 @@ serve(async (req) => {
         })
         .eq('paystack_reference', reference)
         .eq('user_id', authenticatedUserId); // Use authenticated user, not client-supplied
+
 
       const purchaseResult = await supabaseAdmin
         .from('mlm_membership_purchases')

@@ -72,13 +72,40 @@ serve(async (req) => {
     const body = await req.json();
     const {
       email,
-      amount, // amount in NGN
+      amount: clientAmount, // amount in NGN (fallback only)
       reference,
       metadata,
       description,
     } = body;
 
-    if (!email || !amount || amount <= 0) {
+    const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+
+    // The order created by create-checkout-order is the authoritative price.
+    let amount = Number(clientAmount);
+    if (reference) {
+      const { data: order } = await admin
+        .from("orders")
+        .select("user_id, total_amount, payment_status")
+        .eq("payment_reference", reference)
+        .maybeSingle();
+      if (order) {
+        if (order.user_id !== userId) {
+          return new Response(JSON.stringify({ error: "Forbidden" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 403,
+          });
+        }
+        if (order.payment_status === "paid") {
+          return new Response(JSON.stringify({ error: "This order has already been paid" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400,
+          });
+        }
+        amount = Number(order.total_amount);
+      }
+    }
+
+    if (!email || !Number.isFinite(amount) || amount <= 0) {
       return new Response(JSON.stringify({ error: "Invalid amount or email" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
@@ -90,6 +117,7 @@ serve(async (req) => {
     const amountUsdCents = Math.max(50, Math.round(amountUsd * 100)); // Stripe min ~$0.50
 
     console.log("Stripe init:", { amountNGN: amount, rate, amountUsdCents, reference });
+
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const params = new URLSearchParams();

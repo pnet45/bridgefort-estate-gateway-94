@@ -84,9 +84,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
     }
 
     const monthsToPay = selectedPlan.monthsToPay || 1;
-    const payAmount = selectedPlan.type === "outright"
-      ? selectedPlan.total
-      : selectedPlan.monthlyPayment * monthsToPay;
 
     setIsProcessing(true);
     try {
@@ -96,91 +93,47 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         throw new Error('Verification failed. Please refresh and try again.');
       }
 
-      const reference = `PWAN_${Date.now()}_${user?.id}`;
-      console.log("[Checkout] Reference:", reference);
-      console.log("[Checkout] Selected Plan:", selectedPlan);
-      console.log("[Checkout] Cart Items:", cart);
-
-      // Check if this is a documentation purchase
-      const isDocumentationPurchase = cart.some(item => 
-        item.plot.propertyType === 'Documentation'
-      );
-
-      // Calculate payment breakdown with documentation flag
-      const paymentBreakdown = calculatePaymentBreakdown(
-        selectedPlan.principal,
-        selectedPlan.type,
-        isDocumentationPurchase
-      );
-
-      // Attempt to insert a payment-plan record, but don't block the payment
-      // gateway if this fails — the edge function will still record the
-      // pending payment when it initialises the checkout session.
-      try {
-        const { error: paymentAgreementError } = await supabase
-          .from('payments')
-          .insert({
-            user_id: user?.id,
-            property_id: cart[0]?.plot?.id,
-            plan_type: selectedPlan.type,
-            months: selectedPlan.months,
-            principal_amount: paymentBreakdown.principalAmount,
-            interest_percent: paymentBreakdown.interestAmount > 0 ? selectedPlan.interestRate * 100 : 0,
-            interest_amount: paymentBreakdown.interestAmount,
-            total_amount: paymentBreakdown.totalAmount,
-            amount_paid: 0,
-            balance: paymentBreakdown.totalAmount,
-            status: 'pending'
-          });
-        if (paymentAgreementError) {
-          console.warn('[Checkout] payments pre-insert skipped:', paymentAgreementError.message);
-        }
-      } catch (e) {
-        console.warn('[Checkout] payments pre-insert threw (non-fatal):', e);
-      }
-
-      // Insert order
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user?.id,
-          customer_email: customerInfo.email,
-          customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
-          total_amount: paymentBreakdown.totalAmount,
-          payment_reference: reference,
-          payment_status: 'pending',
+      // Prices are NEVER sent from the browser. The edge function looks every
+      // item up in the database, applies the plan interest and creates the
+      // order + payment-plan rows with the authoritative amount.
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-checkout-order', {
+        body: {
           items: cart.map(item => ({
-            plot_id: item.plot.id,
+            item_id: item.plot.id,
+            property_id: item.plot.propertyId,
+            property_type: item.plot.propertyType,
             plot_number: item.plot.plotNumber,
-            property_name: item.plot.propertyName,
             quantity: item.quantity,
-            price: item.plot.pricePerPlot
-          }))
-        })
-        .select()
-        .single();
+          })),
+          plan_type: selectedPlan.type,
+          months_to_pay: monthsToPay,
+          customer: {
+            email: customerInfo.email,
+            name: `${customerInfo.firstName} ${customerInfo.lastName}`,
+            phone: customerInfo.phone,
+          },
+        },
+      });
 
-      console.log("[Checkout] Order Creation Result:", { orderData, orderError });
-
-      if (orderError) {
-        throw new Error('Failed to create order');
+      if (orderError || !orderData || orderData.error) {
+        throw new Error(orderData?.error || orderError?.message || 'Failed to create order');
       }
+
+      const reference: string = orderData.reference;
+      const payAmount: number = orderData.pay_amount;
 
       if (method === 'stripe') {
-        console.log("[Checkout] Calling stripe-initialize...");
         const { data: stripeData, error: stripeError } = await supabase.functions.invoke('stripe-initialize', {
           body: {
             email: customerInfo.email,
-            amount: payAmount,
             reference,
             description: cart[0]?.plot?.propertyName || 'PWAN Bridgefort Payment',
             metadata: {
-              order_id: orderData.id,
+              order_id: orderData.order_id,
               customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
             },
           },
         });
-        console.log("[Checkout] Stripe init result:", { stripeData, stripeError });
         if (stripeError || !stripeData?.url) {
           throw new Error(stripeError?.message || stripeData?.error || 'Failed to initialize Stripe');
         }
@@ -189,27 +142,24 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       }
 
       // Initialize Paystack payment using edge function
-      console.log("[Checkout] Calling paystack-initialize...");
       const { data: paymentInitData, error: paymentInitError } = await supabase.functions.invoke('paystack-initialize', {
         body: {
           email: customerInfo.email,
-          amount: payAmount,
           reference,
-          user_id: user?.id,
           metadata: {
             customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
             phone: customerInfo.phone,
             custom_fields: [
               { display_name: "Customer Address", variable_name: "customer_address", value: `${customerInfo.address}, ${customerInfo.city}, ${customerInfo.state}` },
-              { display_name: "Order ID", variable_name: "order_id", value: orderData.id },
-              { display_name: "Payment Plan", variable_name: "payment_plan", value: selectedPlan.type },
+              { display_name: "Order ID", variable_name: "order_id", value: orderData.order_id },
+              { display_name: "Payment Plan", variable_name: "payment_plan", value: orderData.plan_type },
               { display_name: "Months To Pay", variable_name: "months_to_pay", value: monthsToPay }
             ]
           }
         }
       });
 
-      console.log("[Checkout] Paystack-initialize Edge invoke result:", { paymentInitData, paymentInitError });
+      console.log("[Checkout] Paystack init:", { paymentInitError, amount: payAmount });
 
       if (paymentInitError || !paymentInitData) throw new Error('Failed to initialize payment');
       if (typeof paymentInitData === "object" && paymentInitData.error) {

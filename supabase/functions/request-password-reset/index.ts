@@ -30,9 +30,9 @@ serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Only send a reset code to accounts that actually exist — tell the
-    // person plainly if there's no account for that email, rather than
-    // silently doing nothing (which just looked like the button was broken).
+    // Only send a reset code to accounts that actually exist — but never
+    // reveal to the caller whether the account exists (account enumeration).
+    // The response below is identical in both cases.
     const { data: existingProfile } = await supabase
       .from("profiles")
       .select("id")
@@ -41,11 +41,7 @@ serve(async (req: Request) => {
 
     if (!existingProfile) {
       return new Response(
-        JSON.stringify({
-          success: false,
-          reason: "account_not_found",
-          message: "We couldn't find an account with that email. Please sign up first.",
-        }),
+        JSON.stringify({ success: true, message: "If this email exists, an OTP was sent" }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }

@@ -184,10 +184,8 @@ serve(async (req) => {
                   continue;
                 }
 
-                const { data: publicUrlData } = supabase.storage
-                  .from('email-attachments')
-                  .getPublicUrl(storagePath);
-
+                // The bucket is private — never store a public URL. Admins
+                // fetch these through short-lived signed URLs instead.
                 stored.push({
                   id: att.id,
                   filename: att.filename || 'attachment',
@@ -195,7 +193,6 @@ serve(async (req) => {
                   content_disposition: att.content_disposition,
                   size: fileBuffer.byteLength,
                   storage_path: storagePath,
-                  url: publicUrlData?.publicUrl,
                 });
               } catch (attErr) {
                 console.error('Error processing attachment', att?.filename, attErr);
