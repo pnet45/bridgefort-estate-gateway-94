@@ -211,8 +211,25 @@ serve(async (req) => {
       amount_paid: 0,
       balance: totalAmount,
       status: "pending",
+      reference,
     });
     if (planError) console.warn("Payment plan row not created:", planError.message);
+
+    // Documentation fees get their own record so the client dashboard can show
+    // each estate's documentation status through the approval cycle.
+    for (const item of pricedItems) {
+      if (String(item.property_type ?? "").startsWith("Documentation")) {
+        const { error: docError } = await admin.from("estate_documentation_payments").insert({
+          user_id: userId,
+          estate_id: String(item.property_id),
+          amount: Number(item.price) * Number(item.quantity ?? 1),
+          status: "pending",
+          reference,
+        });
+        if (docError) console.warn("Documentation payment row not created:", docError.message);
+      }
+    }
+
 
     return json({
       order_id: order.id,
