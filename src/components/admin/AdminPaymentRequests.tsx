@@ -198,7 +198,8 @@ const AdminPaymentRequests: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-700">
-                  <TableHead className="text-slate-300">Realtor</TableHead>
+                  <TableHead className="text-slate-300">User</TableHead>
+                  <TableHead className="text-slate-300">Type</TableHead>
                   <TableHead className="text-slate-300">Amount</TableHead>
                   <TableHead className="text-slate-300">Description</TableHead>
                   <TableHead className="text-slate-300">Reference</TableHead>
@@ -215,6 +216,7 @@ const AdminPaymentRequests: React.FC = () => {
                       <TableCell className="text-white">
                         {p ? `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown' : r.user_id}
                       </TableCell>
+                      <TableCell className="text-slate-300 text-xs capitalize">{(r.type || '').replace(/_/g, ' ')}</TableCell>
                       <TableCell className="text-white font-semibold">₦{Number(r.amount).toLocaleString()}</TableCell>
                       <TableCell className="text-slate-300 text-xs">{r.description || '—'}</TableCell>
                       <TableCell className="text-slate-400 text-xs">{r.reference || '—'}</TableCell>
