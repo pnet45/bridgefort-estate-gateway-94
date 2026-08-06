@@ -13,6 +13,29 @@ const PLAN_LABELS: Record<string, string> = {
   "7-12": "7-12 Months",
 };
 
+// Payments are only final once an admin approves them, so surface the
+// approval stage clearly instead of a raw database status string.
+const STATUS_LABELS: Record<string, string> = {
+  pending: "Pending payment",
+  awaiting_approval: "Awaiting admin approval",
+  approved: "Approved",
+  active: "Approved — active",
+  completed: "Completed",
+  success: "Completed",
+  rejected: "Rejected by admin",
+};
+
+const StatusBadge: React.FC<{ status?: string | null }> = ({ status }) => {
+  const key = String(status || "pending").toLowerCase();
+  const cls =
+    key === "rejected"
+      ? "bg-destructive/15 text-destructive border-destructive/30"
+      : key === "awaiting_approval" || key === "pending"
+        ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30"
+        : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30";
+  return <Badge variant="outline" className={cls}>{STATUS_LABELS[key] || key}</Badge>;
+};
+
 const MyPaymentsSection: React.FC = () => {
   const { user } = useAuth();
   const [payments, setPayments] = useState<any[]>([]);
@@ -124,7 +147,7 @@ const MyPaymentsSection: React.FC = () => {
                         {pm.promo_estate_slug ? pm.promo_estate_slug.replace(/-/g, ' ') : pm.property_id}
                       </div>
                       <div className="text-xs text-muted-foreground">Plan: {meta.label}</div>
-                      <div className="text-xs text-muted-foreground">{pm.status || 'active'}</div>
+                      <div className="text-xs text-muted-foreground"><StatusBadge status={pm.status || 'active'} /></div>
                       <div className="mt-2 w-full h-2 rounded bg-white/70">
                         <div className="h-2 rounded bg-purple-700 transition-all" style={{ width: `${progressPct}%` }}></div>
                       </div>
@@ -163,9 +186,7 @@ const MyPaymentsSection: React.FC = () => {
                       Documentation Fee: ₦{Number(doc.amount).toLocaleString()}
                     </div>
                     <div>
-                      <Badge variant={doc.status === "completed" ? "default" : "secondary"}>
-                        {doc.status}
-                      </Badge>
+                      <StatusBadge status={doc.status} />
                     </div>
                   </div>
                 </div>
@@ -210,9 +231,7 @@ const MyPaymentsSection: React.FC = () => {
                   <div className="text-sm text-green-700">Paid: ₦{Number(pm.amount_paid).toLocaleString()}</div>
                   <div className="text-sm text-red-700">Balance: ₦{Number(pm.balance).toLocaleString()}</div>
                   <div>
-                    <Badge variant={pm.status === "completed" ? "default" : "secondary"}>
-                      {pm.status}
-                    </Badge>
+                    <StatusBadge status={pm.status} />
                   </div>
                 </div>
               </div>
