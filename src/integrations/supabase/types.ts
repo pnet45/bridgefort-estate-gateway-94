@@ -1659,6 +1659,7 @@ export type Database = {
           estate_id: string
           id: string
           is_bundle: boolean | null
+          reference: string | null
           status: string
           updated_at: string
           user_id: string | null
@@ -1670,6 +1671,7 @@ export type Database = {
           estate_id: string
           id?: string
           is_bundle?: boolean | null
+          reference?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -1681,6 +1683,7 @@ export type Database = {
           estate_id?: string
           id?: string
           is_bundle?: boolean | null
+          reference?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
