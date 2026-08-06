@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import DOMPurify from 'dompurify';
 import { supabase } from '@/integrations/supabase/client';
+
+// Inbound email HTML is attacker-controlled — anyone can email the connected
+// inbox — so it must be sanitized before it is rendered in an admin session.
+const SANITIZE_CONFIG = {
+  ALLOWED_TAGS: ['p','h1','h2','h3','h4','h5','h6','ul','ol','li','strong','em','a','img','span','br','div','table','thead','tbody','tr','td','th','blockquote','code','pre','hr'],
+  ALLOWED_ATTR: ['href','src','alt','title','class','style','target','rel'],
+  FORBID_TAGS: ['script','style','iframe','object','embed','form','input'],
+  FORBID_ATTR: ['onerror','onload','onclick','onmouseover'],
+};
+const sanitizeHtml = (dirty: string | null) => DOMPurify.sanitize(dirty || '', SANITIZE_CONFIG);
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -155,7 +166,7 @@ const AdminInbox = () => {
               </div>
               <div className="bg-slate-700/50 rounded-lg p-4 max-h-96 overflow-y-auto">
                 {selected.html ? (
-                  <div className="text-slate-200" dangerouslySetInnerHTML={{ __html: selected.html }} />
+                  <div className="text-slate-200" dangerouslySetInnerHTML={{ __html: sanitizeHtml(selected.html) }} />
                 ) : (
                   <p className="text-slate-200 whitespace-pre-wrap">{selected.body}</p>
                 )}
