@@ -160,6 +160,7 @@ serve(async (req) => {
       pricedItems.push({
         plot_id: itemId,
         property_id: propertyId,
+        property_type: propertyType,
         property_name: label,
         plot_number: raw?.plot_number ?? null,
         quantity,
