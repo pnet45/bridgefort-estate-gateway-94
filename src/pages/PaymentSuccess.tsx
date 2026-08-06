@@ -116,8 +116,10 @@ const PaymentSuccess = () => {
                     Amount: <span className="font-bold">₦{(paymentDetails.amount / 100).toLocaleString()}</span>
                   </p>
                   <p className="text-sm text-green-600">
-                    Thank you for your purchase! We'll send you a confirmation email shortly.
+                    Thank you! Your payment is now awaiting admin approval — you'll
+                    see the status update in your dashboard once it's reviewed.
                   </p>
+
                 </div>
               )}
               
