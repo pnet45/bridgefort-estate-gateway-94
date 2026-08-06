@@ -231,24 +231,15 @@ serve(async (req) => {
       }
       // ---------------------------------------------------------------------
 
-      // Update orders table if this payment belongs to an order
-      await supabaseAdmin
-        .from('orders')
-        .update({
-          payment_status: 'paid',
-          updated_at: new Date().toISOString()
-        })
-        .eq('payment_reference', reference);
+      // Checkout orders (property, documentation fees, Agrovest) are NOT marked
+      // paid here — they move to `awaiting_approval` and are queued for an
+      // admin to approve or reject in the Admin Approvals hub.
+      await queueOrderForApproval(supabaseAdmin, {
+        reference,
+        paidAmount,
+        channel: 'Paystack',
+      });
 
-      // Update payments table using authenticated user_id
-      await supabaseAdmin
-        .from('payments')
-        .update({
-          status: 'completed',
-          paid_at: new Date().toISOString()
-        })
-        .eq('paystack_reference', reference)
-        .eq('user_id', authenticatedUserId); // Use authenticated user, not client-supplied
 
 
       const purchaseResult = await supabaseAdmin
