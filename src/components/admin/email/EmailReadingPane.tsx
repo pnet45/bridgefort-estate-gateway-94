@@ -147,14 +147,17 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
     const mimeType = attachment.content_type || 'application/octet-stream';
 
     try {
-      // Preferred path: attachments stored in Supabase Storage by the
-      // resend-inbound-webhook function have a stable public `url` — just
-      // fetch and save it directly, no expiring signed URLs involved.
-      const storageUrl = attachment.url || attachment.content_url;
-      if (storageUrl) {
+      // Preferred path: attachments mirrored into the private
+      // `email-attachments` bucket. They are admin-only, so we mint a
+      // short-lived signed URL instead of relying on a public URL.
+      const storagePath = attachment.storage_path;
+      if (storagePath) {
         toast({ title: 'Downloading attachment...' } as any);
-        try {
-          const response = await fetch(storageUrl);
+        const { data: signed, error: signErr } = await supabase.storage
+          .from('email-attachments')
+          .createSignedUrl(storagePath, 60);
+        if (!signErr && signed?.signedUrl) {
+          const response = await fetch(signed.signedUrl);
           if (response.ok) {
             const blob = await response.blob();
             const blobUrl = window.URL.createObjectURL(blob);
@@ -170,11 +173,8 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
             }, 1000);
             return;
           }
-        } catch {
-          // CORS or network hiccup — fall through to opening it directly.
         }
-        window.open(storageUrl, '_blank');
-        return;
+        console.error('Signed URL error:', signErr);
       }
 
       // Legacy fallback for older rows saved before attachments were mirrored
