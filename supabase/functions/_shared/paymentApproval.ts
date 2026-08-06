@@ -21,6 +21,10 @@ export async function queueOrderForApproval(
 
   if (!order) return;
 
+  // Stripe reports the charged amount in USD cents; fall back to the
+  // authoritative order total when the gateway amount isn't in Naira.
+  const amount = paidAmount > 0 ? paidAmount : Number(order.total_amount ?? 0);
+
   // Idempotent: only queue once per reference.
   const { data: existingRequest } = await admin
     .from("payment_requests")
@@ -61,8 +65,8 @@ export async function queueOrderForApproval(
     await admin
       .from("payments")
       .update({
-        amount_paid: paidAmount,
-        balance: Math.max(0, Number(plan.total_amount ?? 0) - paidAmount),
+        amount_paid: amount,
+        balance: Math.max(0, Number(plan.total_amount ?? 0) - amount),
         status: "awaiting_approval",
         updated_at: new Date().toISOString(),
       })
@@ -73,7 +77,7 @@ export async function queueOrderForApproval(
     await admin.from("payment_requests").insert({
       user_id: order.user_id,
       type: requestType,
-      amount: paidAmount,
+      amount,
       reference,
       related_payment_id: plan?.id ?? null,
       description: `${requestType === "documentation" ? "Documentation fee" : requestType === "agrovest" ? "Agrovest" : "Property"} payment via ${channel} — ${label || "checkout"}`,
@@ -85,7 +89,7 @@ export async function queueOrderForApproval(
       audience: "user",
       type: "payment_status",
       title: "Payment received — awaiting approval",
-      message: `We received your payment of ₦${Number(paidAmount).toLocaleString()}. It is now awaiting admin approval.`,
+      message: `We received your payment of ₦${Number(amount).toLocaleString()}. It is now awaiting admin approval.`,
       link: "/dashboard",
     });
   }
