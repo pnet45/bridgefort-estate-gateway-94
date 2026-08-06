@@ -153,11 +153,11 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
                 <div class="detail-row">
                   <span class="detail-label">Your Name:</span>
-                  <span>${name}</span>
+                  <span>${safeName}</span>
                 </div>
                 <div class="detail-row">
                   <span class="detail-label">Phone:</span>
-                  <span>${phone}</span>
+                  <span>${safePhone}</span>
                 </div>
               </div>
               
