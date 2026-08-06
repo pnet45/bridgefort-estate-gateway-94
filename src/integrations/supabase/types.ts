@@ -258,6 +258,45 @@ export type Database = {
           },
         ]
       }
+      admin_mailboxes: {
+        Row: {
+          access_level: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          mailbox_email: string
+          mailbox_provider: string
+          provider_account_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_level?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          mailbox_email: string
+          mailbox_provider?: string
+          provider_account_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_level?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          mailbox_email?: string
+          mailbox_provider?: string
+          provider_account_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_notes: {
         Row: {
           color: string | null
@@ -357,6 +396,41 @@ export type Database = {
           },
         ]
       }
+      admin_permissions: {
+        Row: {
+          expires_at: string | null
+          granted_at: string
+          granted_by: string | null
+          id: string
+          permission_key: string
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          permission_key: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          permission_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_permissions_permission_key_fkey"
+            columns: ["permission_key"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       admin_presence: {
         Row: {
           id: string
@@ -396,6 +470,41 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_roles: {
+        Row: {
+          expires_at: string | null
+          granted_at: string
+          granted_by: string | null
+          id: string
+          role_name: string
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role_name: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_roles_role_name_fkey"
+            columns: ["role_name"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["name"]
           },
         ]
       }
@@ -1164,6 +1273,45 @@ export type Database = {
         }
         Relationships: []
       }
+      email_accounts: {
+        Row: {
+          created_at: string
+          id: string
+          mailbox_email: string
+          metadata: Json | null
+          oauth_state: string | null
+          provider: string
+          scopes: string[]
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mailbox_email: string
+          metadata?: Json | null
+          oauth_state?: string | null
+          provider: string
+          scopes?: string[]
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mailbox_email?: string
+          metadata?: Json | null
+          oauth_state?: string | null
+          provider?: string
+          scopes?: string[]
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_campaigns: {
         Row: {
           body: string
@@ -1276,6 +1424,48 @@ export type Database = {
           sent_at?: string
           status?: string
           subject?: string
+        }
+        Relationships: []
+      }
+      email_sessions: {
+        Row: {
+          access_token_encrypted: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          last_validated_at: string | null
+          mailbox_email: string
+          provider: string
+          refresh_token_encrypted: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token_encrypted?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          last_validated_at?: string | null
+          mailbox_email: string
+          provider: string
+          refresh_token_encrypted?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token_encrypted?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          last_validated_at?: string | null
+          mailbox_email?: string
+          provider?: string
+          refresh_token_encrypted?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1567,6 +1757,48 @@ export type Database = {
           email?: string
           id?: string
           ip_address?: string | null
+        }
+        Relationships: []
+      }
+      gallery_media_items: {
+        Row: {
+          caption: string | null
+          created_at: string
+          created_by: string | null
+          display_order: number
+          event_description: string | null
+          id: string
+          is_published: boolean
+          media_type: string
+          media_url: string
+          poster_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          created_by?: string | null
+          display_order?: number
+          event_description?: string | null
+          id?: string
+          is_published?: boolean
+          media_type: string
+          media_url: string
+          poster_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          created_by?: string | null
+          display_order?: number
+          event_description?: string | null
+          id?: string
+          is_published?: boolean
+          media_type?: string
+          media_url?: string
+          poster_url?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1958,6 +2190,120 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mail_settings: {
+        Row: {
+          created_at: string
+          folder_filters: string[]
+          id: string
+          mailbox_email: string
+          notifications_enabled: boolean
+          provider: string
+          sync_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          folder_filters?: string[]
+          id?: string
+          mailbox_email: string
+          notifications_enabled?: boolean
+          provider: string
+          sync_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          folder_filters?: string[]
+          id?: string
+          mailbox_email?: string
+          notifications_enabled?: boolean
+          provider?: string
+          sync_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mail_sync_status: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          last_sync_at: string | null
+          mailbox_email: string
+          message_count: number
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          mailbox_email: string
+          message_count?: number
+          provider: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          mailbox_email?: string
+          message_count?: number
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mail_tokens: {
+        Row: {
+          access_token_encrypted: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          mailbox_email: string
+          provider: string
+          refresh_token_encrypted: string | null
+          token_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token_encrypted?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          mailbox_email: string
+          provider: string
+          refresh_token_encrypted?: string | null
+          token_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token_encrypted?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          mailbox_email?: string
+          provider?: string
+          refresh_token_encrypted?: string | null
+          token_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       mlm_commissions: {
         Row: {
@@ -2445,6 +2791,36 @@ export type Database = {
         }
         Relationships: []
       }
+      permissions: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          label: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          label?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author_id: string
@@ -2856,6 +3232,33 @@ export type Database = {
           is_enabled?: boolean | null
           permission_key?: string
           role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          id?: string
+          name?: string
           updated_at?: string
         }
         Relationships: []
@@ -3342,6 +3745,14 @@ export type Database = {
       update_user_profile: {
         Args: { first_name: string; last_name: string; user_id: number }
         Returns: undefined
+      }
+      user_has_permission: {
+        Args: { _permission_key: string; _user_id: string }
+        Returns: boolean
+      }
+      user_mailbox_access: {
+        Args: { _mailbox_email: string; _provider?: string; _user_id: string }
+        Returns: boolean
       }
     }
     Enums: {

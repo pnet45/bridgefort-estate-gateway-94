@@ -2,7 +2,260 @@
 // To take ownership, delete this banner line; the plugin then leaves the file alone.
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
+// src/lib/mcp/index.ts
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.26.1";
+
+// src/lib/mcp/tools/search-estates.ts
+import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { z } from "npm:zod@^3.23.8";
+
+// src/lib/mcp/supabase.ts
+import { createClient } from "npm:@supabase/supabase-js@^2.110.0";
+function runtimeEnv(name) {
+  const runtime = globalThis;
+  return runtime.Deno?.env?.get?.(name) ?? runtime.process?.env?.[name];
+}
+function configuredEnv(names) {
+  for (const name of names) {
+    const value = runtimeEnv(name)?.trim();
+    if (value) return value;
+  }
+  return void 0;
+}
+function supabaseProjectUrl() {
+  const url = configuredEnv(["SUPABASE_URL", "VITE_SUPABASE_URL"]);
+  if (!url) throw new Error("SUPABASE_URL (or VITE_SUPABASE_URL) is required");
+  return url;
+}
+function supabasePublishableKey() {
+  const direct = configuredEnv([
+    "SUPABASE_PUBLISHABLE_KEY",
+    "VITE_SUPABASE_PUBLISHABLE_KEY"
+  ]);
+  if (direct) return direct;
+  const keyset = runtimeEnv("SUPABASE_PUBLISHABLE_KEYS");
+  if (keyset) {
+    try {
+      const parsed = JSON.parse(keyset);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        const keys = parsed;
+        const key = [keys.default, ...Object.values(keys)].find((v) => typeof v === "string" && v.trim().startsWith("sb_publishable_"))?.trim();
+        if (key) return key;
+      }
+    } catch {
+    }
+  }
+  const legacy = configuredEnv(["SUPABASE_ANON_KEY", "VITE_SUPABASE_ANON_KEY"]);
+  if (legacy) return legacy;
+  throw new Error("SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLISHABLE_KEYS, or SUPABASE_ANON_KEY is required");
+}
+function supabaseForUser(ctx) {
+  const token = ctx.getToken();
+  if (!token) throw new Error("supabaseForUser requires a verified OAuth token");
+  return createClient(supabaseProjectUrl(), supabasePublishableKey(), {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
+
+// src/lib/mcp/tools/search-estates.ts
+var search_estates_default = defineTool({
+  name: "search_estates",
+  title: "Search estates",
+  description: "Search Bridgefort land estates by name, location, or availability. Returns pricing, plot sizes and stock.",
+  inputSchema: {
+    query: z.string().trim().optional().describe("Free text matched against estate name, title and location."),
+    location: z.string().trim().optional().describe("Filter by location, e.g. 'Asaba' or 'Ibeju-Lekki'."),
+    available_only: z.boolean().optional().describe("Exclude sold-out estates. Defaults to true."),
+    limit: z.number().int().min(1).max(50).optional().describe("Max results (default 10).")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ query, location, available_only, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
+    let q = supabase.from("estate").select(
+      "id,name,title,location,description,property_category,type,size,size_unit,actual_price,promo_price,prelaunch_price,total_plots,sold_plots,is_sold_out,is_for_sale,is_for_rent"
+    ).limit(limit ?? 10);
+    if (available_only !== false) q = q.or("is_sold_out.is.null,is_sold_out.eq.false");
+    if (location) q = q.ilike("location", `%${location}%`);
+    if (query) q = q.or(`name.ilike.%${query}%,title.ilike.%${query}%,location.ilike.%${query}%`);
+    const { data, error } = await q;
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
+      structuredContent: { estates: data ?? [] }
+    };
+  }
+});
+
+// src/lib/mcp/tools/search-listings.ts
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { z as z2 } from "npm:zod@^3.23.8";
+var search_listings_default = defineTool2({
+  name: "search_listings",
+  title: "Search property listings",
+  description: "Search approved, published residential and commercial property listings by city, price and bedrooms.",
+  inputSchema: {
+    query: z2.string().trim().optional().describe("Free text matched against listing title, city and estate."),
+    city: z2.string().trim().optional().describe("Filter by city, e.g. 'Lagos'."),
+    min_bedrooms: z2.number().int().min(0).max(20).optional().describe("Minimum number of bedrooms."),
+    limit: z2.number().int().min(1).max(50).optional().describe("Max results (default 10).")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ query, city, min_bedrooms, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
+    let q = supabase.from("listings").select(
+      "id,title,description,city,address,estate,bedrooms,bathrooms,land_sqm,built_sqm,monthly_rent,annual_rent,is_featured,created_at"
+    ).eq("moderation_status", "approved").eq("is_published", true).order("created_at", { ascending: false }).limit(limit ?? 10);
+    if (city) q = q.ilike("city", `%${city}%`);
+    if (typeof min_bedrooms === "number") q = q.gte("bedrooms", min_bedrooms);
+    if (query) q = q.or(`title.ilike.%${query}%,city.ilike.%${query}%,estate.ilike.%${query}%`);
+    const { data, error } = await q;
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
+      structuredContent: { listings: data ?? [] }
+    };
+  }
+});
+
+// src/lib/mcp/tools/get-my-profile.ts
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.1";
+var get_my_profile_default = defineTool3({
+  name: "get_my_profile",
+  title: "Get my profile",
+  description: "Return the signed-in user's Bridgefort profile: name, contact details, realtor status and rank.",
+  inputSchema: {},
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async (_input, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
+    const { data, error } = await supabase.from("profiles").select(
+      "id,first_name,last_name,phone_number,address,is_pbo,current_rank,current_package,profile_completed,pbo_referral_code,created_at"
+    ).eq("id", ctx.getUserId()).maybeSingle();
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (!data) return { content: [{ type: "text", text: "No profile found for this account." }], isError: true };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      structuredContent: { profile: data }
+    };
+  }
+});
+
+// src/lib/mcp/tools/list-my-listings.ts
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { z as z3 } from "npm:zod@^3.23.8";
+var list_my_listings_default = defineTool4({
+  name: "list_my_listings",
+  title: "List my listings",
+  description: "List property listings created by the signed-in user, including pending, approved and rejected ones.",
+  inputSchema: {
+    moderation_status: z3.enum(["pending", "approved", "rejected"]).optional().describe("Filter by moderation status."),
+    limit: z3.number().int().min(1).max(50).optional().describe("Max results (default 20).")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ moderation_status, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
+    let q = supabase.from("listings").select(
+      "id,title,city,estate,bedrooms,bathrooms,monthly_rent,annual_rent,moderation_status,rejection_reason,is_published,created_at"
+    ).eq("created_by", ctx.getUserId()).order("created_at", { ascending: false }).limit(limit ?? 20);
+    if (moderation_status) q = q.eq("moderation_status", moderation_status);
+    const { data, error } = await q;
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
+      structuredContent: { listings: data ?? [] }
+    };
+  }
+});
+
+// src/lib/mcp/tools/list-my-notifications.ts
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { z as z4 } from "npm:zod@^3.23.8";
+var list_my_notifications_default = defineTool5({
+  name: "list_my_notifications",
+  title: "List my notifications",
+  description: "List in-app notifications for the signed-in user, newest first.",
+  inputSchema: {
+    unread_only: z4.boolean().optional().describe("Only return unread notifications."),
+    limit: z4.number().int().min(1).max(50).optional().describe("Max results (default 20).")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ unread_only, limit }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
+    let q = supabase.from("user_notifications").select("id,title,message,type,link,is_read,created_at").eq("user_id", ctx.getUserId()).order("created_at", { ascending: false }).limit(limit ?? 20);
+    if (unread_only) q = q.eq("is_read", false);
+    const { data, error } = await q;
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
+      structuredContent: { notifications: data ?? [] }
+    };
+  }
+});
+
+// src/lib/mcp/tools/mark-notification-read.ts
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { z as z5 } from "npm:zod@^3.23.8";
+var mark_notification_read_default = defineTool6({
+  name: "mark_notification_read",
+  title: "Mark notification read",
+  description: "Mark one of the signed-in user's in-app notifications as read.",
+  inputSchema: {
+    notification_id: z5.string().uuid().describe("ID of the notification to mark as read.")
+  },
+  annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  handler: async ({ notification_id }, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const supabase = supabaseForUser(ctx);
+    const { data, error } = await supabase.from("user_notifications").update({ is_read: true }).eq("id", notification_id).eq("user_id", ctx.getUserId()).select("id,title,is_read");
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    if (!data || data.length === 0) {
+      return { content: [{ type: "text", text: "Notification not found for this account." }], isError: true };
+    }
+    return {
+      content: [{ type: "text", text: JSON.stringify(data[0], null, 2) }],
+      structuredContent: { notification: data[0] }
+    };
+  }
+});
+
+// src/lib/mcp/index.ts
+var projectRef = "xyvspvtdaacqfmfocvhw";
+var mcp_default = defineMcp({
+  name: "bridgefort",
+  title: "bridgefort",
+  version: "0.1.0",
+  instructions: "Tools for Bridgefort Homes \u2014 Nigerian real estate, land banking and realtor platform. Use `search_estates` for land estates, `search_listings` for residential/commercial listings, and the `my_*` tools for the signed-in user's profile, listings and notifications.",
+  auth: auth.oauth.issuer({
+    issuer: `https://${projectRef}.supabase.co/auth/v1`,
+    acceptedAudiences: "authenticated"
+  }),
+  tools: [
+    search_estates_default,
+    search_listings_default,
+    get_my_profile_default,
+    list_my_listings_default,
+    list_my_notifications_default,
+    mark_notification_read_default
+  ]
+});
+
 // lovable-mcp-supabase-entry.ts
-import mcp from "npm:C:\\Users\\User\\Documents\\WORK DOCS\\WEBSITE\\GitHub\\BridgefortHomes updated\\up1\\bridgefort-estate-gateway-94\\src\\lib\\mcp\\index.ts";
 import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.26.1/stacks/supabase";
-Deno.serve(createSupabaseHandler(mcp, { functionName: "mcp" }));
+Deno.serve(createSupabaseHandler(mcp_default, { functionName: "mcp" }));
