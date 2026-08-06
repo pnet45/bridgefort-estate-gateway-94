@@ -1,7 +1,13 @@
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Film, Play } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CircularGallery from '@/components/gallery/CircularGallery';
+import CircularGallery3D from '@/components/gallery/CircularGallery3D';
+import GalleryLightbox from '@/components/gallery/GalleryLightbox';
+import { supabase } from '@/integrations/supabase/client';
+import type { GalleryMediaItem } from '@/types/gallery';
 
 const galleryHighlights = [
   { title: 'Luxury Residences', value: '18+', text: 'curated homes and apartments' },
@@ -10,6 +16,37 @@ const galleryHighlights = [
 ];
 
 const GalleryPage = () => {
+  const [mediaItems, setMediaItems] = useState<GalleryMediaItem[]>([]);
+  const [loadingMedia, setLoadingMedia] = useState(true);
+  const [activeItem, setActiveItem] = useState<GalleryMediaItem | null>(null);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data, error } = await (supabase as any)
+        .from('gallery_media_items')
+        .select('*')
+        .eq('is_published', true)
+        .order('display_order');
+      if (!error && data) setMediaItems(data as GalleryMediaItem[]);
+      setLoadingMedia(false);
+    };
+    load();
+  }, []);
+
+  // What the 3D canvas needs: just an image + label per item.
+  const circularItems = useMemo(
+    () => mediaItems.map((item) => ({
+      image: item.poster_url || item.media_url,
+      text: item.caption || '',
+    })),
+    [mediaItems]
+  );
+
+  const openItem = (index: number) => {
+    const item = mediaItems[index];
+    if (item) setActiveItem(item);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <Navbar />
@@ -73,40 +110,76 @@ const GalleryPage = () => {
         <section className="border-t border-white/10 bg-slate-900/60 py-16 md:py-20">
           <div className="container-custom">
             <div className="mb-10 text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-300">Featured moments</p>
-              <h2 className="mt-4 text-3xl font-black text-white md:text-4xl">Refined spaces, real living.</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-300">Circular Gallery</p>
+              <h2 className="mt-4 text-3xl font-black text-white md:text-4xl">Step inside, look around.</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-400">
+                Scroll or drag through moments from our estates and events — click any piece to open it full screen.
+              </p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              {[
-                {
-                  image: '/lovable-uploads/PropertyHero.png',
-                  title: 'Premium properties',
-                  text: 'Contemporary architecture and reliable value in sought-after locations.',
-                },
-                {
-                  image: '/lovable-uploads/agrovest-estate-1.jpg',
-                  title: 'Peaceful estates',
-                  text: 'Welcoming communities built for comfort, growth, and long-term lifestyle value.',
-                },
-                {
-                  image: '/lovable-uploads/Homeheroimage2222.png',
-                  title: 'Distinctive living',
-                  text: 'From spacious family homes to elegant modern apartments, every detail feels intentional.',
-                },
-              ].map((card) => (
-                <div key={card.title} className="overflow-hidden rounded-3xl border border-white/10 bg-slate-950/70 shadow-[0_20px_60px_rgba(15,23,42,0.5)]">
-                  <img src={card.image} alt={card.title} className="h-72 w-full object-cover" />
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-white">{card.title}</h3>
-                    <p className="mt-3 text-sm leading-7 text-slate-300">{card.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {!loadingMedia && circularItems.length > 0 && (
+              <div style={{ height: '600px', position: 'relative' }} className="mb-14">
+                <CircularGallery3D
+                  items={circularItems}
+                  bend={3}
+                  textColor="#ffffff"
+                  borderRadius={0.21}
+                  scrollEase={0.09}
+                  fontUrl="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap"
+                  font="bold 30px Orbitron"
+                  scrollSpeed={2.7}
+                  onItemClick={openItem}
+                />
+              </div>
+            )}
+
+            {loadingMedia ? (
+              <p className="text-center text-sm text-slate-400">Loading gallery…</p>
+            ) : mediaItems.length === 0 ? (
+              <p className="text-center text-sm text-slate-400">No gallery items published yet.</p>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-3">
+                {mediaItems.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveItem(item)}
+                    className="group overflow-hidden rounded-3xl border border-white/10 bg-slate-950/70 text-left shadow-[0_20px_60px_rgba(15,23,42,0.5)] transition-transform hover:-translate-y-1"
+                  >
+                    <div className="relative h-72 w-full overflow-hidden">
+                      <img
+                        src={item.poster_url || item.media_url}
+                        alt={item.caption || 'Gallery item'}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      {item.media_type === 'video' && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                            <Play className="h-5 w-5 text-white" fill="white" />
+                          </div>
+                        </div>
+                      )}
+                      {item.media_type === 'video' && (
+                        <span className="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                          <Film className="h-3 w-3" /> Video
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-6">
+                      {item.caption && <h3 className="text-xl font-bold text-white">{item.caption}</h3>}
+                      {item.event_description && (
+                        <p className="mt-3 text-sm leading-7 text-slate-300">{item.event_description}</p>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </main>
+
+      <GalleryLightbox item={activeItem} onClose={() => setActiveItem(null)} />
 
       <Footer />
     </div>

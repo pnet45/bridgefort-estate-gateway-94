@@ -10,6 +10,7 @@ export const ADMIN_TAB_PERMISSION_MAP: Record<string, string> = {
   activity: 'admin:view_activity',
   content: 'admin:view_content',
   cms: 'admin:view_cms',
+  gallery: 'admin:view_cms',
   'other-payments': 'admin:view_other_payments',
   permissions: 'admin:manage_permissions',
   travels: 'admin:view_travels',
