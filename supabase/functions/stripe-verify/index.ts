@@ -57,11 +57,19 @@ serve(async (req) => {
     const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
     if (paid) {
-      await admin.from("payments").update({ status: "success" }).eq("paystack_reference", session_id);
-      if (session?.metadata?.order_id) {
-        await admin.from("orders").update({ payment_status: "paid" }).eq("id", session.metadata.order_id);
+      // Queue for admin approval instead of marking the order paid outright.
+      const reference = String(session?.client_reference_id ?? session?.metadata?.reference ?? "");
+      const paidAmount = Number(session?.amount_total ?? 0) / 100;
+      if (reference) {
+        await queueOrderForApproval(admin, { reference, paidAmount, channel: "Stripe" });
+      } else if (session?.metadata?.order_id) {
+        await admin
+          .from("orders")
+          .update({ payment_status: "awaiting_approval" })
+          .eq("id", session.metadata.order_id);
       }
     }
+
 
     return new Response(
       JSON.stringify({ status: paid, session }),
