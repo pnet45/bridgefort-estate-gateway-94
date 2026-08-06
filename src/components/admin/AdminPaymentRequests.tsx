@@ -88,15 +88,35 @@ const AdminPaymentRequests: React.FC = () => {
         .eq('id', req.id);
       if (error) throw error;
 
-      // Approving/rejecting a 5K Daily Promo start-payment also flips the
-      // linked savings plan's status, which is what unlocks (or blocks)
-      // further installments for the realtor in their own dashboard.
+      // Approving/rejecting flips the linked payment plan, which is what
+      // unlocks (or blocks) the purchase/installments in the client dashboard.
       if (req.related_payment_id) {
         await supabase
           .from('payments')
           .update({ status: status === 'approved' ? 'active' : 'rejected' })
           .eq('id', req.related_payment_id);
       }
+
+      // Property / documentation / Agrovest checkout payments also carry an
+      // order and (for docs) a documentation-fee record keyed by reference.
+      if (req.reference) {
+        await supabase
+          .from('orders')
+          .update({
+            payment_status: status === 'approved' ? 'paid' : 'rejected',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('payment_reference', req.reference);
+
+        await supabase
+          .from('estate_documentation_payments')
+          .update({
+            status: status === 'approved' ? 'completed' : 'rejected',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('reference', req.reference);
+      }
+
 
       await supabase.from('notifications').insert({
         user_id: req.user_id,
@@ -178,7 +198,8 @@ const AdminPaymentRequests: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-700">
-                  <TableHead className="text-slate-300">Realtor</TableHead>
+                  <TableHead className="text-slate-300">User</TableHead>
+                  <TableHead className="text-slate-300">Type</TableHead>
                   <TableHead className="text-slate-300">Amount</TableHead>
                   <TableHead className="text-slate-300">Description</TableHead>
                   <TableHead className="text-slate-300">Reference</TableHead>
@@ -195,6 +216,7 @@ const AdminPaymentRequests: React.FC = () => {
                       <TableCell className="text-white">
                         {p ? `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown' : r.user_id}
                       </TableCell>
+                      <TableCell className="text-slate-300 text-xs capitalize">{(r.type || '').replace(/_/g, ' ')}</TableCell>
                       <TableCell className="text-white font-semibold">₦{Number(r.amount).toLocaleString()}</TableCell>
                       <TableCell className="text-slate-300 text-xs">{r.description || '—'}</TableCell>
                       <TableCell className="text-slate-400 text-xs">{r.reference || '—'}</TableCell>

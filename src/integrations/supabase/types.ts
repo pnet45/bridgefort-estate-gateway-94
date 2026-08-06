@@ -1659,6 +1659,7 @@ export type Database = {
           estate_id: string
           id: string
           is_bundle: boolean | null
+          reference: string | null
           status: string
           updated_at: string
           user_id: string | null
@@ -1670,6 +1671,7 @@ export type Database = {
           estate_id: string
           id?: string
           is_bundle?: boolean | null
+          reference?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -1681,6 +1683,7 @@ export type Database = {
           estate_id?: string
           id?: string
           is_bundle?: boolean | null
+          reference?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -2709,6 +2712,7 @@ export type Database = {
           promo_estate_slug: string | null
           promo_installment_amount: number | null
           property_id: string
+          reference: string | null
           status: string
           total_amount: number
           updated_at: string
@@ -2727,6 +2731,7 @@ export type Database = {
           promo_estate_slug?: string | null
           promo_installment_amount?: number | null
           property_id: string
+          reference?: string | null
           status?: string
           total_amount: number
           updated_at?: string
@@ -2745,6 +2750,7 @@ export type Database = {
           promo_estate_slug?: string | null
           promo_installment_amount?: number | null
           property_id?: string
+          reference?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
