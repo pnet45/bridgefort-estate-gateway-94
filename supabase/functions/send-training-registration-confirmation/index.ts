@@ -137,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
               <h1 style="margin: 0; font-size: 28px;">Registration Confirmed! ✓</h1>
             </div>
             <div class="content">
-              <p style="font-size: 18px; color: #1a365d;">Hi ${name},</p>
+              <p style="font-size: 18px; color: #1a365d;">Hi ${safeName},</p>
               
               <p>Thank you for registering for our training event! We're excited to have you join us.</p>
               
