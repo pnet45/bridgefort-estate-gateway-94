@@ -31,20 +31,10 @@ const OTPResetPassword = () => {
 
       if (error) throw error;
 
-      if (data?.reason === 'account_not_found') {
-        setAccountNotFound(true);
-        toast({
-          title: "Account not found",
-          description: "We couldn't find an account with that email. Please sign up first.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       setStep('otp');
       toast({
         title: "OTP Sent",
-        description: "Check your email for the 6-digit verification code",
+        description: "If an account exists for that email, a 6-digit verification code has been sent.",
       });
     } catch (error: any) {
       toast({
