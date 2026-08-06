@@ -2712,6 +2712,7 @@ export type Database = {
           promo_estate_slug: string | null
           promo_installment_amount: number | null
           property_id: string
+          reference: string | null
           status: string
           total_amount: number
           updated_at: string
@@ -2730,6 +2731,7 @@ export type Database = {
           promo_estate_slug?: string | null
           promo_installment_amount?: number | null
           property_id: string
+          reference?: string | null
           status?: string
           total_amount: number
           updated_at?: string
@@ -2748,6 +2750,7 @@ export type Database = {
           promo_estate_slug?: string | null
           promo_installment_amount?: number | null
           property_id?: string
+          reference?: string | null
           status?: string
           total_amount?: number
           updated_at?: string
