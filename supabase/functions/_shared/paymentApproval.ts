@@ -84,16 +84,20 @@ export async function queueOrderForApproval(
       .eq("id", plan.id);
   }
 
-  if (!existingRequest) {
-    await admin.from("payment_requests").insert({
-      user_id: order.user_id,
-      type: requestType,
-      amount,
-      reference,
-      related_payment_id: plan?.id ?? null,
-      description: `${requestType === "documentation" ? "Documentation fee" : requestType === "agrovest" ? "Agrovest" : "Property"} payment via ${channel} — ${label || "checkout"}`,
-      status: "pending",
-    });
+  // Unique index on payment_requests.reference makes this insert the final
+  // idempotency guard — a duplicate simply errors out and is ignored.
+  const { error: insertError } = await admin.from("payment_requests").insert({
+    user_id: order.user_id,
+    type: requestType,
+    amount,
+    reference,
+    related_payment_id: plan?.id ?? null,
+    description: `${requestType === "documentation" ? "Documentation fee" : requestType === "agrovest" ? "Agrovest" : "Property"} payment via ${channel} — ${label || "checkout"}`,
+    status: "pending",
+  });
+
+  if (!insertError) {
+
 
     await admin.from("notifications").insert({
       user_id: order.user_id,
