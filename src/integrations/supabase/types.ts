@@ -2604,6 +2604,50 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_request_audit_log: {
+        Row: {
+          action: string
+          admin_id: string | null
+          amount: number | null
+          created_at: string
+          id: string
+          new_status: string
+          payment_request_id: string
+          previous_status: string | null
+          reason: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          amount?: number | null
+          created_at?: string
+          id?: string
+          new_status: string
+          payment_request_id: string
+          previous_status?: string | null
+          reason?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          amount?: number | null
+          created_at?: string
+          id?: string
+          new_status?: string
+          payment_request_id?: string
+          previous_status?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_request_audit_log_payment_request_id_fkey"
+            columns: ["payment_request_id"]
+            isOneToOne: false
+            referencedRelation: "payment_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_requests: {
         Row: {
           admin_notes: string | null
@@ -2767,6 +2811,7 @@ export type Database = {
           last_name: string | null
           rejection_reason: string | null
           requested_at: string
+          requested_role: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -2779,6 +2824,7 @@ export type Database = {
           last_name?: string | null
           rejection_reason?: string | null
           requested_at?: string
+          requested_role?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -2791,6 +2837,7 @@ export type Database = {
           last_name?: string | null
           rejection_reason?: string | null
           requested_at?: string
+          requested_role?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -3212,6 +3259,38 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "property_reviews"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_default_mailboxes: {
+        Row: {
+          created_at: string
+          id: string
+          mailbox_email: string
+          mailbox_provider: string
+          role_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mailbox_email: string
+          mailbox_provider?: string
+          role_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mailbox_email?: string
+          mailbox_provider?: string
+          role_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_default_mailboxes_role_name_fkey"
+            columns: ["role_name"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["name"]
           },
         ]
       }

@@ -21,16 +21,20 @@ export async function queueOrderForApproval(
 
   if (!order) return;
 
-  // Stripe reports the charged amount in USD cents; fall back to the
-  // authoritative order total when the gateway amount isn't in Naira.
-  const amount = paidAmount > 0 ? paidAmount : Number(order.total_amount ?? 0);
-
-  // Idempotent: only queue once per reference.
+  // Idempotency: a repeated gateway callback for the same reference must not
+  // re-queue, re-notify, or re-write records that were already processed.
+  const settled = ["awaiting_approval", "paid", "approved", "rejected"];
   const { data: existingRequest } = await admin
     .from("payment_requests")
     .select("id")
     .eq("reference", reference)
     .maybeSingle();
+
+  if (existingRequest || settled.includes(String(order.payment_status ?? ""))) return;
+
+  // Stripe reports the charged amount in USD cents; fall back to the
+  // authoritative order total when the gateway amount isn't in Naira.
+  const amount = paidAmount > 0 ? paidAmount : Number(order.total_amount ?? 0);
 
   const items: any[] = Array.isArray(order.items) ? order.items : [];
   const types = items.map((i) => String(i?.property_type ?? ""));
@@ -45,10 +49,17 @@ export async function queueOrderForApproval(
     .join(", ")
     .slice(0, 300);
 
-  await admin
+  // Only flip orders that are still un-settled (guards against races between
+  // a webhook and a client-side verify call landing at the same time).
+  const { data: flipped } = await admin
     .from("orders")
     .update({ payment_status: "awaiting_approval", updated_at: new Date().toISOString() })
-    .eq("payment_reference", reference);
+    .eq("payment_reference", reference)
+    .not("payment_status", "in", `(${settled.join(",")})`)
+    .select("id");
+
+  if (!flipped || flipped.length === 0) return;
+
 
   await admin
     .from("estate_documentation_payments")
@@ -73,16 +84,20 @@ export async function queueOrderForApproval(
       .eq("id", plan.id);
   }
 
-  if (!existingRequest) {
-    await admin.from("payment_requests").insert({
-      user_id: order.user_id,
-      type: requestType,
-      amount,
-      reference,
-      related_payment_id: plan?.id ?? null,
-      description: `${requestType === "documentation" ? "Documentation fee" : requestType === "agrovest" ? "Agrovest" : "Property"} payment via ${channel} — ${label || "checkout"}`,
-      status: "pending",
-    });
+  // Unique index on payment_requests.reference makes this insert the final
+  // idempotency guard — a duplicate simply errors out and is ignored.
+  const { error: insertError } = await admin.from("payment_requests").insert({
+    user_id: order.user_id,
+    type: requestType,
+    amount,
+    reference,
+    related_payment_id: plan?.id ?? null,
+    description: `${requestType === "documentation" ? "Documentation fee" : requestType === "agrovest" ? "Agrovest" : "Property"} payment via ${channel} — ${label || "checkout"}`,
+    status: "pending",
+  });
+
+  if (!insertError) {
+
 
     await admin.from("notifications").insert({
       user_id: order.user_id,
