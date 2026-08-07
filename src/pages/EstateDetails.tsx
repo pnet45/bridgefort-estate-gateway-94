@@ -333,11 +333,11 @@ const EstateDetails: React.FC = () => {
                 <CardHeader><CardTitle className="text-estate-blue">Contact Information</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center space-x-2"><Phone size={16} className="text-estate-blue" /><span>+234 803 062 4059</span></div>
-                  <div className="flex items-center space-x-2"><Mail size={16} className="text-estate-blue" /><span>info@pwanbridgefort.ng</span></div>
+                  <div className="flex items-center space-x-2"><Mail size={16} className="text-estate-blue" /><span>info@bridgeforthomes.com</span></div>
                   <div className="bg-estate-blue/10 p-3 rounded-lg">
                     <p className="text-sm text-estate-red font-medium">Payment Details:</p>
                     <p className="text-sm">Zenith Bank - Bridgefort Homes Development Ltd</p>
-                    <p className="text-sm">Account: 1310762860</p>
+                    <p className="text-sm">Account: 1312214947</p>
                   </div>
                 </CardContent>
               </Card>
