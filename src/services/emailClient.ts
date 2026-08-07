@@ -19,6 +19,8 @@ export interface SendEmailPayload {
   subject: string;
   body: string;
   html?: string;
+  fromMailbox?: string;
+  fromName?: string;
 }
 
 export interface EmailDraft {
@@ -31,17 +33,40 @@ export interface EmailDraft {
 
 // Email service for sending emails via edge function
 export const emailService = {
-  // Send email using send-admin-email edge function
-  async sendEmail(payload: SendEmailPayload): Promise<{ success: boolean; error?: string; provider?: string }> {
+  // Sends via the `send-email` function — direct Resend API call, no
+  // external gateway dependency. This previously called `send-admin-email`,
+  // which routes through a Lovable connector gateway
+  // (connector-gateway.lovable.dev) that is no longer reachable — every
+  // call through that path would fail with a non-2xx response. Gmail sends
+  // go through gmail-sync's send-message action instead (see
+  // AdminEmailCenter's handleComposeSend), not through this function at all.
+  async sendEmail(payload: SendEmailPayload): Promise<{ success: boolean; error?: string }> {
     try {
-      const provider =
-        (typeof window !== 'undefined' && localStorage.getItem('admin_email_provider')) || 'resend';
-      const { data, error } = await supabase.functions.invoke('send-admin-email', {
-        body: { ...payload, provider },
+      const html =
+        payload.html ||
+        `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; text-align: center;">
+            <h1 style="color: #fff; margin: 0;">Bridgefort Homes Development Ltd</h1>
+          </div>
+          <div style="padding: 30px; background: #fff;">
+            ${payload.name ? `<p>Dear ${payload.name},</p>` : ''}
+            <div style="white-space: pre-wrap;">${payload.body}</div>
+          </div>
+        </div>`;
+
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: payload.to,
+          subject: payload.subject,
+          html,
+          text: payload.body,
+          fromMailbox: payload.fromMailbox,
+          fromName: payload.fromName,
+        },
       });
 
       if (error) throw error;
-      return { success: true, provider: (data as any)?.provider };
+      return { success: true };
     } catch (error: any) {
       console.error('Email sending error:', error);
       return { success: false, error: error.message };

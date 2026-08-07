@@ -16,25 +16,18 @@ import GmailSidebar, { EmailFolder } from './email/GmailSidebar';
 import EmailListItem, { UnifiedEmail } from './email/EmailListItem';
 import EmailReadingPane from './email/EmailReadingPane';
 import ComposeDialog from './email/ComposeDialog';
+import EmailLoginScreen, { AvailableMailbox } from './email/EmailLoginScreen';
 import {
   Mail, Search, RefreshCw, Trash2, Archive, MailOpen,
-  CheckSquare, Star, Users, User, Inbox, GripVertical, Plug, Loader2
+  CheckSquare, Star, Users, User, Inbox, GripVertical, LogOut
 } from 'lucide-react';
 import AdminEmailSettings from './AdminEmailSettings';
 
 type EmailAccount = 'resend' | 'gmail';
-const ACCOUNT_KEY = 'admin_email_active_account';
-
-// Which admin_emails.source / unified-email source values belong to each
-// account. Resend also absorbs the legacy contact-form and manual-log
-// entries — those don't have a "provider" of their own, and grouping them
-// under Resend (the account tied to this site's own domain/webhook) is more
-// useful than inventing a third account bucket for two historical sources.
-const RESEND_SOURCES = new Set(['resend', 'compose', 'contact_form', 'email_log']);
+const ACTIVE_MAILBOX_KEY = 'admin_email_active_mailbox';
 
 export default function AdminEmailCenter() {
   const { user, hasMailboxAccess, hasPermission } = useAuth();
-  const [mailboxAccessDenied, setMailboxAccessDenied] = useState(false);
   const {
     sentEmails, inboxMessages, contacts, loading, sending,
     unreadCount, sendEmail, replyToMessage, deleteEmailLog,
@@ -60,10 +53,22 @@ export default function AdminEmailCenter() {
   // gone — everything reads from this one table instead.
   const [adminEmails, setAdminEmails] = useState<any[]>([]);
 
-  const [activeAccount, setActiveAccount] = useState<EmailAccount>('resend');
+  // Which specific mailbox is active — the real switcher. activeAccount
+  // (gmail/resend) is derived from it below, kept only because the
+  // filtering/JSX logic further down already branches on it.
+  const [availableMailboxes, setAvailableMailboxes] = useState<AvailableMailbox[]>([]);
+  const [mailboxesLoading, setMailboxesLoading] = useState(true);
+  const [activeMailbox, setActiveMailbox] = useState<string | null>(null);
+  const [showEmailLogin, setShowEmailLogin] = useState(true);
+  const [connectingEmail, setConnectingEmail] = useState<string | null>(null);
+  const [disconnectingEmail, setDisconnectingEmail] = useState<string | null>(null);
+
+  const activeAccount: EmailAccount = useMemo(() => {
+    const match = availableMailboxes.find(m => m.mailbox_email === activeMailbox);
+    return match?.mailbox_provider === 'gmail' ? 'gmail' : 'resend';
+  }, [availableMailboxes, activeMailbox]);
+
   const [searchParams, setSearchParams] = useSearchParams();
-  const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
-  const [connectingGmail, setConnectingGmail] = useState(false);
   const [syncingGmail, setSyncingGmail] = useState(false);
 
   const fetchAllAdminEmails = useCallback(async () => {
@@ -74,47 +79,90 @@ export default function AdminEmailCenter() {
     if (data) setAdminEmails(data);
   }, []);
 
-  const checkGmailConnection = useCallback(async () => {
-    // gmail_oauth_tokens has no client-readable policy by design (tokens
-    // are edge-function-only) — checking "is anything connected" via
-    // whether any gmail-sourced admin_emails rows exist is a safe proxy
-    // that doesn't need a dedicated status endpoint.
-    const { count } = await supabase
-      .from('admin_emails')
-      .select('*', { count: 'exact', head: true })
-      .eq('source', 'gmail');
-    setGmailConnected((count || 0) > 0);
+  const fetchAvailableMailboxes = useCallback(async () => {
+    if (!user) return;
+    setMailboxesLoading(true);
+    const { data, error } = await supabase.rpc('get_available_mailboxes', { _user_id: user.id });
+    if (!error && data) {
+      const mailboxes = data as AvailableMailbox[];
+      setAvailableMailboxes(mailboxes);
+
+      const saved = localStorage.getItem(ACTIVE_MAILBOX_KEY);
+      const savedStillValid = saved && mailboxes.some(m => m.mailbox_email === saved);
+      if (savedStillValid) {
+        setActiveMailbox(saved);
+        setShowEmailLogin(false);
+      } else {
+        // Either nothing was saved yet, or whatever was saved is no longer
+        // in this admin's authorized list (access was changed/revoked) —
+        // either way, back to the login screen rather than silently
+        // falling through to some other mailbox.
+        setActiveMailbox(null);
+        setShowEmailLogin(true);
+        if (saved) localStorage.removeItem(ACTIVE_MAILBOX_KEY);
+      }
+    }
+    setMailboxesLoading(false);
+  }, [user]);
+
+  const selectMailbox = useCallback((mailboxEmail: string) => {
+    setActiveMailbox(mailboxEmail);
+    localStorage.setItem(ACTIVE_MAILBOX_KEY, mailboxEmail);
+    setShowEmailLogin(false);
+    setSelectedEmailId(null);
+    setSearchTerm('');
   }, []);
 
-  const connectGmail = async () => {
-    const allowed = await hasMailboxAccess('admin@pwanbridgefort.ng', 'gmail');
+  const connectGmail = async (mailboxEmail: string) => {
+    const allowed = await hasMailboxAccess(mailboxEmail, 'gmail');
     if (!allowed && !hasPermission('admin:all')) {
-      toast.error('You do not have permission to connect this Gmail account.');
+      toast.error('You do not have permission to connect this mailbox.');
       return;
     }
 
-    setConnectingGmail(true);
+    setConnectingEmail(mailboxEmail);
     try {
       const { data, error } = await supabase.functions.invoke('gmail-oauth-start');
       if (error || !data?.url) throw new Error(error?.message || 'Could not start Gmail connection');
       window.location.href = data.url;
     } catch (e: any) {
       toast.error(e.message || 'Could not start Gmail connection');
-      setConnectingGmail(false);
+      setConnectingEmail(null);
     }
   };
 
-  const syncGmailNow = async () => {
-    const allowed = await hasMailboxAccess('admin@pwanbridgefort.ng', 'gmail');
+  const disconnectGmail = async (mailboxEmail: string) => {
+    setDisconnectingEmail(mailboxEmail);
+    try {
+      const { error } = await supabase.functions.invoke('gmail-oauth-disconnect', {
+        body: { mailboxEmail },
+      });
+      if (error) throw error;
+      toast.success(`Signed out of ${mailboxEmail}`);
+      if (activeMailbox === mailboxEmail) {
+        setActiveMailbox(null);
+        localStorage.removeItem(ACTIVE_MAILBOX_KEY);
+        setShowEmailLogin(true);
+      }
+      fetchAvailableMailboxes();
+    } catch (e: any) {
+      toast.error(e.message || 'Could not disconnect this account');
+    } finally {
+      setDisconnectingEmail(null);
+    }
+  };
+
+  const syncGmailNow = async (mailboxEmail: string) => {
+    const allowed = await hasMailboxAccess(mailboxEmail, 'gmail');
     if (!allowed && !hasPermission('admin:all')) {
-      toast.error('You do not have permission to sync this Gmail account.');
+      toast.error('You do not have permission to sync this mailbox.');
       return;
     }
 
     setSyncingGmail(true);
     try {
       const { data, error } = await supabase.functions.invoke('gmail-sync-to-db', {
-        body: { maxPerLabel: 25 },
+        body: { maxPerLabel: 25, mailboxEmail },
       });
       if (error) throw error;
       if (data?.scopeRestricted) {
@@ -131,38 +179,28 @@ export default function AdminEmailCenter() {
   };
 
   useEffect(() => {
-    const saved = (localStorage.getItem(ACCOUNT_KEY) as EmailAccount) || 'resend';
-    setActiveAccount(saved);
-    checkGmailConnection();
-
-    const verifyMailboxAccess = async () => {
-      if (!user) return;
-      const allowed = await hasMailboxAccess('admin@pwanbridgefort.ng', 'resend');
-      if (!allowed && !hasPermission('admin:all')) {
-        setMailboxAccessDenied(true);
-        return;
-      }
-      setMailboxAccessDenied(false);
-    };
-
-    verifyMailboxAccess();
+    fetchAvailableMailboxes();
 
     // Handle the redirect back from gmail-oauth-callback.
     const connected = searchParams.get('gmail_connected');
     const connectedEmail = searchParams.get('gmail_email');
     const gmailError = searchParams.get('gmail_error');
-    if (connected) {
-      toast.success(`Gmail connected: ${connectedEmail || ''}`);
-      setActiveAccount('gmail');
-      localStorage.setItem(ACCOUNT_KEY, 'gmail');
-      syncGmailNow();
+    if (connected && connectedEmail) {
+      toast.success(`Gmail connected: ${connectedEmail}`);
+      selectMailbox(connectedEmail);
+      fetchAvailableMailboxes();
+      syncGmailNow(connectedEmail);
     } else if (gmailError) {
+      const attemptedEmail = searchParams.get('gmail_attempted_email');
       const messages: Record<string, string> = {
         missing_code_or_state: 'Gmail connection was cancelled or incomplete.',
         invalid_or_expired_state: 'That connection link expired — try connecting again.',
         expired_state: 'That connection link expired — try connecting again.',
         token_exchange_failed: 'Google rejected the connection request. Try again.',
         profile_fetch_failed: 'Connected, but could not read the Gmail account details.',
+        mailbox_not_authorized: attemptedEmail
+          ? `You signed into ${attemptedEmail} on Google, but you're not authorized for that mailbox. Ask an administrator for access, or sign into an account you're already authorized for.`
+          : "You're not authorized for that Gmail account.",
         no_refresh_token:
           'Google did not grant lasting access — disconnect this app in your Google Account security settings, then try connecting again.',
         storage_failed: 'Connected, but saving the connection failed. Try again.',
@@ -174,6 +212,7 @@ export default function AdminEmailCenter() {
       searchParams.delete('gmail_connected');
       searchParams.delete('gmail_email');
       searchParams.delete('gmail_error');
+      searchParams.delete('gmail_attempted_email');
       setSearchParams(searchParams, { replace: true });
     }
 
@@ -186,20 +225,6 @@ export default function AdminEmailCenter() {
     return () => { supabase.removeChannel(ch); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const switchAccount = async (account: EmailAccount) => {
-    const mailboxEmail = account === 'gmail' ? 'admin@pwanbridgefort.ng' : 'admin@pwanbridgefort.ng';
-    const allowed = await hasMailboxAccess(mailboxEmail, account);
-    if (!allowed && !hasPermission('admin:all')) {
-      toast.error('You do not have permission to access this mailbox.');
-      return;
-    }
-
-    setMailboxAccessDenied(false);
-    setActiveAccount(account);
-    localStorage.setItem(ACCOUNT_KEY, account);
-    setSelectedEmailId(null);
-  };
 
   // Resizable column handler
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -295,11 +320,13 @@ export default function AdminEmailCenter() {
   const getThreadId = (subject: string) => subject.replace(/^(re|fwd|fw):\s*/gi, '').trim().toLowerCase();
 
   const folderEmails = useMemo(() => {
-    // Account filter first: Resend absorbs the legacy contact-form/email-log
-    // sources (see RESEND_SOURCES); Gmail is exactly source === 'gmail'.
-    let filtered = deduped.filter((e) =>
-      activeAccount === 'gmail' ? e.source === 'gmail' : RESEND_SOURCES.has(e.source)
-    );
+    // Exact mailbox match now that we know precisely which address is
+    // active — replaces the old coarse gmail-vs-everything-else split.
+    // to_email covers received mail, from_email covers sent (an outbound
+    // message's to_email is the external recipient, not us).
+    let filtered = activeMailbox
+      ? deduped.filter((e) => e.to_email === activeMailbox || e.from_email === activeMailbox)
+      : [];
 
     switch (activeFolder) {
       case 'inbox': filtered = filtered.filter(e => e.folder === 'inbox'); break;
@@ -321,7 +348,7 @@ export default function AdminEmailCenter() {
       );
     }
     return filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [deduped, activeFolder, activeAccount, searchTerm]);
+  }, [deduped, activeFolder, activeMailbox, searchTerm]);
 
   const selectedEmail = folderEmails.find(e => e.id === selectedEmailId) || null;
   const threadEmails = useMemo(() => {
@@ -333,8 +360,8 @@ export default function AdminEmailCenter() {
   }, [selectedEmail, deduped]);
 
   const accountEmails = useMemo(
-    () => deduped.filter((e) => (activeAccount === 'gmail' ? e.source === 'gmail' : RESEND_SOURCES.has(e.source))),
-    [deduped, activeAccount]
+    () => (activeMailbox ? deduped.filter((e) => e.to_email === activeMailbox || e.from_email === activeMailbox) : []),
+    [deduped, activeMailbox]
   );
 
   const counts = useMemo(() => ({
@@ -393,11 +420,15 @@ export default function AdminEmailCenter() {
       toast.error('Fill in all required fields');
       return { success: false, error: 'Missing fields' };
     }
+    if (!activeMailbox) {
+      toast.error('No mailbox selected');
+      return { success: false, error: 'No mailbox selected' };
+    }
 
     let result: { success: boolean; error?: string };
     if (activeAccount === 'gmail') {
       const { error } = await supabase.functions.invoke('gmail-sync', {
-        body: { action: 'send-message', to, subject: subj, html: body, cc, bcc },
+        body: { action: 'send-message', mailboxEmail: activeMailbox, to, subject: subj, html: body, cc, bcc },
       });
       result = error ? { success: false, error: error.message } : { success: true };
     } else {
@@ -406,17 +437,17 @@ export default function AdminEmailCenter() {
       // send-message above — so there's no manual insert needed here
       // anymore. There used to be one; it would have created a duplicate
       // "sent" entry alongside the one the edge function now writes itself.
-      result = await sendEmail(to, subj, body, name);
+      result = await sendEmail(to, subj, body, name, activeMailbox);
 
       // CC/BCC only make sense for the Resend path today — Gmail's raw MIME
       // send above already supports them natively via the cc/bcc fields.
       if (result.success && cc) {
         const ccEmails = cc.split(',').map(e => e.trim()).filter(Boolean);
-        for (const ccEmail of ccEmails) await sendEmail(ccEmail, subj, body, '');
+        for (const ccEmail of ccEmails) await sendEmail(ccEmail, subj, body, '', activeMailbox);
       }
       if (result.success && bcc) {
         const bccEmails = bcc.split(',').map(e => e.trim()).filter(Boolean);
-        for (const bccEmail of bccEmails) await sendEmail(bccEmail, subj, body, '');
+        for (const bccEmail of bccEmails) await sendEmail(bccEmail, subj, body, '', activeMailbox);
       }
     }
 
@@ -485,10 +516,30 @@ export default function AdminEmailCenter() {
   const handleRefresh = () => {
     refreshAll();
     fetchAllAdminEmails();
-    if (activeAccount === 'gmail') syncGmailNow();
+    if (activeAccount === 'gmail' && activeMailbox) syncGmailNow(activeMailbox);
   };
 
   const isToolView = ['contacts', 'templates', 'bulk'].includes(activeFolder);
+
+  // The spec's "Email Login screen" — clicking into Email Center lands
+  // here first, not an inbox. Shown until a mailbox is picked, and
+  // reachable again any time via "Switch account" below.
+  if (showEmailLogin || !activeMailbox) {
+    return (
+      <div className="flex min-h-[calc(100vh-8rem)] h-auto gap-3 p-3 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/15 shadow-2xl">
+        <EmailLoginScreen
+          mailboxes={availableMailboxes}
+          loading={mailboxesLoading}
+          activeMailbox={activeMailbox}
+          connectingEmail={connectingEmail}
+          disconnectingEmail={disconnectingEmail}
+          onSelect={selectMailbox}
+          onConnectGmail={connectGmail}
+          onDisconnectGmail={disconnectGmail}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={`flex min-h-[calc(100vh-8rem)] h-auto gap-3 p-3 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/15 shadow-2xl ${isResizing ? 'select-none' : ''}`}>
@@ -529,40 +580,24 @@ export default function AdminEmailCenter() {
           )}
           <div className="flex-1" />
 
-          {/* Account switcher — governs which mailbox's folders are shown
-              AND which account Compose/Reply sends through. Replaces the
-              old "send via" picker, which only ever affected sending. */}
-          <div className="flex items-center rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-0.5 shadow-sm">
-            <button
-              onClick={() => switchAccount('resend')}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                activeAccount === 'resend' ? 'bg-slate-900 text-white' : 'text-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
-              }`}
-            >
-              Resend
-            </button>
-            <button
-              onClick={() => switchAccount('gmail')}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                activeAccount === 'gmail' ? 'bg-slate-900 text-white' : 'text-foreground hover:bg-slate-200 dark:hover:bg-slate-700'
-              }`}
-            >
-              Gmail
-            </button>
-          </div>
+          {/* Current mailbox + switcher — replaces the old binary
+              Resend/Gmail toggle now that there can be several mailboxes
+              per provider. Opens the same Email Login screen to change. */}
+          <button
+            onClick={() => setShowEmailLogin(true)}
+            className="flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors max-w-[220px]"
+            title="Switch account"
+          >
+            <Mail className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{activeMailbox}</span>
+            <LogOut className="h-3 w-3 shrink-0 opacity-50" />
+          </button>
 
           {activeAccount === 'gmail' && (
-            gmailConnected === false ? (
-              <Button size="sm" variant="default" onClick={connectGmail} disabled={connectingGmail} className="gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white">
-                {connectingGmail ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />}
-                Connect Gmail
-              </Button>
-            ) : (
-              <Button size="sm" variant="default" onClick={syncGmailNow} disabled={syncingGmail} className="gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white">
-                <RefreshCw className={`h-3.5 w-3.5 ${syncingGmail ? 'animate-spin' : ''}`} />
-                Sync Gmail
-              </Button>
-            )
+            <Button size="sm" variant="default" onClick={() => syncGmailNow(activeMailbox)} disabled={syncingGmail} className="gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white">
+              <RefreshCw className={`h-3.5 w-3.5 ${syncingGmail ? 'animate-spin' : ''}`} />
+              Sync Gmail
+            </Button>
           )}
 
           <Button variant="secondary" size="icon" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700" onClick={handleRefresh} disabled={loading}>

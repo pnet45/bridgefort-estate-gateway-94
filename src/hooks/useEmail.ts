@@ -75,7 +75,7 @@ export function useEmail() {
   }, [fetchSentEmails, fetchInboxMessages, fetchContacts]);
 
   const sendEmail = useCallback(
-    async (to: string, subject: string, body: string, recipientName?: string) => {
+    async (to: string, subject: string, body: string, recipientName?: string, fromMailbox?: string) => {
       setSending(true);
       try {
         const result = await emailService.sendEmail({
@@ -83,6 +83,7 @@ export function useEmail() {
           name: recipientName,
           subject,
           body,
+          fromMailbox,
         });
 
         if (result.success) {
@@ -101,7 +102,7 @@ export function useEmail() {
   );
 
   const replyToMessage = useCallback(
-    async (message: ContactMessage, replySubject: string, replyBody: string) => {
+    async (message: ContactMessage, replySubject: string, replyBody: string, fromMailbox?: string) => {
       setSending(true);
       try {
         // Generate HTML for reply
@@ -129,6 +130,7 @@ export function useEmail() {
             to: message.email,
             subject: replySubject,
             html,
+            fromMailbox,
           },
         });
 
