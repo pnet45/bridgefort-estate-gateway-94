@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import ReCaptcha from '@/components/ui/ReCaptcha';
 import { supabase } from '@/integrations/supabase/client';
-import { Shield, Lock, ArrowLeft, AlertTriangle, Check, X, UserPlus } from 'lucide-react';
+import { Shield, Lock, ArrowLeft, AlertTriangle, Check, X, UserPlus, KeyRound } from 'lucide-react';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { z } from 'zod';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,13 +29,27 @@ interface PasswordStrength {
   hasSpecialChar: boolean;
 }
 
+// The seven department roles a requester can ask for at signup. The backend
+// (create-admin-signup) re-validates this exact list — the dropdown alone
+// is not the security boundary.
+const DEPARTMENT_ROLES = [
+  { value: 'admin_dir', label: 'Admin-Dir — Director (full access)' },
+  { value: 'admin_adm', label: 'Admin-Adm — Administration' },
+  { value: 'admin_acct', label: 'Admin-Acct — Accounts' },
+  { value: 'admin_sales', label: 'Admin-Sales — Sales' },
+  { value: 'admin_cs', label: 'Admin-CS — Customer Service' },
+  { value: 'admin_legal', label: 'Admin-Legal — Legal' },
+  { value: 'admin_it', label: 'Admin-IT — IT' },
+] as const;
+
 const AdminAuth = () => {
-  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  const [activeTab, setActiveTab] = useState<'login' | 'signup' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [requestedRole, setRequestedRole] = useState('');
   const [loading, setLoading] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [lockoutRemaining, setLockoutRemaining] = useState(0);
@@ -44,6 +58,17 @@ const AdminAuth = () => {
   const recaptchaRef = useRef<any>(null);
   const { signIn, user, userRole } = useAuth();
   const navigate = useNavigate();
+
+  // Forgot-password (OTP) flow state — reuses the same
+  // request-password-reset / verify-otp-reset-password edge functions
+  // already used at /auth/otp-reset, just embedded here for admins.
+  const [forgotStep, setForgotStep] = useState<'email' | 'otp' | 'newPassword'>('email');
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotAccountNotFound, setForgotAccountNotFound] = useState(false);
 
   // Password strength indicators
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
@@ -301,6 +326,15 @@ const AdminAuth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!requestedRole) {
+      toast({
+        title: "Department Required",
+        description: "Please select the department role you're requesting",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!recaptchaToken) {
       toast({
         title: "reCAPTCHA Required",
@@ -353,7 +387,8 @@ const AdminAuth = () => {
           email, 
           password, 
           firstName, 
-          lastName 
+          lastName,
+          requestedRole
         }
       });
 
@@ -385,6 +420,7 @@ const AdminAuth = () => {
       setConfirmPassword('');
       setFirstName('');
       setLastName('');
+      setRequestedRole('');
       setRecaptchaToken(null);
       if (recaptchaRef.current) {
         recaptchaRef.current.reset();
@@ -419,9 +455,100 @@ const AdminAuth = () => {
     setConfirmPassword('');
     setFirstName('');
     setLastName('');
+    setRequestedRole('');
     setRecaptchaToken(null);
     if (recaptchaRef.current) {
       recaptchaRef.current.reset();
+    }
+  };
+
+  // --- Forgot password (OTP) handlers ---
+
+  const handleForgotSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotAccountNotFound(false);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-password-reset', {
+        body: { email: forgotEmail }
+      });
+      if (error) throw error;
+
+      if (data?.reason === 'account_not_found') {
+        setForgotAccountNotFound(true);
+        toast({
+          title: "Account not found",
+          description: "We couldn't find an account with that email.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setForgotStep('otp');
+      toast({ title: "OTP Sent", description: "Check your email for the 6-digit verification code" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to send OTP", variant: "destructive" });
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleForgotVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-otp-reset-password', {
+        body: { email: forgotEmail, otp: forgotOtp, action: 'verify' }
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast({ title: "Verification Failed", description: data.error, variant: "destructive" });
+        return;
+      }
+      setForgotStep('newPassword');
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Invalid or expired OTP", variant: "destructive" });
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleForgotResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const passwordResult = passwordSchema.safeParse(forgotNewPassword);
+    if (!passwordResult.success) {
+      toast({ title: "Weak Password", description: "Password does not meet security requirements", variant: "destructive" });
+      return;
+    }
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      toast({ title: "Password Mismatch", description: "Passwords do not match", variant: "destructive" });
+      return;
+    }
+
+    setForgotLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-otp-reset-password', {
+        body: { email: forgotEmail, otp: forgotOtp, new_password: forgotNewPassword, action: 'reset' }
+      });
+      if (error) throw error;
+      if (data?.error) {
+        toast({ title: "Reset Failed", description: data.error, variant: "destructive" });
+        return;
+      }
+
+      toast({ title: "Password Reset", description: "You can now log in with your new password" });
+      setActiveTab('login');
+      setEmail(forgotEmail);
+      setForgotStep('email');
+      setForgotEmail('');
+      setForgotOtp('');
+      setForgotNewPassword('');
+      setForgotConfirmPassword('');
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to reset password", variant: "destructive" });
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -472,14 +599,19 @@ const AdminAuth = () => {
               </p>
             </div>
 
-            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as 'login' | 'signup'); resetForm(); }} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-900/50">
+            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as 'login' | 'signup' | 'forgot'); resetForm(); }} className="w-full">
+              <TabsList className={`grid w-full mb-6 bg-slate-900/50 ${activeTab === 'forgot' ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 <TabsTrigger value="login" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   Login
                 </TabsTrigger>
                 <TabsTrigger value="signup" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   Sign Up
                 </TabsTrigger>
+                {activeTab === 'forgot' && (
+                  <TabsTrigger value="forgot" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    Reset Password
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               {/* Login Tab */}
@@ -558,6 +690,116 @@ const AdminAuth = () => {
                     )}
                   </Button>
                 </form>
+
+                <button
+                  type="button"
+                  onClick={() => { setForgotEmail(email); setActiveTab('forgot'); setForgotStep('email'); }}
+                  className="w-full text-center text-sm text-slate-400 hover:text-primary mt-4 transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </TabsContent>
+
+              {/* Forgot Password Tab */}
+              <TabsContent value="forgot">
+                {forgotStep === 'email' && (
+                  <form onSubmit={handleForgotSendOtp} className="space-y-5">
+                    <p className="text-sm text-slate-400">
+                      Enter your admin email — we'll send a 6-digit code to verify it's you.
+                    </p>
+                    <div>
+                      <Label htmlFor="forgot-email" className="text-slate-300">Email Address</Label>
+                      <Input
+                        type="email"
+                        id="forgot-email"
+                        placeholder="admin@example.com"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        required
+                        className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary"
+                      />
+                      {forgotAccountNotFound && (
+                        <p className="text-xs text-red-400 mt-1">No account found with that email.</p>
+                      )}
+                    </div>
+                    <Button type="submit" disabled={forgotLoading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-5">
+                      {forgotLoading ? 'Sending…' : 'Send Verification Code'}
+                    </Button>
+                    <button type="button" onClick={() => setActiveTab('login')} className="w-full text-center text-sm text-slate-400 hover:text-primary transition-colors">
+                      Back to login
+                    </button>
+                  </form>
+                )}
+
+                {forgotStep === 'otp' && (
+                  <form onSubmit={handleForgotVerifyOtp} className="space-y-5">
+                    <p className="text-sm text-slate-400">
+                      Enter the 6-digit code sent to <span className="text-slate-300">{forgotEmail}</span>.
+                    </p>
+                    <div>
+                      <Label htmlFor="forgot-otp" className="text-slate-300">Verification Code</Label>
+                      <Input
+                        id="forgot-otp"
+                        inputMode="numeric"
+                        maxLength={6}
+                        placeholder="123456"
+                        value={forgotOtp}
+                        onChange={(e) => setForgotOtp(e.target.value.replace(/\D/g, ''))}
+                        required
+                        className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary text-center text-lg tracking-widest"
+                      />
+                    </div>
+                    <Button type="submit" disabled={forgotLoading || forgotOtp.length !== 6} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-5">
+                      {forgotLoading ? 'Verifying…' : 'Verify Code'}
+                    </Button>
+                    <button type="button" onClick={() => setForgotStep('email')} className="w-full text-center text-sm text-slate-400 hover:text-primary transition-colors">
+                      Use a different email
+                    </button>
+                  </form>
+                )}
+
+                {forgotStep === 'newPassword' && (
+                  <form onSubmit={handleForgotResetPassword} className="space-y-5">
+                    <div>
+                      <Label htmlFor="forgot-new-password" className="text-slate-300">New Password</Label>
+                      <PasswordInput
+                        id="forgot-new-password"
+                        placeholder="Create a strong password"
+                        value={forgotNewPassword}
+                        onChange={(e) => setForgotNewPassword(e.target.value)}
+                        required
+                        className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="forgot-confirm-password" className="text-slate-300">Confirm New Password</Label>
+                      <PasswordInput
+                        id="forgot-confirm-password"
+                        placeholder="Confirm your password"
+                        value={forgotConfirmPassword}
+                        onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                        required
+                        className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary"
+                      />
+                      {forgotConfirmPassword && forgotNewPassword !== forgotConfirmPassword && (
+                        <p className="text-xs text-red-400 mt-1">Passwords do not match</p>
+                      )}
+                    </div>
+                    <Button type="submit" disabled={forgotLoading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-5">
+                      {forgotLoading ? (
+                        <span className="flex items-center gap-2">
+                          <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Resetting…
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          <KeyRound className="h-4 w-4" />
+                          Reset Password
+                        </span>
+                      )}
+                    </Button>
+                  </form>
+                )}
               </TabsContent>
 
               {/* Signup Tab */}
@@ -601,6 +843,25 @@ const AdminAuth = () => {
                       required
                       className="mt-1.5 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-primary"
                     />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="signup-department" className="text-slate-300">Department Role</Label>
+                    <select
+                      id="signup-department"
+                      value={requestedRole}
+                      onChange={(e) => setRequestedRole(e.target.value)}
+                      required
+                      className="mt-1.5 w-full rounded-md bg-slate-900/50 border border-slate-600 text-white px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                    >
+                      <option value="" disabled>Select the department you're requesting access for</option>
+                      {DEPARTMENT_ROLES.map((role) => (
+                        <option key={role.value} value={role.value}>{role.label}</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-slate-500 mt-1">
+                      An existing administrator reviews every request and grants final access — this is what you're requesting, not a guarantee.
+                    </p>
                   </div>
                   
                   <div>
@@ -671,7 +932,7 @@ const AdminAuth = () => {
 
                   <Button 
                     type="submit" 
-                    disabled={loading || !recaptchaToken || !allStrengthMet || password !== confirmPassword} 
+                    disabled={loading || !recaptchaToken || !allStrengthMet || password !== confirmPassword || !requestedRole} 
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-5"
                   >
                     {loading ? (

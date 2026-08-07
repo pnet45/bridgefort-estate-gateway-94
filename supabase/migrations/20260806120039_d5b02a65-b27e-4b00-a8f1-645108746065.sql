@@ -46,6 +46,8 @@ DROP POLICY IF EXISTS payments_delete_own ON public.payments;
 REVOKE UPDATE, DELETE ON public.payments FROM authenticated, anon;
 
 -- Only free (zero value) bookkeeping rows may still be created client-side.
+DROP POLICY IF EXISTS payments_insert_free_only ON public.payments;
+
 CREATE POLICY payments_insert_free_only ON public.payments
   FOR INSERT TO authenticated
   WITH CHECK (

@@ -22,11 +22,24 @@ serve(async (req) => {
       }
     });
 
-    const { email, password, firstName, lastName } = await req.json();
+    const { email, password, firstName, lastName, requestedRole } = await req.json();
 
     if (!email || !password) {
       return new Response(
         JSON.stringify({ error: 'Email and password are required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Server-side allow-list — the UI limits the dropdown to these seven
+    // department roles, but a direct API call must be rejected too if it
+    // tries to request anything else.
+    const ALLOWED_DEPARTMENT_ROLES = new Set([
+      'admin_dir', 'admin_adm', 'admin_acct', 'admin_sales', 'admin_cs', 'admin_legal', 'admin_it'
+    ]);
+    if (requestedRole && !ALLOWED_DEPARTMENT_ROLES.has(requestedRole)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid department role requested' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -81,6 +94,7 @@ serve(async (req) => {
             .update({
               first_name: firstName || null,
               last_name: lastName || null,
+              requested_role: requestedRole || null,
               // password_hash column removed; credentials live in auth.users
               status: 'pending',
               requested_at: new Date().toISOString(),
@@ -117,6 +131,7 @@ serve(async (req) => {
           email: email.toLowerCase(),
           first_name: firstName || null,
           last_name: lastName || null,
+          requested_role: requestedRole || null,
           // password_hash column removed; credentials live in auth.users
           status: 'pending'
         });
@@ -175,6 +190,20 @@ serve(async (req) => {
         user_id: newUser.user.id,
         role: 'admin'
       });
+
+    // The very first admin is always Admin-Dir (unrestricted) — there's no
+    // one else yet to approve a narrower department, and the console
+    // needs at least one fully-privileged account to bootstrap from.
+    const { error: deptRoleInsertError } = await supabaseAdmin
+      .from('admin_roles')
+      .insert({
+        user_id: newUser.user.id,
+        role_name: 'admin_dir'
+      });
+
+    if (deptRoleInsertError) {
+      console.error('Department role assignment error:', deptRoleInsertError);
+    }
 
     if (roleInsertError) {
       console.error('Role assignment error:', roleInsertError);

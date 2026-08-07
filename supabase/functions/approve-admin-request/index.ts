@@ -58,7 +58,7 @@ serve(async (req) => {
       );
     }
 
-    const { requestId } = await req.json();
+    const { requestId, approvedRole } = await req.json();
 
     if (!requestId) {
       return new Response(
@@ -66,6 +66,13 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // The approver decides the actual department role granted — it does not
+    // have to match what the requester asked for, and it's re-validated here
+    // server-side regardless of what the client sends.
+    const ALLOWED_DEPARTMENT_ROLES = new Set([
+      'admin_dir', 'admin_adm', 'admin_acct', 'admin_sales', 'admin_cs', 'admin_legal', 'admin_it'
+    ]);
 
     // Fetch the pending request
     const { data: pendingRequest, error: fetchError } = await supabaseAdmin
@@ -79,6 +86,14 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Pending request not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const finalRole = approvedRole || pendingRequest.requested_role;
+    if (finalRole && !ALLOWED_DEPARTMENT_ROLES.has(finalRole)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid department role' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -108,7 +123,8 @@ serve(async (req) => {
 
     console.log(`User created: ${newUser.user.id}`);
 
-    // Assign admin role
+    // Assign legacy admin role (kept for backward compatibility with
+    // existing has_role(uid,'admin') checks scattered through the app)
     const { error: roleInsertError } = await supabaseAdmin
       .from('user_roles')
       .insert({
@@ -118,6 +134,52 @@ serve(async (req) => {
 
     if (roleInsertError) {
       console.error('Role assignment error:', roleInsertError);
+    }
+
+    // Assign the actual department role and seed its default mailboxes.
+    if (finalRole) {
+      const { error: deptRoleError } = await supabaseAdmin
+        .from('admin_roles')
+        .insert({
+          user_id: newUser.user.id,
+          role_name: finalRole,
+          granted_by: user.id
+        });
+
+      if (deptRoleError) {
+        console.error('Department role assignment error:', deptRoleError);
+      }
+
+      // admin_dir doesn't need explicit mailbox rows — admin:all already
+      // grants every mailbox via user_mailbox_access().
+      if (finalRole !== 'admin_dir') {
+        const { data: defaultMailboxes, error: mailboxLookupError } = await supabaseAdmin
+          .from('role_default_mailboxes')
+          .select('mailbox_email, mailbox_provider')
+          .eq('role_name', finalRole);
+
+        if (mailboxLookupError) {
+          console.error('Default mailbox lookup error:', mailboxLookupError);
+        } else if (defaultMailboxes && defaultMailboxes.length > 0) {
+          const { error: mailboxInsertError } = await supabaseAdmin
+            .from('admin_mailboxes')
+            .upsert(
+              defaultMailboxes.map((m) => ({
+                user_id: newUser.user.id,
+                mailbox_email: m.mailbox_email,
+                mailbox_provider: m.mailbox_provider,
+                is_primary: false,
+                access_level: 'read_write',
+                status: 'active'
+              })),
+              { onConflict: 'user_id,mailbox_email', ignoreDuplicates: true }
+            );
+
+          if (mailboxInsertError) {
+            console.error('Mailbox seeding error:', mailboxInsertError);
+          }
+        }
+      }
     }
 
     // Send password reset email so user can set their own password
