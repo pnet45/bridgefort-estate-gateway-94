@@ -99,6 +99,21 @@ serve(async (req) => {
       return redirectTo(appUrl, { gmail_error: "no_refresh_token" });
     }
 
+    // The admin picked which Google account to authorize on Google's own
+    // consent screen — we never controlled that choice. This is the actual
+    // enforcement point: if the resulting address isn't one this admin is
+    // permitted to use, the token is discarded rather than stored. Without
+    // this, any admin could connect (and thereby read/send from) any
+    // department's mailbox just by signing into that Google account.
+    const { data: isAuthorizedMailbox, error: mailboxAccessError } = await svc.rpc("user_mailbox_access", {
+      _user_id: stateRow.requested_by,
+      _mailbox_email: email,
+      _provider: "gmail",
+    });
+    if (mailboxAccessError || !isAuthorizedMailbox) {
+      return redirectTo(appUrl, { gmail_error: "mailbox_not_authorized", gmail_attempted_email: email });
+    }
+
     const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
 
     const { error: upsertError } = await svc.from("gmail_oauth_tokens").upsert(

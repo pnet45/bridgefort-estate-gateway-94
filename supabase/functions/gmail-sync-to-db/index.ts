@@ -34,6 +34,9 @@ serve(async (req) => {
 
     const svc = createClient(supabaseUrl, serviceKey);
 
+    const body = await req.json().catch(() => ({}));
+    const maxPerLabel = Math.min(Number(body?.maxPerLabel) || 25, 100);
+
     // Two ways in: an interactive admin session (checked via their own JWT
     // + has_role), or a trusted machine caller presenting the service-role
     // key directly — this is Supabase's own documented pattern for
@@ -41,6 +44,7 @@ serve(async (req) => {
     // to authenticate. Only something that already has the service-role key
     // (the database itself, via pg_net) could present it here.
     const isTrustedMachineCaller = token === serviceKey;
+    let mailboxEmail: string | undefined = body?.mailboxEmail;
 
     if (!isTrustedMachineCaller) {
       const authed = createClient(supabaseUrl, anonKey, {
@@ -65,22 +69,27 @@ serve(async (req) => {
         });
       }
 
-      const { data: connectedGmail, error: gmailLookupError } = await svc
-        .from("gmail_oauth_tokens")
-        .select("email")
-        .eq("connected_by", userData.user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // An explicit mailboxEmail in the request body always wins — this is
+      // what lets an admin with several connected mailboxes sync a
+      // specific one instead of whichever they happened to connect last.
+      if (!mailboxEmail) {
+        const { data: connectedGmail } = await svc
+          .from("gmail_oauth_tokens")
+          .select("email")
+          .eq("connected_by", userData.user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        mailboxEmail = connectedGmail?.email || "admin@pwanbridgefort.ng";
+      }
 
-      const targetMailbox = connectedGmail?.email || "admin@pwanbridgefort.ng";
       const { data: isAuthorizedMailbox, error: mailboxError } = await svc.rpc("user_mailbox_access", {
         _user_id: userData.user.id,
-        _mailbox_email: targetMailbox,
+        _mailbox_email: mailboxEmail,
         _provider: "gmail",
       });
 
-      if (gmailLookupError || mailboxError || !isAuthorizedMailbox) {
+      if (mailboxError || !isAuthorizedMailbox) {
         return new Response(JSON.stringify({ error: "Forbidden: mailbox access denied" }), {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -88,8 +97,15 @@ serve(async (req) => {
       }
     }
 
-    const body = await req.json().catch(() => ({}));
-    const maxPerLabel = Math.min(Number(body?.maxPerLabel) || 25, 100);
+    // Trusted machine callers (pg_cron) must always pass mailboxEmail
+    // explicitly — there's no admin session to resolve a default from, and
+    // no permission check makes sense without a specific admin identity.
+    if (!mailboxEmail) {
+      return new Response(JSON.stringify({ error: "mailboxEmail is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     let synced = 0;
     let scopeRestricted = false;
@@ -97,14 +113,14 @@ serve(async (req) => {
 
     for (const label of LABELS_TO_SYNC) {
       try {
-        const list = await gmailFetch(svc,
+        const list = await gmailFetch(svc, mailboxEmail,
           `/users/me/messages?maxResults=${maxPerLabel}&labelIds=${label}`
         );
         const ids: { id: string }[] = list.messages || [];
 
         for (const { id } of ids) {
           try {
-            const full = await gmailFetch(svc, `/users/me/messages/${id}?format=full`);
+            const full = await gmailFetch(svc, mailboxEmail, `/users/me/messages/${id}?format=full`);
             const parsed = parseMessage(full);
             const folder = gmailLabelsToFolder(parsed.labelIds);
 

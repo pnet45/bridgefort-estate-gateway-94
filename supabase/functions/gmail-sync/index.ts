@@ -64,10 +64,41 @@ const ALLOWED_ACTIONS = new Set([
       });
     }
 
+    // Falls back to "whichever mailbox this admin most recently connected"
+    // when the caller doesn't specify one yet — the current UI doesn't have
+    // an account switcher wired up. Once it does, it should always pass
+    // mailboxEmail explicitly; this default exists purely so existing
+    // send/read functionality keeps working in the meantime. Either way,
+    // whatever mailbox is resolved still goes through the permission check
+    // below — this function previously had none at all.
+    let mailboxEmail = body?.mailboxEmail;
+    if (!mailboxEmail) {
+      const { data: connectedGmail } = await svc
+        .from("gmail_oauth_tokens")
+        .select("email")
+        .eq("connected_by", userData.user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      mailboxEmail = connectedGmail?.email || "admin@pwanbridgefort.ng";
+    }
+
+    const { data: isAuthorizedMailbox, error: mailboxAccessError } = await svc.rpc("user_mailbox_access", {
+      _user_id: userData.user.id,
+      _mailbox_email: mailboxEmail,
+      _provider: "gmail",
+    });
+    if (mailboxAccessError || !isAuthorizedMailbox) {
+      return new Response(JSON.stringify({ error: "Forbidden: mailbox access denied" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     let data: any;
     switch (action) {
       case "list-labels": {
-        const res = await gmailFetch(svc, `/users/me/labels`);
+        const res = await gmailFetch(svc, mailboxEmail, `/users/me/labels`);
         data = res.labels || [];
         break;
       }
@@ -89,7 +120,7 @@ const ALLOWED_ACTIONS = new Set([
         let list: any;
         let searchDegraded = false;
         try {
-          list = await gmailFetch(svc, `/users/me/messages?${buildParams(true).toString()}`);
+          list = await gmailFetch(svc, mailboxEmail, `/users/me/messages?${buildParams(true).toString()}`);
         } catch (err: any) {
           // The connected Gmail account only granted the restricted
           // "metadata" scope, which doesn't support the `q` search
@@ -100,7 +131,7 @@ const ALLOWED_ACTIONS = new Set([
           // permissions.
           if (q && /metadata scope/i.test(String(err.message))) {
             searchDegraded = true;
-            list = await gmailFetch(svc, `/users/me/messages?${buildParams(false).toString()}`);
+            list = await gmailFetch(svc, mailboxEmail, `/users/me/messages?${buildParams(false).toString()}`);
           } else {
             throw err;
           }
@@ -110,7 +141,7 @@ const ALLOWED_ACTIONS = new Set([
         // Batch fetch metadata for list preview
         const detailed = await Promise.all(
           ids.map(async (m) => {
-            const meta = await gmailFetch(svc,
+            const meta = await gmailFetch(svc, mailboxEmail,
               `/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`
             );
             const headers: Record<string, string> = {};
@@ -144,7 +175,7 @@ const ALLOWED_ACTIONS = new Set([
         const { messageId } = body;
         if (!messageId) throw new Error("messageId required");
         try {
-          const msg = await gmailFetch(svc, `/users/me/messages/${messageId}?format=full`);
+          const msg = await gmailFetch(svc, mailboxEmail, `/users/me/messages/${messageId}?format=full`);
           data = parseMessage(msg);
         } catch (err: any) {
           // Same restricted-scope situation: metadata scope can list emails
@@ -155,7 +186,7 @@ const ALLOWED_ACTIONS = new Set([
           // the UI can use to explain why the body is missing, instead of
           // throwing an unhandled error that blanks the whole page.
           if (/metadata scope/i.test(String(err.message))) {
-            const meta = await gmailFetch(svc,
+            const meta = await gmailFetch(svc, mailboxEmail,
               `/users/me/messages/${messageId}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`
             );
             const headers: Record<string, string> = {};
@@ -186,7 +217,7 @@ const ALLOWED_ACTIONS = new Set([
       case "get-attachment": {
         const { messageId, attachmentId } = body;
         if (!messageId || !attachmentId) throw new Error("messageId and attachmentId required");
-        const att = await gmailFetch(svc,
+        const att = await gmailFetch(svc, mailboxEmail,
           `/users/me/messages/${messageId}/attachments/${attachmentId}`
         );
         // Convert base64url to standard base64 for browser downloadBlob helper
@@ -199,7 +230,7 @@ const ALLOWED_ACTIONS = new Set([
       case "modify-message": {
         const { messageId, addLabelIds, removeLabelIds } = body;
         if (!messageId) throw new Error("messageId required");
-        data = await gmailFetch(svc, `/users/me/messages/${messageId}/modify`, {
+        data = await gmailFetch(svc, mailboxEmail, `/users/me/messages/${messageId}/modify`, {
           method: "POST",
           body: JSON.stringify({
             addLabelIds: addLabelIds || [],
@@ -211,13 +242,13 @@ const ALLOWED_ACTIONS = new Set([
       case "trash-message": {
         const { messageId } = body;
         if (!messageId) throw new Error("messageId required");
-        data = await gmailFetch(svc, `/users/me/messages/${messageId}/trash`, { method: "POST" });
+        data = await gmailFetch(svc, mailboxEmail, `/users/me/messages/${messageId}/trash`, { method: "POST" });
         break;
       }
       case "untrash-message": {
         const { messageId } = body;
         if (!messageId) throw new Error("messageId required");
-        data = await gmailFetch(svc, `/users/me/messages/${messageId}/untrash`, { method: "POST" });
+        data = await gmailFetch(svc, mailboxEmail, `/users/me/messages/${messageId}/untrash`, { method: "POST" });
         break;
       }
       case "send-message": {
@@ -234,7 +265,7 @@ const ALLOWED_ACTIONS = new Set([
           html,
         ].filter(Boolean);
         const raw = b64UrlEncode(new TextEncoder().encode(lines.join("\r\n")));
-        data = await gmailFetch(svc, `/users/me/messages/send`, {
+        data = await gmailFetch(svc, mailboxEmail, `/users/me/messages/send`, {
           method: "POST",
           body: JSON.stringify({ raw }),
         });
@@ -246,7 +277,7 @@ const ALLOWED_ACTIONS = new Set([
         if (data?.id) {
           const { error: sentInsertError } = await svc.from("admin_emails").upsert(
             {
-              from_email: "me",
+              from_email: mailboxEmail,
               to_email: to,
               subject,
               body: html.replace(/<[^>]+>/g, "").slice(0, 5000),

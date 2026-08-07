@@ -19,21 +19,29 @@ export function requireEnv(name: string): string {
 }
 
 /**
- * Returns a currently-valid access token for the connected Gmail account,
+ * Returns a currently-valid access token for the given Gmail mailbox,
  * refreshing it first if it's expired (or about to expire). Throws a clear
- * "not connected" error if no account has been connected yet, so callers
- * can surface a "Connect Gmail" prompt instead of a cryptic API error.
+ * "not connected" error if that specific mailbox hasn't been connected yet,
+ * so callers can surface a "Connect Gmail" prompt instead of a cryptic API
+ * error.
+ *
+ * `mailboxEmail` is required and always filtered on — there is no "just
+ * give me a token" fallback. Silently picking "whichever token exists" is
+ * exactly the bug that let one admin's sync request use a completely
+ * different mailbox's credentials.
  */
-export async function getValidAccessToken(svc: ReturnType<typeof createClient>): Promise<string> {
+export async function getValidAccessToken(
+  svc: ReturnType<typeof createClient>,
+  mailboxEmail: string
+): Promise<string> {
   const { data: tokenRow, error } = await svc
     .from("gmail_oauth_tokens")
     .select("*")
-    .order("created_at", { ascending: false })
-    .limit(1)
+    .eq("email", mailboxEmail)
     .maybeSingle();
 
   if (error) throw new Error(`Failed to read Gmail token: ${error.message}`);
-  if (!tokenRow) throw new Error("Gmail is not connected yet. Connect a Gmail account first.");
+  if (!tokenRow) throw new Error(`Gmail account ${mailboxEmail} is not connected yet. Connect it first.`);
 
   const expiresAt = new Date(tokenRow.expires_at as string).getTime();
   const isExpiringSoon = expiresAt - Date.now() < 60_000; // refresh a minute early
@@ -76,16 +84,18 @@ export async function getValidAccessToken(svc: ReturnType<typeof createClient>):
 }
 
 /**
- * Calls the Gmail API directly. `svc` must be a service-role Supabase client
- * (needed to read/refresh the stored token — gmail_oauth_tokens has no
+ * Calls the Gmail API directly, using the token for `mailboxEmail`
+ * specifically. `svc` must be a service-role Supabase client (needed to
+ * read/refresh the stored token — gmail_oauth_tokens has no
  * client-accessible RLS policies by design).
  */
 export async function gmailFetch(
   svc: ReturnType<typeof createClient>,
+  mailboxEmail: string,
   path: string,
   init: RequestInit = {}
 ) {
-  const accessToken = await getValidAccessToken(svc);
+  const accessToken = await getValidAccessToken(svc, mailboxEmail);
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${accessToken}`);
   if (init.body && !headers.has("Content-Type")) {

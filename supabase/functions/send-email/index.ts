@@ -14,6 +14,8 @@ interface EmailRequest {
   subject: string;
   html: string;
   text?: string;
+  fromMailbox?: string;
+  fromName?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -64,7 +66,26 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const targetMailbox = "admin@pwanbridgefort.ng";
+    const { to, subject, html, text, fromMailbox, fromName }: EmailRequest = await req.json();
+    console.log(`Admin ${userId} sending email to: ${to}, subject: ${subject}`);
+
+    if (!to || !subject || !html) {
+      throw new Error("Missing required fields: to, subject, html");
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(to)) {
+      throw new Error("Invalid recipient email address");
+    }
+
+    // Default preserved for any caller that hasn't been updated to pass
+    // fromMailbox yet — but the moment a mailbox is specified, it's
+    // enforced, not trusted at face value.
+    const targetMailbox = fromMailbox || "admin@pwanbridgefort.ng";
+    if (fromMailbox && !emailRegex.test(fromMailbox)) {
+      throw new Error("Invalid from mailbox address");
+    }
     const { data: isMailboxAuthorized, error: mailboxError } = await serviceClient.rpc("user_mailbox_access", {
       _user_id: userId,
       _mailbox_email: targetMailbox,
@@ -78,21 +99,10 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const { to, subject, html, text }: EmailRequest = await req.json();
-    console.log(`Admin ${userId} sending email to: ${to}, subject: ${subject}`);
-
-    if (!to || !subject || !html) {
-      throw new Error("Missing required fields: to, subject, html");
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(to)) {
-      throw new Error("Invalid recipient email address");
-    }
+    const senderDisplayName = fromName || "Bridgefort Homes Development Ltd";
 
     const emailResponse = await resend.emails.send({
-      from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
+      from: `${senderDisplayName} <${targetMailbox}>`,
       to: [to],
       subject: subject,
       html: html,
@@ -109,8 +119,8 @@ const handler = async (req: Request): Promise<Response> => {
     const adminClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { error: sentInsertError } = await adminClient.from("admin_emails").insert({
       sender_id: userId,
-      from_email: "noreply@bridgeforthomes.com",
-      from_name: "Bridgefort Homes Development Ltd",
+      from_email: targetMailbox,
+      from_name: senderDisplayName,
       to_email: to,
       subject,
       body: text || html,
