@@ -2604,6 +2604,50 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_request_audit_log: {
+        Row: {
+          action: string
+          admin_id: string | null
+          amount: number | null
+          created_at: string
+          id: string
+          new_status: string
+          payment_request_id: string
+          previous_status: string | null
+          reason: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          amount?: number | null
+          created_at?: string
+          id?: string
+          new_status: string
+          payment_request_id: string
+          previous_status?: string | null
+          reason?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          amount?: number | null
+          created_at?: string
+          id?: string
+          new_status?: string
+          payment_request_id?: string
+          previous_status?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_request_audit_log_payment_request_id_fkey"
+            columns: ["payment_request_id"]
+            isOneToOne: false
+            referencedRelation: "payment_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_requests: {
         Row: {
           admin_notes: string | null
