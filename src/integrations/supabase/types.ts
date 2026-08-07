@@ -2767,6 +2767,7 @@ export type Database = {
           last_name: string | null
           rejection_reason: string | null
           requested_at: string
+          requested_role: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -2779,6 +2780,7 @@ export type Database = {
           last_name?: string | null
           rejection_reason?: string | null
           requested_at?: string
+          requested_role?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -2791,6 +2793,7 @@ export type Database = {
           last_name?: string | null
           rejection_reason?: string | null
           requested_at?: string
+          requested_role?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -3212,6 +3215,38 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "property_reviews"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      role_default_mailboxes: {
+        Row: {
+          created_at: string
+          id: string
+          mailbox_email: string
+          mailbox_provider: string
+          role_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mailbox_email: string
+          mailbox_provider?: string
+          role_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mailbox_email?: string
+          mailbox_provider?: string
+          role_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_default_mailboxes_role_name_fkey"
+            columns: ["role_name"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["name"]
           },
         ]
       }
