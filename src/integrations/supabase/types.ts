@@ -2815,6 +2815,7 @@ export type Database = {
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -2828,6 +2829,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -2841,6 +2843,7 @@ export type Database = {
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -3774,6 +3777,14 @@ export type Database = {
       clear_failed_logins: { Args: { clear_email: string }; Returns: undefined }
       count_users: { Args: never; Returns: number }
       delete_user_profile: { Args: { user_id: number }; Returns: undefined }
+      get_available_mailboxes: {
+        Args: { _user_id: string }
+        Returns: {
+          is_connected: boolean
+          mailbox_email: string
+          mailbox_provider: string
+        }[]
+      }
       get_downline_ids: {
         Args: { root_id: string }
         Returns: {
@@ -3814,6 +3825,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: { Args: never; Returns: boolean }
       list_all_users: {
         Args: never
         Returns: {
