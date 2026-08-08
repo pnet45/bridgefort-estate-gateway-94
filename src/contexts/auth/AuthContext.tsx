@@ -77,11 +77,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserAccess = async (userId: string) => {
     try {
-      const [{ data: legacyRolesData }, { data: adminRoleData }, { data: adminPermissionData }] = await Promise.all([
+      const [
+        { data: legacyRolesData, error: legacyRolesError },
+        { data: adminRoleData, error: adminRoleError },
+        { data: adminPermissionData, error: adminPermissionError },
+      ] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', userId),
         supabase.from('admin_roles').select('role_name').eq('user_id', userId),
         supabase.from('admin_permissions').select('permission_key').eq('user_id', userId),
       ]);
+
+      // These used to be silently swallowed (only `data` was destructured,
+      // never `error`) — an RLS-blocked query looks identical to "this
+      // user genuinely has no roles" unless the error is actually
+      // surfaced, which is exactly how the missing user_roles SELECT
+      // policy went unnoticed.
+      if (legacyRolesError) console.error('fetchUserAccess: user_roles query failed:', legacyRolesError);
+      if (adminRoleError) console.error('fetchUserAccess: admin_roles query failed:', adminRoleError);
+      if (adminPermissionError) console.error('fetchUserAccess: admin_permissions query failed:', adminPermissionError);
 
       const legacyRoles = (legacyRolesData ?? []).map((roleEntry: { role: string }) => roleEntry.role);
       const dbRoles = (adminRoleData ?? []).map((roleEntry: { role_name: string }) => roleEntry.role_name);
@@ -91,11 +104,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const permissionSet = new Set<string>(explicitPermissions);
 
       if (roleSet.length > 0) {
-        const { data: linkedPermissionsData } = await supabase
+        // role_permissions predates this RBAC system entirely (see the
+        // Batch 23 revision notes) — its actual column is `role`, not
+        // `role_name`. This query used the wrong name, so it always
+        // errored client-side and silently contributed zero permissions
+        // (same unchecked-error pattern as above).
+        const { data: linkedPermissionsData, error: linkedPermissionsError } = await supabase
           .from('role_permissions')
           .select('permission_key')
-          .in('role_name', roleSet);
+          .in('role', roleSet);
 
+        if (linkedPermissionsError) console.error('fetchUserAccess: role_permissions query failed:', linkedPermissionsError);
         (linkedPermissionsData ?? []).forEach((entry: { permission_key: string }) => permissionSet.add(entry.permission_key));
       }
 

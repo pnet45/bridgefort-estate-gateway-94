@@ -8,9 +8,10 @@ import ClientDashboard from '@/components/dashboard/ClientDashboard';
 import { Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyProfileUpdated, onProfileUpdated } from '@/lib/profileEvents';
+import { isAdminRole } from '@/lib/rbac';
 
 const Dashboard = () => {
-  const { user, userRole, roles } = useAuth();
+  const { user, userRole } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploadingPic, setUploadingPic] = useState(false);
@@ -162,24 +163,12 @@ const Dashboard = () => {
               <div className="text-right">
                 <p className="text-sm text-gray-500">Account Type</p>
                 <p className="font-semibold text-estate-blue capitalize">
-                  {(() => {
-                    const labels: Record<string, string> = {
-                      super_admin: 'Super Admin',
-                      admin: 'Admin',
-                      manager: 'Manager',
-                      team_leader: 'Team Leader',
-                      associate: 'Associate',
-                      staff: 'Staff',
-                    };
-                    if (userRole && labels[userRole]) return labels[userRole];
-                    if (roles?.some((r) => labels[r])) {
-                      const match = roles.find((r) => labels[r]) as string;
-                      return labels[match];
-                    }
-                    return profile?.is_pbo ? 'Realtor / PBO' : 'Client';
-                  })()}
+                  {isAdminRole(userRole)
+                    ? (userRole === 'staff' ? 'Staff' : 'Admin')
+                    : profile?.is_pbo
+                      ? 'Realtor / PBO'
+                      : 'Client'}
                 </p>
-
               </div>
             </div>
           </div>

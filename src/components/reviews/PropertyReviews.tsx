@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
+import { isAdminRole } from '@/lib/rbac';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Star, ThumbsUp, ThumbsDown, Reply, Trash2, MessageSquare } from 'lucide-react';
@@ -124,7 +125,7 @@ const ReviewItem = ({
 
 const PropertyReviews = ({ propertyId, propertyType = 'estate' }: PropertyReviewsProps) => {
   const { user, userRole } = useAuth();
-  const isAdmin = userRole === 'admin';
+  const isAdmin = isAdminRole(userRole);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [newRating, setNewRating] = useState(0);

@@ -17,12 +17,13 @@ import ProfilesManagementTab from './tabs/ProfilesManagementTab';
 import { ProfileLeaderboardTab } from './tabs/ProfileLeaderboardTab';
 import UserManagementTab from './tabs/UserManagementTab';
 import { useAuth } from '@/contexts/auth';
+import { isAdminRole } from '@/lib/rbac';
 import { supabase } from '@/integrations/supabase/client';
 
 const ClientDashboard = () => {
   const { userRole, user } = useAuth();
   const canCreatePosts = ['admin', 'manager', 'team_leader'].includes(userRole || '');
-  const isAdmin = userRole === 'admin';
+  const isAdmin = isAdminRole(userRole);
   
   const [inspections, setInspections] = useState([]);
   const [orders, setOrders] = useState([]);

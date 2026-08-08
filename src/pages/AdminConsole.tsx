@@ -10,7 +10,7 @@ import {
   DollarSign, Settings, Plane, Wallet, Network, Images
 } from 'lucide-react';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
-import { getAllowedAdminTabs } from '@/lib/rbac';
+import { getAllowedAdminTabs, isAdminRole } from '@/lib/rbac';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalsHub from '@/components/admin/AdminApprovalsHub';
 import AdminEmailCenter from '@/components/admin/AdminEmailCenter';
@@ -109,7 +109,7 @@ const AdminConsole = () => {
     const checkAdminAccess = async () => {
       if (!user) { navigate('/admin-login'); return; }
 
-      const isAllowed = hasPermission('admin:view_dashboard') || hasPermission('admin:all') || userRole === 'admin' || userRole === 'super_admin';
+      const isAllowed = hasPermission('admin:view_dashboard') || hasPermission('admin:all') || isAdminRole(userRole);
       if (!isAllowed) {
         toast({ title: "Access Denied", description: "You don't have permission to access the admin console", variant: "destructive" });
         navigate('/dashboard'); return;
