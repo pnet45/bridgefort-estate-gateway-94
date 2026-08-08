@@ -68,92 +68,152 @@ serve(async (req) => {
       );
     }
 
-    // If admins exist, create a pending request (WITHOUT storing the password)
+    // If admins exist, create the REAL auth account now — with the
+    // password this person actually typed — but grant no roles yet. An
+    // account with no admin_roles/user_roles row can't pass has_role()
+    // anywhere, so "pending approval" is enforced by the total absence of
+    // privileges, not by withholding the account itself.
+    //
+    // The previous version of this function never called createUser here
+    // at all — it only wrote a pending_admin_requests row and discarded
+    // the password outright (the password the person typed was never
+    // stored anywhere). Approval then created the account with a random
+    // throwaway password nobody ever saw, which is the direct cause of
+    // "invalid password or credential" after approval.
     if (existingAdmins && existingAdmins.length > 0) {
-      console.log(`Admins exist - creating pending request for: ${email}`);
+      console.log(`Admins exist - creating account + pending request for: ${email}`);
 
-      // Check if there's already a pending request for this email
       const { data: existingRequest } = await supabaseAdmin
         .from('pending_admin_requests')
-        .select('id, status')
+        .select('id, status, user_id')
         .eq('email', email.toLowerCase())
         .single();
 
-      if (existingRequest) {
-        if (existingRequest.status === 'pending') {
+      if (existingRequest?.status === 'pending') {
+        return new Response(
+          JSON.stringify({ 
+            error: 'A request for this email is already pending approval.',
+            requiresApproval: true 
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Create the auth account with the real password. If one already
+      // exists for this email (a resubmission after rejection, or a
+      // legacy request from before this fix that has no user_id on
+      // record), update that existing account's password instead of
+      // failing outright.
+      let accountUserId: string | null = existingRequest?.user_id || null;
+      const { data: createdUser, error: createUserError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { first_name: firstName || '', last_name: lastName || '' },
+      });
+
+      if (createUserError) {
+        const alreadyRegistered = /already.*registered|already.*exists/i.test(createUserError.message || '');
+        if (!alreadyRegistered) {
+          console.error('Create user error:', createUserError);
           return new Response(
-            JSON.stringify({ 
-              error: 'A request for this email is already pending approval.',
-              requiresApproval: true 
-            }),
+            JSON.stringify({ error: createUserError.message }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
-        } else if (existingRequest.status === 'rejected') {
-          const { error: updateError } = await supabaseAdmin
-            .from('pending_admin_requests')
-            .update({
-              first_name: firstName || null,
-              last_name: lastName || null,
-              requested_role: requestedRole || null,
-              // password_hash column removed; credentials live in auth.users
-              status: 'pending',
-              requested_at: new Date().toISOString(),
-              reviewed_at: null,
-              reviewed_by: null,
-              rejection_reason: null
-            })
-            .eq('id', existingRequest.id);
+        }
 
-          if (updateError) {
-            console.error('Error updating request:', updateError);
+        // Already exists — find it (by our own record if we have it, else
+        // by email) and update its password to the one just typed.
+        if (!accountUserId) {
+          const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+          if (listError) {
+            console.error('List users error:', listError);
             return new Response(
-              JSON.stringify({ error: 'Failed to submit request' }),
+              JSON.stringify({ error: 'Failed to locate existing account' }),
               { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
           }
+          const match = listData.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+          accountUserId = match?.id || null;
+        }
 
+        if (!accountUserId) {
           return new Response(
-            JSON.stringify({ 
-              success: true,
-              message: 'Your admin access request has been resubmitted. An existing administrator will review and approve your request. You will receive a password setup email upon approval.',
-              requiresApproval: true,
-              pendingApproval: true
-            }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            JSON.stringify({ error: 'An account with this email exists but could not be located. Contact support.' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-      }
 
-      // Create new pending request - do NOT store password
-      const { error: insertError } = await supabaseAdmin
-        .from('pending_admin_requests')
-        .insert({
-          email: email.toLowerCase(),
-          first_name: firstName || null,
-          last_name: lastName || null,
-          requested_role: requestedRole || null,
-          // password_hash column removed; credentials live in auth.users
-          status: 'pending'
+        const { error: updateUserError } = await supabaseAdmin.auth.admin.updateUserById(accountUserId, {
+          password,
+          email_confirm: true,
+          user_metadata: { first_name: firstName || '', last_name: lastName || '' },
         });
-
-      if (insertError) {
-        console.error('Error creating pending request:', insertError);
-        if (insertError.code === '23505') {
+        if (updateUserError) {
+          console.error('Update existing user error:', updateUserError);
           return new Response(
-            JSON.stringify({ error: 'A request for this email already exists' }),
+            JSON.stringify({ error: updateUserError.message }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        return new Response(
-          JSON.stringify({ error: 'Failed to submit request' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      } else {
+        accountUserId = createdUser.user.id;
+      }
+
+      if (existingRequest) {
+        const { error: updateError } = await supabaseAdmin
+          .from('pending_admin_requests')
+          .update({
+            first_name: firstName || null,
+            last_name: lastName || null,
+            requested_role: requestedRole || null,
+            user_id: accountUserId,
+            status: 'pending',
+            requested_at: new Date().toISOString(),
+            reviewed_at: null,
+            reviewed_by: null,
+            rejection_reason: null
+          })
+          .eq('id', existingRequest.id);
+
+        if (updateError) {
+          console.error('Error updating request:', updateError);
+          return new Response(
+            JSON.stringify({ error: 'Failed to submit request' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } else {
+        const { error: insertError } = await supabaseAdmin
+          .from('pending_admin_requests')
+          .insert({
+            email: email.toLowerCase(),
+            first_name: firstName || null,
+            last_name: lastName || null,
+            requested_role: requestedRole || null,
+            user_id: accountUserId,
+            status: 'pending'
+          });
+
+        if (insertError) {
+          console.error('Error creating pending request:', insertError);
+          if (insertError.code === '23505') {
+            return new Response(
+              JSON.stringify({ error: 'A request for this email already exists' }),
+              { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          return new Response(
+            JSON.stringify({ error: 'Failed to submit request' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
       }
 
       return new Response(
         JSON.stringify({ 
           success: true,
-          message: 'Your admin access request has been submitted. An existing administrator will review and approve your request. You will receive a password setup email upon approval.',
+          message: 'Your account has been created with the password you set. An existing administrator will review your access request — once approved, you can log in immediately with that same password.',
           requiresApproval: true,
           pendingApproval: true
         }),
@@ -161,13 +221,18 @@ serve(async (req) => {
       );
     }
 
-    // No admins exist - create first admin directly
+    // No admins exist - create first admin directly. email_confirm: true
+    // because there's no separate "send a verification email" step
+    // anywhere in this flow — this used to be false with a message
+    // claiming a verification email was on its way, but nothing ever sent
+    // one, which would have blocked this exact account from logging in
+    // depending on the project's email-confirmation setting.
     console.log(`Creating first admin user with email: ${email}`);
 
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: false,
+      email_confirm: true,
       user_metadata: {
         first_name: firstName || '',
         last_name: lastName || ''
@@ -227,8 +292,8 @@ serve(async (req) => {
           email: newUser.user.email,
           role: 'admin'
         },
-        message: 'Admin account created successfully. Please check your email to verify your account before logging in.',
-        requiresEmailVerification: true
+        message: 'Admin account created successfully. You can log in now.',
+        requiresEmailVerification: false
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

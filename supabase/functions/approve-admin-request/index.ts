@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -99,36 +102,50 @@ serve(async (req) => {
 
     console.log(`Approving admin request for: ${pendingRequest.email}`);
 
-    // Create user account with a random temporary password
-    // The user will set their own password via the invite/reset flow
-    const tempPassword = crypto.randomUUID() + '!Aa1'; // Meets password requirements
-    
-    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email: pendingRequest.email,
-      password: tempPassword, // Temporary - user will reset via email
-      email_confirm: true,
-      user_metadata: {
-        first_name: pendingRequest.first_name || '',
-        last_name: pendingRequest.last_name || ''
+    let newUserId: string;
+    let isLegacyRequestWithNoAccount = false;
+
+    if (pendingRequest.user_id) {
+      // The normal path: create-admin-signup already created this account
+      // with the password the person actually typed. Approval just grants
+      // roles — it must never touch the password, and must never call
+      // createUser again (the account already exists).
+      newUserId = pendingRequest.user_id;
+    } else {
+      // A request submitted before this fix existed — no account was ever
+      // created for it. Fall back to the old temp-password + recovery-link
+      // flow, but actually email the link this time (generateLink() only
+      // generates the link; it was never being sent to anyone).
+      isLegacyRequestWithNoAccount = true;
+      const tempPassword = crypto.randomUUID() + '!Aa1';
+
+      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email: pendingRequest.email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          first_name: pendingRequest.first_name || '',
+          last_name: pendingRequest.last_name || ''
+        }
+      });
+
+      if (createError) {
+        console.error('Create user error:', createError);
+        return new Response(
+          JSON.stringify({ error: createError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
-    });
-
-    if (createError) {
-      console.error('Create user error:', createError);
-      return new Response(
-        JSON.stringify({ error: createError.message }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      newUserId = newUser.user.id;
+      console.log(`User created (legacy fallback): ${newUserId}`);
     }
-
-    console.log(`User created: ${newUser.user.id}`);
 
     // Assign legacy admin role (kept for backward compatibility with
     // existing has_role(uid,'admin') checks scattered through the app)
     const { error: roleInsertError } = await supabaseAdmin
       .from('user_roles')
       .insert({
-        user_id: newUser.user.id,
+        user_id: newUserId,
         role: 'admin'
       });
 
@@ -141,7 +158,7 @@ serve(async (req) => {
       const { error: deptRoleError } = await supabaseAdmin
         .from('admin_roles')
         .insert({
-          user_id: newUser.user.id,
+          user_id: newUserId,
           role_name: finalRole,
           granted_by: user.id
         });
@@ -165,7 +182,7 @@ serve(async (req) => {
             .from('admin_mailboxes')
             .upsert(
               defaultMailboxes.map((m) => ({
-                user_id: newUser.user.id,
+                user_id: newUserId,
                 mailbox_email: m.mailbox_email,
                 mailbox_provider: m.mailbox_provider,
                 is_primary: false,
@@ -182,14 +199,71 @@ serve(async (req) => {
       }
     }
 
-    // Send password reset email so user can set their own password
-    const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'recovery',
-      email: pendingRequest.email,
-    });
+    // Notify the approved admin. The two cases genuinely need different
+    // emails: the normal case already has a working password (set at
+    // signup), so there's nothing to reset — telling them to "reset their
+    // password" would be actively wrong. The legacy fallback case has only
+    // a random throwaway password nobody has ever seen, so it truly does
+    // need a recovery link — and that link has to actually be emailed,
+    // not just generated and discarded (generateLink() only creates the
+    // link object; it never sends anything on its own, which is why the
+    // previous version of this function silently never delivered it).
+    if (isLegacyRequestWithNoAccount) {
+      const { data: linkData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'recovery',
+        email: pendingRequest.email,
+      });
 
-    if (resetError) {
-      console.error('Password reset email error:', resetError);
+      if (resetError) {
+        console.error('Password reset link generation error:', resetError);
+      } else {
+        const actionLink = linkData?.properties?.action_link;
+        try {
+          await resend.emails.send({
+            from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
+            to: [pendingRequest.email],
+            subject: "Your Admin Access Has Been Approved — Set Your Password",
+            html: `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                  <h1 style="margin: 0; font-size: 22px;">Admin Access Approved</h1>
+                </div>
+                <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+                  <p>Hello,</p>
+                  <p>Your administrator access request has been approved. Set your password to finish setting up your account:</p>
+                  <div style="text-align: center; margin: 25px 0;">
+                    <a href="${actionLink}" style="background: #1e40af; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600;">Set Your Password</a>
+                  </div>
+                  <p style="color: #6b7280; font-size: 13px;">If the button doesn't work, copy this link: ${actionLink}</p>
+                </div>
+              </div>
+            `,
+          });
+        } catch (emailError) {
+          console.error('Approval email send error:', emailError);
+        }
+      }
+    } else {
+      try {
+        await resend.emails.send({
+          from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
+          to: [pendingRequest.email],
+          subject: "Your Admin Access Has Been Approved",
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                <h1 style="margin: 0; font-size: 22px;">Admin Access Approved</h1>
+              </div>
+              <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+                <p>Hello,</p>
+                <p>Your administrator access request has been approved. You can log in now with the email and password you used when you signed up — no password reset needed.</p>
+              </div>
+            </div>
+          `,
+        });
+      } catch (emailError) {
+        console.error('Approval notification email send error:', emailError);
+      }
     }
 
     // Update the pending request status
@@ -209,10 +283,12 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Admin account created for ${pendingRequest.email}. A password reset email has been sent.`,
+        message: isLegacyRequestWithNoAccount
+          ? `Admin account created for ${pendingRequest.email}. A password setup email has been sent.`
+          : `${pendingRequest.email} is approved and can log in immediately with their existing password.`,
         user: {
-          id: newUser.user.id,
-          email: newUser.user.email
+          id: newUserId,
+          email: pendingRequest.email
         }
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

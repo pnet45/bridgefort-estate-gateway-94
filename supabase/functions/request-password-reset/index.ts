@@ -30,18 +30,39 @@ serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Only send a reset code to accounts that actually exist — but never
-    // reveal to the caller whether the account exists (account enumeration).
-    // The response below is identical in both cases.
-    const { data: existingProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .ilike("email", email)
-      .maybeSingle();
-
-    if (!existingProfile) {
+    // Only send a reset code to accounts that actually exist — tell the
+    // person plainly if there's no account for that email, rather than
+    // silently doing nothing (which just looked like the button was broken).
+    //
+    // This used to check the `profiles` table, which is the customer-facing
+    // profile table — admin accounts (created via auth.admin.createUser())
+    // have no row there at all, so this always reported "account not found"
+    // for every admin, regardless of whether their account existed. Checking
+    // auth.users directly (via the admin API, since PostgREST doesn't expose
+    // the auth schema) works for both regular users and admins, since every
+    // account of any kind lives there.
+    //
+    // Known limitation: listUsers() is unpaginated here, matching the same
+    // precedent already used in verify-otp-reset-password. If the user base
+    // grows past a single page, this (and that function) would need to
+    // paginate through results instead of checking only the first page.
+    const { data: userList, error: listUsersError } = await supabase.auth.admin.listUsers();
+    if (listUsersError) {
+      console.error("Failed to check account existence:", listUsersError);
       return new Response(
-        JSON.stringify({ success: true, message: "If this email exists, an OTP was sent" }),
+        JSON.stringify({ error: "Failed to process request" }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+    const existingUser = userList.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+
+    if (!existingUser) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          reason: "account_not_found",
+          message: "We couldn't find an account with that email. Please sign up first.",
+        }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
