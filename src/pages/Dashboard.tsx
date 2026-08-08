@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { notifyProfileUpdated, onProfileUpdated } from '@/lib/profileEvents';
 
 const Dashboard = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole, roles } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploadingPic, setUploadingPic] = useState(false);
