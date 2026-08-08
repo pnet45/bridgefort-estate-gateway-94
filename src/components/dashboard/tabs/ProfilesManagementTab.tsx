@@ -47,16 +47,25 @@ const ProfilesManagementTab = () => {
 
       if (profilesError) throw profilesError;
 
-      // Fetch emails from auth.users
-      const { data: usersData, error: usersError } = await supabase.auth.admin.listUsers();
-      
+      // Email lives in public.users, not profiles (profiles has no email
+      // column at all). This used to call supabase.auth.admin.listUsers()
+      // directly from the browser — that's a service-role-only method; the
+      // client here only ever has the anon/publishable key, so that call
+      // always failed and every profile's email silently showed blank.
+      // public.users is the same reliable source UserManagementTab.tsx
+      // already uses successfully, with its own "admins can view all"
+      // RLS policy.
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, email');
+
       if (usersError) {
-        console.error('Error fetching users:', usersError);
+        console.error('Error fetching user emails:', usersError);
       }
 
       // Merge profiles with emails
       const profilesWithEmails = profilesData?.map(profile => {
-        const user = usersData?.users?.find((u: any) => u.id === profile.id);
+        const user = usersData?.find((u) => u.id === profile.id);
         return {
           ...profile,
           email: user?.email
