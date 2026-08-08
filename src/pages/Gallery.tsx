@@ -81,7 +81,7 @@ const GalleryPage = () => {
                   transition={{ duration: 0.5, delay: 0.14 }}
                   className="mt-6 max-w-xl text-base leading-8 text-slate-300 md:text-lg"
                 >
-                  A curated collection of our most compelling homes, communities, and spaces — designed to showcase the quality, vision, and elegance behind every Bridgefort experience.
+                  A curated collection of our most compelling Estates, Events, communities, and spaces — designed to showcase the quality, vision, and elegance behind every Bridgefort experience.
                 </motion.p>
 
                 <motion.div
@@ -110,7 +110,7 @@ const GalleryPage = () => {
         <section className="border-t border-white/10 bg-slate-900/60 py-16 md:py-20">
           <div className="container-custom">
             <div className="mb-10 text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-300">Circular Gallery</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-300">Bridgefort Homes Gallery</p>
               <h2 className="mt-4 text-3xl font-black text-white md:text-4xl">Step inside, look around.</h2>
               <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-400">
                 Scroll or drag through moments from our estates and events — click any piece to open it full screen.
