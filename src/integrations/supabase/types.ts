@@ -3712,7 +3712,22 @@ export type Database = {
           updated_at?: string | null
           user_roles?: string[] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_profile_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "pbo_referral_leaderboard"
+            referencedColumns: ["pbo_id"]
+          },
+          {
+            foreignKeyName: "users_profile_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       withdrawal_requests: {
         Row: {
