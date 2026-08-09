@@ -164,7 +164,7 @@ export default function BridgefortMails() {
     log.subject.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!user || userRole !== 'admin') {
+  if (authLoading || !user || !isAdminRole(userRole)) {
     return null;
   }
 
