@@ -128,7 +128,7 @@ const GalleryPage = () => {
                   fontUrl="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap"
                   font="bold 30px Orbitron"
                   scrollSpeed={2.7}
-                  onItemClick={openItem}
+                  onItemClick={}
                 />
               </div>
             )}
