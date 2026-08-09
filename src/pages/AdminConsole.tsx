@@ -161,7 +161,7 @@ const AdminConsole = () => {
     navigate('/admin-login');
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="admin-theme min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
