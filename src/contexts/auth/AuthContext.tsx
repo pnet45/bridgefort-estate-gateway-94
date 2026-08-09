@@ -41,16 +41,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          setTimeout(() => {
-            fetchUserAccess(session.user.id);
-            fetchProfile(session.user.id);
-          }, 0);
-
           if (event === 'SIGNED_UP' as AuthChangeEvent) {
+            // fire-and-forget: must not block the loading state
             setTimeout(() => {
               sendWelcomeEmail(session.user);
             }, 0);
           }
+
+          await Promise.all([
+            fetchUserAccess(session.user.id),
+            fetchProfile(session.user.id),
+          ]);
         } else {
           setUserRole(null);
           setRoles([]);
@@ -62,12 +63,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchUserAccess(session.user.id);
-        fetchProfile(session.user.id);
+        await Promise.all([
+          fetchUserAccess(session.user.id),
+          fetchProfile(session.user.id),
+        ]);
       }
       setLoading(false);
     });

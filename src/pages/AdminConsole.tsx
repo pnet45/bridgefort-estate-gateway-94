@@ -41,12 +41,6 @@ import AdminEstateViewsLeaderboard from '@/components/admin/AdminEstateViewsLead
 import AdminTravelDashboard from '@/components/admin/AdminTravelDashboard';
 import { toast } from '@/hooks/use-toast';
 
-type AdminProfile = {
-  id?: string;
-  first_name?: string | null;
-  last_name?: string | null;
-  email?: string | null;
-};
 
 type TawkWindow = Window & {
   Tawk_API?: {
@@ -65,7 +59,7 @@ const AdminConsole = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const { user, userRole, signOut, permissions, hasPermission } = useAuth();
+  const { user, userRole, signOut, permissions, hasPermission, profile, loading: authLoading } = useAuth();
   const { isSuperAdmin } = useIsSuperAdmin();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -74,7 +68,6 @@ const AdminConsole = () => {
     if (isSuperAdmin) tabs.add('travels');
     return Array.from(tabs);
   }, [permissions, isSuperAdmin]);
-  const [profile, setProfile] = useState<AdminProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -91,6 +84,8 @@ const AdminConsole = () => {
   }, [searchParams, activeTab]);
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (!allowedTabs.length) {
       navigate('/dashboard');
       return;
@@ -103,10 +98,11 @@ const AdminConsole = () => {
       nextParams.set('tab', fallbackTab);
       setSearchParams(nextParams, { replace: true });
     }
-  }, [allowedTabs, activeTab, navigate, searchParams, setSearchParams]);
+  }, [allowedTabs, activeTab, navigate, searchParams, setSearchParams, authLoading]);
 
   useEffect(() => {
     const checkAdminAccess = async () => {
+      if (authLoading) return;
       if (!user) { navigate('/admin-login'); return; }
 
       const isAllowed = hasPermission('admin:view_dashboard') || hasPermission('admin:all') || isAdminRole(userRole);
@@ -115,14 +111,12 @@ const AdminConsole = () => {
         navigate('/dashboard'); return;
       }
 
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      setProfile(profileData);
       const { count } = await supabase.from('pending_admin_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending');
       setPendingCount(count || 0);
       setLoading(false);
     };
     checkAdminAccess();
-  }, [user, navigate, userRole, hasPermission, permissions]);
+  }, [user, navigate, userRole, hasPermission, permissions, authLoading]);
 
   // Tawk.to loads via a raw <script> tag in index.html on a delay, independent
   // of React Router, so it can't be conditionally rendered like our other
@@ -167,7 +161,7 @@ const AdminConsole = () => {
     navigate('/admin-login');
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="admin-theme min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

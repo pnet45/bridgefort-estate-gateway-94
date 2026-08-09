@@ -7,6 +7,7 @@ import { usePropertyContext } from '../../contexts/property';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { isAdminRole } from '@/lib/rbac';
 
 const propertiesPerPage = 6;
 
@@ -54,7 +55,7 @@ const PropertyList: React.FC = () => {
 
   // Toggle property visibility for admins
   const togglePropertyVisibility = async (propertyId: string) => {
-    if (!user || userRole !== 'admin') return;
+    if (!user || !isAdminRole(userRole)) return;
     try {
       let newHiddenProperties;
       if (hiddenProperties.includes(propertyId)) {

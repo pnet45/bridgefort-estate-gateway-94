@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
@@ -7,47 +7,14 @@ import Footer from '@/components/Footer';
 import ClientDashboard from '@/components/dashboard/ClientDashboard';
 import { Camera } from 'lucide-react';
 import { toast } from 'sonner';
-import { notifyProfileUpdated, onProfileUpdated } from '@/lib/profileEvents';
+import { notifyProfileUpdated } from '@/lib/profileEvents';
 import { isAdminRole } from '@/lib/rbac';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Dashboard = () => {
-  const { user, userRole } = useAuth();
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, userRole, profile, loading, refreshProfile } = useAuth();
   const [uploadingPic, setUploadingPic] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
-
-  // Pick up profile changes made elsewhere (e.g. the KYC/Profile form) without a reload.
-  useEffect(() => onProfileUpdated(() => {
-    if (user) fetchProfile();
-  }), [user]);
-
-  const fetchProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user?.id)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error);
-        return;
-      }
-      
-      setProfile(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleProfilePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -81,7 +48,7 @@ const Dashboard = () => {
       if (updateError) throw updateError;
 
       toast.success('Profile picture updated!');
-      fetchProfile();
+      await refreshProfile();
       notifyProfileUpdated();
     } catch (err: any) {
       toast.error('Failed to update profile picture');
@@ -91,7 +58,7 @@ const Dashboard = () => {
     }
   };
 
-  if (!user) {
+  if (!loading && !user) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -106,6 +73,12 @@ const Dashboard = () => {
     );
   }
 
+  const accountType = isAdminRole(userRole)
+    ? (userRole === 'staff' ? 'Staff' : userRole === 'super_admin' ? 'Super Admin' : 'Admin')
+    : profile?.is_pbo
+      ? 'Realtor / PBO'
+      : 'Client';
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -116,59 +89,72 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* Clickable profile picture */}
-                <div
-                  className="relative group cursor-pointer"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 bg-muted flex items-center justify-center">
-                    {profile?.profile_picture_url ? (
-                      <img src={profile.profile_picture_url} alt="Profile" className="h-full w-full object-cover" loading="lazy" decoding="async" />
-                    ) : (
-                      <span className="text-2xl font-bold text-primary">
-                        {(profile?.first_name || user.email || 'U')[0].toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera className="h-5 w-5 text-white" />
-                  </div>
-                  {uploadingPic && (
-                    <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
-                      <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                {loading ? (
+                  <Skeleton className="h-16 w-16 md:h-20 md:w-20 rounded-full" />
+                ) : (
+                  <div
+                    className="relative group cursor-pointer"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 bg-muted flex items-center justify-center">
+                      {profile?.profile_picture_url ? (
+                        <img src={profile.profile_picture_url} alt="Profile" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                      ) : (
+                        <span className="text-2xl font-bold text-primary">
+                          {(profile?.first_name || user?.email || 'U')[0].toUpperCase()}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleProfilePicChange}
-                  />
-                </div>
+                    <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Camera className="h-5 w-5 text-white" />
+                    </div>
+                    {uploadingPic && (
+                      <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                        <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleProfilePicChange}
+                    />
+                  </div>
+                )}
 
                 <div>
-                  <h1 className="text-2xl font-bold text-estate-blue">
-                    Welcome, {profile?.first_name || user.email?.split('@')[0] || 'User'}!
-                  </h1>
-                  <p className="text-gray-600">
-                    Email: {user.email}
-                  </p>
-                  {profile?.first_name && profile?.last_name && (
-                    <p className="text-gray-600">
-                      Name: {profile.first_name} {profile.last_name}
-                    </p>
+                  {loading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-7 w-56" />
+                      <Skeleton className="h-4 w-40" />
+                    </div>
+                  ) : (
+                    <>
+                      <h1 className="text-2xl font-bold text-estate-blue">
+                        Welcome, {profile?.first_name || user?.email?.split('@')[0] || 'User'}!
+                      </h1>
+                      <p className="text-gray-600">
+                        Email: {user?.email}
+                      </p>
+                      {profile?.first_name && profile?.last_name && (
+                        <p className="text-gray-600">
+                          Name: {profile.first_name} {profile.last_name}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-500">Account Type</p>
-                <p className="font-semibold text-estate-blue capitalize">
-                  {isAdminRole(userRole)
-                    ? (userRole === 'staff' ? 'Staff' : 'Admin')
-                    : profile?.is_pbo
-                      ? 'Realtor / PBO'
-                      : 'Client'}
-                </p>
+                {loading ? (
+                  <Skeleton className="h-5 w-24 ml-auto mt-1" />
+                ) : (
+                  <p className="font-semibold text-estate-blue capitalize">
+                    {accountType}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -182,4 +168,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
 
