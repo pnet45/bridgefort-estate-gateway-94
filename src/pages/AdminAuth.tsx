@@ -12,6 +12,7 @@ import { Shield, Lock, ArrowLeft, AlertTriangle, Check, X, UserPlus, KeyRound } 
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { z } from 'zod';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { isAdminRole } from '@/lib/rbac';
 
 // Password validation schema
 const passwordSchema = z.string()
@@ -79,9 +80,12 @@ const AdminAuth = () => {
     hasSpecialChar: false,
   });
 
-  // Redirect if already logged in as admin
+  // Redirect if already logged in as admin. Was an exact match on the
+  // literal string 'admin' — anyone whose resolved role was 'super_admin'
+  // or a department role (admin_legal, admin_dir, etc.) would just sit on
+  // this page instead of being sent to the console.
   useEffect(() => {
-    if (user && userRole === 'admin') {
+    if (user && isAdminRole(userRole)) {
       navigate('/admin-console');
     }
   }, [user, userRole, navigate]);

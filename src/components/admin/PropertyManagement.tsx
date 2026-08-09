@@ -15,6 +15,7 @@ import {
 import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import PropertyForm from '../properties/PropertyForm';
 import { useAuth } from '@/contexts/auth';
+import { isAdminRole } from '@/lib/rbac';
 
 const PropertyManagement: React.FC = () => {
   const { userRole } = useAuth();
@@ -26,7 +27,7 @@ const PropertyManagement: React.FC = () => {
   const [estateToDelete, setEstateToDelete] = useState<Estate | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const isAdmin = userRole === 'admin';
+  const isAdmin = isAdminRole(userRole);
 
   useEffect(() => {
     fetchEstates();
