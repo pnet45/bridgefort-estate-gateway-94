@@ -17,6 +17,7 @@ import {
   PenSquare, Users, RefreshCw, CheckCircle, XCircle 
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { isAdminRole } from '@/lib/rbac';
 
 interface EmailLog {
   id: string;
@@ -36,7 +37,7 @@ interface UserProfile {
 }
 
 export default function BridgefortMails() {
-  const { user, userRole } = useAuth();
+  const { user, userRole, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -52,17 +53,18 @@ export default function BridgefortMails() {
   const [body, setBody] = useState('');
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       navigate('/auth');
       return;
     }
-    if (userRole !== 'admin') {
+    if (!isAdminRole(userRole)) {
       navigate('/dashboard');
       toast.error('Access denied. Admin only.');
       return;
     }
     fetchData();
-  }, [user, userRole, navigate]);
+  }, [user, userRole, navigate, authLoading]);
 
   const fetchData = async () => {
     setLoading(true);
