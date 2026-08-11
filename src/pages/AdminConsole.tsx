@@ -202,7 +202,7 @@ const AdminConsole = () => {
                     <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>
                   )}
                 </Button>
-                <AdminNotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={(tab) => setActiveTab(tab)} />
+                <AdminNotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={handleTabChange} />
               </div>
 
               {/* System alerts: birthdays, withdrawal/payment status, renewal reminders */}
