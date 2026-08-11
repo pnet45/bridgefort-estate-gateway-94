@@ -164,6 +164,9 @@ const AdminConsole = () => {
         .update({ is_online: false, status: 'offline', last_seen: new Date().toISOString() })
         .eq('user_id', user.id);
     }
+
+    localStorage.removeItem('admin_email_active_mailbox');
+
     await signOut();
     navigate('/admin-login');
   };
