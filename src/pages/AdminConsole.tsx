@@ -73,6 +73,13 @@ const AdminConsole = () => {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', tab);
+    setSearchParams(nextParams, { replace: true });
+  };
+
   // Keep the active tab in sync with the URL after mount too (e.g. the
   // "Create Content" shortcuts on the CMS tabs navigate to ?tab=properties
   // while the console is already open, which wouldn't otherwise re-render).
