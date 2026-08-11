@@ -73,6 +73,13 @@ const AdminConsole = () => {
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', tab);
+    setSearchParams(nextParams, { replace: true });
+  };
+
   // Keep the active tab in sync with the URL after mount too (e.g. the
   // "Create Content" shortcuts on the CMS tabs navigate to ?tab=properties
   // while the console is already open, which wouldn't otherwise re-render).
@@ -157,6 +164,9 @@ const AdminConsole = () => {
         .update({ is_online: false, status: 'offline', last_seen: new Date().toISOString() })
         .eq('user_id', user.id);
     }
+
+    localStorage.removeItem('admin_email_active_mailbox');
+
     await signOut();
     navigate('/admin-login');
   };
@@ -195,7 +205,7 @@ const AdminConsole = () => {
                     <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>
                   )}
                 </Button>
-                <AdminNotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={(tab) => setActiveTab(tab)} />
+                <AdminNotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={handleTabChange} />
               </div>
 
               {/* System alerts: birthdays, withdrawal/payment status, renewal reminders */}
@@ -226,7 +236,7 @@ const AdminConsole = () => {
 
       {/* Main Content */}
       <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="bg-slate-800 border border-slate-700 p-1 flex flex-wrap h-auto gap-1 justify-start">
             {/* Row 1 - Primary tabs */}
             {hasPermission('admin:view_dashboard') && (
