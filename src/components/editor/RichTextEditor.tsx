@@ -24,29 +24,21 @@ interface RichTextEditorProps {
   value: string;
   onChange: (html: string) => void;
   placeholder?: string;
-  /** Caps content length (character count of the rendered text, same convention as the app's Textarea counter) and shows a live N/max indicator. */
   maxLength?: number;
   className?: string;
-  /** Disables editing (e.g. while a form is submitting) without unmounting the editor. */
   disabled?: boolean;
   minHeightClassName?: string;
-  /** Caps the editor's own height and scrolls internally - use inside dialogs/constrained layouts (e.g. email compose) so long content doesn't grow the container unboundedly. */
+  /** Caps the editor's height and scrolls long content inside the editor. */
   maxHeightClassName?: string;
 }
 
 /**
- * Reusable rich text editor used across blog/CMS content, property
- * descriptions, email compose, and CRM notes - one component, one schema, one
- * sanitization path (src/components/editor/richTextSanitize.ts) shared by
- * every place this content is later rendered.
+ * Shared rich text editor used throughout the application.
  *
- * NOTE: images, tables, video embeds, colors/fonts, emoji, and templates are
- * intentionally not in this first pass - see the batch changelog for the
- * phased plan. This covers: bold/italic/underline/strike/superscript/
- * subscript/clear formatting, paragraph + H1-H6, alignment, bullet/numbered/
- * checklist, blockquote, code block, links, undo/redo, and a live character
- * counter. Keyboard shortcuts (Ctrl+B/I/U/Z/Y etc.) are handled natively by
- * Tiptap's StarterKit - no extra wiring needed.
+ * Layout/overflow is deliberately fixed here instead of at individual call
+ * sites so Blog, CMS, CRM Notes, Email Compose and other consumers get the
+ * same safe editing surface. The editor itself must never force its parent
+ * wider than the available container.
  */
 const RichTextEditor: React.FC<RichTextEditorProps> = ({
   value,
@@ -58,14 +50,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   minHeightClassName = 'min-h-[200px]',
   maxHeightClassName,
 }) => {
-  // Debounced so the expensive work (serializing the whole document to HTML,
-  // running it through DOMPurify, and pushing a state update up to the
-  // parent form) doesn't run on every single keystroke or every intermediate
-  // event while dragging a table column to resize it - both were previously
-  // synchronous on every event, which is what made typing and dragging feel
-  // slow. The live editor itself (toolbar button states, character counter)
-  // still updates instantly regardless, since Tiptap re-renders this
-  // component on every transaction independent of this debounce.
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const flushChange = (currentEditor: Editor) => {
@@ -86,8 +70,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       Link.configure({
         openOnClick: false,
         autolink: true,
-        // Belt-and-suspenders alongside the toolbar's own URL-scheme check:
-        // only allow protocols we intend to support in stored/rendered content.
         protocols: ['http', 'https', 'mailto'],
         HTMLAttributes: { rel: 'noopener noreferrer', target: '_blank' },
       }),
@@ -107,15 +89,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = setTimeout(() => flushChange(editor), 300);
     },
-    onBlur: ({ editor }) => {
-      flushChange(editor);
-    },
+    onBlur: ({ editor }) => flushChange(editor),
     editorProps: {
       attributes: {
+        // Critical overflow protections. min-w-0 lets the editor shrink in
+        // grid/flex parents; break/overflow rules prevent long URLs, code and
+        // other unbroken content from widening the page or dialog.
         class: cn(
-          'prose prose-sm sm:prose-base max-w-none focus:outline-none px-4 py-3',
-          minHeightClassName
+          'prose prose-sm sm:prose-base max-w-none w-full min-w-0',
+          'focus:outline-none px-4 py-3 break-words [overflow-wrap:anywhere]',
+          '[&_p]:break-words [&_li]:break-words [&_a]:break-all',
+          '[&_pre]:max-w-full [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap [&_pre]:break-words',
+          '[&_code]:break-words [&_code]:[overflow-wrap:anywhere]',
+          '[&_img]:max-w-full [&_img]:h-auto',
+          '[&_video]:max-w-full [&_video]:h-auto',
+          '[&_iframe]:max-w-full',
+          '[&_table]:w-full [&_table]:max-w-full [&_table]:table-fixed',
+          minHeightClassName,
         ),
+        spellcheck: 'true',
       },
       handlePaste: (view, event: ClipboardEvent) => {
         const files = Array.from(event.clipboardData?.files || []).filter((f): f is File => f.type.startsWith('image/'));
@@ -150,8 +142,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }).run();
   }
 
-  // Keep the editor in sync if `value` changes externally (e.g. loading a
-  // different record into the same mounted editor instance).
   useEffect(() => {
     if (!editor) return;
     const current = editor.getHTML();
@@ -174,16 +164,40 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const nearLimit = typeof maxLength === 'number' && maxLength - charCount <= Math.max(10, maxLength * 0.1);
 
   return (
-    <div className={cn('rounded-md border border-input bg-background overflow-hidden', className)}>
-      <EditorToolbar editor={editor} onInsertImage={handleImageFile} />
-      <div className={cn('overflow-x-auto', maxHeightClassName && `${maxHeightClassName} overflow-y-auto`)}>
-        <EditorContent editor={editor} />
+    <div
+      className={cn(
+        'w-full min-w-0 max-w-full rounded-md border border-input bg-background overflow-hidden',
+        'isolate',
+        className,
+      )}
+    >
+      {/* Toolbar is independently clipped so a large toolbar can never widen
+          a dialog, card, form column, or the page itself. */}
+      <div className="w-full min-w-0 max-w-full overflow-x-auto overflow-y-hidden">
+        <EditorToolbar editor={editor} onInsertImage={handleImageFile} />
       </div>
+
+      <div
+        className={cn(
+          'w-full min-w-0 max-w-full overflow-x-hidden',
+          maxHeightClassName && `${maxHeightClassName} overflow-y-auto`,
+        )}
+      >
+        <div className="w-full min-w-0 max-w-full overflow-x-hidden">
+          <EditorContent
+            editor={editor}
+            className="w-full min-w-0 max-w-full overflow-x-hidden"
+          />
+        </div>
+      </div>
+
       {typeof maxLength === 'number' && (
-        <div className={cn(
-          'px-4 py-1.5 text-xs text-right border-t border-border',
-          nearLimit ? 'text-destructive' : 'text-muted-foreground'
-        )}>
+        <div
+          className={cn(
+            'px-4 py-1.5 text-xs text-right border-t border-border',
+            nearLimit ? 'text-destructive' : 'text-muted-foreground',
+          )}
+        >
           {charCount}/{maxLength}
         </div>
       )}
