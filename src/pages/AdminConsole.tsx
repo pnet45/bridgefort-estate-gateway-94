@@ -4,10 +4,10 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import {
   Shield, Users, FileText, Mail, LayoutDashboard, LogOut, Bell, Home,
-  UserCheck, CheckSquare, Calendar, Building, Activity, TrendingUp,
-  DollarSign, Settings, Plane, Wallet, Network, Images
+  UserCheck, CheckSquare, Building, Activity, TrendingUp,
+  DollarSign, Settings, Plane, Network, Images, Building2
 } from 'lucide-react';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import { getAllowedAdminTabs, isAdminRole } from '@/lib/rbac';
@@ -33,12 +33,12 @@ import AdminContentManagement from '@/components/admin/AdminContentManagement';
 import AdminContentHub from '@/components/admin/AdminContentHub';
 import AdminCircularGalleryContent from '@/components/admin/content/AdminCircularGalleryContent';
 import AdminOtherPayments from '@/components/admin/AdminOtherPayments';
-import AdminWithdrawalRequests from '@/components/admin/AdminWithdrawalRequests';
 import AdminRolePermissions from '@/components/admin/AdminRolePermissions';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
 import AdminBirthdayWidget from '@/components/admin/AdminBirthdayWidget';
 import AdminEstateViewsLeaderboard from '@/components/admin/AdminEstateViewsLeaderboard';
 import AdminTravelDashboard from '@/components/admin/AdminTravelDashboard';
+import AdminDepartmentManagement from '@/components/admin/AdminDepartmentManagement';
 import { toast } from '@/hooks/use-toast';
 
 
@@ -51,10 +51,6 @@ type TawkWindow = Window & {
 };
 
 const AdminConsole = () => {
-  // Always open the console scrolled to the top. This runs in
-  // useLayoutEffect (before paint) rather than useEffect (after paint) so
-  // there's no flash of a scrolled-down frame on mount — global native
-  // scroll restoration is disabled once, app-wide, in ScrollToTop.tsx.
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -74,21 +70,19 @@ const AdminConsole = () => {
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
 
   const handleTabChange = (tab: string) => {
+    if (!allowedTabs.includes(tab)) return;
     setActiveTab(tab);
     const nextParams = new URLSearchParams(searchParams);
     nextParams.set('tab', tab);
     setSearchParams(nextParams, { replace: true });
   };
 
-  // Keep the active tab in sync with the URL after mount too (e.g. the
-  // "Create Content" shortcuts on the CMS tabs navigate to ?tab=properties
-  // while the console is already open, which wouldn't otherwise re-render).
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && tab !== activeTab) {
+    if (tab && tab !== activeTab && allowedTabs.includes(tab)) {
       setActiveTab(tab);
     }
-  }, [searchParams, activeTab]);
+  }, [searchParams, activeTab, allowedTabs]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -114,8 +108,9 @@ const AdminConsole = () => {
 
       const isAllowed = hasPermission('admin:view_dashboard') || hasPermission('admin:all') || isAdminRole(userRole);
       if (!isAllowed) {
-        toast({ title: "Access Denied", description: "You don't have permission to access the admin console", variant: "destructive" });
-        navigate('/dashboard'); return;
+        toast({ title: 'Access Denied', description: "You don't have permission to access the admin console", variant: 'destructive' });
+        navigate('/dashboard');
+        return;
       }
 
       const { count } = await supabase.from('pending_admin_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending');
@@ -125,21 +120,9 @@ const AdminConsole = () => {
     checkAdminAccess();
   }, [user, navigate, userRole, hasPermission, permissions, authLoading]);
 
-  // Tawk.to loads via a raw <script> tag in index.html on a delay, independent
-  // of React Router, so it can't be conditionally rendered like our other
-  // floating widgets. Instead I hide it through its own API: immediately if
-  // it has already loaded, and via onLoad in case it finishes loading later
-  // while the admin is still on this page. It's restored on unmount so it
-  // still shows up for admins once they navigate back to the public site.
   useEffect(() => {
     const w = window as TawkWindow;
-
-    const hideTawk = () => {
-      if (w.Tawk_API?.hideWidget) {
-        w.Tawk_API.hideWidget();
-      }
-    };
-
+    const hideTawk = () => w.Tawk_API?.hideWidget?.();
     hideTawk();
     const previousOnLoad = w.Tawk_API?.onLoad;
     w.Tawk_API = w.Tawk_API || {};
@@ -147,26 +130,17 @@ const AdminConsole = () => {
       previousOnLoad?.();
       hideTawk();
     };
-
-    return () => {
-      if (w.Tawk_API?.showWidget) {
-        w.Tawk_API.showWidget();
-      }
-    };
+    return () => w.Tawk_API?.showWidget?.();
   }, []);
 
   const handleSignOut = async () => {
     if (user) {
-      // Mark this admin offline immediately on an explicit sign-out, rather
-      // than relying solely on the browser's unload event to fire.
       await supabase
         .from('admin_presence')
         .update({ is_online: false, status: 'offline', last_seen: new Date().toISOString() })
         .eq('user_id', user.id);
     }
-
     localStorage.removeItem('admin_email_active_mailbox');
-
     await signOut();
     navigate('/admin-login');
   };
@@ -174,22 +148,19 @@ const AdminConsole = () => {
   if (authLoading || loading) {
     return (
       <div className="admin-theme min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
   }
 
   return (
     <div className="admin-theme min-h-screen">
-      {/* Admin Header */}
       <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Shield className="h-6 w-6 text-primary" />
-                </div>
+                <div className="p-2 bg-primary/10 rounded-lg"><Shield className="h-6 w-6 text-primary" /></div>
                 <div>
                   <h1 className="text-lg font-bold text-white">Admin Console</h1>
                   <p className="text-xs text-slate-400">Bridgefort Homes Development Ltd</p>
@@ -201,14 +172,11 @@ const AdminConsole = () => {
               <div className="relative">
                 <Button variant="ghost" size="icon" onClick={() => setNotificationOpen(!notificationOpen)} className="text-slate-400 hover:text-white relative">
                   <Bell className="h-5 w-5" />
-                  {pendingCount > 0 && (
-                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>
-                  )}
+                  {pendingCount > 0 && <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>}
                 </Button>
                 <AdminNotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={handleTabChange} />
               </div>
 
-              {/* System alerts: birthdays, withdrawal/payment status, renewal reminders */}
               <NotificationBell audience="admin" triggerClassName="text-slate-400 hover:text-white" />
 
               <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 bg-slate-700/50 rounded-lg">
@@ -221,150 +189,48 @@ const AdminConsole = () => {
                 </div>
               </div>
 
-              <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-400 hover:text-white">
-                <Home className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Main Site</span>
-              </Button>
-              <Button variant="ghost" onClick={handleSignOut} className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
-                <LogOut className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
+              <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-400 hover:text-white"><Home className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Main Site</span></Button>
+              <Button variant="ghost" onClick={handleSignOut} className="text-red-400 hover:text-red-300 hover:bg-red-900/20"><LogOut className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Logout</span></Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <TabsList className="bg-slate-800 border border-slate-700 p-1 flex flex-wrap h-auto gap-1 justify-start">
-            {/* Row 1 - Primary tabs */}
-            {hasPermission('admin:view_dashboard') && (
-              <TabsTrigger value="overview" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <LayoutDashboard className="h-4 w-4" />
-                <span>Dashboard</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_properties') && (
-              <TabsTrigger value="properties" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <Building className="h-4 w-4" />
-                <span>Properties</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_crm') && (
-              <TabsTrigger value="crm" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <CheckSquare className="h-4 w-4" />
-                <span>CRM</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_users') && (
-              <TabsTrigger value="users" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <Users className="h-4 w-4" />
-                <span>Users</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_approvals') && (
-              <TabsTrigger value="approvals" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm relative" style={{ color: '#fff' }}>
-                <UserCheck className="h-4 w-4" />
-                <span>Approvals</span>
-                {pendingCount > 0 && (
-                  <span className="ml-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>
-                )}
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_email_center') && (
-              <TabsTrigger value="emails" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <Mail className="h-4 w-4" />
-                <span>Emails</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_analytics') && (
-              <TabsTrigger value="analytics" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <TrendingUp className="h-4 w-4" />
-                <span>Analytics</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_mlm_funnel') && (
-              <TabsTrigger value="mlm-funnel" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <Network className="h-4 w-4" />
-                <span>BHRealtors Funnel</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_activity') && (
-              <TabsTrigger value="activity" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <Activity className="h-4 w-4" />
-                <span>Activity</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_content') && (
-              <TabsTrigger value="content" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <FileText className="h-4 w-4" />
-                <span>Content</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_cms') && (
-              <TabsTrigger value="cms" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <FileText className="h-4 w-4" />
-                <span>CMS Hub</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_cms') && (
-              <TabsTrigger value="gallery" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <Images className="h-4 w-4" />
-                <span>Circular Gallery</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:view_other_payments') && (
-              <TabsTrigger value="other-payments" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <DollarSign className="h-4 w-4" />
-                <span>Other Payments</span>
-              </TabsTrigger>
-            )}
-            {hasPermission('admin:manage_permissions') && (
-              <TabsTrigger value="permissions" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <Settings className="h-4 w-4" />
-                <span>Permissions</span>
-              </TabsTrigger>
-            )}
-            {(isSuperAdmin || hasPermission('admin:view_travels')) && (
-              <TabsTrigger value="travels" className="text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm" style={{ color: '#fff' }}>
-                <Plane className="h-4 w-4" />
-                <span>Travels</span>
-                <span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">Super</span>
-              </TabsTrigger>
-            )}
+            {hasPermission('admin:view_dashboard') && <TabsTrigger value="overview" className="admin-tab"><LayoutDashboard className="h-4 w-4" /><span>Dashboard</span></TabsTrigger>}
+            {hasPermission('admin:view_properties') && <TabsTrigger value="properties" className="admin-tab"><Building className="h-4 w-4" /><span>Properties</span></TabsTrigger>}
+            {hasPermission('admin:view_crm') && <TabsTrigger value="crm" className="admin-tab"><CheckSquare className="h-4 w-4" /><span>CRM</span></TabsTrigger>}
+            {hasPermission('admin:view_users') && <TabsTrigger value="users" className="admin-tab"><Users className="h-4 w-4" /><span>Users</span></TabsTrigger>}
+            {hasPermission('admin:view_approvals') && <TabsTrigger value="approvals" className="admin-tab relative"><UserCheck className="h-4 w-4" /><span>Approvals</span>{pendingCount > 0 && <span className="ml-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>}</TabsTrigger>}
+            {hasPermission('admin:view_email_center') && <TabsTrigger value="emails" className="admin-tab"><Mail className="h-4 w-4" /><span>Emails</span></TabsTrigger>}
+            {hasPermission('admin:view_analytics') && <TabsTrigger value="analytics" className="admin-tab"><TrendingUp className="h-4 w-4" /><span>Analytics</span></TabsTrigger>}
+            {hasPermission('admin:view_mlm_funnel') && <TabsTrigger value="mlm-funnel" className="admin-tab"><Network className="h-4 w-4" /><span>BHRealtors Funnel</span></TabsTrigger>}
+            {hasPermission('admin:view_activity') && <TabsTrigger value="activity" className="admin-tab"><Activity className="h-4 w-4" /><span>Activity</span></TabsTrigger>}
+            {hasPermission('admin:view_content') && <TabsTrigger value="content" className="admin-tab"><FileText className="h-4 w-4" /><span>Content</span></TabsTrigger>}
+            {hasPermission('admin:view_cms') && <TabsTrigger value="cms" className="admin-tab"><FileText className="h-4 w-4" /><span>CMS Hub</span></TabsTrigger>}
+            {hasPermission('admin:view_cms') && <TabsTrigger value="gallery" className="admin-tab"><Images className="h-4 w-4" /><span>Circular Gallery</span></TabsTrigger>}
+            {hasPermission('admin:view_other_payments') && <TabsTrigger value="other-payments" className="admin-tab"><DollarSign className="h-4 w-4" /><span>Other Payments</span></TabsTrigger>}
+            {hasPermission('admin:manage_permissions') && <TabsTrigger value="permissions" className="admin-tab"><Settings className="h-4 w-4" /><span>Permissions</span></TabsTrigger>}
+            {hasPermission('admin:manage_departments') && <TabsTrigger value="departments" className="admin-tab"><Building2 className="h-4 w-4" /><span>Departments</span></TabsTrigger>}
+            {hasPermission('admin:view_travels') && <TabsTrigger value="travels" className="admin-tab"><Plane className="h-4 w-4" /><span>Travels</span>{isSuperAdmin && <span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">Super</span>}</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
             <AdminDashboardStats />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <AdminInbox />
-                <AdminEstateViewsLeaderboard />
-              </div>
-              <div className="space-y-6">
-                <AdminOnlineUsers />
-                <AdminChat />
-              </div>
+              <div className="lg:col-span-2 space-y-6"><AdminInbox /><AdminEstateViewsLeaderboard /></div>
+              <div className="space-y-6"><AdminOnlineUsers /><AdminChat /></div>
             </div>
           </TabsContent>
-
           <TabsContent value="properties"><AdminPropertyManagement /></TabsContent>
-
           <TabsContent value="crm" className="space-y-6">
             <AdminBirthdayWidget />
             <AdminCRMLeads />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <AdminTaskManager />
-              <AdminCalendar />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <AdminNotices />
-              <AdminNotes />
-              <AdminFileSharing />
-            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><AdminTaskManager /><AdminCalendar /></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><AdminNotices /><AdminNotes /><AdminFileSharing /></div>
           </TabsContent>
-
           <TabsContent value="users"><UserManagementTab /></TabsContent>
           <TabsContent value="approvals"><AdminApprovalsHub onCountChange={setPendingCount} /></TabsContent>
           <TabsContent value="emails"><AdminEmailCenter /></TabsContent>
@@ -376,10 +242,10 @@ const AdminConsole = () => {
           <TabsContent value="gallery"><AdminCircularGalleryContent /></TabsContent>
           <TabsContent value="other-payments"><AdminOtherPayments /></TabsContent>
           <TabsContent value="permissions"><AdminRolePermissions /></TabsContent>
-          {isSuperAdmin && <TabsContent value="travels"><AdminTravelDashboard /></TabsContent>}
+          {hasPermission('admin:manage_departments') && <TabsContent value="departments"><AdminDepartmentManagement /></TabsContent>}
+          {hasPermission('admin:view_travels') && <TabsContent value="travels"><AdminTravelDashboard /></TabsContent>}
         </Tabs>
       </main>
-
     </div>
   );
 };
