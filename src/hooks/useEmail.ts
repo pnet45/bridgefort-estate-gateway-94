@@ -42,30 +42,18 @@ export function useEmail() {
   const [sending, setSending] = useState(false);
 
   const fetchSentEmails = useCallback(async () => {
-    try {
-      const emails = await emailService.getSentEmails();
-      setSentEmails(emails);
-    } catch (error) {
-      console.error('Error fetching sent emails:', error);
-    }
+    try { setSentEmails(await emailService.getSentEmails()); }
+    catch (error) { console.error('Error fetching sent emails:', error); }
   }, []);
 
   const fetchInboxMessages = useCallback(async (filter: 'all' | 'unread' | 'read' = 'all') => {
-    try {
-      const messages = await emailService.getInboxMessages(filter);
-      setInboxMessages(messages);
-    } catch (error) {
-      console.error('Error fetching inbox messages:', error);
-    }
+    try { setInboxMessages(await emailService.getInboxMessages(filter)); }
+    catch (error) { console.error('Error fetching inbox messages:', error); }
   }, []);
 
   const fetchContacts = useCallback(async () => {
-    try {
-      const userContacts = await emailService.getUserContacts();
-      setContacts(userContacts);
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
-    }
+    try { setContacts(await emailService.getUserContacts()); }
+    catch (error) { console.error('Error fetching contacts:', error); }
   }, []);
 
   const refreshAll = useCallback(async () => {
@@ -75,7 +63,15 @@ export function useEmail() {
   }, [fetchSentEmails, fetchInboxMessages, fetchContacts]);
 
   const sendEmail = useCallback(
-    async (to: string, subject: string, body: string, recipientName?: string, fromMailbox?: string) => {
+    async (
+      to: string,
+      subject: string,
+      body: string,
+      recipientName?: string,
+      fromMailbox?: string,
+      cc?: string,
+      bcc?: string,
+    ) => {
       setSending(true);
       try {
         const result = await emailService.sendEmail({
@@ -84,8 +80,9 @@ export function useEmail() {
           subject,
           body,
           fromMailbox,
+          cc,
+          bcc,
         });
-
         if (result.success) {
           await emailService.logEmail(to, recipientName || null, subject, body, user?.id);
           await fetchSentEmails();
@@ -94,9 +91,7 @@ export function useEmail() {
         return { success: false, error: result.error };
       } catch (error: any) {
         return { success: false, error: error.message };
-      } finally {
-        setSending(false);
-      }
+      } finally { setSending(false); }
     },
     [user, fetchSentEmails]
   );
@@ -105,109 +100,38 @@ export function useEmail() {
     async (message: ContactMessage, replySubject: string, replyBody: string, fromMailbox?: string) => {
       setSending(true);
       try {
-        // Generate HTML for reply
-        const html = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 20px; text-align: center;">
-              <h1 style="color: #fff; margin: 0;">Bridgefort Homes Development Ltd</h1>
-            </div>
-            <div style="padding: 30px; background: #fff;">
-              <p>Dear ${message.name},</p>
-              <div style="white-space: pre-wrap;">${replyBody}</div>
-              <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
-              <p style="color: #666; font-size: 12px;">
-                This is a reply to your message: "${message.subject}"
-              </p>
-            </div>
-            <div style="background: #f5f5f5; padding: 15px; text-align: center; font-size: 12px; color: #666;">
-              <p>Bridgefort Homes Development Ltd | 3 Isoko Drive, Off NTA Road, Asaba, Delta State</p>
-            </div>
-          </div>
-        `;
-
+        const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="padding:30px;background:#fff"><p>Dear ${message.name},</p><div>${replyBody}</div><hr style="margin:20px 0;border:none;border-top:1px solid #eee"><p style="color:#666;font-size:12px">This is a reply to your message: "${message.subject}"</p></div></div>`;
         const { error: emailError } = await supabase.functions.invoke('send-email', {
-          body: {
-            to: message.email,
-            subject: replySubject,
-            html,
-            fromMailbox,
-          },
+          body: { to: message.email, subject: replySubject, html, fromMailbox },
         });
-
         if (emailError) throw emailError;
-
-        // Mark as responded
         await emailService.markAsResponded(message.id, user?.id);
-
-        // Log the email
-        await emailService.logEmail(
-          message.email,
-          message.name,
-          replySubject,
-          replyBody,
-          user?.id
-        );
-
+        await emailService.logEmail(message.email, message.name, replySubject, replyBody, user?.id);
         await fetchInboxMessages();
         return { success: true };
       } catch (error: any) {
         return { success: false, error: error.message };
-      } finally {
-        setSending(false);
-      }
+      } finally { setSending(false); }
     },
     [user, fetchInboxMessages]
   );
 
-  const deleteEmailLog = useCallback(
-    async (id: string) => {
-      try {
-        await emailService.deleteEmailLog(id);
-        setSentEmails((prev) => prev.filter((email) => email.id !== id));
-        return { success: true };
-      } catch (error: any) {
-        return { success: false, error: error.message };
-      }
-    },
-    []
-  );
-
-  const deleteMessage = useCallback(
-    async (id: string) => {
-      try {
-        await emailService.deleteContactMessage(id);
-        setInboxMessages((prev) => prev.filter((msg) => msg.id !== id));
-        return { success: true };
-      } catch (error: any) {
-        return { success: false, error: error.message };
-      }
-    },
-    []
-  );
-
-  // Set up real-time subscriptions
-  useEffect(() => {
-    refreshAll();
-
-    const emailLogsChannel = supabase
-      .channel('email-logs-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'email_logs' }, fetchSentEmails)
-      .subscribe();
-
-    const contactChannel = supabase
-      .channel('contact-messages-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, () =>
-        fetchInboxMessages()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(emailLogsChannel);
-      supabase.removeChannel(contactChannel);
-    };
+  const deleteEmailLog = useCallback(async (id: string) => {
+    try { await emailService.deleteEmailLog(id); setSentEmails(prev => prev.filter(email => email.id !== id)); return { success: true }; }
+    catch (error: any) { return { success: false, error: error.message }; }
   }, []);
 
-  const unreadCount = inboxMessages.filter((m) => !m.responded).length;
+  const deleteMessage = useCallback(async (id: string) => {
+    try { await emailService.deleteContactMessage(id); setInboxMessages(prev => prev.filter(msg => msg.id !== id)); return { success: true }; }
+    catch (error: any) { return { success: false, error: error.message }; }
+  }, []);
+
+  useEffect(() => {
+    refreshAll();
+    const emailLogsChannel = supabase.channel('email-logs-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'email_logs' }, fetchSentEmails).subscribe();
+    const contactChannel = supabase.channel('contact-messages-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, () => fetchInboxMessages()).subscribe();
+    return () => { supabase.removeChannel(emailLogsChannel); supabase.removeChannel(contactChannel); };
+  }, []);
 
   return {
     sentEmails,
@@ -215,7 +139,7 @@ export function useEmail() {
     contacts,
     loading,
     sending,
-    unreadCount,
+    unreadCount: inboxMessages.filter(m => !m.responded).length,
     sendEmail,
     replyToMessage,
     deleteEmailLog,
