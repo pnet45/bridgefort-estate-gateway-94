@@ -84,9 +84,7 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
 
   const handleSend = async () => {
     const result = await onSend(to, name, subject, body, cc, bcc);
-    if (result.success) {
-      onOpenChange(false);
-    }
+    if (result.success) onOpenChange(false);
   };
 
   const handleSaveDraft = () => {
@@ -94,21 +92,23 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
     onOpenChange(false);
   };
 
+  const recipientInputClass = 'border-0 shadow-none focus-visible:ring-0 h-9 min-w-0 flex-1';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="px-4 py-3 bg-muted/50 border-b border-border rounded-t-lg">
-          <DialogTitle className="text-base">New Message</DialogTitle>
+      <DialogContent className="w-[calc(100vw-1rem)] max-w-3xl max-h-[92vh] overflow-hidden flex flex-col p-0 gap-0">
+        <DialogHeader className="shrink-0 px-5 py-3 bg-muted/50 border-b border-border rounded-t-lg">
+          <DialogTitle className="text-base font-semibold">New Message</DialogTitle>
         </DialogHeader>
-        <div className="flex-1 flex flex-col min-h-0 px-4 py-2 space-y-1">
-          {/* Template Selector */}
-          <div className="flex items-center border-b border-border py-1">
-            <Label className="w-16 text-sm text-muted-foreground flex items-center gap-1">
+
+        <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden px-4 sm:px-5 py-2 space-y-1">
+          <div className="flex min-w-0 items-center border-b border-border py-1">
+            <Label className="w-16 shrink-0 text-sm text-muted-foreground flex items-center gap-1">
               <LayoutTemplate className="h-3.5 w-3.5" /> Template
             </Label>
             <Select onValueChange={handleTemplateSelect}>
-              <SelectTrigger className="border-0 shadow-none focus:ring-0 h-8 flex-1">
-                <SelectValue placeholder={loadingTemplates ? "Loading..." : "Choose a template (optional)"} />
+              <SelectTrigger className="border-0 shadow-none focus:ring-0 h-9 min-w-0 flex-1">
+                <SelectValue placeholder={loadingTemplates ? 'Loading...' : 'Choose a template (optional)'} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No template</SelectItem>
@@ -121,89 +121,113 @@ const ComposeDialog: React.FC<ComposeDialogProps> = ({
             </Select>
           </div>
 
-          <div className="flex items-center border-b border-border py-1">
-            <Label className="w-12 text-sm text-muted-foreground">To</Label>
+          <div className="flex min-w-0 items-center border-b border-border py-1">
+            <Label className="w-12 shrink-0 text-sm text-muted-foreground">To</Label>
             <Input
-              type="email"
+              type="text"
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              placeholder="recipient@example.com"
-              className="border-0 shadow-none focus-visible:ring-0 h-8 flex-1"
+              placeholder="recipient@example.com, another@example.com"
+              className={recipientInputClass}
+              autoComplete="email"
             />
             <Button
+              type="button"
               variant="ghost"
               size="sm"
               onClick={() => setShowCcBcc(!showCcBcc)}
-              className="text-xs text-muted-foreground shrink-0"
+              className="shrink-0 text-xs text-muted-foreground"
             >
               Cc/Bcc {showCcBcc ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
             </Button>
           </div>
+
           {showCcBcc && (
             <>
-              <div className="flex items-center border-b border-border py-1">
-                <Label className="w-12 text-sm text-muted-foreground">Cc</Label>
+              <div className="flex min-w-0 items-center border-b border-border py-1">
+                <Label className="w-12 shrink-0 text-sm text-muted-foreground">Cc</Label>
                 <Input
-                  type="email"
+                  type="text"
                   value={cc}
                   onChange={(e) => setCc(e.target.value)}
                   placeholder="cc@example.com (comma separated)"
-                  className="border-0 shadow-none focus-visible:ring-0 h-8"
+                  className={recipientInputClass}
+                  autoComplete="email"
                 />
               </div>
-              <div className="flex items-center border-b border-border py-1">
-                <Label className="w-12 text-sm text-muted-foreground">Bcc</Label>
+              <div className="flex min-w-0 items-center border-b border-border py-1">
+                <Label className="w-12 shrink-0 text-sm text-muted-foreground">Bcc</Label>
                 <Input
-                  type="email"
+                  type="text"
                   value={bcc}
                   onChange={(e) => setBcc(e.target.value)}
                   placeholder="bcc@example.com (comma separated)"
-                  className="border-0 shadow-none focus-visible:ring-0 h-8"
+                  className={recipientInputClass}
+                  autoComplete="email"
                 />
               </div>
             </>
           )}
-          <div className="flex items-center border-b border-border py-1">
-            <Label className="w-12 text-sm text-muted-foreground">Name</Label>
+
+          <div className="flex min-w-0 items-center border-b border-border py-1">
+            <Label className="w-12 shrink-0 text-sm text-muted-foreground">Name</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Recipient name (optional)"
-              className="border-0 shadow-none focus-visible:ring-0 h-8"
+              className={recipientInputClass}
             />
           </div>
-          <div className="flex items-center border-b border-border py-1">
-            <Label className="w-12 text-sm text-muted-foreground">Subject</Label>
+
+          <div className="flex min-w-0 items-center border-b border-border py-1">
+            <Label className="w-12 shrink-0 text-sm text-muted-foreground">Subject</Label>
             <Input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Subject"
-              className="border-0 shadow-none focus-visible:ring-0 h-8"
+              className={recipientInputClass}
             />
           </div>
-          <div className="flex-1 min-h-0">
+
+          <div className="min-w-0 max-w-full overflow-hidden pt-1">
             <RichTextEditor
               value={body}
               onChange={setBody}
               placeholder="Compose email..."
               maxLength={5000}
               minHeightClassName="min-h-[180px]"
-              maxHeightClassName="max-h-[320px]"
-              className="border-0 rounded-none"
+              maxHeightClassName="max-h-[360px]"
+              className="w-full min-w-0 max-w-full border-0 rounded-none"
             />
           </div>
         </div>
-        <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-          <div className="flex gap-2">
-            <Button onClick={handleSend} disabled={sending || !to.trim() || !subject.trim()} className="gap-1 rounded-full bg-slate-900 hover:bg-slate-800 text-white">
+
+        <div className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-t border-border bg-background">
+          <div className="flex min-w-0 gap-2">
+            <Button
+              onClick={handleSend}
+              disabled={sending || !to.trim() || !subject.trim()}
+              className="gap-1 rounded-full bg-slate-900 hover:bg-slate-800 text-white"
+            >
               {sending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               Send
             </Button>
-            <Button variant="secondary" size="sm" onClick={handleSaveDraft} className="gap-1 rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleSaveDraft}
+              className="gap-1 rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700"
+            >
               <Save className="h-4 w-4" /> Draft
             </Button>
           </div>
-          <Button variant="secondary" size="icon" onClick={() => { onDiscard(); onOpenChange(false); }} className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700">
+          <Button
+            variant="secondary"
+            size="icon"
+            onClick={() => { onDiscard(); onOpenChange(false); }}
+            className="shrink-0 rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700"
+            aria-label="Discard message"
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
