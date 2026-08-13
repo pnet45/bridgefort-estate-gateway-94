@@ -21,6 +21,13 @@ interface UserWithRole {
 interface LockedAccount { email: string; attempt_count: number; last_attempt: string; }
 type SortKey = 'name' | 'email' | 'role' | 'created_at';
 
+const BUSINESS_ROLES = ['user', 'client', 'pbo'] as const;
+const BUSINESS_ROLE_LABELS: Record<(typeof BUSINESS_ROLES)[number], string> = {
+  user: 'User',
+  client: 'Client',
+  pbo: 'PBO'
+};
+
 const UserManagementTab = () => {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [roles, setRoles] = useState<RoleOption[]>([]);
@@ -34,14 +41,14 @@ const UserManagementTab = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortKey, setSortKey] = useState<SortKey>('created_at');
   const [sortAsc, setSortAsc] = useState(false);
-  const [formData, setFormData] = useState({ email: '', password: '', firstName: '', lastName: '', role: 'client' });
+  const [formData, setFormData] = useState({ email: '', password: '', firstName: '', lastName: '', role: 'user' });
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [{ data: profiles, error: profilesError }, { data: usersData, error: usersError }, { data: userRoles, error: rolesError }, { data: adminRoles, error: adminRolesError }, { data: roleOptions, error: roleOptionsError }] = await Promise.all([
         supabase.from('profiles').select('id, first_name, last_name, created_at, account_locked, account_locked_reason'),
-        supabase.from('users').select('id, email'),
+        supabase.from('users').select('id, email, role'),
         supabase.from('user_roles').select('user_id, role'),
         supabase.from('admin_roles').select('user_id, role_name, expires_at'),
         supabase.from('roles').select('name, display_name, description').order('display_name')
@@ -58,13 +65,23 @@ const UserManagementTab = () => {
         const account = (usersData || []).find((u: any) => u.id === profile.id);
         const adminRole = activeAdminRoles.find((r: any) => r.user_id === profile.id);
         const genericRole = (userRoles || []).find((r: any) => r.user_id === profile.id);
-        const effectiveRole = adminRole?.role_name || genericRole?.role || null;
+        // Administrator roles take precedence. For ordinary accounts, users.role is the
+        // canonical business role (user/client/pbo). user_roles remains a legacy fallback.
+        const businessRole = account?.role || null;
+        const effectiveRole = adminRole?.role_name || businessRole || genericRole?.role || null;
         const global = effectiveRole === 'admin_dir' || effectiveRole === 'super_admin';
-        const display = adminRole ? ((roleOptions || []).find((r: any) => r.name === adminRole.role_name)?.display_name || adminRole.role_name) : ((roleOptions || []).find((r: any) => r.name === genericRole?.role)?.display_name || genericRole?.role || 'No role');
+        const roleOption = (roleOptions || []).find((r: any) => r.name === effectiveRole);
+        const display = adminRole
+          ? (roleOption?.display_name || adminRole.role_name)
+          : (businessRole && BUSINESS_ROLE_LABELS[businessRole as keyof typeof BUSINESS_ROLE_LABELS])
+            || roleOption?.display_name
+            || (genericRole?.role ? ((roleOptions || []).find((r: any) => r.name === genericRole.role)?.display_name || genericRole.role) : 'No role');
         return { id: profile.id, email: account?.email || 'Unknown', first_name: profile.first_name, last_name: profile.last_name, created_at: profile.created_at, role: effectiveRole, roleDisplay: display, isGlobalAdmin: global, account_locked: !!profile.account_locked, account_locked_reason: profile.account_locked_reason || null };
       });
       setUsers(combined);
-      setRoles((roleOptions || []).filter((r: any) => !['admin_dir', 'super_admin', 'admin_acct', 'admin_adm', 'admin_sales', 'admin_cs', 'admin_legal', 'admin_it'].includes(r.name)) as RoleOption[]);
+      // This tab manages business/account roles only. Administrator roles are managed
+      // through the dedicated Admin Console/RBAC controls and are never exposed here.
+      setRoles((roleOptions || []).filter((r: any) => BUSINESS_ROLES.includes(r.name as any)) as RoleOption[]);
     } catch (error: any) {
       console.error('Error fetching users:', error);
       toast.error(error.message || 'Failed to fetch users and roles');
@@ -111,13 +128,14 @@ const UserManagementTab = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success(data?.message || 'User created successfully');
-      setDialogOpen(false); setFormData({ email: '', password: '', firstName: '', lastName: '', role: 'client' }); await fetchData();
+      setDialogOpen(false); setFormData({ email: '', password: '', firstName: '', lastName: '', role: 'user' }); await fetchData();
     } catch (error: any) { toast.error(error.message || 'Failed to create user'); }
     finally { setCreating(false); }
   };
 
   const handleUpdateRole = async (target: UserWithRole, newRole: string) => {
     if (target.isGlobalAdmin) return toast.error('Admin-Dir and Super_Admin roles are protected');
+    if (!BUSINESS_ROLES.includes(newRole as (typeof BUSINESS_ROLES)[number])) return toast.error('Only User, Client and PBO roles can be assigned here');
     try {
       const { error } = await supabase.rpc('admin_set_user_role', { _target_user_id: target.id, _role: newRole });
       if (error) throw error;
@@ -158,12 +176,12 @@ const UserManagementTab = () => {
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild><Button><UserPlus className="mr-2 h-4 w-4" />Create User</Button></DialogTrigger>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader><DialogTitle>Create New User</DialogTitle><DialogDescription>Enter the account details below. The form adapts to the screen size and submits all fields together.</DialogDescription></DialogHeader>
+                  <DialogHeader><DialogTitle>Create New User</DialogTitle><DialogDescription>Enter the account details below. New accounts start as User; Client and PBO are available for authorized role changes.</DialogDescription></DialogHeader>
                   <form onSubmit={handleCreateUser} className="space-y-6">
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                       <div className="space-y-2"><Label htmlFor="firstName">First Name</Label><Input id="firstName" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} placeholder="First name" /></div>
                       <div className="space-y-2"><Label htmlFor="lastName">Last Name</Label><Input id="lastName" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} placeholder="Last name" /></div>
-                      <div className="space-y-2"><Label htmlFor="role">Role</Label><Select value={formData.role} onValueChange={role => setFormData({ ...formData, role })}><SelectTrigger id="role"><SelectValue placeholder="Select role" /></SelectTrigger><SelectContent><SelectItem value="client">Client</SelectItem>{roles.map(r => <SelectItem key={r.name} value={r.name}>{r.display_name}</SelectItem>)}</SelectContent></Select></div>
+                      <div className="space-y-2"><Label htmlFor="role">Role</Label><Select value={formData.role} onValueChange={role => setFormData({ ...formData, role })}><SelectTrigger id="role"><SelectValue placeholder="Select role" /></SelectTrigger><SelectContent>{roles.map(r => <SelectItem key={r.name} value={r.name}>{r.display_name || BUSINESS_ROLE_LABELS[r.name as keyof typeof BUSINESS_ROLE_LABELS]}</SelectItem>)}</SelectContent></Select></div>
                       <div className="space-y-2 lg:col-span-2"><Label htmlFor="email">Email *</Label><Input id="email" type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="name@company.com" /></div>
                       <div className="space-y-2"><Label htmlFor="password">Password *</Label><PasswordInput id="password" required minLength={6} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder="Minimum 6 characters" /></div>
                     </div>
@@ -181,7 +199,7 @@ const UserManagementTab = () => {
             <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue placeholder="Filter status" /></SelectTrigger><SelectContent><SelectItem value="all">All statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="locked">Locked</SelectItem></SelectContent></Select>
           </div>
 
-          {loading ? <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div> : <div className="overflow-x-auto rounded-lg border"><Table><TableHeader><TableRow><TableHead>Name {cycleSort('name')}</TableHead><TableHead>Email {cycleSort('email')}</TableHead><TableHead>Role {cycleSort('role')}</TableHead><TableHead>Joined {cycleSort('created_at')}</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader><TableBody>{filteredUsers.length === 0 ? <TableRow><TableCell colSpan={6} className="py-12 text-center text-muted-foreground">No users match the current filters.</TableCell></TableRow> : filteredUsers.map(user => <TableRow key={user.id} className={user.isGlobalAdmin ? 'bg-muted/30' : undefined}><TableCell className="font-medium">{`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}</TableCell><TableCell>{user.email}</TableCell><TableCell><div className="flex items-center gap-2"><Badge variant={user.isGlobalAdmin ? 'default' : 'secondary'}>{user.roleDisplay}</Badge>{user.isGlobalAdmin && <ShieldCheck className="h-4 w-4 text-primary" />}</div></TableCell><TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell><TableCell>{user.account_locked ? <Badge variant="destructive">Locked</Badge> : <Badge variant="outline">Active</Badge>}</TableCell><TableCell><div className="flex justify-end gap-2">{user.isGlobalAdmin ? <Badge variant="outline" className="gap-1"><ShieldCheck className="h-3.5 w-3.5" />Protected</Badge> : <><Select value={user.role || ''} onValueChange={value => handleUpdateRole(user, value)}><SelectTrigger className="w-40"><SelectValue placeholder="Change role" /></SelectTrigger><SelectContent>{roles.map(r => <SelectItem key={r.name} value={r.name}>{r.display_name}</SelectItem>)}</SelectContent></Select><Button size="icon" variant="outline" onClick={() => handleToggleLock(user)} title={user.account_locked ? 'Unlock account' : 'Lock account'}>{user.account_locked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}</Button></>}</div></TableCell></TableRow>)}</TableBody></Table></div>}
+          {loading ? <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div> : <div className="overflow-x-auto rounded-lg border"><Table><TableHeader><TableRow><TableHead>Name {cycleSort('name')}</TableHead><TableHead>Email {cycleSort('email')}</TableHead><TableHead>Role {cycleSort('role')}</TableHead><TableHead>Joined {cycleSort('created_at')}</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader><TableBody>{filteredUsers.length === 0 ? <TableRow><TableCell colSpan={6} className="py-12 text-center text-muted-foreground">No users match the current filters.</TableCell></TableRow> : filteredUsers.map(user => <TableRow key={user.id} className={user.isGlobalAdmin ? 'bg-muted/30' : undefined}><TableCell className="font-medium">{`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}</TableCell><TableCell>{user.email}</TableCell><TableCell><div className="flex items-center gap-2"><Badge variant={user.isGlobalAdmin ? 'default' : 'secondary'}>{user.roleDisplay}</Badge>{user.isGlobalAdmin && <ShieldCheck className="h-4 w-4 text-primary" />}</div></TableCell><TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell><TableCell>{user.account_locked ? <Badge variant="destructive">Locked</Badge> : <Badge variant="outline">Active</Badge>}</TableCell><TableCell><div className="flex justify-end gap-2">{user.isGlobalAdmin ? <Badge variant="outline" className="gap-1"><ShieldCheck className="h-3.5 w-3.5" />Protected</Badge> : <><Select value={user.role || ''} onValueChange={value => handleUpdateRole(user, value)}><SelectTrigger className="w-40"><SelectValue placeholder="Change role" /></SelectTrigger><SelectContent>{roles.map(r => <SelectItem key={r.name} value={r.name}>{r.display_name || BUSINESS_ROLE_LABELS[r.name as keyof typeof BUSINESS_ROLE_LABELS]}</SelectItem>)}</SelectContent></Select><Button size="icon" variant="outline" onClick={() => handleToggleLock(user)} title={user.account_locked ? 'Unlock account' : 'Lock account'}>{user.account_locked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}</Button></>}</div></TableCell></TableRow>)}</TableBody></Table></div>}
         </CardContent>
       </Card>
 
