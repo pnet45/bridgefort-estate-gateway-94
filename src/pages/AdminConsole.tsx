@@ -39,7 +39,7 @@ import { toast } from '@/hooks/use-toast';
 
 type TawkWindow = Window & { Tawk_API?: { hideWidget?: () => void; showWidget?: () => void; onLoad?: () => void } };
 
-const ADMIN_TAB_CLASS = 'text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm';
+const ADMIN_TAB_CLASS = 'text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm whitespace-nowrap';
 
 const AdminConsole = () => {
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
@@ -122,55 +122,55 @@ const AdminConsole = () => {
   }
 
   return (
-    <div className="admin-theme min-h-screen">
+    <div className="admin-theme min-h-screen overflow-x-hidden">
       <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg"><Shield className="h-6 w-6 text-primary" /></div>
-                <div><h1 className="text-lg font-bold text-white">Admin Console</h1><p className="text-xs text-slate-400">Bridgefort Homes Development Ltd</p></div>
+        <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between min-h-16 py-2 gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 bg-primary/10 rounded-lg shrink-0"><Shield className="h-6 w-6 text-primary" /></div>
+                <div className="min-w-0"><h1 className="text-base sm:text-lg font-bold text-white truncate">Admin Console</h1><p className="text-[11px] sm:text-xs text-slate-400 truncate">Bridgefort Homes Development Ltd</p></div>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-1 sm:gap-2">
               <div className="relative">
-                <Button variant="ghost" size="icon" onClick={() => setNotificationOpen(!notificationOpen)} className="text-slate-400 hover:text-white relative">
+                <Button variant="ghost" size="icon" onClick={() => setNotificationOpen(!notificationOpen)} className="text-slate-400 hover:text-white relative" aria-label="Open admin notifications">
                   <Bell className="h-5 w-5" />
-                  {pendingCount > 0 && <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>}
+                  {pendingCount > 0 && <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{pendingCount > 99 ? '99+' : pendingCount}</span>}
                 </Button>
                 <AdminNotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={handleTabChange} />
               </div>
-              <NotificationBell audience="admin" triggerClassName="text-slate-400 hover:text-white" />
-              <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 bg-slate-700/50 rounded-lg">
-                <div className="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center"><span className="text-primary font-medium text-sm">{profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'A'}</span></div>
-                <div><p className="text-sm font-medium text-white">{profile?.first_name || 'Admin'}</p><p className="text-xs text-slate-400">{userRole}</p></div>
+              <NotificationBell audience="admin" triggerClassName="text-slate-400 hover:text-white hidden sm:inline-flex" />
+              <div className="hidden md:flex items-center gap-3 px-3 py-1.5 bg-slate-700/50 rounded-lg max-w-56">
+                <div className="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center shrink-0"><span className="text-primary font-medium text-sm">{profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'A'}</span></div>
+                <div className="min-w-0"><p className="text-sm font-medium text-white truncate">{profile?.first_name || 'Admin'}</p><p className="text-xs text-slate-400 truncate">{userRole}</p></div>
               </div>
-              <Button variant="ghost" onClick={() => navigate('/')} className="text-slate-400 hover:text-white"><Home className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Main Site</span></Button>
-              <Button variant="ghost" onClick={handleSignOut} className="text-red-400 hover:text-red-300 hover:bg-red-900/20"><LogOut className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Logout</span></Button>
+              <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="text-slate-400 hover:text-white sm:w-auto sm:px-3" aria-label="Main site"><Home className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Main Site</span></Button>
+              <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-400 hover:text-red-300 hover:bg-red-900/20 sm:w-auto sm:px-3" aria-label="Logout"><LogOut className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Logout</span></Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className="bg-slate-800 border border-slate-700 p-1 flex flex-wrap h-auto gap-1 justify-start">
-            {hasPermission('admin:view_dashboard') && <TabsTrigger value="overview" className={ADMIN_TAB_CLASS}><LayoutDashboard className="h-4 w-4" /><span>Dashboard</span></TabsTrigger>}
-            {hasPermission('admin:view_properties') && <TabsTrigger value="properties" className={ADMIN_TAB_CLASS}><Building className="h-4 w-4" /><span>Properties</span></TabsTrigger>}
-            {hasPermission('admin:view_crm') && <TabsTrigger value="crm" className={ADMIN_TAB_CLASS}><CheckSquare className="h-4 w-4" /><span>CRM</span></TabsTrigger>}
-            {hasPermission('admin:view_users') && <TabsTrigger value="users" className={ADMIN_TAB_CLASS}><Users className="h-4 w-4" /><span>Users</span></TabsTrigger>}
-            {hasPermission('admin:view_approvals') && <TabsTrigger value="approvals" className={`${ADMIN_TAB_CLASS} relative`}><UserCheck className="h-4 w-4" /><span>Approvals</span>{pendingCount > 0 && <span className="ml-1 h-5 w-5 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">{pendingCount}</span>}</TabsTrigger>}
-            {hasPermission('admin:view_email_center') && <TabsTrigger value="emails" className={ADMIN_TAB_CLASS}><Mail className="h-4 w-4" /><span>Emails</span></TabsTrigger>}
-            {hasPermission('admin:view_analytics') && <TabsTrigger value="analytics" className={ADMIN_TAB_CLASS}><TrendingUp className="h-4 w-4" /><span>Analytics</span></TabsTrigger>}
-            {hasPermission('admin:view_mlm_funnel') && <TabsTrigger value="mlm-funnel" className={ADMIN_TAB_CLASS}><Network className="h-4 w-4" /><span>BHRealtors Funnel</span></TabsTrigger>}
-            {hasPermission('admin:view_activity') && <TabsTrigger value="activity" className={ADMIN_TAB_CLASS}><Activity className="h-4 w-4" /><span>Activity</span></TabsTrigger>}
-            {hasPermission('admin:view_content') && <TabsTrigger value="content" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4" /><span>Content</span></TabsTrigger>}
-            {hasPermission('admin:view_cms') && <TabsTrigger value="cms" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4" /><span>CMS Hub</span></TabsTrigger>}
-            {hasPermission('admin:view_cms') && <TabsTrigger value="gallery" className={ADMIN_TAB_CLASS}><Images className="h-4 w-4" /><span>Circular Gallery</span></TabsTrigger>}
-            {hasPermission('admin:view_other_payments') && <TabsTrigger value="other-payments" className={ADMIN_TAB_CLASS}><DollarSign className="h-4 w-4" /><span>Other Payments</span></TabsTrigger>}
-            {hasPermission('admin:manage_permissions') && <TabsTrigger value="permissions" className={ADMIN_TAB_CLASS}><Settings className="h-4 w-4" /><span>Permissions</span></TabsTrigger>}
-            {hasPermission('admin:manage_departments') && <TabsTrigger value="departments" className={ADMIN_TAB_CLASS}><Building2 className="h-4 w-4" /><span>Departments</span></TabsTrigger>}
-            {hasPermission('admin:view_travels') && <TabsTrigger value="travels" className={ADMIN_TAB_CLASS}><Plane className="h-4 w-4" /><span>Travels</span>{isSuperAdmin && <span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">Super</span>}</TabsTrigger>}
+      <main className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-5">
+          <TabsList className="bg-slate-800 border border-slate-700 p-1.5 flex flex-wrap h-auto gap-1 justify-start rounded-xl max-w-full overflow-hidden">
+            {hasPermission('admin:view_dashboard') && <TabsTrigger value="overview" className={ADMIN_TAB_CLASS}><LayoutDashboard className="h-4 w-4 shrink-0" /><span>Dashboard</span></TabsTrigger>}
+            {hasPermission('admin:view_properties') && <TabsTrigger value="properties" className={ADMIN_TAB_CLASS}><Building className="h-4 w-4 shrink-0" /><span>Properties</span></TabsTrigger>}
+            {hasPermission('admin:view_crm') && <TabsTrigger value="crm" className={ADMIN_TAB_CLASS}><CheckSquare className="h-4 w-4 shrink-0" /><span>CRM</span></TabsTrigger>}
+            {hasPermission('admin:view_users') && <TabsTrigger value="users" className={ADMIN_TAB_CLASS}><Users className="h-4 w-4 shrink-0" /><span>Users</span></TabsTrigger>}
+            {hasPermission('admin:view_approvals') && <TabsTrigger value="approvals" className={`${ADMIN_TAB_CLASS} relative`}><UserCheck className="h-4 w-4 shrink-0" /><span>Approvals</span>{pendingCount > 0 && <span className="ml-1 h-5 min-w-5 px-1 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{pendingCount > 99 ? '99+' : pendingCount}</span>}</TabsTrigger>}
+            {hasPermission('admin:view_email_center') && <TabsTrigger value="emails" className={ADMIN_TAB_CLASS}><Mail className="h-4 w-4 shrink-0" /><span>Emails</span></TabsTrigger>}
+            {hasPermission('admin:view_analytics') && <TabsTrigger value="analytics" className={ADMIN_TAB_CLASS}><TrendingUp className="h-4 w-4 shrink-0" /><span>Analytics</span></TabsTrigger>}
+            {hasPermission('admin:view_mlm_funnel') && <TabsTrigger value="mlm-funnel" className={ADMIN_TAB_CLASS}><Network className="h-4 w-4 shrink-0" /><span>BHRealtors Funnel</span></TabsTrigger>}
+            {hasPermission('admin:view_activity') && <TabsTrigger value="activity" className={ADMIN_TAB_CLASS}><Activity className="h-4 w-4 shrink-0" /><span>Activity</span></TabsTrigger>}
+            {hasPermission('admin:view_content') && <TabsTrigger value="content" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4 shrink-0" /><span>Content</span></TabsTrigger>}
+            {hasPermission('admin:view_cms') && <TabsTrigger value="cms" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4 shrink-0" /><span>CMS Hub</span></TabsTrigger>}
+            {hasPermission('admin:view_cms') && <TabsTrigger value="gallery" className={ADMIN_TAB_CLASS}><Images className="h-4 w-4 shrink-0" /><span>Circular Gallery</span></TabsTrigger>}
+            {hasPermission('admin:view_other_payments') && <TabsTrigger value="other-payments" className={ADMIN_TAB_CLASS}><DollarSign className="h-4 w-4 shrink-0" /><span>Other Payments</span></TabsTrigger>}
+            {hasPermission('admin:manage_permissions') && <TabsTrigger value="permissions" className={ADMIN_TAB_CLASS}><Settings className="h-4 w-4 shrink-0" /><span>Permissions</span></TabsTrigger>}
+            {hasPermission('admin:manage_departments') && <TabsTrigger value="departments" className={ADMIN_TAB_CLASS}><Building2 className="h-4 w-4 shrink-0" /><span>Departments</span></TabsTrigger>}
+            {hasPermission('admin:view_travels') && <TabsTrigger value="travels" className={ADMIN_TAB_CLASS}><Plane className="h-4 w-4 shrink-0" /><span>Travels</span>{isSuperAdmin && <span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 text-amber-300 px-1.5 py-0.5 rounded">Super</span>}</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6"><AdminDashboardStats /><div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><div className="lg:col-span-2 space-y-6"><AdminInbox /><AdminEstateViewsLeaderboard /></div><div className="space-y-6"><AdminOnlineUsers /><AdminChat /></div></div></TabsContent>
