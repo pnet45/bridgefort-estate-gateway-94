@@ -28,6 +28,12 @@ const BUSINESS_ROLE_LABELS: Record<(typeof BUSINESS_ROLES)[number], string> = {
   pbo: 'PBO'
 };
 
+const getSafeRoleLabel = (role: string | null | undefined, fallback?: string | null) => {
+  const normalized = role?.toLowerCase();
+  if (normalized === 'super_admin' || normalized === 'admin_dir') return 'Administrator';
+  return fallback || BUSINESS_ROLE_LABELS[normalized as keyof typeof BUSINESS_ROLE_LABELS] || 'No role';
+};
+
 const UserManagementTab = () => {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [roles, setRoles] = useState<RoleOption[]>([]);
@@ -65,22 +71,18 @@ const UserManagementTab = () => {
         const account = (usersData || []).find((u: any) => u.id === profile.id);
         const adminRole = activeAdminRoles.find((r: any) => r.user_id === profile.id);
         const genericRole = (userRoles || []).find((r: any) => r.user_id === profile.id);
-        // Administrator roles take precedence. For ordinary accounts, users.role is the
-        // canonical business role (user/client/pbo). user_roles remains a legacy fallback.
         const businessRole = account?.role || null;
         const effectiveRole = adminRole?.role_name || businessRole || genericRole?.role || null;
         const global = effectiveRole === 'admin_dir' || effectiveRole === 'super_admin';
         const roleOption = (roleOptions || []).find((r: any) => r.name === effectiveRole);
         const display = adminRole
-          ? (roleOption?.display_name || adminRole.role_name)
+          ? getSafeRoleLabel(adminRole.role_name, roleOption?.display_name)
           : (businessRole && BUSINESS_ROLE_LABELS[businessRole as keyof typeof BUSINESS_ROLE_LABELS])
             || roleOption?.display_name
-            || (genericRole?.role ? ((roleOptions || []).find((r: any) => r.name === genericRole.role)?.display_name || genericRole.role) : 'No role');
+            || (genericRole?.role ? getSafeRoleLabel(genericRole.role, (roleOptions || []).find((r: any) => r.name === genericRole.role)?.display_name) : 'No role');
         return { id: profile.id, email: account?.email || 'Unknown', first_name: profile.first_name, last_name: profile.last_name, created_at: profile.created_at, role: effectiveRole, roleDisplay: display, isGlobalAdmin: global, account_locked: !!profile.account_locked, account_locked_reason: profile.account_locked_reason || null };
       });
       setUsers(combined);
-      // This tab manages business/account roles only. Administrator roles are managed
-      // through the dedicated Admin Console/RBAC controls and are never exposed here.
       setRoles((roleOptions || []).filter((r: any) => BUSINESS_ROLES.includes(r.name as any)) as RoleOption[]);
     } catch (error: any) {
       console.error('Error fetching users:', error);
@@ -134,7 +136,7 @@ const UserManagementTab = () => {
   };
 
   const handleUpdateRole = async (target: UserWithRole, newRole: string) => {
-    if (target.isGlobalAdmin) return toast.error('Admin-Dir and Super_Admin roles are protected');
+    if (target.isGlobalAdmin) return toast.error('Protected administrator accounts cannot be reassigned here');
     if (!BUSINESS_ROLES.includes(newRole as (typeof BUSINESS_ROLES)[number])) return toast.error('Only User, Client and PBO roles can be assigned here');
     try {
       const { error } = await supabase.rpc('admin_set_user_role', { _target_user_id: target.id, _role: newRole });
@@ -145,7 +147,7 @@ const UserManagementTab = () => {
   };
 
   const handleToggleLock = async (target: UserWithRole) => {
-    if (target.isGlobalAdmin) return toast.error('Global administrator accounts are protected');
+    if (target.isGlobalAdmin) return toast.error('Protected administrator accounts cannot be modified here');
     const locking = !target.account_locked;
     const reason = locking ? (window.prompt('Reason for locking this account:', 'Account under review') || 'Account locked by admin') : null;
     try {
@@ -170,7 +172,7 @@ const UserManagementTab = () => {
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />User Management</CardTitle><CardDescription>Manage user accounts, roles and account security. Global administrators are protected.</CardDescription></div>
+            <div><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />User Management</CardTitle><CardDescription>Manage user accounts, roles and account security. Protected administrator accounts are not editable here.</CardDescription></div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => { fetchData(); fetchLockedAccounts(); }}><RefreshCw className="mr-2 h-4 w-4" />Refresh</Button>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
