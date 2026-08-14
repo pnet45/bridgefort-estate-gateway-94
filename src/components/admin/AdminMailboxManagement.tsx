@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 
-type AdminUser = { id: string; email: string; legacyRole: string | null; rbacRoles: string[]; canManageMailboxes: boolean };
+type AdminUser = { id: string; email: string; legacy_role: string | null; rbac_roles: string[] };
 type Mailbox = {
   id: string;
   user_id: string;
@@ -41,40 +41,15 @@ const AdminMailboxManagement = () => {
 
   const load = async () => {
     setLoading(true);
-    const [userResult, roleResult, permissionResult, mailboxResult] = await Promise.all([
-      supabase.from('users').select('id,email,role').order('email'),
-      supabase.from('user_roles').select('user_id,role'),
-      supabase.from('admin_permissions').select('user_id,permission_key,expires_at'),
+    const [managerResult, mailboxResult] = await Promise.all([
+      supabase.rpc('list_privileged_mailbox_managers'),
       supabase.from('admin_mailboxes').select('*').order('mailbox_email'),
     ]);
 
-    if (userResult.error) toast({ title: 'Unable to load administrators', description: userResult.error.message, variant: 'destructive' });
-    if (roleResult.error) toast({ title: 'Unable to load admin roles', description: roleResult.error.message, variant: 'destructive' });
-    if (permissionResult.error) toast({ title: 'Unable to load admin permissions', description: permissionResult.error.message, variant: 'destructive' });
+    if (managerResult.error) toast({ title: 'Unable to load privileged administrators', description: managerResult.error.message, variant: 'destructive' });
+    else setUsers((managerResult.data || []) as AdminUser[]);
     if (mailboxResult.error) toast({ title: 'Unable to load mailboxes', description: mailboxResult.error.message, variant: 'destructive' });
-
-    const roleRows = (roleResult.data || []) as { user_id: string; role: string }[];
-    const permissionRows = (permissionResult.data || []) as { user_id: string; permission_key: string; expires_at: string | null }[];
-    const rolesByUser = new Map<string, string[]>();
-    roleRows.forEach(row => rolesByUser.set(row.user_id, [...(rolesByUser.get(row.user_id) || []), row.role]));
-    const canManageByUser = new Set(
-      permissionRows
-        .filter(row => row.permission_key === 'admin:manage_departments' && (!row.expires_at || new Date(row.expires_at) > new Date()))
-        .map(row => row.user_id)
-    );
-
-    const adminUsers = ((userResult.data || []) as { id: string; email: string; role: string | null }[])
-      .map(u => {
-        const rbacRoles = rolesByUser.get(u.id) || [];
-        const isSuperAdmin = rbacRoles.includes('super_admin') || u.role === 'super_admin';
-        const canManageMailboxes = isSuperAdmin || canManageByUser.has(u.id);
-        return { id: u.id, email: u.email, legacyRole: u.role, rbacRoles, canManageMailboxes };
-      })
-      .filter(u => u.canManageMailboxes)
-      .sort((a, b) => a.email.localeCompare(b.email));
-
-    setUsers(adminUsers);
-    if (!mailboxResult.error) setMailboxes((mailboxResult.data || []) as Mailbox[]);
+    else setMailboxes((mailboxResult.data || []) as Mailbox[]);
     setLoading(false);
   };
 
@@ -94,8 +69,8 @@ const AdminMailboxManagement = () => {
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!userId || !email.trim()) return;
-    if (!users.some(u => u.id === userId && u.canManageMailboxes)) {
-      toast({ title: 'Administrator not authorized', description: 'Only Super Admin, Admin-Dir and Admin-IT can manage mailbox assignments.', variant: 'destructive' });
+    if (!users.some(u => u.id === userId)) {
+      toast({ title: 'Administrator not authorized', description: 'Only Super_Admin, Admin-Dir and Admin-IT can manage mailbox assignments.', variant: 'destructive' });
       return;
     }
     setSaving(true);
@@ -154,7 +129,7 @@ const AdminMailboxManagement = () => {
         <form onSubmit={save} className="rounded-2xl border border-white/25 bg-white/45 p-5 shadow-inner backdrop-blur-xl dark:bg-white/5">
           <div className="mb-5 flex items-center justify-between gap-3"><div><h4 className="font-semibold">{editing ? 'Edit mailbox assignment' : 'Assign a company mailbox'}</h4><p className="text-xs text-muted-foreground">For Gmail, add one or more Google accounts that are permitted to authenticate for this company mailbox.</p></div>{editing && <Button type="button" variant="ghost" onClick={reset}>Cancel</Button>}</div>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <div className="space-y-2"><Label>Administrator</Label><select className="h-10 w-full rounded-xl border bg-background/60 px-3 text-sm backdrop-blur" value={userId} onChange={e => setUserId(e.target.value)} required><option value="">Select administrator</option>{users.map(u => <option key={u.id} value={u.id}>{u.email}{u.rbacRoles.length ? ` — ${u.rbacRoles.join(', ')}` : ''}</option>)}</select></div>
+            <div className="space-y-2"><Label>Administrator</Label><select className="h-10 w-full rounded-xl border bg-background/60 px-3 text-sm backdrop-blur" value={userId} onChange={e => setUserId(e.target.value)} required><option value="">Select administrator</option>{users.map(u => <option key={u.id} value={u.id}>{u.email}{u.rbac_roles?.length ? ` — ${u.rbac_roles.join(', ')}` : ''}</option>)}</select></div>
             <div className="space-y-2"><Label>Company mailbox</Label><Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="support@bridgeforthomes.com" className="rounded-xl bg-background/60" required /></div>
             <div className="space-y-2"><Label>Provider</Label><select className="h-10 w-full rounded-xl border bg-background/60 px-3 text-sm backdrop-blur" value={provider} onChange={e => setProvider(e.target.value)}>{PROVIDERS.map(p => <option key={p} value={p}>{p}</option>)}</select></div>
             {provider === 'gmail' && <div className="space-y-2 md:col-span-2 xl:col-span-3"><Label>Assigned Google accounts</Label><Input value={googleAccounts} onChange={e => setGoogleAccounts(e.target.value)} placeholder="support@bridgeforthomes.com, delegated@gmail.com" className="rounded-xl bg-background/60" /><p className="text-xs text-muted-foreground">Separate multiple accounts with commas. Only these Google identities can connect and operate this mailbox.</p></div>}
