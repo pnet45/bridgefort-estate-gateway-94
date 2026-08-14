@@ -19,27 +19,61 @@ export interface SendEmailPayload {
 
 export interface EmailDraft { id?: string; to: string; subject: string; body: string; savedAt: string; }
 
+/**
+ * Central email service.
+ *
+ * Department mailbox sends must use the Gmail OAuth connection for the
+ * selected mailbox. The legacy `send-email` function is kept for generic
+ * Resend-based application mail, but it must not be used for an assigned
+ * Gmail mailbox because the two providers have different authorization
+ * records.
+ */
 export const emailService = {
   async sendEmail(payload: SendEmailPayload): Promise<{ success: boolean; error?: string }> {
     try {
       const html = payload.html || `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto"><div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:20px;text-align:center"><h1 style="color:#fff;margin:0">Bridgefort Homes Development Ltd</h1></div><div style="padding:30px;background:#fff">${payload.name ? `<p>Dear ${payload.name},</p>` : ''}<div style="white-space:pre-wrap">${payload.body}</div></div></div>`;
-      const { error } = await supabase.functions.invoke('send-email', {
+
+      // When an administrator selects a mailbox from Email Center, that
+      // mailbox is an OAuth/Gmail account. Route it through gmail-sync so the
+      // backend checks the Gmail mailbox assignment and sends through the
+      // actual connected Google account.
+      if (payload.fromMailbox) {
+        const { data, error } = await supabase.functions.invoke('gmail-sync', {
+          body: {
+            action: 'send-message',
+            mailboxEmail: payload.fromMailbox,
+            to: payload.to,
+            subject: payload.subject,
+            html,
+            cc: payload.cc,
+            bcc: payload.bcc,
+          },
+        });
+
+        if (error) throw new Error(error.message || 'Gmail send request failed');
+        if (!data?.success) throw new Error(data?.error || 'Gmail could not send the message');
+        return { success: true };
+      }
+
+      // Preserve the existing application-email path for callers that do not
+      // specify a department mailbox.
+      const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
           to: payload.to,
           subject: payload.subject,
           html,
           text: payload.body,
-          fromMailbox: payload.fromMailbox,
           fromName: payload.fromName,
           cc: payload.cc,
           bcc: payload.bcc,
         },
       });
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Email sending failed');
       return { success: true };
     } catch (error: any) {
       console.error('Email sending error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error.message || 'Unable to send email' };
     }
   },
 
