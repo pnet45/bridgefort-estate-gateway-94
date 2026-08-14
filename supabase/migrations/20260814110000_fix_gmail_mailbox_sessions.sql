@@ -37,39 +37,20 @@ create index if not exists gmail_oauth_state_mailbox_idx
 -- Return every administrator who is allowed to manage mailboxes. The UI
 -- receives the email only; internal role names remain server-side.
 create or replace function public.list_privileged_mailbox_managers()
-returns table (
-  id uuid,
-  email text,
-  legacy_role text,
-  rbac_roles text[]
-)
+returns table (id uuid, email text, legacy_role text, rbac_roles text[])
 language sql
 stable
 security definer
 set search_path = public
 as $$
-  select
-    u.id,
+  select u.id,
     lower(coalesce(u.email, '')) as email,
     null::text as legacy_role,
     coalesce(array_agg(distinct ar.role_name) filter (where ar.role_name is not null), '{}'::text[]) as rbac_roles
   from auth.users u
   left join public.admin_roles ar on ar.user_id = u.id
-  where exists (
-    select 1
-    from public.admin_roles x
-    join public.role_permissions rp on rp.role_name = x.role_name
-    where x.user_id = u.id
-      and rp.permission_key = 'mailbox:write'
-      and (x.expires_at is null or x.expires_at > now())
-  )
-  or exists (
-    select 1 from public.admin_permissions ap
-    where ap.user_id = u.id
-      and ap.permission_key = 'mailbox:write'
-      and (ap.expires_at is null or ap.expires_at > now())
-  )
-  or public.has_role(u.id, 'admin')
+  where public.user_has_permission(u.id, 'mailbox:write')
+     or public.has_role(u.id, 'admin')
   group by u.id, u.email
   order by lower(coalesce(u.email, ''));
 $$;
@@ -78,29 +59,20 @@ revoke all on function public.list_privileged_mailbox_managers() from public, an
 grant execute on function public.list_privileged_mailbox_managers() to authenticated;
 
 create or replace function public.get_available_mailboxes(_user_id uuid)
-returns table (
-  mailbox_email text,
-  mailbox_provider text,
-  is_connected boolean
-)
+returns table (mailbox_email text, mailbox_provider text, is_connected boolean)
 language sql
 stable
 security definer
 set search_path = public
 as $$
-  select
-    m.mailbox_email,
+  select m.mailbox_email,
     m.mailbox_provider,
-    case
-      when lower(m.mailbox_provider) <> 'gmail' then true
+    case when lower(m.mailbox_provider) <> 'gmail' then true
       else exists (
-        select 1
-        from public.gmail_oauth_tokens t
-        where t.mailbox_id = m.mailbox_id
-          and t.is_active = true
+        select 1 from public.gmail_oauth_tokens t
+        where t.mailbox_id = m.mailbox_id and t.is_active = true
           and exists (
-            select 1
-            from public.admin_mailboxes a
+            select 1 from public.admin_mailboxes a
             cross join lateral regexp_split_to_table(coalesce(a.provider_account_id, ''), '[,;[:space:]]+') assigned(account)
             where a.id = m.mailbox_id
               and a.status = 'active'
@@ -116,11 +88,9 @@ as $$
     union
     select distinct am.id as mailbox_id, am.mailbox_email, am.mailbox_provider
     from public.admin_mailboxes am
-    where am.status = 'active'
-      and public.user_has_permission(_user_id, 'admin:all')
+    where am.status = 'active' and public.user_has_permission(_user_id, 'admin:all')
   ) m
-  where _user_id = auth.uid()
-     or public.user_has_permission(auth.uid(), 'admin:manage_permissions')
+  where _user_id = auth.uid() or public.user_has_permission(auth.uid(), 'admin:manage_permissions')
   order by m.mailbox_email;
 $$;
 
