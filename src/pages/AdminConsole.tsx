@@ -41,6 +41,13 @@ type TawkWindow = Window & { Tawk_API?: { hideWidget?: () => void; showWidget?: 
 
 const ADMIN_TAB_CLASS = 'text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm whitespace-nowrap';
 
+// Internal RBAC names are intentionally not exposed in the admin UI.
+// Authorization still uses the real role values behind the scenes.
+const getAdminDisplayLabel = (role: string | null | undefined) => {
+  if (!role) return 'Administrator';
+  return isAdminRole(role) ? 'Administrator' : 'Administrator';
+};
+
 const AdminConsole = () => {
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -143,7 +150,7 @@ const AdminConsole = () => {
               <NotificationBell audience="admin" triggerClassName="text-slate-400 hover:text-white hidden sm:inline-flex" />
               <div className="hidden md:flex items-center gap-3 px-3 py-1.5 bg-slate-700/50 rounded-lg max-w-56">
                 <div className="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center shrink-0"><span className="text-primary font-medium text-sm">{profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'A'}</span></div>
-                <div className="min-w-0"><p className="text-sm font-medium text-white truncate">{profile?.first_name || 'Admin'}</p><p className="text-xs text-slate-400 truncate">{userRole}</p></div>
+                <div className="min-w-0"><p className="text-sm font-medium text-white truncate">{profile?.first_name || 'Admin'}</p><p className="text-xs text-slate-400 truncate">{getAdminDisplayLabel(userRole)}</p></div>
               </div>
               <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="text-slate-400 hover:text-white sm:w-auto sm:px-3" aria-label="Main site"><Home className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Main Site</span></Button>
               <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-400 hover:text-red-300 hover:bg-red-900/20 sm:w-auto sm:px-3" aria-label="Logout"><LogOut className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Logout</span></Button>
@@ -170,7 +177,7 @@ const AdminConsole = () => {
             {hasPermission('admin:view_other_payments') && <TabsTrigger value="other-payments" className={ADMIN_TAB_CLASS}><DollarSign className="h-4 w-4 shrink-0" /><span>Other Payments</span></TabsTrigger>}
             {hasPermission('admin:manage_permissions') && <TabsTrigger value="permissions" className={ADMIN_TAB_CLASS}><Settings className="h-4 w-4 shrink-0" /><span>Permissions</span></TabsTrigger>}
             {hasPermission('admin:manage_departments') && <TabsTrigger value="departments" className={ADMIN_TAB_CLASS}><Building2 className="h-4 w-4 shrink-0" /><span>Departments</span></TabsTrigger>}
-            {hasPermission('admin:view_travels') && <TabsTrigger value="travels" className={ADMIN_TAB_CLASS}><Plane className="h-4 w-4 shrink-0" /><span>Travels</span>{isSuperAdmin && <span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 text-amber-300 px-1.5 py-0.5 rounded">Super</span>}</TabsTrigger>}
+            {hasPermission('admin:view_travels') && <TabsTrigger value="travels" className={ADMIN_TAB_CLASS}><Plane className="h-4 w-4 shrink-0" /><span>Travels</span>{isSuperAdmin && <span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">Restricted</span>}</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6"><AdminDashboardStats /><div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><div className="lg:col-span-2 space-y-6"><AdminInbox /><AdminEstateViewsLeaderboard /></div><div className="space-y-6"><AdminOnlineUsers /><AdminChat /></div></div></TabsContent>
