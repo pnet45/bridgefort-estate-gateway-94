@@ -10,8 +10,6 @@ alter table public.gmail_oauth_tokens
 alter table public.gmail_oauth_state
   add column if not exists mailbox_email text;
 
--- Existing rows created by the earlier implementation stored the company
--- mailbox in `email`. Recover the mailbox relationship where possible.
 update public.gmail_oauth_tokens t
 set mailbox_id = m.id
 from public.admin_mailboxes m
@@ -20,8 +18,6 @@ where t.mailbox_id is null
   and lower(m.mailbox_provider) = 'gmail'
   and m.status = 'active';
 
--- The old schema allowed only one token per company mailbox. That prevented
--- multiple assigned Google accounts from connecting to the same mailbox.
 alter table public.gmail_oauth_tokens
   drop constraint if exists gmail_oauth_tokens_email_key;
 
@@ -38,8 +34,8 @@ create index if not exists gmail_oauth_tokens_google_account_idx
 create index if not exists gmail_oauth_state_mailbox_idx
   on public.gmail_oauth_state (mailbox_email, created_at desc);
 
--- Replace the mailbox-manager lookup with a role/permission based function.
--- No internal role names are exposed to the UI.
+-- Return every administrator who is allowed to manage mailboxes. The UI
+-- receives the email only; internal role names remain server-side.
 create or replace function public.list_privileged_mailbox_managers()
 returns table (
   id uuid,
@@ -81,8 +77,6 @@ $$;
 revoke all on function public.list_privileged_mailbox_managers() from public, anon;
 grant execute on function public.list_privileged_mailbox_managers() to authenticated;
 
--- Connected state must be based on an active token for a Google identity
--- actually assigned to that mailbox, not merely any token sharing an email.
 create or replace function public.get_available_mailboxes(_user_id uuid)
 returns table (
   mailbox_email text,
@@ -107,27 +101,20 @@ as $$
           and exists (
             select 1
             from public.admin_mailboxes a
+            cross join lateral regexp_split_to_table(coalesce(a.provider_account_id, ''), '[,;[:space:]]+') assigned(account)
             where a.id = m.mailbox_id
               and a.status = 'active'
               and lower(a.mailbox_provider) = 'gmail'
-              and lower(coalesce(a.provider_account_id, '')) <> ''
-              and lower(coalesce(a.provider_account_id, '')) like '%' || lower(t.google_account_email) || '%'
+              and lower(trim(assigned.account)) = lower(t.google_account_email)
           )
       )
     end as is_connected
   from (
-    select distinct
-      am.id as mailbox_id,
-      am.mailbox_email,
-      am.mailbox_provider
+    select distinct am.id as mailbox_id, am.mailbox_email, am.mailbox_provider
     from public.admin_mailboxes am
-    where am.user_id = _user_id
-      and am.status = 'active'
+    where am.user_id = _user_id and am.status = 'active'
     union
-    select distinct
-      am.id as mailbox_id,
-      am.mailbox_email,
-      am.mailbox_provider
+    select distinct am.id as mailbox_id, am.mailbox_email, am.mailbox_provider
     from public.admin_mailboxes am
     where am.status = 'active'
       and public.user_has_permission(_user_id, 'admin:all')
