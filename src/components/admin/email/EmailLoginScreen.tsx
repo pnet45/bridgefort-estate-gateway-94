@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Plug, Loader2, LogOut, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Mail, Plug, Loader2, LogOut, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export interface AvailableMailbox {
   mailbox_email: string;
@@ -19,13 +22,6 @@ interface EmailLoginScreenProps {
   onDisconnectGmail: (mailboxEmail: string) => void;
 }
 
-/**
- * The "Email Login" screen the spec asks for: clicking into Email Center
- * lands here first instead of auto-opening an inbox. Only mailboxes this
- * admin is actually authorized for (via admin_mailboxes / admin:all) show
- * up at all — get_available_mailboxes() is the enforcement, this is just
- * the picker on top of it.
- */
 export default function EmailLoginScreen({
   mailboxes,
   loading,
@@ -36,93 +32,64 @@ export default function EmailLoginScreen({
   onConnectGmail,
   onDisconnectGmail,
 }: EmailLoginScreenProps) {
+  const [localConnecting, setLocalConnecting] = useState<string | null>(null);
+
+  const connectSelectedMailbox = async (mailboxEmail: string) => {
+    setLocalConnecting(mailboxEmail);
+    try {
+      // The selected company mailbox is carried through the OAuth state.
+      // This lets one Google identity authenticate a specific assigned
+      // company mailbox without assuming the Google login address is the
+      // same as the company mailbox address.
+      const { data, error } = await supabase.functions.invoke('gmail-oauth-start', {
+        body: { mailboxEmail },
+      });
+      if (error || !data?.url) throw new Error(error?.message || 'Could not start Gmail connection');
+      window.location.href = data.url;
+    } catch (error: any) {
+      toast.error(error?.message || 'Could not start Gmail connection');
+      setLocalConnecting(null);
+    }
+  };
+
   return (
-    <div className="flex-1 flex flex-col items-center justify-center rounded-2xl bg-white/80 backdrop-blur-xl border border-white/40 shadow-lg p-6 md:p-10">
-      <div className="w-full max-w-lg">
-        <div className="text-center mb-8">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white">
-            <Mail className="h-7 w-7" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-900">Email Center</h2>
-          <p className="text-sm text-slate-500 mt-1.5">
-            Sign in to a mailbox to continue. You can switch between any of your authorized accounts without signing out.
-          </p>
+    <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden rounded-[28px] border border-white/30 bg-white/65 p-6 shadow-[0_25px_80px_-35px_rgba(15,23,42,.55)] backdrop-blur-2xl md:p-10 dark:border-white/10 dark:bg-slate-950/45">
+      <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-primary/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-sky-400/10 blur-3xl" />
+      <div className="relative w-full max-w-2xl">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl border border-white/30 bg-slate-900 text-white shadow-xl dark:bg-white/10"><Mail className="h-7 w-7" /></div>
+          <div className="mb-2 flex items-center justify-center gap-2"><h2 className="text-2xl font-bold tracking-tight">Email Center</h2><span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">Secure</span></div>
+          <p className="mx-auto max-w-xl text-sm leading-6 text-muted-foreground">Sign in to an authorized company mailbox. Each mailbox can have one or more Google accounts assigned by Admin-IT, Admin-Dir or Super_Admin.</p>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
-          </div>
+          <div className="flex justify-center py-10"><Loader2 className="h-7 w-7 animate-spin text-primary" /></div>
         ) : mailboxes.length === 0 ? (
-          <div className="text-center text-sm text-slate-500 py-10">
-            No mailboxes are assigned to your account yet. Ask an administrator to grant you access.
-          </div>
+          <div className="rounded-2xl border border-white/20 bg-white/40 p-10 text-center backdrop-blur-xl dark:bg-white/5"><Mail className="mx-auto mb-3 h-8 w-8 text-muted-foreground/50" /><p className="font-medium">No mailboxes are assigned to your account yet.</p><p className="mt-1 text-sm text-muted-foreground">Ask an authorized administrator to grant you mailbox access.</p></div>
         ) : (
-          <div className="space-y-2">
+          <div className="grid gap-3">
             {mailboxes.map((mb) => {
               const isGmail = mb.mailbox_provider === 'gmail';
               const needsConnect = isGmail && !mb.is_connected;
-              const isConnecting = connectingEmail === mb.mailbox_email;
+              const isConnecting = connectingEmail === mb.mailbox_email || localConnecting === mb.mailbox_email;
               const isDisconnecting = disconnectingEmail === mb.mailbox_email;
               const isActive = activeMailbox === mb.mailbox_email;
 
               return (
-                <div
-                  key={`${mb.mailbox_provider}-${mb.mailbox_email}`}
-                  className={`flex items-center gap-3 rounded-xl border p-3.5 transition-colors ${
-                    isActive ? 'border-slate-900 bg-slate-50' : 'border-slate-200 bg-white hover:border-slate-300'
-                  }`}
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
-                    <Mail className="h-5 w-5" />
+                <div key={`${mb.mailbox_provider}-${mb.mailbox_email}`} className={`group flex items-center gap-3 rounded-2xl border p-4 shadow-sm backdrop-blur-xl transition-all ${isActive ? 'border-primary/30 bg-primary/5 shadow-primary/10' : 'border-white/25 bg-white/45 hover:-translate-y-0.5 hover:bg-white/65 dark:bg-white/5 dark:hover:bg-white/10'}`}>
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/30 bg-white/60 text-primary shadow-sm dark:bg-white/10"><Mail className="h-5 w-5" /></div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{mb.mailbox_email}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2"><Badge variant="secondary" className="rounded-full text-[10px] capitalize">{mb.mailbox_provider}</Badge>{isGmail && <span className={`flex items-center gap-1 text-[11px] ${mb.is_connected ? 'text-emerald-600 dark:text-emerald-300' : 'text-muted-foreground'}`}>{mb.is_connected ? <CheckCircle2 className="h-3 w-3" /> : <ShieldCheck className="h-3 w-3" />}{mb.is_connected ? 'Google connected' : 'Google account required'}</span>}</div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 truncate">{mb.mailbox_email}</p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <Badge variant="secondary" className="text-[10px] capitalize">{mb.mailbox_provider}</Badge>
-                      {isGmail && (
-                        <span className={`text-[11px] flex items-center gap-1 ${mb.is_connected ? 'text-green-600' : 'text-slate-400'}`}>
-                          {mb.is_connected ? <CheckCircle2 className="h-3 w-3" /> : null}
-                          {mb.is_connected ? 'Connected' : 'Not connected'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex shrink-0 items-center gap-1.5">
                     {needsConnect ? (
-                      <Button
-                        size="sm"
-                        onClick={() => onConnectGmail(mb.mailbox_email)}
-                        disabled={isConnecting}
-                        className="gap-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white"
-                      >
-                        {isConnecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />}
-                        Connect
-                      </Button>
+                      <Button size="sm" onClick={() => connectSelectedMailbox(mb.mailbox_email)} disabled={isConnecting} className="gap-1.5 rounded-full"><>{isConnecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />}</>Connect</Button>
                     ) : (
                       <>
-                        <Button
-                          size="sm"
-                          variant={isActive ? 'secondary' : 'default'}
-                          onClick={() => onSelect(mb.mailbox_email)}
-                          className="gap-1.5 rounded-full"
-                        >
-                          {isActive ? 'Current' : 'Sign In'}
-                          {!isActive && <ArrowRight className="h-3.5 w-3.5" />}
-                        </Button>
-                        {isGmail && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => onDisconnectGmail(mb.mailbox_email)}
-                            disabled={isDisconnecting}
-                            title="Sign out this account"
-                            className="text-slate-400 hover:text-red-500"
-                          >
-                            {isDisconnecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LogOut className="h-3.5 w-3.5" />}
-                          </Button>
-                        )}
+                        <Button size="sm" variant={isActive ? 'secondary' : 'default'} onClick={() => onSelect(mb.mailbox_email)} className="gap-1.5 rounded-full">{isActive ? 'Current' : 'Sign In'}{!isActive && <ArrowRight className="h-3.5 w-3.5" />}</Button>
+                        {isGmail && <Button size="sm" variant="ghost" onClick={() => onDisconnectGmail(mb.mailbox_email)} disabled={isDisconnecting} title="Sign out this mailbox" className="text-muted-foreground hover:text-red-500">{isDisconnecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LogOut className="h-3.5 w-3.5" />}</Button>}
                       </>
                     )}
                   </div>
