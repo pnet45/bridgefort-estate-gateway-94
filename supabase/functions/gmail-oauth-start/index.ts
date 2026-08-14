@@ -13,72 +13,45 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-    const authed = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const authed = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await authed.auth.getUser(token);
-    if (userError || !userData?.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (userError || !userData?.user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+    const body = await req.json().catch(() => ({}));
+    const mailboxEmail = String(body?.mailboxEmail || "").trim().toLowerCase();
+    if (!mailboxEmail) return new Response(JSON.stringify({ error: "mailboxEmail is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const svc = createClient(supabaseUrl, serviceKey);
-    const { data: isAdmin } = await svc.rpc("has_role", {
-      _user_id: userData.user.id,
-      _role: "admin",
-    });
-    if (!isAdmin) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const { data: canWrite } = await svc.rpc("user_has_permission", { _user_id: userData.user.id, _permission_key: "mailbox:write" });
+    if (!canWrite) return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    // One-time state token, tied to this admin, expires implicitly by only
-    // being accepted within a few minutes (checked in the callback).
+    const { data: access, error: accessError } = await svc.rpc("user_mailbox_access", { _user_id: userData.user.id, _mailbox_email: mailboxEmail, _provider: "gmail" });
+    if (accessError || !access) return new Response(JSON.stringify({ error: "Forbidden: mailbox access denied" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+    const { data: mailbox, error: mailboxError } = await svc.from("admin_mailboxes").select("id, mailbox_email, mailbox_provider, provider_account_id, status").eq("mailbox_email", mailboxEmail).eq("mailbox_provider", "gmail").eq("status", "active").limit(1).maybeSingle();
+    if (mailboxError || !mailbox) return new Response(JSON.stringify({ error: "Gmail mailbox assignment not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+    const assignedAccounts = String(mailbox.provider_account_id || "").split(/[,;\n]+/).map((value) => value.trim().toLowerCase()).filter(Boolean);
+    if (!assignedAccounts.length) return new Response(JSON.stringify({ error: "No Google account has been assigned to this mailbox" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
     const state = crypto.randomUUID();
-    const { error: stateError } = await svc.from("gmail_oauth_state").insert({
-      state,
-      requested_by: userData.user.id,
-    });
+    const { error: stateError } = await svc.from("gmail_oauth_state").insert({ state, requested_by: userData.user.id, mailbox_email: mailboxEmail, used: false });
     if (stateError) throw new Error(`Failed to create OAuth state: ${stateError.message}`);
 
     const clientId = requireEnv("GOOGLE_CLIENT_ID");
     const redirectUri = `${supabaseUrl}/functions/v1/gmail-oauth-callback`;
+    const params = new URLSearchParams({ client_id: clientId, redirect_uri: redirectUri, response_type: "code", scope: "https://www.googleapis.com/auth/gmail.modify", access_type: "offline", prompt: "consent", state });
 
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: "code",
-      scope: "https://www.googleapis.com/auth/gmail.modify",
-      access_type: "offline", // required to get a refresh_token back
-      prompt: "consent", // forces Google to re-issue a refresh_token even on reconnect
-      state,
-    });
-
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-
-    return new Response(JSON.stringify({ url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}` }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error: any) {
     console.error("gmail-oauth-start error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({ error: error.message || "Unable to start Gmail connection" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
