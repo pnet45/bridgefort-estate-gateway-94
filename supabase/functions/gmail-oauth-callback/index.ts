@@ -30,12 +30,22 @@ Deno.serve(async (req) => {
     if (!mailboxEmail) return redirect(appUrl, { gmail_error: "mailbox_missing_from_state" });
     await svc.from("gmail_oauth_state").update({ used: true }).eq("state", state);
 
+    // Resolve the exact assignment that initiated OAuth. Multiple admins may
+    // share the same mailbox but be allowed to authenticate different Google accounts.
     const { data: access, error: accessError } = await svc.rpc("user_mailbox_access", { _user_id: oauthState.requested_by, _mailbox_email: mailboxEmail, _provider: "gmail" });
     if (accessError || !access) return redirect(appUrl, { gmail_error: "mailbox_not_authorized" });
 
-    const { data: mailboxes, error: mailboxError } = await svc.from("admin_mailboxes").select("id, provider_account_id").eq("mailbox_email", mailboxEmail).eq("mailbox_provider", "gmail").eq("status", "active");
-    if (mailboxError) return redirect(appUrl, { gmail_error: "assignment_lookup_failed" });
-    const assigned = [...new Set((mailboxes || []).flatMap((row: any) => accounts(row.provider_account_id)))];
+    const { data: mailbox, error: mailboxError } = await svc
+      .from("admin_mailboxes")
+      .select("id, user_id, provider_account_id")
+      .eq("user_id", oauthState.requested_by)
+      .eq("mailbox_email", mailboxEmail)
+      .eq("mailbox_provider", "gmail")
+      .eq("status", "active")
+      .maybeSingle();
+    if (mailboxError || !mailbox) return redirect(appUrl, { gmail_error: "assignment_lookup_failed" });
+
+    const assigned = accounts(mailbox.provider_account_id);
     if (!assigned.length) return redirect(appUrl, { gmail_error: "google_account_not_assigned" });
 
     const clientId = requireEnv("GOOGLE_CLIENT_ID");
@@ -55,8 +65,7 @@ Deno.serve(async (req) => {
     if (!profileResponse.ok || !googleEmail) return redirect(appUrl, { gmail_error: "profile_fetch_failed" });
     if (!assigned.includes(googleEmail)) return redirect(appUrl, { gmail_error: "google_account_not_assigned", gmail_attempted_email: googleEmail });
 
-    const mailboxId = mailboxes?.[0]?.id;
-    if (!mailboxId) return redirect(appUrl, { gmail_error: "mailbox_record_missing" });
+    const mailboxId = mailbox.id;
     const { data: existing } = await svc.from("gmail_oauth_tokens").select("id, refresh_token").eq("mailbox_id", mailboxId).ilike("google_account_email", googleEmail).maybeSingle();
     const refreshToken = tokenData.refresh_token || existing?.refresh_token;
     if (!refreshToken) return redirect(appUrl, { gmail_error: "no_refresh_token", gmail_attempted_email: googleEmail });
