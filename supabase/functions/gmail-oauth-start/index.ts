@@ -32,11 +32,21 @@ serve(async (req) => {
     const { data: canWrite } = await svc.rpc("user_has_permission", { _user_id: userData.user.id, _permission_key: "mailbox:write" });
     if (!canWrite) return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
+    // IMPORTANT: resolve the mailbox assignment for the signed-in administrator.
+    // Do not select an arbitrary assignment when multiple administrators share
+    // the same company mailbox with different Google identities.
     const { data: access, error: accessError } = await svc.rpc("user_mailbox_access", { _user_id: userData.user.id, _mailbox_email: mailboxEmail, _provider: "gmail" });
     if (accessError || !access) return new Response(JSON.stringify({ error: "Forbidden: mailbox access denied" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { data: mailbox, error: mailboxError } = await svc.from("admin_mailboxes").select("id, mailbox_email, mailbox_provider, provider_account_id, status").eq("mailbox_email", mailboxEmail).eq("mailbox_provider", "gmail").eq("status", "active").limit(1).maybeSingle();
-    if (mailboxError || !mailbox) return new Response(JSON.stringify({ error: "Gmail mailbox assignment not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: mailbox, error: mailboxError } = await svc
+      .from("admin_mailboxes")
+      .select("id, user_id, mailbox_email, mailbox_provider, provider_account_id, status")
+      .eq("user_id", userData.user.id)
+      .eq("mailbox_email", mailboxEmail)
+      .eq("mailbox_provider", "gmail")
+      .eq("status", "active")
+      .maybeSingle();
+    if (mailboxError || !mailbox) return new Response(JSON.stringify({ error: "Gmail mailbox assignment not found for this administrator" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const assignedAccounts = String(mailbox.provider_account_id || "").split(/[,;\n]+/).map((value) => value.trim().toLowerCase()).filter(Boolean);
     if (!assignedAccounts.length) return new Response(JSON.stringify({ error: "No Google account has been assigned to this mailbox" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
