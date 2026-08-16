@@ -24,96 +24,23 @@ const AdminDepartmentManagement = () => {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
 
-  const loadDepartments = async () => {
-    setLoading(true);
-    const { data, error } = await supabase.from('admin_departments').select('*').order('name');
-    if (error) toast({ title: 'Unable to load departments', description: error.message, variant: 'destructive' });
-    else setDepartments((data || []) as Department[]);
-    setLoading(false);
-  };
-
+  const loadDepartments = async () => { setLoading(true); const { data, error } = await supabase.from('admin_departments').select('*').order('name'); if (error) toast({ title: 'Unable to load departments', description: error.message, variant: 'destructive' }); else setDepartments((data || []) as Department[]); setLoading(false); };
   useEffect(() => { loadDepartments(); }, []);
-
   const reset = () => { setEditing(null); setName(''); setSlug(''); setDescription(''); setIsActive(true); };
-  const startEdit = (department: Department) => {
-    setEditing(department); setName(department.name); setSlug(department.slug); setDescription(department.description || ''); setIsActive(department.is_active);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !name.trim() || !slug.trim()) return;
-    setSaving(true);
-    const normalizedSlug = slug.trim().toLowerCase().replace(/\s+/g, '-');
-    const payload = { name: name.trim(), slug: normalizedSlug, role_name: `admin_${normalizedSlug.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')}`, description: description.trim() || null, is_active: isActive, created_by: user.id };
-    const result = editing
-      ? await supabase.from('admin_departments').update({ name: payload.name, slug: payload.slug, description: payload.description, is_active: payload.is_active }).eq('id', editing.id)
-      : await supabase.from('admin_departments').insert(payload);
-    if (result.error) toast({ title: 'Department could not be saved', description: result.error.message, variant: 'destructive' });
-    else { toast({ title: editing ? 'Department updated' : 'Department created' }); reset(); await loadDepartments(); }
-    setSaving(false);
-  };
-
-  const remove = async (department: Department) => {
-    if (!window.confirm(`Delete ${department.name}? This does not delete existing administrators.`)) return;
-    const { error } = await supabase.from('admin_departments').delete().eq('id', department.id);
-    if (error) toast({ title: 'Department could not be deleted', description: error.message, variant: 'destructive' });
-    else { toast({ title: 'Department deleted' }); await loadDepartments(); }
-  };
-
-  const filteredDepartments = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return departments;
-    return departments.filter(d => `${d.name} ${d.slug} ${d.role_name} ${d.description || ''}`.toLowerCase().includes(term));
-  }, [departments, search]);
-  const activeCount = departments.filter(d => d.is_active).length;
-  const inactiveCount = departments.length - activeCount;
-
+  const startEdit = (department: Department) => { setEditing(department); setName(department.name); setSlug(department.slug); setDescription(department.description || ''); setIsActive(department.is_active); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const save = async (e: React.FormEvent) => { e.preventDefault(); if (!user || !name.trim() || !slug.trim()) return; setSaving(true); const normalizedSlug = slug.trim().toLowerCase().replace(/\s+/g, '-'); const payload = { name: name.trim(), slug: normalizedSlug, role_name: `admin_${normalizedSlug.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')}`, description: description.trim() || null, is_active: isActive, created_by: user.id }; const result = editing ? await supabase.from('admin_departments').update({ name: payload.name, slug: payload.slug, description: payload.description, is_active: payload.is_active }).eq('id', editing.id) : await supabase.from('admin_departments').insert(payload); if (result.error) toast({ title: 'Department could not be saved', description: result.error.message, variant: 'destructive' }); else { toast({ title: editing ? 'Department updated' : 'Department created' }); reset(); await loadDepartments(); } setSaving(false); };
+  const remove = async (department: Department) => { if (!window.confirm(`Delete ${department.name}? This does not delete existing administrators.`)) return; const { error } = await supabase.from('admin_departments').delete().eq('id', department.id); if (error) toast({ title: 'Department could not be deleted', description: error.message, variant: 'destructive' }); else { toast({ title: 'Department deleted' }); await loadDepartments(); } };
+  const filteredDepartments = useMemo(() => { const term = search.trim().toLowerCase(); if (!term) return departments; return departments.filter(d => `${d.name} ${d.slug} ${d.description || ''}`.toLowerCase().includes(term)); }, [departments, search]);
+  const activeCount = departments.filter(d => d.is_active).length; const inactiveCount = departments.length - activeCount;
   const glass = 'border border-white/20 bg-white/55 shadow-[0_20px_70px_-30px_rgba(15,23,42,.45)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/45';
   const softGlass = 'border border-white/20 bg-white/40 backdrop-blur-xl dark:bg-white/5';
-
   return (
     <div className="relative space-y-6 overflow-hidden pb-10">
-      <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 top-64 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
-
-      <section className={`relative overflow-hidden rounded-[28px] p-6 md:p-8 ${glass}`}>
-        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-primary/15 blur-3xl" />
-        <div className="relative flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex items-start gap-4">
-            <div className="rounded-2xl border border-white/30 bg-white/60 p-3 shadow-lg backdrop-blur-xl dark:bg-white/10"><Building2 className="h-7 w-7 text-primary" /></div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2"><h2 className="text-2xl font-bold tracking-tight md:text-3xl">Departments</h2><span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">Admin spaces</span></div>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Create and manage department-based administrator spaces, then connect their authorized mailboxes and Google accounts from one secure control surface.</p>
-              <div className="mt-4 flex flex-wrap gap-2"><span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-700 dark:text-emerald-300"><ShieldCheck className="h-3.5 w-3.5" />RBAC protected</span><span className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1.5 text-xs text-sky-700 dark:text-sky-300"><Sparkles className="h-3.5 w-3.5" />Modern workspace</span></div>
-            </div>
-          </div>
-          <Button onClick={() => { reset(); document.getElementById('department-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="rounded-xl shadow-lg"><Plus className="mr-2 h-4 w-4" />New department</Button>
-        </div>
-      </section>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className={`rounded-2xl p-5 ${softGlass}`}><div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">Total departments</span><Users className="h-4 w-4 text-primary" /></div><div className="mt-2 text-3xl font-bold">{departments.length}</div></div>
-        <div className={`rounded-2xl p-5 ${softGlass}`}><div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">Active</span><CheckCircle2 className="h-4 w-4 text-emerald-500" /></div><div className="mt-2 text-3xl font-bold">{activeCount}</div></div>
-        <div className={`rounded-2xl p-5 ${softGlass}`}><div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">Inactive</span><Mail className="h-4 w-4 text-muted-foreground" /></div><div className="mt-2 text-3xl font-bold">{inactiveCount}</div></div>
-      </div>
-
-      <form id="department-form" onSubmit={save} className={`scroll-mt-6 rounded-[24px] p-5 md:p-6 ${glass}`}>
-        <div className="mb-6 flex items-center justify-between gap-3"><div><h3 className="text-lg font-semibold">{editing ? 'Edit department' : 'Create administrator space'}</h3><p className="mt-1 text-sm text-muted-foreground">Role keys are generated safely from the department slug.</p></div>{editing && <Button type="button" variant="ghost" onClick={reset}>Cancel</Button>}</div>
-        <div className="grid gap-5 lg:grid-cols-3">
-          <div className="space-y-2"><Label htmlFor="department-name">Department name</Label><Input id="department-name" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Travels, Agro, Human Resources" className="rounded-xl bg-background/50" required /></div>
-          <div className="space-y-2"><Label htmlFor="department-slug">Department slug</Label><Input id="department-slug" value={slug} onChange={e => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))} placeholder="e.g. travels" className="rounded-xl bg-background/50" required /><p className="text-xs text-muted-foreground">Used to create the administrator role key.</p></div>
-          <div className="space-y-2"><Label>Availability</Label><div className="flex min-h-10 items-center justify-between rounded-xl border bg-background/40 px-3"><div><div className="text-sm font-medium">{isActive ? 'Active' : 'Inactive'}</div><div className="text-xs text-muted-foreground">Available for new admins</div></div><Switch checked={isActive} onCheckedChange={setIsActive} /></div></div>
-        </div>
-        <div className="mt-5 space-y-2"><Label htmlFor="department-description">Description</Label><Textarea id="department-description" value={description} onChange={e => setDescription(e.target.value)} placeholder="What this department manages" className="min-h-24 resize-y rounded-xl bg-background/50" /></div>
-        <div className="mt-5 flex flex-wrap gap-2"><Button type="submit" disabled={saving} className="rounded-xl">{editing ? <Edit2 className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}{saving ? 'Saving...' : editing ? 'Update department' : 'Create department'}</Button>{editing && <Button type="button" variant="outline" className="rounded-xl" onClick={reset}>Cancel changes</Button>}</div>
-      </form>
-
-      <section className={`overflow-hidden rounded-[24px] ${glass}`}>
-        <div className="flex flex-col gap-4 border-b border-white/20 p-5 md:flex-row md:items-center md:justify-between"><div><h3 className="font-semibold">Administrator spaces</h3><p className="mt-1 text-sm text-muted-foreground">{filteredDepartments.length} of {departments.length} departments shown</p></div><div className="relative w-full md:max-w-sm"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search departments..." className="rounded-xl bg-background/50 pl-9" /></div></div>
-        {loading ? <div className="p-8 text-center text-sm text-muted-foreground">Loading departments...</div> : filteredDepartments.length === 0 ? <div className="p-10 text-center"><Building2 className="mx-auto mb-3 h-8 w-8 text-muted-foreground/40" /><p className="font-medium">{search ? 'No departments match your search' : 'No departments configured'}</p><p className="mt-1 text-sm text-muted-foreground">{search ? 'Try a different search term.' : 'Create the first administrator space above.'}</p></div> : <div className="divide-y divide-white/15">{filteredDepartments.map(department => <div key={department.id} className="flex flex-col gap-4 p-4 transition-all hover:bg-white/20 md:flex-row md:items-center md:justify-between md:p-5"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{department.name}</span><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${department.is_active ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>{department.is_active ? 'Active' : 'Inactive'}</span></div><div className="mt-1 font-mono text-xs text-muted-foreground">{department.role_name}</div>{department.description && <div className="mt-1 max-w-2xl text-sm text-muted-foreground">{department.description}</div>}</div><div className="flex shrink-0 gap-2"><Button variant="outline" size="sm" className="rounded-xl bg-background/30" onClick={() => startEdit(department)}><Edit2 className="mr-1.5 h-4 w-4" />Edit</Button><Button variant="ghost" size="sm" className="rounded-xl text-destructive hover:text-destructive" onClick={() => remove(department)} aria-label={`Delete ${department.name}`}><Trash2 className="h-4 w-4" /></Button></div></div>)}</div>}
-      </section>
-
+      <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" /><div className="pointer-events-none absolute -right-24 top-64 h-80 w-80 rounded-full bg-sky-400/10 blur-3xl" />
+      <section className={`relative overflow-hidden rounded-[28px] p-6 md:p-8 ${glass}`}><div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-primary/15 blur-3xl" /><div className="relative flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between"><div className="flex items-start gap-4"><div className="rounded-2xl border border-white/30 bg-white/60 p-3 shadow-lg backdrop-blur-xl dark:bg-white/10"><Building2 className="h-7 w-7 text-primary" /></div><div><div className="flex flex-wrap items-center gap-2"><h2 className="text-2xl font-bold tracking-tight md:text-3xl">Departments</h2><span className="rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">Admin spaces</span></div><p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Create and manage department-based administrator spaces, then connect their authorized mailboxes and Google accounts from one secure control surface.</p><div className="mt-4 flex flex-wrap gap-2"><span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-700 dark:text-emerald-300"><ShieldCheck className="h-3.5 w-3.5" />RBAC protected</span><span className="inline-flex items-center gap-1.5 rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1.5 text-xs text-sky-700 dark:text-sky-300"><Sparkles className="h-3.5 w-3.5" />Modern workspace</span></div></div></div><Button onClick={() => { reset(); document.getElementById('department-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="rounded-xl shadow-lg"><Plus className="mr-2 h-4 w-4" />New department</Button></div></section>
+      <div className="grid gap-4 sm:grid-cols-3"><div className={`rounded-2xl p-5 ${softGlass}`}><div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">Total departments</span><Users className="h-4 w-4 text-primary" /></div><div className="mt-2 text-3xl font-bold">{departments.length}</div></div><div className={`rounded-2xl p-5 ${softGlass}`}><div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">Active</span><CheckCircle2 className="h-4 w-4 text-emerald-500" /></div><div className="mt-2 text-3xl font-bold">{activeCount}</div></div><div className={`rounded-2xl p-5 ${softGlass}`}><div className="flex items-center justify-between"><span className="text-xs text-muted-foreground">Inactive</span><Mail className="h-4 w-4 text-muted-foreground" /></div><div className="mt-2 text-3xl font-bold">{inactiveCount}</div></div></div>
+      <form id="department-form" onSubmit={save} className={`scroll-mt-6 rounded-[24px] p-5 md:p-6 ${glass}`}><div className="mb-6 flex items-center justify-between gap-3"><div><h3 className="text-lg font-semibold">{editing ? 'Edit department' : 'Create administrator space'}</h3><p className="mt-1 text-sm text-muted-foreground">Access permissions are managed securely in the background.</p></div>{editing && <Button type="button" variant="ghost" onClick={reset}>Cancel</Button>}</div><div className="grid gap-5 lg:grid-cols-3"><div className="space-y-2"><Label htmlFor="department-name">Department name</Label><Input id="department-name" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Travels, Agro, Human Resources" className="rounded-xl bg-background/50" required /></div><div className="space-y-2"><Label htmlFor="department-slug">Department slug</Label><Input id="department-slug" value={slug} onChange={e => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))} placeholder="e.g. travels" className="rounded-xl bg-background/50" required /><p className="text-xs text-muted-foreground">Used internally to organize access.</p></div><div className="space-y-2"><Label>Availability</Label><div className="flex min-h-10 items-center justify-between rounded-xl border bg-background/40 px-3"><div><div className="text-sm font-medium">{isActive ? 'Active' : 'Inactive'}</div><div className="text-xs text-muted-foreground">Available for new admins</div></div><Switch checked={isActive} onCheckedChange={setIsActive} /></div></div></div><div className="mt-5 space-y-2"><Label htmlFor="department-description">Description</Label><Textarea id="department-description" value={description} onChange={e => setDescription(e.target.value)} placeholder="What this department manages" className="min-h-24 resize-y rounded-xl bg-background/50" /></div><div className="mt-5 flex flex-wrap gap-2"><Button type="submit" disabled={saving} className="rounded-xl">{editing ? <Edit2 className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}{saving ? 'Saving...' : editing ? 'Update department' : 'Create department'}</Button>{editing && <Button type="button" variant="outline" className="rounded-xl" onClick={reset}>Cancel changes</Button>}</div></form>
+      <section className={`overflow-hidden rounded-[24px] ${glass}`}><div className="flex flex-col gap-4 border-b border-white/20 p-5 md:flex-row md:items-center md:justify-between"><div><h3 className="font-semibold">Administrator spaces</h3><p className="mt-1 text-sm text-muted-foreground">{filteredDepartments.length} of {departments.length} departments shown</p></div><div className="relative w-full md:max-w-sm"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search departments..." className="rounded-xl bg-background/50 pl-9" /></div></div>{loading ? <div className="p-8 text-center text-sm text-muted-foreground">Loading departments...</div> : filteredDepartments.length === 0 ? <div className="p-10 text-center"><Building2 className="mx-auto mb-3 h-8 w-8 text-muted-foreground/40" /><p className="font-medium">{search ? 'No departments match your search' : 'No departments configured'}</p><p className="mt-1 text-sm text-muted-foreground">{search ? 'Try a different search term.' : 'Create the first administrator space above.'}</p></div> : <div className="divide-y divide-white/15">{filteredDepartments.map(department => <div key={department.id} className="flex flex-col gap-4 p-4 transition-all hover:bg-white/20 md:flex-row md:items-center md:justify-between md:p-5"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{department.name}</span><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${department.is_active ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-muted text-muted-foreground'}`}>{department.is_active ? 'Active' : 'Inactive'}</span></div>{department.description && <div className="mt-1 max-w-2xl text-sm text-muted-foreground">{department.description}</div>}</div><div className="flex shrink-0 gap-2"><Button variant="outline" size="sm" className="rounded-xl bg-background/30" onClick={() => startEdit(department)}><Edit2 className="mr-1.5 h-4 w-4" />Edit</Button><Button variant="ghost" size="sm" className="rounded-xl text-destructive hover:text-destructive" onClick={() => remove(department)} aria-label={`Delete ${department.name}`}><Trash2 className="h-4 w-4" /></Button></div></div>)}</div>}</section>
       <AdminMailboxManagement />
     </div>
   );
