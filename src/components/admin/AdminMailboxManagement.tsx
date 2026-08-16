@@ -26,7 +26,7 @@ const AdminMailboxManagement = () => {
     setSaving(true);
     const assignedAccounts = provider === 'gmail' ? normalizeAccounts(googleAccounts) : [];
     const payload = { user_id: userId, mailbox_email: email.trim().toLowerCase(), mailbox_provider: provider, provider_account_id: assignedAccounts.join(',') || null, is_primary: isPrimary, access_level: accessLevel, status: active ? 'active' : 'inactive' };
-    const result = editing ? await supabase.from('admin_mailboxes').update(payload).eq('id', editing.id) : await supabase.from('admin_mailboxes').upsert(payload, { onConflict: 'user_id,mailbox_email' });
+    const result = editing ? await supabase.from('admin_mailboxes').update(payload).eq('id', editing.id) : await supabase.from('admin_mailboxes').upsert(payload, { onConflict: 'user_id,mailbox_email,mailbox_provider' });
     if (result.error) toast({ title: 'Mailbox assignment failed', description: result.error.message, variant: 'destructive' }); else { toast({ title: editing ? 'Mailbox assignment updated' : 'Mailbox assigned' }); reset(); await load(); }
     setSaving(false);
   };
