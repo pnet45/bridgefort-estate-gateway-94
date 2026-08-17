@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -15,20 +14,24 @@ import WealthSummit from '../components/training/WealthSummit';
 import UpcomingTrainingEvents from '../components/training/UpcomingTrainingEvents';
 import TrainingCalendar from '../components/training/TrainingCalendar';
 import PastEventsSection from '../components/training/PastEventsSection';
+import AgriculturalTrainingProgramme from '../components/training/AgriculturalTrainingProgramme';
 import CMSSection from '../components/cms/CMSSection';
 
 const Training = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      
+
       {/* Hero Section */}
       <TrainingHero />
 
       {/* Calendar View */}
       <TrainingCalendar />
 
-      {/* Success Summit Section */}
+      {/* Featured upcoming agricultural event — intentionally above Wealth Summit */}
+      <AgriculturalTrainingProgramme />
+
+      {/* Wealth Summit Series 2026 */}
       <WealthSummit />
 
       {/* Featured Training Events Carousel */}
@@ -48,18 +51,18 @@ const Training = () => {
 
       {/* Training Categories */}
       <TrainingCategories />
-      
+
       {/* Training Content */}
       <TrainingContent />
-      
+
       {/* Upcoming Events */}
       <UpcomingEvents />
 
       <CMSSection page="training" title="More from Training" />
-      
+
       {/* CTA Section */}
       <TrainingCTA />
-      
+
       <Footer />
       <WhatsAppChat />
     </div>
