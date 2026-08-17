@@ -1,4 +1,3 @@
-
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PropertySearch from '../components/PropertySearch';
@@ -18,6 +17,7 @@ import MondayMotivationHero from '../components/home/MondayMotivationHero';
 import FeaturedAnnouncementsCarousel from '../components/blog/FeaturedAnnouncementsCarousel';
 import FeaturedCenterSeminar from '../components/home/FeaturedCenterSeminar';
 import GoogleDataTransparency from '../components/home/GoogleDataTransparency';
+import AgriculturalTrainingProgramme from '../components/training/AgriculturalTrainingProgramme';
 
 const Home = () => {
   // Wrap all property-dependent sections with the provider for shared data (for search, FeaturedProperties, etc)
@@ -40,6 +40,10 @@ const Home = () => {
 
         {/* Featured Announcements Carousel */}
         <FeaturedAnnouncementsCarousel />
+
+        {/* Featured agricultural training event */}
+        <AgriculturalTrainingProgramme compact />
+
         {/* Featured Properties uses context data */}
         <FeaturedProperties />
         
