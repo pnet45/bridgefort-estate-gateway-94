@@ -173,7 +173,7 @@ const AdminConsole = () => {
             {hasPermission('admin:view_mlm_funnel') && <TabsTrigger value="mlm-funnel" className={ADMIN_TAB_CLASS}><Network className="h-4 w-4 shrink-0" /><span>BHRealtors Funnel</span></TabsTrigger>}
             {hasPermission('admin:view_activity') && <TabsTrigger value="activity" className={ADMIN_TAB_CLASS}><Activity className="h-4 w-4 shrink-0" /><span>Activity</span></TabsTrigger>}
             {hasPermission('admin:view_content') && <TabsTrigger value="content" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4 shrink-0" /><span>Content</span></TabsTrigger>}
-            {hasPermission('admin:view_content') && <TabsTrigger value="training" className={ADMIN_TAB_CLASS}><Sprout className="h-4 w-4 shrink-0" /><span>Training</span></TabsTrigger>}
+            {hasPermission('admin:view_dashboard') && <TabsTrigger value="training" className={ADMIN_TAB_CLASS}><Sprout className="h-4 w-4 shrink-0" /><span>Training</span></TabsTrigger>}
             {hasPermission('admin:view_cms') && <TabsTrigger value="cms" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4 shrink-0" /><span>CMS Hub</span></TabsTrigger>}
             {hasPermission('admin:view_cms') && <TabsTrigger value="gallery" className={ADMIN_TAB_CLASS}><Images className="h-4 w-4 shrink-0" /><span>Circular Gallery</span></TabsTrigger>}
             {hasPermission('admin:view_other_payments') && <TabsTrigger value="other-payments" className={ADMIN_TAB_CLASS}><DollarSign className="h-4 w-4 shrink-0" /><span>Other Payments</span></TabsTrigger>}
