@@ -98,12 +98,11 @@ const Home = () => {
       {/* Partners */}
       <Partners />
       
-      {/* Google OAuth Transparency — required for Google OAuth verification */}
-      <GoogleDataTransparency />
-
       {/* CTA */}
       <CTASection />
-      
+
+      {/* Google OAuth Transparency — required for Google OAuth verification */}
+      <GoogleDataTransparency />
       <Footer />
       <WhatsAppChat />
     </div>
