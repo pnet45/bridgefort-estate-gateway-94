@@ -84,7 +84,7 @@ const Home = () => {
       <FeaturedCenterSeminar />
 
       {/* Seminar And Training (Upcoming Events) */}
-      <SeminarAndTraining />
+      {/*<SeminarAndTraining />*/}
       
       {/* Why Choose Us */}
       <WhyChooseUs />
