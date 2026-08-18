@@ -4,6 +4,8 @@
 // lightbox. The canvas itself has no native per-mesh click handling, so we detect
 // a genuine click (pointerdown -> pointerup with negligible movement, not a drag)
 // and resolve it to the item nearest the viewport center at that moment.
+// Opens only on a *double* click/tap within 350ms — a single click/tap just lets
+// the drag/scroll interaction stand.
 import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl';
 import { useEffect, useRef } from 'react';
 
@@ -504,6 +506,7 @@ class App {
   start: number = 0;
   startY: number = 0;
   moved: number = 0;
+  lastTapTime: number = 0;
 
   constructor(
     container: HTMLElement,
@@ -620,13 +623,21 @@ class App {
     this.isDown = false;
     this.onCheck();
 
-    // A genuine tap/click (no meaningful drag) resolves to the item nearest center.
+    // A genuine tap/click (no meaningful drag) resolves to the item nearest center,
+    // but only opens on a *double* tap/click within 350ms — a single tap just lets
+    // the drag/scroll interaction stand.
     if (this.moved < 6 && this.onItemClick && this.medias[0]) {
-      const width = this.medias[0].width;
-      if (width > 0) {
-        const rawIndex = Math.round(this.scroll.target / width);
-        const itemIndex = ((rawIndex % this.medias.length) + this.medias.length) % this.medias.length;
-        this.onItemClick(itemIndex);
+      const now = performance.now();
+      const isDoubleClick = now - this.lastTapTime < 350;
+      this.lastTapTime = isDoubleClick ? 0 : now;
+
+      if (isDoubleClick) {
+        const width = this.medias[0].width;
+        if (width > 0) {
+          const rawIndex = Math.round(this.scroll.target / width);
+          const itemIndex = ((rawIndex % this.medias.length) + this.medias.length) % this.medias.length;
+          this.onItemClick(itemIndex);
+        }
       }
     }
   }
@@ -752,7 +763,7 @@ export interface CircularGallery3DProps {
   fontUrl?: string;
   scrollSpeed?: number;
   scrollEase?: number;
-  /** Fired with the index into `items` (not the internal doubled list) on a genuine click/tap/Enter. */
+  /** Fired with the index into `items` (not the internal doubled list) on a genuine double-click/double-tap or Enter. */
   onItemClick?: (index: number) => void;
 }
 
@@ -807,7 +818,7 @@ export default function CircularGallery3D({
       ref={containerRef}
       tabIndex={0}
       role="region"
-      aria-label="Circular image gallery. Use Left and Right Arrow keys to navigate, Enter to open the centered item."
+      aria-label="Circular image gallery. Use Left and Right Arrow keys to navigate, Enter or double-click/double-tap to open the centered item."
     />
   );
 }

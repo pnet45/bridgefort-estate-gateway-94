@@ -12,7 +12,7 @@ const GalleryLightbox = ({ item, onClose }: GalleryLightboxProps) => {
     <Dialog open={!!item} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         hideCloseButton
-        className="max-w-none w-screen h-screen p-0 border-0 bg-black/95 flex items-center justify-center"
+        className="max-w-[90vw] w-auto max-h-[85vh] h-auto p-0 border-0 bg-black/95 rounded-2xl overflow-hidden flex items-center justify-center"
         onClick={onClose}
       >
         <button
@@ -26,7 +26,7 @@ const GalleryLightbox = ({ item, onClose }: GalleryLightboxProps) => {
 
         {item && (
           <div
-            className="flex max-h-[90vh] max-w-[92vw] flex-col items-center gap-4"
+            className="flex max-h-[80vh] max-w-[85vw] flex-col items-center gap-4 p-6"
             onClick={(e) => e.stopPropagation()}
           >
             {item.media_type === 'video' ? (
@@ -35,13 +35,13 @@ const GalleryLightbox = ({ item, onClose }: GalleryLightboxProps) => {
                 poster={item.poster_url || undefined}
                 autoPlay
                 controls
-                className="max-h-[80vh] max-w-full rounded-lg shadow-2xl"
+                className="max-h-[70vh] max-w-full rounded-lg shadow-2xl"
               />
             ) : (
               <img
                 src={item.media_url}
                 alt={item.caption || 'Gallery item'}
-                className="max-h-[80vh] max-w-full rounded-lg object-contain shadow-2xl"
+                className="max-h-[70vh] max-w-full rounded-lg object-contain shadow-2xl"
               />
             )}
             {(item.caption || item.event_description) && (
