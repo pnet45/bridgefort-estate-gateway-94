@@ -47,7 +47,7 @@ const AgriculturalTrainingProgramme = ({ compact = false }: Props) => {
                     <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2"><MapPin className="h-4 w-4" /> Festac Town, Lagos</span>
                   </div>
                   <div className="mt-7 flex flex-wrap gap-3">
-                    <Button onClick={() => setRegistrationOpen(true)} className="bg-lime-300 text-emerald-950 hover:bg-lime-200 font-bold">Register for ATP <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                    <Button onClick={() => setRegistrationOpen(true)} className="bg-lime-300 text-emerald-950 hover:bg-lime-200 font-bold">Register for ATP Training<ArrowRight className="ml-2 h-4 w-4" /></Button>
                     <Button asChild variant="outline" className="border-white/40 bg-white/5 text-white hover:bg-white hover:text-emerald-950"><a href="/training">View Training Details</a></Button>
                   </div>
                 </div>
@@ -94,7 +94,7 @@ const AgriculturalTrainingProgramme = ({ compact = false }: Props) => {
               </div>
             </div>
             <div className="mt-10 rounded-3xl border border-amber-200/20 bg-gradient-to-r from-amber-300/10 to-lime-300/10 p-6 md:p-8"><div className="grid gap-5 md:grid-cols-2"><div><p className="text-sm font-semibold uppercase tracking-wider text-lime-200">Scheme 1</p><h3 className="mt-1 text-xl font-bold">Farmland for Yearly Lease</h3><p className="mt-2 text-sm text-emerald-50/80">Flexible plot sizes available at affordable rates for crop farming.</p></div><div><p className="text-sm font-semibold uppercase tracking-wider text-lime-200">Scheme 2</p><h3 className="mt-1 text-xl font-bold">Livestock & Integrated Farming Support</h3><p className="mt-2 text-sm text-emerald-50/80">Training, mentorship and continuous support.</p></div></div></div>
-            <div className="mt-10 flex flex-col items-center justify-between gap-5 rounded-3xl bg-white p-6 text-center text-emerald-950 md:flex-row md:text-left md:p-8"><div><p className="text-sm font-semibold uppercase tracking-wider text-emerald-700">Your journey can start here</p><h2 className="mt-1 text-2xl font-black md:text-3xl">Learn. Practise. Invest. Profit.</h2><p className="mt-2 text-sm text-emerald-800/80">Whether you're starting from scratch or already farming, come with questions and leave with direction.</p></div><Button onClick={() => setRegistrationOpen(true)} size="lg" className="shrink-0 bg-emerald-800 px-7 font-bold text-white hover:bg-emerald-700">Register for ATP <ArrowRight className="ml-2 h-4 w-4" /></Button></div>
+            <div className="mt-10 flex flex-col items-center justify-between gap-5 rounded-3xl bg-white p-6 text-center text-emerald-950 md:flex-row md:text-left md:p-8"><div><p className="text-sm font-semibold uppercase tracking-wider text-emerald-700">Your journey can start here</p><h2 className="mt-1 text-2xl font-black md:text-3xl">Learn. Practise. Invest. Profit.</h2><p className="mt-2 text-sm text-emerald-800/80">Whether you're starting from scratch or already farming, come with questions and leave with direction.</p></div><Button onClick={() => setRegistrationOpen(true)} size="lg" className="shrink-0 bg-emerald-800 px-7 font-bold text-white hover:bg-emerald-700">Register for ATP Training<ArrowRight className="ml-2 h-4 w-4" /></Button></div>
           </div>
         </div>
       </section>
