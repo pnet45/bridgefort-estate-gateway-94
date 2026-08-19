@@ -22,6 +22,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, onInsertImage }) 
   if (!editor) return null;
   const currentHeading = [1,2,3,4,5,6].find(n => editor.isActive('heading', { level: n }))?.toString() || 'paragraph';
   const currentLineHeight = editor.getAttributes('textStyle').lineHeight || '1.5';
+  const fontIsSystem = editor.isActive('textStyle', { fontFamily: SYSTEM_FONT });
   const setHeading = (value: string) => value === 'paragraph' ? editor.chain().focus().setParagraph().run() : editor.chain().focus().toggleHeading({ level: Number(value) as 1|2|3|4|5|6 }).run();
   const setFontFamily = () => editor.chain().focus().setFontFamily(SYSTEM_FONT).run();
   const setLineHeight = (value: string) => editor.chain().focus().setLineHeight(value).run();
@@ -39,7 +40,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, onInsertImage }) 
       <ToolbarDivider />
       <Select value={currentHeading} onValueChange={setHeading}><SelectTrigger className="h-8 w-[130px] text-xs shrink-0"><SelectValue /></SelectTrigger><SelectContent>{HEADING_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value} className="text-sm">{opt.label}</SelectItem>)}</SelectContent></Select>
       <ToolbarDivider />
-      <Button type="button" variant="ghost" size="sm" onClick={setFontFamily} title="System font" className="h-8 shrink-0 gap-1.5 px-2"><Type className="h-4 w-4" /><span className="hidden lg:inline text-xs">System font</span></Button>
+      <Button type="button" variant="ghost" size="sm" onClick={setFontFamily} title="System font" aria-pressed={fontIsSystem} className={cn('h-8 shrink-0 gap-1.5 px-2', fontIsSystem && 'bg-estate-blue/15 text-estate-blue hover:bg-estate-blue/20')}><Type className="h-4 w-4" /><span className="text-xs">System font</span></Button>
       <div className="relative shrink-0" title="Font color"><Button type="button" variant="ghost" size="sm" onClick={() => colorInputRef.current?.click()} className="h-8 w-8 p-0"><Palette className="h-4 w-4" /></Button><input ref={colorInputRef} type="color" className="absolute inset-0 h-0 w-0 opacity-0" aria-label="Choose font color" onChange={e => editor.chain().focus().setColor(e.target.value).run()} /></div>
       <Select value={currentLineHeight} onValueChange={setLineHeight}><SelectTrigger className="h-8 w-[105px] text-xs shrink-0" title="Line spacing"><Rows3 className="mr-1.5 h-3.5 w-3.5" /><SelectValue /></SelectTrigger><SelectContent>{LINE_SPACING.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select>
       <ToolbarDivider />
