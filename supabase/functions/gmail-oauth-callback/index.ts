@@ -14,15 +14,24 @@ Deno.serve(async (req) => {
   const code = q.get("code");
   const state = q.get("state");
   const oauthError = q.get("error");
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const appUrl = Deno.env.get("APP_URL") || "https://www.bridgeforthomes.com";
-  const svc = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+  if (!supabaseUrl || !serviceKey) return redirect(appUrl, { gmail_error: "server_configuration_error" });
+  const svc = createClient(supabaseUrl, serviceKey);
 
   if (oauthError) return redirect(appUrl, { gmail_error: oauthError });
   if (!code || !state) return redirect(appUrl, { gmail_error: "missing_code_or_state" });
 
   try {
-    const { data: oauthState, error: stateError } = await svc.from("gmail_oauth_state").select("state, requested_by, mailbox_email, created_at, used").eq("state", state).eq("used", false).maybeSingle();
+    const { data: oauthState, error: stateError } = await svc
+      .from("gmail_oauth_state")
+      .select("state, requested_by, mailbox_email, created_at, used")
+      .eq("state", state)
+      .eq("used", false)
+      .maybeSingle();
+
     if (stateError || !oauthState) return redirect(appUrl, { gmail_error: "invalid_or_expired_state" });
     if (Date.now() - new Date(oauthState.created_at).getTime() > 10 * 60 * 1000) return redirect(appUrl, { gmail_error: "expired_state" });
 
@@ -30,23 +39,29 @@ Deno.serve(async (req) => {
     if (!mailboxEmail) return redirect(appUrl, { gmail_error: "mailbox_missing_from_state" });
     await svc.from("gmail_oauth_state").update({ used: true }).eq("state", state);
 
-    // Resolve the exact assignment that initiated OAuth. Multiple admins may
-    // share the same mailbox but be allowed to authenticate different Google accounts.
-    const { data: access, error: accessError } = await svc.rpc("user_mailbox_access", { _user_id: oauthState.requested_by, _mailbox_email: mailboxEmail, _provider: "gmail" });
+    const { data: access, error: accessError } = await svc.rpc("user_mailbox_access", {
+      _user_id: oauthState.requested_by,
+      _mailbox_email: mailboxEmail,
+      _provider: "gmail",
+    });
     if (accessError || !access) return redirect(appUrl, { gmail_error: "mailbox_not_authorized" });
 
-    const { data: mailbox, error: mailboxError } = await svc
+    // A company mailbox can be assigned to several administrators. Google
+    // identities are therefore collected from every active Gmail assignment
+    // for this mailbox, rather than only from the administrator who clicked
+    // Connect. This also supports global/department-level mailbox access.
+    const { data: assignments, error: mailboxError } = await svc
       .from("admin_mailboxes")
       .select("id, user_id, provider_account_id")
-      .eq("user_id", oauthState.requested_by)
-      .eq("mailbox_email", mailboxEmail)
-      .eq("mailbox_provider", "gmail")
-      .eq("status", "active")
-      .maybeSingle();
-    if (mailboxError || !mailbox) return redirect(appUrl, { gmail_error: "assignment_lookup_failed" });
+      .ilike("mailbox_email", mailboxEmail)
+      .ilike("mailbox_provider", "gmail")
+      .eq("status", "active");
+    if (mailboxError) return redirect(appUrl, { gmail_error: "assignment_lookup_failed" });
+    if (!assignments?.length) return redirect(appUrl, { gmail_error: "gmail_mailbox_assignment_not_found" });
 
-    const assigned = accounts(mailbox.provider_account_id);
-    if (!assigned.length) return redirect(appUrl, { gmail_error: "google_account_not_assigned" });
+    const assignedByMailbox = assignments.map((row: any) => ({ id: row.id, accounts: accounts(row.provider_account_id) }));
+    const assignedAccounts = [...new Set(assignedByMailbox.flatMap((row) => row.accounts))];
+    if (!assignedAccounts.length) return redirect(appUrl, { gmail_error: "google_account_not_assigned" });
 
     const clientId = requireEnv("GOOGLE_CLIENT_ID");
     const clientSecret = requireEnv("GOOGLE_CLIENT_SECRET");
@@ -59,14 +74,32 @@ Deno.serve(async (req) => {
     const tokenData = await tokenResponse.json();
     if (!tokenResponse.ok) return redirect(appUrl, { gmail_error: "token_exchange_failed" });
 
-    const profileResponse = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/profile", { headers: { Authorization: `Bearer ${tokenData.access_token}` } });
+    const profileResponse = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/profile", {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
     const profile = await profileResponse.json();
     const googleEmail = String(profile.emailAddress || "").trim().toLowerCase();
     if (!profileResponse.ok || !googleEmail) return redirect(appUrl, { gmail_error: "profile_fetch_failed" });
-    if (!assigned.includes(googleEmail)) return redirect(appUrl, { gmail_error: "google_account_not_assigned", gmail_attempted_email: googleEmail });
+    if (!assignedAccounts.includes(googleEmail)) {
+      return redirect(appUrl, { gmail_error: "google_account_not_assigned", gmail_attempted_email: googleEmail });
+    }
 
-    const mailboxId = mailbox.id;
-    const { data: existing } = await svc.from("gmail_oauth_tokens").select("id, refresh_token").eq("mailbox_id", mailboxId).ilike("google_account_email", googleEmail).maybeSingle();
+    // Bind the token to an assignment that explicitly contains the Google
+    // identity. If multiple admins share that identity, the first matching
+    // active assignment is sufficient because access is mailbox-scoped.
+    const matchingAssignment = assignedByMailbox.find((row) => row.accounts.includes(googleEmail));
+    const mailboxId = matchingAssignment?.id || assignments[0].id;
+
+    const { data: existingRows, error: existingError } = await svc
+      .from("gmail_oauth_tokens")
+      .select("id, refresh_token")
+      .eq("mailbox_id", mailboxId)
+      .ilike("google_account_email", googleEmail)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    if (existingError) return redirect(appUrl, { gmail_error: "token_lookup_failed" });
+
+    const existing = existingRows?.[0];
     const refreshToken = tokenData.refresh_token || existing?.refresh_token;
     if (!refreshToken) return redirect(appUrl, { gmail_error: "no_refresh_token", gmail_attempted_email: googleEmail });
 
@@ -81,9 +114,13 @@ Deno.serve(async (req) => {
       is_active: true,
       updated_at: new Date().toISOString(),
     };
-    const saveResult = existing ? await svc.from("gmail_oauth_tokens").update(payload).eq("id", existing.id) : await svc.from("gmail_oauth_tokens").insert(payload);
-    if (saveResult.error) {
-      console.error("gmail-oauth-callback storage", saveResult.error);
+
+    const save = existing
+      ? await svc.from("gmail_oauth_tokens").update(payload).eq("id", existing.id)
+      : await svc.from("gmail_oauth_tokens").insert(payload);
+
+    if (save.error) {
+      console.error("gmail-oauth-callback storage", save.error);
       return redirect(appUrl, { gmail_error: "storage_failed" });
     }
 
