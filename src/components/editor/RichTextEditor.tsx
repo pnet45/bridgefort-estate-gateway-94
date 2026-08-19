@@ -23,6 +23,8 @@ import { sanitizeRichText } from './richTextSanitize';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
+const SYSTEM_FONT = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
 const LineHeight = TextStyle.extend({
   addGlobalAttributes() {
     return [{
@@ -69,6 +71,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       CustomTableHeader, CustomTableCell, ...(maxLength ? [CharacterCount.configure({ limit: maxLength })] : []),
     ],
     content: value, editable: !disabled,
+    onCreate: ({ editor }) => {
+      // New compose windows start with the system font as an actual text
+      // mark, not just inherited CSS. This makes the chosen font survive
+      // sanitizing and remain visible to the email recipient.
+      if (!value || value === '<p></p>') {
+        editor.chain().focus().setFontFamily(SYSTEM_FONT).run();
+        flushChange(editor);
+      }
+    },
     onUpdate: ({ editor }) => { if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current); debounceTimerRef.current = setTimeout(() => flushChange(editor), 300); },
     onBlur: ({ editor }) => flushChange(editor),
     editorProps: {
