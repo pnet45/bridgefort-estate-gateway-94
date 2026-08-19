@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Plug, Loader2, LogOut, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Mail, Plug, Loader2, LogOut, CheckCircle2, ArrowRight, ShieldCheck, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -36,6 +36,40 @@ export default function EmailLoginScreen({ mailboxes, loading, activeMailbox, co
       setLocalConnecting(null);
     }
   };
+
+  const mailboxRows = loading ? [] : mailboxes;
+
+  // When a mailbox is already selected, this component is opened by the
+  // Email Center's "Switch mailbox" control. Keep that interaction compact:
+  // show only the mailboxes the current administrator can actually use.
+  if (activeMailbox) {
+    return (
+      <div className="fixed inset-0 z-[80] bg-slate-950/10 backdrop-blur-[1px]" onMouseDown={(e) => { if (e.target === e.currentTarget) onSelect(activeMailbox); }}>
+        <div className="absolute right-4 top-20 w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/40 bg-white/90 shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/95">
+          <div className="flex items-center justify-between border-b border-slate-200/70 px-4 py-3 dark:border-white/10">
+            <div className="min-w-0"><p className="text-sm font-semibold text-slate-900 dark:text-white">Switch mailbox</p><p className="truncate text-[11px] text-slate-500">Choose a connected company mailbox</p></div>
+            <Button variant="ghost" size="icon" onClick={() => onSelect(activeMailbox)} className="h-8 w-8 rounded-lg"><ChevronDown className="h-4 w-4 rotate-180" /></Button>
+          </div>
+          <div className="max-h-[70vh] overflow-y-auto p-2">
+            {loading ? <div className="flex justify-center p-8"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div> : mailboxRows.length === 0 ? <p className="p-6 text-center text-sm text-muted-foreground">No mailbox is assigned to you.</p> : mailboxRows.map((mb) => {
+              const isGmail = mb.mailbox_provider === 'gmail';
+              const needsConnect = isGmail && !mb.is_connected;
+              const isConnecting = connectingEmail === mb.mailbox_email || localConnecting === mb.mailbox_email;
+              const isDisconnecting = disconnectingEmail === mb.mailbox_email;
+              const isActive = activeMailbox === mb.mailbox_email;
+              return (
+                <div key={`${mb.mailbox_provider}-${mb.mailbox_email}`} className={`mb-1 flex items-center gap-3 rounded-xl border p-3 transition ${isActive ? 'border-primary/30 bg-primary/5' : 'border-transparent hover:border-slate-200 hover:bg-slate-50 dark:hover:border-white/10 dark:hover:bg-white/5'}`}>
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-white"><Mail className="h-4 w-4" /></div>
+                  <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium text-slate-900 dark:text-white">{mb.mailbox_email}</p><div className="mt-0.5 flex items-center gap-2"><Badge variant="secondary" className="rounded-full px-2 py-0 text-[9px] capitalize">{mb.mailbox_provider}</Badge>{isGmail && <span className={`text-[10px] ${mb.is_connected ? 'text-emerald-600' : 'text-amber-600'}`}>{mb.is_connected ? 'Connected' : 'Needs Google connection'}</span>}</div></div>
+                  {needsConnect ? <Button size="sm" onClick={() => connectSelectedMailbox(mb.mailbox_email)} disabled={isConnecting} className="h-8 rounded-lg">{isConnecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plug className="h-3.5 w-3.5" />}<span className="ml-1">Connect</span></Button> : <div className="flex items-center gap-1"><Button size="sm" variant={isActive ? 'secondary' : 'default'} onClick={() => onSelect(mb.mailbox_email)} className="h-8 rounded-lg">{isActive ? 'Current' : 'Open'}{!isActive && <ArrowRight className="ml-1 h-3.5 w-3.5" />}</Button>{isGmail && <Button size="icon" variant="ghost" onClick={() => onDisconnectGmail(mb.mailbox_email)} disabled={isDisconnecting} title="Disconnect Gmail" className="h-8 w-8 text-muted-foreground hover:text-red-500">{isDisconnecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LogOut className="h-3.5 w-3.5" />}</Button>}</div>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden rounded-[28px] border border-white/30 bg-white/65 p-6 shadow-[0_25px_80px_-35px_rgba(15,23,42,.55)] backdrop-blur-2xl md:p-10 dark:border-white/10 dark:bg-slate-950/45">
