@@ -19,7 +19,7 @@ const filters: { id: GalleryFilter; label: string }[] = [
 const GalleryPage = () => {
   const [mediaItems, setMediaItems] = useState<GalleryMediaItem[]>([]);
   const [loadingMedia, setLoadingMedia] = useState(true);
-  const [activeItem, setActiveItem] = useState<GalleryMediaItem | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<GalleryFilter>('all');
 
   useEffect(() => {
@@ -197,7 +197,7 @@ const GalleryPage = () => {
                   <div className="mt-10 overflow-hidden rounded-[2rem] bg-slate-950 p-1 shadow-2xl shadow-slate-300">
                     <div className="flex items-center justify-between px-5 pt-5 text-white">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">Visual reel</p>
-                      <p className="text-xs text-slate-400">Drag, scroll, or use arrow keys</p>
+                      <p className="text-xs text-slate-400">Drag to browse, double-click or double-tap to open</p>
                     </div>
                     <div className="h-[390px] md:h-[480px]">
                       <CircularGallery3D
@@ -209,7 +209,7 @@ const GalleryPage = () => {
                         fontUrl="https://fonts.googleapis.com/css2?family=Figtree:wght@500;700&display=swap"
                         scrollEase={0.08}
                         scrollSpeed={2.3}
-                        onItemClick={(index) => setActiveItem(filteredItems[index] || null)}
+                        onItemClick={(index) => setActiveIndex(index)}
                       />
                     </div>
                   </div>
@@ -220,7 +220,7 @@ const GalleryPage = () => {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setActiveItem(item)}
+                      onClick={() => setActiveIndex(index)}
                       className={`group relative min-h-[220px] overflow-hidden rounded-3xl bg-slate-900 text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-blue focus-visible:ring-offset-4 ${galleryCardSize(index)}`}
                       aria-label={`Open ${item.caption || (item.media_type === 'video' ? 'gallery video' : 'gallery image')}`}
                     >
@@ -260,7 +260,7 @@ const GalleryPage = () => {
         </section>
       </main>
 
-      <GalleryLightbox item={activeItem} onClose={() => setActiveItem(null)} />
+      <GalleryLightbox items={filteredItems} initialIndex={activeIndex} onClose={() => setActiveIndex(null)} />
       <Footer />
     </div>
   );

@@ -8,6 +8,9 @@ export const AGRICULTURAL_TRAINING_TITLE = 'Farming to Wealth — Agricultural T
 export const AGRICULTURAL_TRAINING_DATE = 'Tuesday, 25th August, 2026';
 export const AGRICULTURAL_TRAINING_EVENT_DATE = 'Tuesday, 25th August, 2026 at 11:00 a.m.';
 
+// Official ATP flyer, used as a shaded background on the featured/compact card below.
+const ATP_POSTER_IMAGE = '/lovable-uploads/atp-training-programme-poster.jpg';
+
 const benefits = [
   'Practical knowledge of modern farming techniques',
   'How to start and manage a profitable agribusiness',
@@ -33,6 +36,15 @@ const AgriculturalTrainingProgramme = ({ compact = false }: Props) => {
         <section className="section-padding relative overflow-hidden">
           <div className="container-custom">
             <div className="relative overflow-hidden rounded-[2rem] border border-emerald-900/10 bg-gradient-to-br from-emerald-950 via-emerald-900 to-green-800 p-6 md:p-10 text-white shadow-2xl">
+              {/* ATP flyer background image, shaded so the text stays readable */}
+              <img
+                src={ATP_POSTER_IMAGE}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/95 via-emerald-900/90 to-green-800/85" />
               <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-lime-300/10 blur-2xl" />
               <div className="relative grid gap-8 lg:grid-cols-[1.4fr_0.8fr] items-center">
                 <div>
