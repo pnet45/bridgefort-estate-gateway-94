@@ -26,6 +26,27 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_mlm_membership_commission_per_purchase
 DROP TRIGGER IF EXISTS trg_block_membership_referral_commission ON public.mlm_commissions;
 DROP FUNCTION IF EXISTS public.block_membership_referral_commission();
 
+-- Keep the Admin BHRealtors funnel truthful: these fields describe
+-- membership-registration commissions only. Estate-land sale commissions are
+-- governed separately by the 15%/5% property-sale engine.
+UPDATE public.mlm_packages
+SET direct_commission_pct = CASE package_code
+      WHEN 'gold' THEN 10
+      WHEN 'classic_gold' THEN 15
+      ELSE 0
+    END,
+    indirect_commission_pct = CASE package_code
+      WHEN 'gold' THEN 10
+      WHEN 'classic_gold' THEN 15
+      ELSE 0
+    END,
+    description = CASE package_code
+      WHEN 'associate' THEN 'Associate membership at N5,000. Membership referral commission starts only above N5,000. Estate-land sales pay 5% while commission remains locked until upgrade.'
+      WHEN 'gold' THEN 'Gold membership. Successful membership payments above N5,000 generate 10% referral commission at levels 1 and 2. Estate-land sales pay 10% to the seller and 5% to an eligible first-level referrer.'
+      WHEN 'classic_gold' THEN 'Classic Gold membership. Successful membership payments above N5,000 generate 15% referral commission at levels 1 and 2. Estate-land sales pay 15% to the seller and 5% to an eligible first-level referrer.'
+      ELSE description
+    END;
+
 CREATE OR REPLACE FUNCTION public.award_bhrealtor_membership_commission()
 RETURNS trigger
 LANGUAGE plpgsql
