@@ -1,7 +1,6 @@
 -- Fix approval visibility and backend access.
--- Root cause: the Approval Centre tab is gated by admin:view_approvals,
--- while the previous finance migration only changed can_approve_financial_requests.
--- Listing/finance data also needs SELECT/UPDATE RLS access for approvers.
+-- IMPORTANT: public.role_permissions uses `role`, NOT `role_name`.
+-- Department roles are stored as internal names such as admin_dir/admin_acct.
 
 -- Ensure the approval permissions exist.
 INSERT INTO public.permissions (key, label, category, description)
@@ -11,10 +10,23 @@ VALUES
   ('admin:approve_listings', 'Approve listings', 'admin', 'Approve or reject user property listings')
 ON CONFLICT (key) DO NOTHING;
 
--- Explicit role grants. These are intentionally role-based so a user's access
--- survives session refresh and does not depend on manually assigned permissions.
-INSERT INTO public.role_permissions (role_name, permission_key)
-SELECT v.role_name, v.permission_key
+-- Ensure the designated roles exist before assigning permissions.
+INSERT INTO public.roles (name, display_name, description)
+VALUES
+  ('super_admin', 'Super Admin', 'Full system access and mailbox control'),
+  ('admin_dir', 'Admin-Dir', 'Director — full access, all departments'),
+  ('admin_acct', 'Admin-Acct', 'Accounts department'),
+  ('admin_it', 'Admin-IT', 'IT department')
+ON CONFLICT (name) DO NOTHING;
+
+-- public.role_permissions schema is:
+--   role text
+--   permission_key text
+--   is_enabled boolean
+--   ...
+-- Do NOT use role_name here. role_name belongs to public.admin_roles.
+INSERT INTO public.role_permissions (role, permission_key, is_enabled)
+SELECT v.role, v.permission_key, true
 FROM (VALUES
   ('super_admin','admin:view_approvals'),
   ('super_admin','admin:approve_payments'),
@@ -26,13 +38,10 @@ FROM (VALUES
   ('admin_acct','admin:approve_payments'),
   ('admin_it','admin:view_approvals'),
   ('admin_it','admin:approve_listings')
-) AS v(role_name, permission_key)
-WHERE EXISTS (SELECT 1 FROM public.roles r WHERE r.name = v.role_name)
-  AND EXISTS (SELECT 1 FROM public.permissions p WHERE p.key = v.permission_key)
-  AND NOT EXISTS (
-    SELECT 1 FROM public.role_permissions rp
-    WHERE rp.role_name = v.role_name AND rp.permission_key = v.permission_key
-  );
+) AS v(role, permission_key)
+WHERE EXISTS (SELECT 1 FROM public.permissions p WHERE p.key = v.permission_key)
+ON CONFLICT (role, permission_key)
+DO UPDATE SET is_enabled = true;
 
 -- Listing approval queue must be readable by the same privileged approvers.
 DROP POLICY IF EXISTS "Approval admins can view pending listings" ON public.listings;
@@ -48,8 +57,7 @@ USING (
   OR public.user_has_permission(auth.uid(), 'admin:all')
 );
 
--- Payment approval queue must be readable and writable by the three financial
--- approver roles. The policy deliberately does not grant general payment CRUD.
+-- Payment approval queue must be readable and writable by the financial approvers.
 DROP POLICY IF EXISTS "Payment approvers can view requests" ON public.payment_requests;
 CREATE POLICY "Payment approvers can view requests"
 ON public.payment_requests
