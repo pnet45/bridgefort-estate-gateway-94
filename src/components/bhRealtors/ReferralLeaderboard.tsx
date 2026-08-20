@@ -8,6 +8,7 @@ interface LeaderboardRow {
   first_name: string | null;
   last_initial: string | null;
   current_package: string | null;
+  current_rank: string | null;
   downline_count: number;
 }
 
@@ -19,11 +20,9 @@ const medalColor = (rank: number) => {
 };
 
 /**
- * Feature: Referral leaderboard.
- * Reads from the `pbo_referral_leaderboard` view (see migration
- * 20260726000000_pbo_referral_leaderboard.sql) which aggregates downline
- * counts server-side — deliberately limited to first name, last initial,
- * package tier and a count, nothing more sensitive.
+ * Referral leaderboard. Ranking is based on verified direct/downline count;
+ * membership package/rank is displayed separately and never changes the
+ * property-sale commission rule.
  */
 const ReferralLeaderboard = () => {
   const [rows, setRows] = useState<LeaderboardRow[]>([]);
@@ -33,25 +32,17 @@ const ReferralLeaderboard = () => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // The view isn't in the generated Supabase types (it's introduced by
-      // a migration, and types.ts only reflects what's been regenerated
-      // against the live schema), so this query is cast rather than typed.
       const { data, error: fetchError } = await (supabase as any)
         .from('pbo_referral_leaderboard')
         .select('*')
         .limit(10);
 
       if (cancelled) return;
-      if (fetchError) {
-        setError(fetchError.message);
-      } else {
-        setRows((data || []) as LeaderboardRow[]);
-      }
+      if (fetchError) setError(fetchError.message);
+      else setRows((data || []) as LeaderboardRow[]);
       setLoading(false);
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -68,9 +59,7 @@ const ReferralLeaderboard = () => {
             <Loader2 className="animate-spin mr-2" size={18} /> Loading leaderboard…
           </div>
         ) : error ? (
-          <p className="text-sm text-muted-foreground py-4">
-            Leaderboard isn't available right now. Try again shortly.
-          </p>
+          <p className="text-sm text-muted-foreground py-4">Leaderboard isn't available right now. Try again shortly.</p>
         ) : rows.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Users className="mx-auto mb-2 opacity-50" size={28} />
@@ -79,26 +68,28 @@ const ReferralLeaderboard = () => {
         ) : (
           <ol className="space-y-2">
             {rows.map((row, index) => (
-              <li
-                key={row.pbo_id}
-                className="flex items-center justify-between rounded-lg px-3 py-2 bg-foreground/5"
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`font-bold w-6 text-center ${medalColor(index)}`}>
-                    {index + 1}
-                  </span>
-                  <div>
-                    <p className="font-medium text-foreground">
+              <li key={row.pbo_id} className="flex items-center justify-between rounded-lg px-3 py-2 bg-foreground/5">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className={`font-bold w-6 text-center shrink-0 ${medalColor(index)}`}>{index + 1}</span>
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground truncate">
                       {row.first_name || 'PBO'} {row.last_initial ? `${row.last_initial}.` : ''}
                     </p>
-                    {row.current_package && (
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {row.current_package.replace(/_/g, ' ')} package
-                      </p>
-                    )}
+                    <div className="flex flex-wrap gap-1.5 mt-0.5">
+                      {row.current_rank && (
+                        <span className="text-[11px] rounded-full bg-estate-blue/10 text-estate-blue px-2 py-0.5">
+                          {row.current_rank}
+                        </span>
+                      )}
+                      {row.current_package && (
+                        <span className="text-[11px] rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 capitalize">
+                          {row.current_package.replace(/_/g, ' ')} package
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <span className="font-semibold text-estate-purple">
+                <span className="font-semibold text-estate-purple whitespace-nowrap ml-3">
                   {row.downline_count} {row.downline_count === 1 ? 'downline' : 'downlines'}
                 </span>
               </li>
