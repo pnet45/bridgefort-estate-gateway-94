@@ -33,7 +33,6 @@ const ListingFormPage = () => {
     <div className="flex flex-col min-h-screen bg-slate-50/70 dark:bg-slate-950">
       <Navbar />
 
-      {/* Hero starts immediately below the Navbar */}
       <section className="relative overflow-hidden pt-24 sm:pt-28 pb-16 sm:pb-20 bg-slate-950 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,hsl(var(--primary)/0.35),transparent_34%),radial-gradient(circle_at_85%_10%,rgba(255,255,255,0.10),transparent_28%),linear-gradient(135deg,#071329_0%,#0d1f3d_52%,#180c17_100%)]" />
         <div className="absolute -top-32 left-[18%] h-72 w-72 rounded-full bg-primary/20 blur-3xl" />
@@ -59,8 +58,8 @@ const ListingFormPage = () => {
       </section>
 
       <main id="listing-form" className="flex-1 py-10 sm:py-14 scroll-mt-20">
-        {/* Deliberately narrower than the previous 4xl form — approximately half the desktop page width. */}
-        <div className="container-custom max-w-3xl mx-auto">
+        {/* Narrow, focused desktop layout: roughly half the previous form width. */}
+        <div className="container-custom max-w-xl mx-auto px-4 sm:px-6">
           {loading ? (
             <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
           ) : (
