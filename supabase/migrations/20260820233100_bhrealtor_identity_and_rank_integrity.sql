@@ -49,9 +49,16 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_profiles_pbo_referral_code
 ON public.profiles(pbo_referral_code)
 WHERE pbo_referral_code IS NOT NULL;
 
--- Keep the public leaderboard useful for rank analysis without exposing
--- contact details or financial balances.
-CREATE OR REPLACE VIEW public.pbo_referral_leaderboard AS
+-- The original leaderboard view was created by an earlier migration with
+-- five output columns. This migration adds current_rank, which changes the
+-- view's output schema. PostgreSQL does not allow CREATE OR REPLACE VIEW to
+-- rename an existing column by position, so replace the view explicitly.
+-- No other repository object depends on this view; the frontend reads it
+-- directly. Keeping the same first four columns preserves the existing API
+-- contract while adding current_rank before downline_count.
+DROP VIEW IF EXISTS public.pbo_referral_leaderboard;
+
+CREATE VIEW public.pbo_referral_leaderboard AS
 SELECT
   p.id AS pbo_id,
   p.first_name,
