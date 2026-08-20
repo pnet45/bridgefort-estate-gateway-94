@@ -8,16 +8,21 @@ import AdminWithdrawalRequests from './AdminWithdrawalRequests';
 import AdminPaymentRequests from './AdminPaymentRequests';
 import AdminListingApprovals from './AdminListingApprovals';
 
+const ADMIN_APPROVAL_ROLES = new Set(['super_admin', 'admin_dir', 'admin_acct', 'admin_it']);
+const PAYMENT_APPROVER_ROLES = new Set(['super_admin', 'admin_dir', 'admin_acct']);
+const LISTING_APPROVER_ROLES = new Set(['super_admin', 'admin_dir', 'admin_it']);
+
 const AdminApprovalsHub: React.FC<{ onCountChange?: (n: number) => void }> = ({ onCountChange }) => {
   const { hasPermission, userRole } = useAuth();
   const [innerTab, setInnerTab] = useState('admin-requests');
+  const role = userRole || '';
 
-  const canApprovePayments = hasPermission('admin:approve_payments') || hasPermission('admin:all') || ['super_admin', 'admin_dir', 'admin_acct'].includes(userRole || '');
+  const canViewAdminRequests = hasPermission('admin:view_approvals') || hasPermission('admin:all') || ADMIN_APPROVAL_ROLES.has(role);
+  const canApprovePayments = hasPermission('admin:approve_payments') || hasPermission('admin:all') || PAYMENT_APPROVER_ROLES.has(role);
   const canApproveWithdrawals = hasPermission('admin:approve_withdrawals') || hasPermission('admin:all');
-  const canViewAdminRequests = hasPermission('admin:view_approvals') || hasPermission('admin:all');
-  const canApproveListings = hasPermission('admin:approve_listings') || hasPermission('admin:all') || ['super_admin', 'admin_dir', 'admin_it'].includes(userRole || '');
+  const canApproveListings = hasPermission('admin:approve_listings') || hasPermission('admin:all') || LISTING_APPROVER_ROLES.has(role);
 
-  const firstAvailable = canViewAdminRequests ? 'admin-requests' : canApproveListings ? 'listings' : canApproveWithdrawals ? 'withdrawals' : 'payments';
+  const firstAvailable = canViewAdminRequests ? 'admin-requests' : canApproveListings ? 'listings' : canApprovePayments ? 'payments' : 'withdrawals';
   const activeTab = (innerTab === 'admin-requests' && !canViewAdminRequests) ||
     (innerTab === 'listings' && !canApproveListings) ||
     (innerTab === 'withdrawals' && !canApproveWithdrawals) ||
