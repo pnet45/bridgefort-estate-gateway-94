@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Shared helper: after a gateway confirms a successful charge for a checkout
-// order (property, documentation fee or Agrovest), nothing is marked as
-// finally paid. Instead every related record moves to `awaiting_approval` and
-// a row is queued in `payment_requests` so an admin can approve or reject it
-// from the Admin Approvals hub. The client dashboard reads those same
-// statuses, so approval/rejection flows straight back to the user.
+// Shared helper: after a gateway confirms a successful checkout charge,
+// create one pending approval request. The database trigger owns the linked
+// order/payment/documentation state transition so the queue cannot leave the
+// financial records half-updated.
 
 export async function queueOrderForApproval(
   admin: any,
@@ -13,28 +11,30 @@ export async function queueOrderForApproval(
   const { reference, paidAmount, channel } = opts;
   if (!reference) return;
 
-  const { data: order } = await admin
+  const { data: order, error: orderError } = await admin
     .from("orders")
     .select("id, user_id, items, total_amount, payment_status, customer_name")
     .eq("payment_reference", reference)
     .maybeSingle();
 
-  if (!order) return;
+  if (orderError || !order) return;
 
-  // Idempotency: a repeated gateway callback for the same reference must not
-  // re-queue, re-notify, or re-write records that were already processed.
-  const settled = ["awaiting_approval", "paid", "approved", "rejected"];
   const { data: existingRequest } = await admin
     .from("payment_requests")
-    .select("id")
+    .select("id, status")
     .eq("reference", reference)
     .maybeSingle();
 
-  if (existingRequest || settled.includes(String(order.payment_status ?? ""))) return;
+  if (existingRequest) return;
 
-  // Stripe reports the charged amount in USD cents; fall back to the
-  // authoritative order total when the gateway amount isn't in Naira.
+  const settled = ["awaiting_approval", "paid", "approved", "rejected"];
+  if (settled.includes(String(order.payment_status ?? ""))) return;
+
+  // Paystack verification supplies NGN after converting kobo to Naira.
+  // Stripe callers pass the trusted NGN checkout amount. Fall back to the
+  // server-side order total when necessary.
   const amount = paidAmount > 0 ? paidAmount : Number(order.total_amount ?? 0);
+  if (amount <= 0) return;
 
   const items: any[] = Array.isArray(order.items) ? order.items : [];
   const types = items.map((i) => String(i?.property_type ?? ""));
@@ -49,43 +49,14 @@ export async function queueOrderForApproval(
     .join(", ")
     .slice(0, 300);
 
-  // Only flip orders that are still un-settled (guards against races between
-  // a webhook and a client-side verify call landing at the same time).
-  const { data: flipped } = await admin
-    .from("orders")
-    .update({ payment_status: "awaiting_approval", updated_at: new Date().toISOString() })
-    .eq("payment_reference", reference)
-    .not("payment_status", "in", `(${settled.join(",")})`)
-    .select("id");
-
-  if (!flipped || flipped.length === 0) return;
-
-
-  await admin
-    .from("estate_documentation_payments")
-    .update({ status: "awaiting_approval", updated_at: new Date().toISOString() })
-    .eq("reference", reference);
-
   const { data: plan } = await admin
     .from("payments")
-    .select("id, total_amount")
+    .select("id")
     .eq("reference", reference)
     .maybeSingle();
 
-  if (plan) {
-    await admin
-      .from("payments")
-      .update({
-        amount_paid: amount,
-        balance: Math.max(0, Number(plan.total_amount ?? 0) - amount),
-        status: "awaiting_approval",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", plan.id);
-  }
-
-  // Unique index on payment_requests.reference makes this insert the final
-  // idempotency guard — a duplicate simply errors out and is ignored.
+  // This insert is the single queue operation. The DB trigger moves linked
+  // records to awaiting_approval in the same transaction.
   const { error: insertError } = await admin.from("payment_requests").insert({
     user_id: order.user_id,
     type: requestType,
@@ -96,16 +67,17 @@ export async function queueOrderForApproval(
     status: "pending",
   });
 
-  if (!insertError) {
-
-
-    await admin.from("notifications").insert({
-      user_id: order.user_id,
-      audience: "user",
-      type: "payment_status",
-      title: "Payment received — awaiting approval",
-      message: `We received your payment of ₦${Number(amount).toLocaleString()}. It is now awaiting admin approval.`,
-      link: "/dashboard",
-    });
+  if (insertError) {
+    console.error("Could not queue payment for approval:", insertError);
+    return;
   }
+
+  await admin.from("notifications").insert({
+    user_id: order.user_id,
+    audience: "user",
+    type: "payment_status",
+    title: "Payment received — awaiting approval",
+    message: `We received your payment of ₦${Number(amount).toLocaleString()}. It is now awaiting admin approval.`,
+    link: "/dashboard",
+  });
 }
