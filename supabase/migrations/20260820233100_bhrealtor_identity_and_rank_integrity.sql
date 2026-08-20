@@ -1,6 +1,7 @@
 -- BHRealtors identity/rank integrity.
--- Registration is free, but once a profile is registered as a PBO it must have
--- an active Realtor identity and a stable referral code.
+-- Membership activation is payment-gated by the BHRealtors payment flow. Once a
+-- profile is registered as a PBO it must have an active Realtor identity and a
+-- stable referral code.
 
 CREATE OR REPLACE FUNCTION public.ensure_bhrealtor_identity()
 RETURNS trigger
