@@ -6,19 +6,18 @@ interface DownlineMember {
   id: string;
   first_name: string | null;
   last_name: string | null;
-  email: string | null;
   created_at: string;
   is_pbo: boolean | null;
   pbo_referral_code: string | null;
+  current_package: string | null;
+  current_rank: string | null;
 }
 
 /**
- * One node in the referral tree: shows this member's own details, and lazily
- * fetches + expands their direct referrals on click (so an unlimited-depth
- * tree never has to be loaded all at once). Requires the
- * "Users can view their own downline profiles" RLS policy (see migration
- * 20260802000000_downline_visibility_rls.sql) - without it, every fetch here
- * will simply return zero rows, even for members who do have referrals.
+ * Lazily-loaded unlimited-depth referral tree.
+ * The tree shows network identity/status, not private contact details.
+ * Commission eligibility is never calculated in the UI; the database
+ * commission engine handles the 15% seller + 5% first-level-referrer rule.
  */
 const DownlineNode: React.FC<{ member: DownlineMember; depth: number }> = ({ member, depth }) => {
   const [expanded, setExpanded] = useState(false);
@@ -31,7 +30,7 @@ const DownlineNode: React.FC<{ member: DownlineMember; depth: number }> = ({ mem
       setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, email, created_at, is_pbo, pbo_referral_code')
+        .select('id, first_name, last_name, created_at, is_pbo, pbo_referral_code, current_package, current_rank')
         .eq('referred_by_id', member.id)
         .order('created_at', { ascending: false });
       if (!error) setChildren(data || []);
@@ -42,6 +41,8 @@ const DownlineNode: React.FC<{ member: DownlineMember; depth: number }> = ({ mem
   };
 
   const name = `${member.first_name || ''} ${member.last_name || ''}`.trim() || 'Unnamed member';
+  const rank = member.current_rank || 'Associate';
+  const packageLabel = member.current_package?.replace(/_/g, ' ') || 'associate';
 
   return (
     <div style={{ marginLeft: depth > 0 ? 20 : 0 }}>
@@ -52,28 +53,21 @@ const DownlineNode: React.FC<{ member: DownlineMember; depth: number }> = ({ mem
           className="shrink-0 text-slate-400 hover:text-estate-blue transition-colors"
           aria-label={expanded ? 'Collapse' : 'Expand'}
         >
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : expanded ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
 
-        <div className="min-w-0 flex-1 grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-0.5">
-          <div className="flex items-center gap-1.5 min-w-0">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5">
             <span className="font-medium text-slate-900 truncate">{name}</span>
-            {member.is_pbo && (
-              <span title="Registered PBO">
-                <BadgeCheck className="h-3.5 w-3.5 text-estate-blue shrink-0" />
-              </span>
-            )}
+            {member.is_pbo && <BadgeCheck className="h-3.5 w-3.5 text-estate-blue shrink-0" title="Registered PBO" />}
           </div>
-          <span className="text-sm text-slate-500 truncate">{member.email || '—'}</span>
-          <span className="text-xs text-slate-400">
-            Joined {new Date(member.created_at).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' })}
-          </span>
+          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+            <span className="text-[11px] rounded-full bg-estate-blue/10 text-estate-blue px-2 py-0.5">{rank}</span>
+            <span className="text-[11px] rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 capitalize">{packageLabel} package</span>
+            <span className="text-[11px] text-slate-400">
+              Joined {new Date(member.created_at).toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' })}
+            </span>
+          </div>
         </div>
 
         <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${member.is_pbo ? 'bg-estate-blue/10 text-estate-blue' : 'bg-slate-100 text-slate-500'}`}>
@@ -98,12 +92,6 @@ interface DownlineTreeProps {
   rootUserId: string;
 }
 
-/**
- * Root of the referral tree for the logged-in user. Fetches their direct
- * referrals (already expanded), each of which can be expanded further to
- * reveal their own referrals, and so on - a real, lazily-loaded, unlimited
- * depth MLM tree rather than a fixed-depth snapshot.
- */
 const DownlineTree: React.FC<DownlineTreeProps> = ({ rootUserId }) => {
   const [members, setMembers] = useState<DownlineMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,7 +102,7 @@ const DownlineTree: React.FC<DownlineTreeProps> = ({ rootUserId }) => {
     (async () => {
       const { data, error: fetchError } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, email, created_at, is_pbo, pbo_referral_code')
+        .select('id, first_name, last_name, created_at, is_pbo, pbo_referral_code, current_package, current_rank')
         .eq('referred_by_id', rootUserId)
         .order('created_at', { ascending: false });
       if (cancelled) return;
@@ -126,19 +114,11 @@ const DownlineTree: React.FC<DownlineTreeProps> = ({ rootUserId }) => {
   }, [rootUserId]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8 text-slate-400">
-        <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading your referral tree…
-      </div>
-    );
+    return <div className="flex items-center justify-center py-8 text-slate-400"><Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading your referral tree…</div>;
   }
 
   if (error) {
-    return (
-      <p className="text-sm text-slate-500 py-4">
-        We couldn't load your referral tree right now. Try refreshing the page - if it keeps happening, contact support.
-      </p>
-    );
+    return <p className="text-sm text-slate-500 py-4">We couldn't load your referral tree right now. Try refreshing the page - if it keeps happening, contact support.</p>;
   }
 
   if (members.length === 0) {
@@ -153,11 +133,9 @@ const DownlineTree: React.FC<DownlineTreeProps> = ({ rootUserId }) => {
   return (
     <div className="space-y-2">
       <p className="text-sm text-slate-500 mb-3">
-        {members.length} direct {members.length === 1 ? 'referral' : 'referrals'}. Click the arrow next to anyone to see who they've referred.
+        {members.length} direct {members.length === 1 ? 'referral' : 'referrals'}. Expand a member to see the next level of your network.
       </p>
-      {members.map((member) => (
-        <DownlineNode key={member.id} member={member} depth={0} />
-      ))}
+      {members.map((member) => <DownlineNode key={member.id} member={member} depth={0} />)}
     </div>
   );
 };
