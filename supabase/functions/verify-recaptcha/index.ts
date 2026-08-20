@@ -6,27 +6,41 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { token, action = 'LOGIN' } = await req.json()
-    
+
     if (!token) {
       return new Response(
         JSON.stringify({ success: false, error: 'reCAPTCHA token is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Sentinel token emitted by the frontend when no site key is configured.
-    // Keeps forms functional in dev / before keys are pasted into .env.
+    // reCAPTCHA is disabled by default during the current stabilization phase.
+    // To restore server-side enforcement, set RECAPTCHA_ENFORCED=true and
+    // provide RECAPTCHA_SECRET_KEY. The frontend must also set
+    // VITE_ENABLE_RECAPTCHA=true and provide its V2 site key.
+    const recaptchaEnforced = Deno.env.get('RECAPTCHA_ENFORCED') === 'true'
+
     if (token === 'recaptcha-disabled') {
+      if (!recaptchaEnforced) {
+        return new Response(
+          JSON.stringify({ success: true, score: 1.0, disabled: true }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      return new Response(
+        JSON.stringify({ success: false, error: 'reCAPTCHA is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (!recaptchaEnforced) {
       return new Response(
         JSON.stringify({ success: true, score: 1.0, disabled: true }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -35,17 +49,13 @@ serve(async (req) => {
 
     const secretKey = Deno.env.get('RECAPTCHA_SECRET_KEY')
     if (!secretKey) {
-      console.error('RECAPTCHA_SECRET_KEY not found in environment variables')
+      console.error('RECAPTCHA_ENFORCED=true but RECAPTCHA_SECRET_KEY is missing')
       return new Response(
-        JSON.stringify({ success: false, error: 'Server configuration error' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ success: false, error: 'Server reCAPTCHA configuration is incomplete' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Verify reCAPTCHA with Google - works for both v2 and Enterprise
     const verifyUrl = 'https://www.google.com/recaptcha/api/siteverify'
     const verifyData = new URLSearchParams({
       secret: secretKey,
@@ -54,46 +64,34 @@ serve(async (req) => {
 
     const verifyResponse = await fetch(verifyUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: verifyData,
     })
 
     const verifyResult = await verifyResponse.json()
-    
-    console.log('reCAPTCHA verification result:', JSON.stringify(verifyResult))
+    console.log(`reCAPTCHA verification result for ${action}:`, JSON.stringify(verifyResult))
 
     if (verifyResult.success) {
       return new Response(
         JSON.stringify({ success: true, score: verifyResult.score || 1.0 }),
-        { 
-          status: 200, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    } else {
-      console.error('reCAPTCHA verification failed:', verifyResult['error-codes'])
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'reCAPTCHA verification failed',
-          errors: verifyResult['error-codes'] 
-        }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    console.error('reCAPTCHA verification failed:', verifyResult['error-codes'])
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'reCAPTCHA verification failed',
+        errors: verifyResult['error-codes']
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   } catch (error) {
     console.error('Error verifying reCAPTCHA:', error)
     return new Response(
       JSON.stringify({ success: false, error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
