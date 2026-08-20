@@ -17,10 +17,10 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
-// reCAPTCHA is temporarily disabled.
-// Keep these imports so it can be enabled again later.
-// import ReCaptcha from '@/components/ui/ReCaptcha';
-// import type ReCAPTCHA from 'react-google-recaptcha';
+/* reCAPTCHA is temporarily disabled.
+   Keep these imports so it can be enabled again later.
+   import ReCaptcha from '@/components/ui/ReCaptcha';
+   import type ReCAPTCHA from 'react-google-recaptcha';*/
 
 const schema = z.object({
   name: z.string().trim().min(2, 'Please enter your full name').max(100),
