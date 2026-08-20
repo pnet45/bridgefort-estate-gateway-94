@@ -3,302 +3,92 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
+const ALLOWED_DEPARTMENT_ROLES = new Set(["admin_dir", "admin_adm", "admin_acct", "admin_sales", "admin_cs", "admin_legal", "admin_it"]);
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    });
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!supabaseUrl || !serviceKey || !anonKey) return json({ error: "Server configuration is incomplete" }, 500);
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) return json({ error: "Authorization header required" }, 401);
+    const token = authHeader.slice(7).trim();
+    if (!token) return json({ error: "Authorization token required" }, 401);
 
-    // Verify the requesting user is an admin
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Authorization header required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false, autoRefreshToken: false } });
+    const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+    if (userError || !user) return json({ error: "Invalid authentication" }, 401);
+
+    const { data: canApprove, error: permissionError } = await admin.rpc("can_approve_admin_request", { _user_id: user.id });
+    if (permissionError || canApprove !== true) return json({ error: "Only Super_Admin, Admin-Dir or Admin-IT can approve admin requests" }, 403);
+
+    const body = await req.json().catch(() => ({}));
+    const requestId = typeof body.requestId === "string" ? body.requestId : "";
+    const approvedRole = typeof body.approvedRole === "string" ? body.approvedRole : null;
+    if (!requestId) return json({ error: "Request ID is required" }, 400);
+
+    const { data: pendingRequest, error: fetchError } = await admin.from("pending_admin_requests").select("*").eq("id", requestId).eq("status", "pending").single();
+    if (fetchError || !pendingRequest) return json({ error: "Pending request not found" }, 404);
+    const finalRole = approvedRole || pendingRequest.requested_role || null;
+    if (finalRole && !ALLOWED_DEPARTMENT_ROLES.has(finalRole)) return json({ error: "Invalid department role" }, 400);
+
+    if (finalRole === "admin_dir") {
+      const [{ data: isSuper, error: superError }, { data: isDirector, error: directorError }] = await Promise.all([
+        admin.rpc("has_role", { _user_id: user.id, _role: "super_admin" }),
+        admin.rpc("has_role", { _user_id: user.id, _role: "admin_dir" }),
+      ]);
+      if (superError || directorError || (isSuper !== true && isDirector !== true)) return json({ error: "Only Super_Admin or Admin-Dir can grant Admin-Dir" }, 403);
     }
-
-    const token = authHeader.replace('Bearer ', '');
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: `Bearer ${token}` } }
-    });
-
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid authentication' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if user is admin using RPC
-    const { data: isAdmin, error: roleError } = await supabaseAdmin.rpc('has_role', {
-      _user_id: user.id,
-      _role: 'admin'
-    });
-
-    if (roleError || !isAdmin) {
-      return new Response(
-        JSON.stringify({ error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const { requestId, approvedRole } = await req.json();
-
-    if (!requestId) {
-      return new Response(
-        JSON.stringify({ error: 'Request ID is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // The approver decides the actual department role granted — it does not
-    // have to match what the requester asked for, and it's re-validated here
-    // server-side regardless of what the client sends.
-    const ALLOWED_DEPARTMENT_ROLES = new Set([
-      'admin_dir', 'admin_adm', 'admin_acct', 'admin_sales', 'admin_cs', 'admin_legal', 'admin_it'
-    ]);
-
-    // Fetch the pending request
-    const { data: pendingRequest, error: fetchError } = await supabaseAdmin
-      .from('pending_admin_requests')
-      .select('*')
-      .eq('id', requestId)
-      .eq('status', 'pending')
-      .single();
-
-    if (fetchError || !pendingRequest) {
-      return new Response(
-        JSON.stringify({ error: 'Pending request not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const finalRole = approvedRole || pendingRequest.requested_role;
-    if (finalRole && !ALLOWED_DEPARTMENT_ROLES.has(finalRole)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid department role' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`Approving admin request for: ${pendingRequest.email}`);
 
     let newUserId: string;
-    let isLegacyRequestWithNoAccount = false;
-
+    let legacyRequest = false;
     if (pendingRequest.user_id) {
-      // The normal path: create-admin-signup already created this account
-      // with the password the person actually typed. Approval just grants
-      // roles — it must never touch the password, and must never call
-      // createUser again (the account already exists).
       newUserId = pendingRequest.user_id;
     } else {
-      // A request submitted before this fix existed — no account was ever
-      // created for it. Fall back to the old temp-password + recovery-link
-      // flow, but actually email the link this time (generateLink() only
-      // generates the link; it was never being sent to anyone).
-      isLegacyRequestWithNoAccount = true;
-      const tempPassword = crypto.randomUUID() + '!Aa1';
-
-      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email: pendingRequest.email,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
-          first_name: pendingRequest.first_name || '',
-          last_name: pendingRequest.last_name || ''
-        }
-      });
-
-      if (createError) {
-        console.error('Create user error:', createError);
-        return new Response(
-          JSON.stringify({ error: createError.message }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      newUserId = newUser.user.id;
-      console.log(`User created (legacy fallback): ${newUserId}`);
+      legacyRequest = true;
+      const { data: created, error: createError } = await admin.auth.admin.createUser({ email: pendingRequest.email, password: `${crypto.randomUUID()}!Aa1`, email_confirm: true, user_metadata: { first_name: pendingRequest.first_name || "", last_name: pendingRequest.last_name || "" } });
+      if (createError || !created.user) return json({ error: createError?.message || "Unable to create admin account" }, 400);
+      newUserId = created.user.id;
     }
 
-    // Assign legacy admin role (kept for backward compatibility with
-    // existing has_role(uid,'admin') checks scattered through the app)
-    const { error: roleInsertError } = await supabaseAdmin
-      .from('user_roles')
-      .insert({
-        user_id: newUserId,
-        role: 'admin'
-      });
+    const { error: legacyRoleError } = await admin.from("user_roles").upsert({ user_id: newUserId, role: "admin" }, { onConflict: "user_id,role" });
+    if (legacyRoleError) return json({ error: `Unable to assign admin access: ${legacyRoleError.message}` }, 500);
 
-    if (roleInsertError) {
-      console.error('Role assignment error:', roleInsertError);
-    }
-
-    // Assign the actual department role and seed its default mailboxes.
     if (finalRole) {
-      const { error: deptRoleError } = await supabaseAdmin
-        .from('admin_roles')
-        .insert({
-          user_id: newUserId,
-          role_name: finalRole,
-          granted_by: user.id
-        });
-
-      if (deptRoleError) {
-        console.error('Department role assignment error:', deptRoleError);
-      }
-
-      // admin_dir doesn't need explicit mailbox rows — admin:all already
-      // grants every mailbox via user_mailbox_access().
-      if (finalRole !== 'admin_dir') {
-        const { data: defaultMailboxes, error: mailboxLookupError } = await supabaseAdmin
-          .from('role_default_mailboxes')
-          .select('mailbox_email, mailbox_provider')
-          .eq('role_name', finalRole);
-
-        if (mailboxLookupError) {
-          console.error('Default mailbox lookup error:', mailboxLookupError);
-        } else if (defaultMailboxes && defaultMailboxes.length > 0) {
-          const { error: mailboxInsertError } = await supabaseAdmin
-            .from('admin_mailboxes')
-            .upsert(
-              defaultMailboxes.map((m) => ({
-                user_id: newUserId,
-                mailbox_email: m.mailbox_email,
-                mailbox_provider: m.mailbox_provider,
-                is_primary: false,
-                access_level: 'read_write',
-                status: 'active'
-              })),
-              { onConflict: 'user_id,mailbox_email', ignoreDuplicates: true }
-            );
-
-          if (mailboxInsertError) {
-            console.error('Mailbox seeding error:', mailboxInsertError);
-          }
+      const { error: deptRoleError } = await admin.from("admin_roles").upsert({ user_id: newUserId, role_name: finalRole, granted_by: user.id }, { onConflict: "user_id,role_name" });
+      if (deptRoleError) return json({ error: `Unable to assign department role: ${deptRoleError.message}` }, 500);
+      if (finalRole !== "admin_dir") {
+        const { data: defaults, error: lookupError } = await admin.from("role_default_mailboxes").select("mailbox_email, mailbox_provider").eq("role_name", finalRole);
+        if (lookupError) return json({ error: `Unable to load default mailboxes: ${lookupError.message}` }, 500);
+        if (defaults?.length) {
+          const { error: mailboxError } = await admin.from("admin_mailboxes").upsert(defaults.map((m) => ({ user_id: newUserId, mailbox_email: m.mailbox_email, mailbox_provider: m.mailbox_provider, is_primary: false, access_level: "read_write", status: "active" })), { onConflict: "user_id,mailbox_email", ignoreDuplicates: true });
+          if (mailboxError) return json({ error: `Unable to seed mailboxes: ${mailboxError.message}` }, 500);
         }
       }
     }
 
-    // Notify the approved admin. The two cases genuinely need different
-    // emails: the normal case already has a working password (set at
-    // signup), so there's nothing to reset — telling them to "reset their
-    // password" would be actively wrong. The legacy fallback case has only
-    // a random throwaway password nobody has ever seen, so it truly does
-    // need a recovery link — and that link has to actually be emailed,
-    // not just generated and discarded (generateLink() only creates the
-    // link object; it never sends anything on its own, which is why the
-    // previous version of this function silently never delivered it).
-    if (isLegacyRequestWithNoAccount) {
-      const { data: linkData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-        type: 'recovery',
-        email: pendingRequest.email,
-      });
+    const reviewedAt = new Date().toISOString();
+    const { error: updateError } = await admin.from("pending_admin_requests").update({ status: "approved", reviewed_at: reviewedAt, reviewed_by: user.id }).eq("id", requestId).eq("status", "pending");
+    if (updateError) return json({ error: `Unable to finalize approval: ${updateError.message}` }, 500);
 
-      if (resetError) {
-        console.error('Password reset link generation error:', resetError);
-      } else {
+    try {
+      if (legacyRequest) {
+        const { data: linkData } = await admin.auth.admin.generateLink({ type: "recovery", email: pendingRequest.email });
         const actionLink = linkData?.properties?.action_link;
-        try {
-          await resend.emails.send({
-            from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
-            to: [pendingRequest.email],
-            subject: "Your Admin Access Has Been Approved — Set Your Password",
-            html: `
-              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                  <h1 style="margin: 0; font-size: 22px;">Admin Access Approved</h1>
-                </div>
-                <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-                  <p>Hello,</p>
-                  <p>Your administrator access request has been approved. Set your password to finish setting up your account:</p>
-                  <div style="text-align: center; margin: 25px 0;">
-                    <a href="${actionLink}" style="background: #1e40af; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600;">Set Your Password</a>
-                  </div>
-                  <p style="color: #6b7280; font-size: 13px;">If the button doesn't work, copy this link: ${actionLink}</p>
-                </div>
-              </div>
-            `,
-          });
-        } catch (emailError) {
-          console.error('Approval email send error:', emailError);
-        }
+        if (actionLink) await resend.emails.send({ from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>", to: [pendingRequest.email], subject: "Your Admin Access Has Been Approved — Set Your Password", html: `<p>Your Bridgefort Homes administrator access has been approved.</p><p><a href="${actionLink}">Set your password</a> to complete your account setup.</p>` });
+      } else {
+        await resend.emails.send({ from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>", to: [pendingRequest.email], subject: "Your Admin Access Has Been Approved", html: `<p>Your Bridgefort Homes administrator access has been approved. You can now sign in using the email and password you used during signup.</p>` });
       }
-    } else {
-      try {
-        await resend.emails.send({
-          from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
-          to: [pendingRequest.email],
-          subject: "Your Admin Access Has Been Approved",
-          html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                <h1 style="margin: 0; font-size: 22px;">Admin Access Approved</h1>
-              </div>
-              <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
-                <p>Hello,</p>
-                <p>Your administrator access request has been approved. You can log in now with the email and password you used when you signed up — no password reset needed.</p>
-              </div>
-            </div>
-          `,
-        });
-      } catch (emailError) {
-        console.error('Approval notification email send error:', emailError);
-      }
-    }
+    } catch (emailError) { console.error("Approval notification email failed", emailError); }
 
-    // Update the pending request status
-    const { error: updateError } = await supabaseAdmin
-      .from('pending_admin_requests')
-      .update({
-        status: 'approved',
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: user.id
-      })
-      .eq('id', requestId);
-
-    if (updateError) {
-      console.error('Update request error:', updateError);
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: isLegacyRequestWithNoAccount
-          ? `Admin account created for ${pendingRequest.email}. A password setup email has been sent.`
-          : `${pendingRequest.email} is approved and can log in immediately with their existing password.`,
-        user: {
-          id: newUserId,
-          email: pendingRequest.email
-        }
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return json({ success: true, message: legacyRequest ? `Admin account created for ${pendingRequest.email}. A password setup email has been sent.` : `${pendingRequest.email} is approved and can log in with the password used at signup.`, user: { id: newUserId, email: pendingRequest.email, role: finalRole } });
   } catch (error) {
-    console.error('Unexpected error:', error);
-    return new Response(
-      JSON.stringify({ error: 'An unexpected error occurred' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error("Unexpected approval error", error);
+    return json({ error: "An unexpected error occurred" }, 500);
   }
 });
