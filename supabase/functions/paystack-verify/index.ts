@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { queueOrderForApproval } from '../_shared/paymentApproval.ts';
 
@@ -43,45 +43,48 @@ serve(async (req) => {
     });
     const data = await response.json();
 
-    if (!(data.status && data.data.status === 'success')) {
-      return new Response(JSON.stringify(data), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: response.status,
-      });
-    }
+    if (!(data.status && data.data.status === 'success')) return json(data, response.status);
 
     const admin = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
     const paidAmount = Number(data.data.amount ?? 0) / 100;
     const currency = String(data.data.currency ?? 'NGN');
 
-    // Server-side amount verification. A successful Paystack callback is not
-    // enough to authorize a cheaper/tampered transaction.
-    const expectedAmounts: number[] = [];
+    // Resolve the reference to exactly one owned financial record before
+    // changing any order, membership, profile, or commission state.
     const { data: order } = await admin
       .from('orders')
-      .select('id, total_amount')
+      .select('id, user_id, total_amount, payment_status')
       .eq('payment_reference', reference)
       .maybeSingle();
-    if (order?.total_amount != null) expectedAmounts.push(Number(order.total_amount));
 
     const { data: membershipPurchase } = await admin
       .from('mlm_membership_purchases')
-      .select('id, package_code, status, user_id')
+      .select('id, package_code, status, user_id, amount, purchase_type')
       .eq('paystack_reference', reference)
       .maybeSingle();
 
-    if (membershipPurchase?.package_code) {
+    if (order && order.user_id !== authenticatedUserId) return json({ error: 'Forbidden' }, 403);
+    if (membershipPurchase && membershipPurchase.user_id !== authenticatedUserId) return json({ error: 'Forbidden' }, 403);
+    if (!order && !membershipPurchase) return json({ error: 'Payment reference is not associated with your account' }, 404);
+    if (order && membershipPurchase) return json({ error: 'Ambiguous payment reference' }, 409);
+
+    // Server-side amount verification. A successful Paystack callback is not
+    // enough to authorize a cheaper/tampered transaction.
+    let expectedAmount: number | null = null;
+    if (order?.total_amount != null) expectedAmount = Number(order.total_amount);
+    if (membershipPurchase) {
       const { data: pkg } = await admin
         .from('mlm_packages')
         .select('price')
         .eq('package_code', membershipPurchase.package_code)
         .maybeSingle();
-      if (pkg?.price != null) expectedAmounts.push(Number(pkg.price));
+      if (!pkg?.price) return json({ error: 'Membership package pricing is unavailable' }, 500);
+      expectedAmount = Number(pkg.price);
     }
 
-    const underpaid = expectedAmounts.some((expected) => expected > 0 && paidAmount + 1 < expected);
-    if (currency !== 'NGN' || underpaid) {
-      console.error('Payment amount mismatch', { reference, paidAmount, expectedAmounts, currency });
+    const amountMismatch = expectedAmount == null || paidAmount + 1 < expectedAmount || paidAmount > expectedAmount + 1;
+    if (currency !== 'NGN' || amountMismatch) {
+      console.error('Payment amount mismatch', { reference, paidAmount, expectedAmount, currency });
       await admin.from('payments').update({ status: 'amount_mismatch' }).eq('paystack_reference', reference);
       return json({ status: false, message: 'Payment amount does not match the amount owed. Please contact support.' }, 400);
     }
@@ -176,28 +179,17 @@ serve(async (req) => {
       }
     }
 
-    // -----------------------------------------------------------------------
-    // Estate/property checkout
-    // -----------------------------------------------------------------------
-    // Do NOT mark the order paid here. It must enter the admin approval queue.
-    // Once an admin approves it, the database order trigger awards BHRealtor
-    // property commission: seller 15%, seller's first-level referrer 5%, no
-    // level 3+ commission.
+    // Estate/property checkout remains approval-gated. The database approval
+    // trigger awards property commission: seller 15%, seller's first-level
+    // referrer 5%, and no level 3+ commission.
     if (order) {
-      await queueOrderForApproval(admin, {
-        reference,
-        paidAmount,
-        channel: 'Paystack',
-      });
+      await queueOrderForApproval(admin, { reference, paidAmount, channel: 'Paystack' });
     }
 
-    // -----------------------------------------------------------------------
-    // Membership package purchase
-    // -----------------------------------------------------------------------
-    // Membership/package purchases are NOT commissionable. They only activate
-    // the purchaser's selected membership tier. The old implementation paid
-    // direct/indirect sponsor commissions from package purchases; that logic
-    // has intentionally been removed.
+    // Membership payment: activation is idempotent and the database trigger
+    // is responsible for the membership referral commissions. This preserves
+    // the requested network-marketing income while keeping commission creation
+    // in one authoritative database path.
     if (membershipPurchase && membershipPurchase.status === 'pending') {
       const { data: pkg } = await admin
         .from('mlm_packages')
@@ -206,26 +198,27 @@ serve(async (req) => {
         .single();
 
       if (pkg) {
-        await admin.from('mlm_membership_purchases')
+        const { data: completedPurchase, error: completeError } = await admin.from('mlm_membership_purchases')
           .update({ status: 'completed', updated_at: new Date().toISOString() })
           .eq('id', membershipPurchase.id)
-          .eq('status', 'pending');
+          .eq('status', 'pending')
+          .select('id')
+          .maybeSingle();
 
-        // No wallet update, no upline traversal, no membership commission.
-        // Rank/package integrity is enforced by the database trigger.
-        await admin.from('profiles').update({
-          current_package: pkg.package_code,
-          is_pbo: true,
-          is_active: true,
-          updated_at: new Date().toISOString(),
-        }).eq('id', membershipPurchase.user_id);
+        if (completeError) throw completeError;
+
+        if (completedPurchase) {
+          await admin.from('profiles').update({
+            current_package: pkg.package_code,
+            is_pbo: true,
+            is_active: true,
+            updated_at: new Date().toISOString(),
+          }).eq('id', membershipPurchase.user_id);
+        }
       }
     }
 
-    return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: response.status,
-    });
+    return json(data, response.status);
   } catch (error) {
     console.error('paystack-verify error:', error);
     return json({ error: 'An error occurred verifying your payment' }, 400);
