@@ -18,10 +18,8 @@ BEGIN
       WHERE mp.user_id = NEW.id AND mp.status = 'completed'
     ) INTO v_has_completed_membership;
 
-    IF NOT v_has_completed_membership THEN
-      NEW.is_active := false;
-    ELSE
-      NEW.is_active := true;
+    IF NOT v_has_completed_membership THEN NEW.is_active := false;
+    ELSE NEW.is_active := true;
     END IF;
 
     IF NULLIF(trim(COALESCE(NEW.pbo_referral_code, '')), '') IS NULL THEN
@@ -37,7 +35,6 @@ BEGIN
     NEW.is_active := false;
   END IF;
 
-  -- Only an active, paid BHRealtor may be a sponsor. Prevent self-referral.
   IF NEW.referred_by_id IS NOT NULL THEN
     IF NEW.referred_by_id = NEW.id
        OR NOT EXISTS (
@@ -61,8 +58,6 @@ BEFORE INSERT OR UPDATE OF is_pbo, is_active, current_package, pbo_referral_code
 ON public.profiles
 FOR EACH ROW EXECUTE FUNCTION public.ensure_bhrealtor_identity();
 
--- Repair existing profiles: only Realtors with a completed membership remain
--- active. Existing referral links to inactive/unpaid sponsors are removed.
 UPDATE public.profiles p
 SET is_active = EXISTS (
   SELECT 1 FROM public.mlm_membership_purchases mp
@@ -81,8 +76,9 @@ WHERE child.referred_by_id IS NOT NULL
   );
 
 -- Replace the real membership commission function used by the existing
--- trigger. This preserves the package-configured rates while requiring both
--- the buyer and each eligible sponsor to be active paid Realtors.
+-- trigger. The buyer itself does not need to be active at trigger time:
+-- payment verification marks the membership purchase completed first and then
+-- activates the buyer profile. The sponsor(s), however, must already be active.
 CREATE OR REPLACE FUNCTION public.award_bhrealtor_membership_commissions()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -92,79 +88,65 @@ AS $$
 DECLARE
   v_sponsor_id uuid;
   v_sponsor2_id uuid;
-  v_sponsor_is_pbo boolean;
-  v_sponsor2_is_pbo boolean;
+  v_buyer_is_pbo boolean;
   v_sponsor_is_active boolean;
+  v_sponsor2_is_pbo boolean;
   v_sponsor2_is_active boolean;
   v_package public.mlm_packages;
   v_rate numeric;
   v_amount numeric;
   v_status text;
 BEGIN
-  IF NEW.status <> 'completed' OR OLD.status = 'completed' THEN
-    RETURN NEW;
-  END IF;
+  IF NEW.status <> 'completed' OR OLD.status = 'completed' THEN RETURN NEW; END IF;
+  IF COALESCE(NEW.amount, 0) <= 5000 THEN RETURN NEW; END IF;
 
-  IF COALESCE(NEW.amount, 0) <= 5000 THEN
-    RETURN NEW;
-  END IF;
-
-  SELECT * INTO v_package
-  FROM public.mlm_packages
-  WHERE package_code = NEW.package_code;
+  SELECT * INTO v_package FROM public.mlm_packages WHERE package_code = NEW.package_code;
   IF v_package IS NULL THEN RETURN NEW; END IF;
 
-  SELECT p.referred_by_id, p.is_pbo, p.is_active
-  INTO v_sponsor_id, v_sponsor_is_pbo, v_sponsor_is_active
-  FROM public.profiles p
-  WHERE p.id = NEW.user_id;
+  SELECT p.referred_by_id, p.is_pbo
+  INTO v_sponsor_id, v_buyer_is_pbo
+  FROM public.profiles p WHERE p.id = NEW.user_id;
 
-  -- Membership completion itself is the activation gate. The payment flow
-  -- marks the purchase completed before activating the buyer profile.
-  IF NOT COALESCE(v_sponsor_is_pbo, false) OR NOT COALESCE(v_sponsor_is_active, false) THEN
-    RETURN NEW;
-  END IF;
+  IF NOT COALESCE(v_buyer_is_pbo, false) OR v_sponsor_id IS NULL THEN RETURN NEW; END IF;
 
-  IF v_sponsor_id IS NULL THEN RETURN NEW; END IF;
+  SELECT is_active INTO v_sponsor_is_active
+  FROM public.profiles WHERE id = v_sponsor_id;
+  IF NOT COALESCE(v_sponsor_is_active, false) THEN RETURN NEW; END IF;
 
   v_rate := COALESCE(v_package.direct_commission_pct, 0);
   IF v_rate > 0 THEN
     v_amount := ROUND(NEW.amount * v_rate / 100, 2);
+
     SELECT public.bhrealtor_package_can_withdraw(current_package)
-    INTO v_sponsor_is_active
+    INTO v_sponsor2_is_active
     FROM public.profiles WHERE id = v_sponsor_id;
 
-    -- The selected sponsor must itself still be active.
-    SELECT is_active INTO v_sponsor2_is_active FROM public.profiles WHERE id = v_sponsor_id;
-    IF COALESCE(v_sponsor2_is_active, false) THEN
-      v_status := CASE WHEN COALESCE(v_sponsor_is_active, false) THEN 'available' ELSE 'locked' END;
-      INSERT INTO public.mlm_commissions (
-        source_purchase_id, source_order_id, commission_source,
-        beneficiary_id, sponsor_level, commission_rate, commission_amount,
-        status, description
-      ) VALUES (
-        NEW.id, NULL, 'membership', v_sponsor_id, 1, v_rate, v_amount,
-        v_status, format('%s membership referral commission - first level', v_package.package_name)
-      ) ON CONFLICT DO NOTHING;
+    v_status := CASE WHEN COALESCE(v_sponsor2_is_active, false) THEN 'available' ELSE 'locked' END;
 
+    INSERT INTO public.mlm_commissions (
+      source_purchase_id, source_order_id, commission_source,
+      beneficiary_id, sponsor_level, commission_rate, commission_amount,
+      status, description
+    ) VALUES (
+      NEW.id, NULL, 'membership', v_sponsor_id, 1, v_rate, v_amount,
+      v_status, format('%s membership referral commission - first level', v_package.package_name)
+    ) ON CONFLICT DO NOTHING;
+
+    UPDATE public.profiles
+    SET total_commissions = COALESCE(total_commissions, 0) + v_amount,
+        updated_at = now()
+    WHERE id = v_sponsor_id;
+
+    IF v_status = 'available' THEN
       UPDATE public.profiles
-      SET total_commissions = COALESCE(total_commissions, 0) + v_amount,
-          updated_at = now()
+      SET wallet_balance = COALESCE(wallet_balance, 0) + v_amount
       WHERE id = v_sponsor_id;
-
-      IF v_status = 'available' THEN
-        UPDATE public.profiles
-        SET wallet_balance = COALESCE(wallet_balance, 0) + v_amount
-        WHERE id = v_sponsor_id;
-      END IF;
     END IF;
   END IF;
 
-  -- Exactly one additional upline level; never level 3+.
   SELECT p.referred_by_id, p.is_pbo, p.is_active
   INTO v_sponsor2_id, v_sponsor2_is_pbo, v_sponsor2_is_active
-  FROM public.profiles p
-  WHERE p.id = v_sponsor_id;
+  FROM public.profiles p WHERE p.id = v_sponsor_id;
 
   IF v_sponsor2_id IS NOT NULL
      AND COALESCE(v_sponsor2_is_pbo, false)
@@ -174,10 +156,10 @@ BEGIN
     v_amount := ROUND(NEW.amount * v_rate / 100, 2);
 
     SELECT public.bhrealtor_package_can_withdraw(current_package)
-    INTO v_sponsor_is_active
+    INTO v_sponsor2_is_active
     FROM public.profiles WHERE id = v_sponsor2_id;
 
-    v_status := CASE WHEN COALESCE(v_sponsor_is_active, false) THEN 'available' ELSE 'locked' END;
+    v_status := CASE WHEN COALESCE(v_sponsor2_is_active, false) THEN 'available' ELSE 'locked' END;
 
     INSERT INTO public.mlm_commissions (
       source_purchase_id, source_order_id, commission_source,
