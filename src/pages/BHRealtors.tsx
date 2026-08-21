@@ -12,6 +12,7 @@ import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPac
 import RealtorsRegistrationForm from '@/components/bhRealtors/RealtorsRegistrationForm';
 import ReferralLeaderboard from '@/components/bhRealtors/ReferralLeaderboard';
 import DownlineTree from '@/components/bhRealtors/DownlineTree';
+import CommissionHistory from '@/components/bhRealtors/CommissionHistory';
 
 const rank: Record<string, number> = { associate: 1, gold: 2, classic_gold: 3 };
 const naira = (n: number) => `₦${Number(n || 0).toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
@@ -111,13 +112,13 @@ const BHRealtors: React.FC = () => {
 
     <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
       {[
-        [Users, 'Registered', memberCount], [Network, 'Active Realtors', pboCount], [Users, 'My direct referrals', downlineCount], [Wallet, 'Available', naira(profile?.wallet_balance ?? available)], [Lock, 'Locked', naira(locked)],
+        [Users, 'Registered', memberCount], [Network, 'Active Realtors', pboCount], [Users, 'My direct referrals', downlineCount], [Wallet, 'Wallet balance', naira(profile?.wallet_balance ?? 0)], [Lock, 'Locked', naira(locked)],
       ].map(([Icon, label, value]: any) => <div key={label} className="rounded-2xl border border-white/50 bg-white/60 backdrop-blur-xl p-4 shadow-sm"><Icon className="h-5 w-5 text-estate-purple" /><p className="text-[11px] uppercase tracking-wider text-slate-500 mt-3">{label}</p><p className="text-xl font-bold text-slate-900 mt-1">{value}</p></div>)}
     </div>
 
     {isRealtor && <section className="grid lg:grid-cols-3 gap-5">
-      <div className="lg:col-span-2 rounded-3xl border border-white/50 bg-white/60 backdrop-blur-xl p-6 shadow-sm"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><div><p className="text-xs uppercase tracking-wider text-slate-500">Current package</p><h2 className="text-2xl font-bold text-estate-blue">{currentPackage?.package_name || currentCode}</h2><p className="text-sm text-slate-500 mt-1">Sales commission: {currentPackage?.sales_commission_pct ?? (currentCode === 'associate' ? 5 : currentCode === 'gold' ? 10 : 15)}%</p></div><Badge className={currentRank >= 2 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>{currentRank >= 2 ? 'Withdrawable' : 'Locked commission'}</Badge></div></div>
-      <Link to="/bh-realtors-withdraw" className="rounded-3xl border border-white/50 bg-estate-blue text-white p-6 shadow-lg hover:scale-[1.01] transition"><Wallet className="h-6 w-6" /><p className="mt-5 text-sm text-white/70">Available to withdraw</p><p className="text-3xl font-bold mt-1">{naira(profile?.wallet_balance ?? available)}</p><span className="inline-flex items-center gap-1 mt-4 text-sm">Open wallet <ArrowUpRight className="h-4 w-4" /></span></Link>
+      <div className="lg:col-span-2 rounded-3xl border border-white/50 bg-white/60 backdrop-blur-xl p-6 shadow-sm"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"><div><p className="text-xs uppercase tracking-wider text-slate-500">Current package / rank</p><h2 className="text-2xl font-bold text-estate-blue">{currentPackage?.package_name || currentCode}</h2><p className="text-sm text-slate-500 mt-1">Rank: {currentCode === 'classic_gold' ? 'Classic Gold' : currentCode === 'gold' ? 'Gold' : 'Associate'} · Estate-land sales commission: {currentPackage?.sales_commission_pct ?? (currentCode === 'associate' ? 5 : currentCode === 'gold' ? 10 : 15)}%</p></div><Badge className={currentRank >= 2 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}>{currentRank >= 2 ? 'Withdrawable' : 'Locked commission'}</Badge></div></div>
+      <Link to="/bh-realtors-withdraw" className="rounded-3xl border border-white/50 bg-estate-blue text-white p-6 shadow-lg hover:scale-[1.01] transition"><Wallet className="h-6 w-6" /><p className="mt-5 text-sm text-white/70">Available to withdraw</p><p className="text-3xl font-bold mt-1">{naira(profile?.wallet_balance ?? 0)}</p><span className="inline-flex items-center gap-1 mt-4 text-sm">Open wallet <ArrowUpRight className="h-4 w-4" /></span></Link>
     </section>}
 
     {!isRealtor && <section className="rounded-3xl border border-estate-purple/20 bg-estate-purple/5 p-6"><h2 className="text-xl font-bold text-estate-blue">Join BHRealtors</h2><p className="text-sm text-slate-600 mt-1">Choose a package below. Registration is completed through secure Paystack payment; your Realtor account becomes active only after successful payment.</p></section>}
@@ -133,7 +134,9 @@ const BHRealtors: React.FC = () => {
 
     {isRealtor && <div className="grid lg:grid-cols-2 gap-5"><div className="rounded-3xl border border-white/50 bg-white/60 backdrop-blur-xl p-6"><div className="flex items-center gap-2 mb-4"><Trophy className="h-5 w-5 text-estate-purple" /><h2 className="font-bold">Referral leaderboard</h2></div><ReferralLeaderboard /></div><div className="rounded-3xl border border-white/50 bg-white/60 backdrop-blur-xl p-6"><div className="flex items-center gap-2 mb-4"><Network className="h-5 w-5 text-estate-purple" /><h2 className="font-bold">Referral tree</h2></div><DownlineTree /></div></div>}
 
-    {isRealtor && <section className="rounded-3xl border border-white/50 bg-white/60 backdrop-blur-xl p-6"><div className="flex items-center gap-2 mb-4"><TrendingUp className="h-5 w-5 text-estate-purple" /><h2 className="font-bold">Recent withdrawals</h2></div>{withdrawals.length ? <div className="space-y-2">{withdrawals.map(w => <div key={w.id} className="flex items-center justify-between rounded-xl bg-white/50 p-3"><div><p className="font-semibold">{naira(w.amount)}</p><p className="text-xs text-slate-500">{new Date(w.created_at).toLocaleString()}</p></div><Badge>{w.status}</Badge></div>)}</div> : <p className="text-sm text-slate-500">No withdrawal requests yet.</p>}</section>}
+    {isRealtor && <CommissionHistory />}
+
+    {isRealtor && <section className="rounded-3xl border border-white/50 bg-white/60 backdrop-blur-xl p-6 shadow-sm"><div className="flex items-center gap-2 mb-4"><TrendingUp className="h-5 w-5 text-estate-purple" /><h2 className="font-bold">Recent withdrawals</h2></div>{withdrawals.length ? <div className="space-y-2">{withdrawals.map(w => <div key={w.id} className="flex items-center justify-between rounded-xl bg-white/50 p-3"><div><p className="font-semibold">{naira(w.amount)}</p><p className="text-xs text-slate-500">{new Date(w.created_at).toLocaleString()}</p></div><Badge>{w.status}</Badge></div>)}</div> : <p className="text-sm text-slate-500">No withdrawal requests yet.</p>}</section>}
   </div></main><Footer />
 
   <RealtorsRegistrationForm open={registrationOpen} onClose={() => setRegistrationOpen(false)} selectedPackage={selectedPackage} onComplete={() => { setRegistrationOpen(false); void refreshProfile(); void load(); }} />
