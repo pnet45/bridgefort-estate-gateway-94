@@ -38,6 +38,15 @@ import {
   Factory,
   Users,
   ArrowRight,
+  Coins,
+  Layers,
+  Gem,
+  LineChart,
+  BarChart3,
+  CloudRain,
+  Droplets,
+  Lightbulb,
+  XCircle,
 } from 'lucide-react';
 
 const PLOT_PRICE = 800000;
@@ -109,6 +118,71 @@ const whoCanInvest = [
 const futureOps = [
   'Food Processing', 'Storage Facilities', 'Packaging Plants', 'Agro Processing Centres',
   'Feed Mills', 'Palm Oil Processing', 'Cassava Processing', 'Export Packaging',
+];
+
+const investmentAssetTypes = [
+  {
+    img: '/lovable-uploads/agrovest-oil-palm-plantation.jpg',
+    title: 'Farmland Investment',
+    text: 'Purchasing productive land for direct operation, leasing to third-party producers, or holding for long-term value appreciation. Key factors include soil quality, water access, and location.',
+  },
+  {
+    img: '/lovable-uploads/agrovest-ruminants-farm.jpg',
+    title: 'Operating Farm Businesses',
+    text: 'Acquiring active enterprises in crop production or livestock. Success here depends on operational efficiency, labor management, and supply chain integration.',
+  },
+  {
+    img: '/lovable-uploads/agrovest-processing-value-addition.jpg',
+    title: 'Agribusiness & Value-Added Enterprises',
+    text: 'Investing in the broader ecosystem, including input suppliers, processing facilities, storage logistics, and agricultural technology (AgTech). These assets often offer different risk-return profiles compared to primary production.',
+  },
+  {
+    img: '/lovable-uploads/agrovest-fish-farm.jpg',
+    title: 'Controlled Environment & Forestry',
+    text: 'Specialized investments in vertical farming, irrigation infrastructure, and sustainable forestry.',
+  },
+];
+
+const financialIndicators = [
+  { icon: LineChart, title: 'Cash Flow', text: 'The ability to cover operating expenses, debt service, and reinvestment needs while generating owner returns. Positive cash flow is the bedrock of resilience.' },
+  { icon: TrendingUp, title: 'Return on Investment (ROI)', text: 'Calculated using conservative production assumptions to ensure realistic expectations.' },
+  { icon: BarChart3, title: 'Operating Margin', text: 'A measure of production efficiency, indicating how well management controls costs relative to revenue.' },
+  { icon: Landmark, title: 'Asset Appreciation Potential', text: 'While land values may rise due to infrastructure development and population growth, we view this as a component of total return, not the sole strategy.' },
+];
+
+const whyChooseAg = [
+  { icon: Coins, title: 'Long-term Wealth Generation', text: 'Driven by farmland appreciation and consistent production yields.' },
+  { icon: ShieldCheck, title: 'Inflation Hedging', text: 'Agricultural assets often correlate positively with inflation, preserving purchasing power.' },
+  { icon: Layers, title: 'Portfolio Diversification', text: 'Low correlation with traditional stock and bond markets.' },
+  { icon: Gem, title: 'Tangible Asset Ownership', text: 'Direct control over productive natural resources.' },
+];
+
+const practicalScenarios = [
+  {
+    icon: Droplets,
+    tag: 'Scenario A',
+    title: 'Long-Term Appreciation',
+    text: 'An investor chooses a property with higher upfront costs but reliable irrigation and drainage over a cheaper, drought-prone alternative. The initial capital outlay is justified by reduced production risk and superior long-term yield stability.',
+  },
+  {
+    icon: Landmark,
+    tag: 'Scenario B',
+    title: 'Acquiring an Operating Business',
+    text: 'Instead of focusing only on land value, an investor acquires a horticultural business after reviewing historical financials, customer contracts, and employee retention. The strong management systems and stable buyer relationships prove to be the true drivers of value.',
+  },
+  {
+    icon: Lightbulb,
+    tag: 'Scenario C',
+    title: 'AgTech Integration',
+    text: 'A farming operation introduces precision agriculture tools in phases — starting with yield mapping — rather than a full-scale rollout. This approach minimizes implementation risk while providing data to justify future investments.',
+  },
+];
+
+const commonPitfalls = [
+  { title: 'Over-reliance on Land Appreciation', text: 'Ignoring operational inefficiencies can erode returns even if land values rise.' },
+  { title: 'Underestimating Management Needs', text: 'Agriculture is a business; poor management can ruin even the best assets.' },
+  { title: 'Ignoring Regional Nuances', text: 'Climate, labor laws, and infrastructure vary significantly by region.' },
+  { title: 'Excessive Leverage', text: 'High debt levels reduce resilience during market downturns or poor harvests.' },
 ];
 
 // Reusable glass card wrapper
@@ -410,6 +484,358 @@ const Agrovest: React.FC = () => {
                 </ul>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================
+          UNDERSTANDING AGRICULTURAL INVESTMENT — long-form editorial guide.
+          Deliberately varies its visual treatment section to section (photo
+          banner, icon-stat grids, photo cards, alternating photo/text rows,
+          icon-only scenario cards, an amber warning panel, a closing photo
+          panel) so a long article reads as a real page instead of a wall of
+          text, and reuses Agrovest's own estate photography throughout
+          rather than introducing off-brand stock imagery.
+          ================================================================ */}
+      <section id="investment-guide" className="relative overflow-hidden">
+        {/* Intro banner */}
+        <div className="relative py-20 md:py-28 bg-green-950 text-white">
+          <div
+            className="absolute inset-0 opacity-25 bg-cover bg-center"
+            style={{ backgroundImage: "url('/lovable-uploads/agrovest-hero-1.jpg')" }}
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-green-950/70 via-green-950/60 to-green-950" />
+          <div className="container-custom relative z-10 max-w-3xl">
+            <Glass className="inline-flex items-center gap-2 px-4 py-1.5 mb-5">
+              <BarChart3 className="h-4 w-4 text-amber-300" />
+              <span className="text-amber-200 font-semibold tracking-wide uppercase text-xs">
+                Agrovest Strategic Guide
+              </span>
+            </Glass>
+            <h2 className="text-3xl md:text-5xl font-extrabold leading-tight mb-4">
+              Agricultural Investment, Explained
+            </h2>
+            <p className="text-green-100 leading-relaxed">
+              At Agrovest, a specialized division of Bridgefort Homes Development Ltd, we
+              recognize that agricultural investment is more than simply acquiring land. It is a
+              strategic allocation of capital into farmland, farming operations, agribusinesses,
+              and related assets with the goal of generating sustainable income, capital
+              appreciation, or both.
+            </p>
+            <p className="text-green-200/90 leading-relaxed mt-4 text-sm">
+              Successful agricultural ventures depend on a holistic evaluation of asset quality,
+              cash flow potential, market dynamics, production risks, and management expertise.
+              Relying solely on land prices or optimistic yield projections is a recipe for
+              underperformance. Instead, we advocate for a disciplined framework that balances
+              financial returns with the operational realities of the agricultural sector.
+            </p>
+          </div>
+        </div>
+
+        {/* Why investors choose agricultural assets — icon stat grid */}
+        <div className="section-padding bg-white">
+          <div className="container-custom">
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <h3 className="text-2xl md:text-3xl font-bold text-green-900 mb-3">
+                Why Investors Choose Agricultural Assets
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                Food production remains a fundamental economic activity. While markets experience
+                periodic fluctuations, the global demand for food, fiber, and renewable
+                biological products continues to grow.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {whyChooseAg.map((item) => (
+                <Card key={item.title} className="border-green-100">
+                  <CardContent className="p-6">
+                    <item.icon className="h-8 w-8 text-green-700 mb-3" />
+                    <h4 className="font-bold text-green-900 mb-2 text-sm">{item.title}</h4>
+                    <p className="text-xs text-muted-foreground">{item.text}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground italic text-center mt-6 max-w-2xl mx-auto">
+              Note: Actual performance varies based on region, commodity selection, management
+              quality, and economic conditions.
+            </p>
+          </div>
+        </div>
+
+        {/* Major types of agricultural investments — real photo card grid */}
+        <div className="section-padding bg-green-50">
+          <div className="container-custom">
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <h3 className="text-2xl md:text-3xl font-bold text-green-900 mb-3">
+                Major Types of Agricultural Investments
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                Agrovest evaluates a diverse spectrum of opportunities:
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-6">
+              {investmentAssetTypes.map((t) => (
+                <div
+                  key={t.title}
+                  className="rounded-2xl overflow-hidden bg-white border border-green-100 shadow-sm group"
+                >
+                  <div className="aspect-[16/9] overflow-hidden">
+                    <OptimizedImg
+                      src={t.img}
+                      alt={t.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <h4 className="font-bold text-green-900 mb-2">{t.title}</h4>
+                    <p className="text-sm text-muted-foreground">{t.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Core financial indicators — icon stat row */}
+        <div className="section-padding bg-white">
+          <div className="container-custom">
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <h3 className="text-2xl md:text-3xl font-bold text-green-900 mb-3">
+                Core Financial Indicators for Evaluation
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                At Agrovest, we prioritize measurable performance over assumptions. Our analysis
+                focuses on:
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {financialIndicators.map((item) => (
+                <div key={item.title} className="bg-green-50 border border-green-100 rounded-2xl p-6">
+                  <item.icon className="h-7 w-7 text-green-700 mb-3" />
+                  <h4 className="font-bold text-green-900 mb-2 text-sm">{item.title}</h4>
+                  <p className="text-xs text-muted-foreground">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Evaluation framework — alternating photo/text rows */}
+        <div className="section-padding bg-green-950 text-white">
+          <div className="container-custom">
+            <div className="text-center max-w-2xl mx-auto mb-14">
+              <h3 className="text-2xl md:text-3xl font-bold mb-3">The Agrovest Evaluation Framework</h3>
+              <p className="text-green-200 text-sm">
+                We believe a structured approach is essential for comparing opportunities. Our
+                framework integrates financial analysis with on-the-ground agricultural
+                realities.
+              </p>
+            </div>
+
+            <div className="space-y-14">
+              {/* 01 — Land */}
+              <div className="grid lg:grid-cols-2 gap-8 items-center">
+                <div className="rounded-2xl overflow-hidden aspect-[16/10]">
+                  <OptimizedImg
+                    src="/lovable-uploads/agrovest-oil-palm-plantation.jpg"
+                    alt="Soil and land assessment on the Agrovest estate"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <span className="text-amber-300 text-xs font-bold uppercase tracking-wide">01 — Land</span>
+                  <h4 className="text-xl font-bold mt-2 mb-3">Asset Quality &amp; Land Assessment</h4>
+                  <p className="text-green-100 text-sm leading-relaxed mb-4">
+                    Productivity is rooted in the land. We conduct professional soil testing and
+                    agronomic reviews to assess:
+                  </p>
+                  <ul className="space-y-2 text-sm text-green-100">
+                    {['Soil fertility and texture', 'Water availability and irrigation infrastructure', 'Topography and drainage capabilities'].map((i) => (
+                      <li key={i} className="flex gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" /> {i}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* 02 — Infrastructure (media on the right) */}
+              <div className="grid lg:grid-cols-2 gap-8 items-center">
+                <div className="lg:order-2 rounded-2xl overflow-hidden aspect-[16/10]">
+                  <OptimizedImg
+                    src="/lovable-uploads/agrovest-farm-house.jpg"
+                    alt="Farm buildings and infrastructure"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="lg:order-1">
+                  <span className="text-amber-300 text-xs font-bold uppercase tracking-wide">02 — Infrastructure</span>
+                  <h4 className="text-xl font-bold mt-2 mb-3">Infrastructure &amp; Capital Assets</h4>
+                  <p className="text-green-100 text-sm leading-relaxed mb-4">
+                    Efficient operations require robust infrastructure. We evaluate:
+                  </p>
+                  <ul className="space-y-2 text-sm text-green-100">
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
+                      <span><strong>Buildings:</strong> Condition of barns, storage facilities, and processing units.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
+                      <span><strong>Machinery:</strong> Maintenance history, utilization rates, and replacement schedules.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
+                      <span><strong>Deferred Maintenance:</strong> Identifying hidden capital requirements before acquisition.</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 03 — Market */}
+              <div className="grid lg:grid-cols-2 gap-8 items-center">
+                <div className="rounded-2xl overflow-hidden aspect-[16/10]">
+                  <OptimizedImg
+                    src="/lovable-uploads/agrovest-processing-value-addition.jpg"
+                    alt="Market analysis and revenue potential"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <span className="text-amber-300 text-xs font-bold uppercase tracking-wide">03 — Market</span>
+                  <h4 className="text-xl font-bold mt-2 mb-3">Market Analysis &amp; Revenue Potential</h4>
+                  <p className="text-green-100 text-sm leading-relaxed mb-4">
+                    Even the most productive farm fails without a market. We analyze:
+                  </p>
+                  <ul className="space-y-2 text-sm text-green-100">
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
+                      <span><strong>Demand Trends:</strong> Long-term viability of the planned production system.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
+                      <span><strong>Value-Added Opportunities:</strong> Potential for processing, packaging, or branding to improve margins.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
+                      <span><strong>Supply Chain Access:</strong> Proximity to buyers, logistics networks, and export routes.</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* 04 — Risk (icon panel instead of a photo — deliberate rhythm break, media on the right) */}
+              <div className="grid lg:grid-cols-2 gap-8 items-center">
+                <div className="lg:order-2 rounded-2xl aspect-[16/10] bg-gradient-to-br from-amber-500/25 via-green-900 to-green-950 border border-amber-400/30 flex flex-col items-center justify-center text-center p-8">
+                  <CloudRain className="h-12 w-12 text-amber-300 mb-3" />
+                  <p className="text-amber-200 text-xs font-bold uppercase tracking-wide">No investment is risk-free</p>
+                </div>
+                <div className="lg:order-1">
+                  <span className="text-amber-300 text-xs font-bold uppercase tracking-wide">04 — Risk</span>
+                  <h4 className="text-xl font-bold mt-2 mb-3">Risk Assessment</h4>
+                  <p className="text-green-100 text-sm leading-relaxed mb-4">We mitigate exposure through:</p>
+                  <ul className="space-y-2 text-sm text-green-100">
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
+                      <span><strong>Production Risks:</strong> Climate variability, pests, and diseases.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
+                      <span><strong>Financial Risks:</strong> Interest rate fluctuations and leverage levels.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
+                      <span><strong>Market Risks:</strong> Commodity price volatility.</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-amber-300 shrink-0 mt-0.5" />
+                      <span><strong>Strategies:</strong> Diversification, insurance, and conservative debt structuring.</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Practical scenarios — icon cards (deliberate contrast: no photos here) */}
+        <div className="section-padding bg-white">
+          <div className="container-custom">
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <h3 className="text-2xl md:text-3xl font-bold text-green-900 mb-3">
+                Practical Scenarios in Agricultural Investing
+              </h3>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              {practicalScenarios.map((s) => (
+                <Card key={s.tag} className="border-green-100">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="h-10 w-10 rounded-full bg-green-700/10 flex items-center justify-center shrink-0">
+                        <s.icon className="h-5 w-5 text-green-700" />
+                      </div>
+                      <span className="text-xs font-bold text-green-700 uppercase tracking-wide">{s.tag}</span>
+                    </div>
+                    <h4 className="font-bold text-green-900 mb-2">{s.title}</h4>
+                    <p className="text-sm text-muted-foreground">{s.text}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Common pitfalls — amber warning panel (visual callback to the Risks disclosure further down the page) */}
+        <div className="section-padding bg-amber-50">
+          <div className="container-custom max-w-4xl">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl md:text-3xl font-bold text-amber-900 mb-2 flex items-center justify-center gap-2">
+                <XCircle className="h-7 w-7 text-amber-600" /> Common Pitfalls to Avoid
+              </h3>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {commonPitfalls.map((p) => (
+                <div key={p.title} className="bg-white border border-amber-200 rounded-xl p-5 flex gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-amber-900 text-sm mb-1">{p.title}</p>
+                    <p className="text-xs text-amber-900/70">{p.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Conclusion — closing photo panel + CTA */}
+        <div className="relative py-20 bg-green-900 text-white overflow-hidden">
+          <div
+            className="absolute inset-0 opacity-20 bg-cover bg-center"
+            style={{ backgroundImage: "url('/lovable-uploads/agrovest-ginger-plantation.jpg')" }}
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-green-950 via-green-900/80 to-green-900/60" />
+          <div className="container-custom relative z-10 max-w-3xl text-center">
+            <h3 className="text-2xl md:text-4xl font-extrabold mb-4">Understanding How Value Is Built</h3>
+            <p className="text-green-100 leading-relaxed mb-4 text-sm md:text-base">
+              At Agrovest by Bridgefort Homes Development Ltd, we believe that successful
+              agricultural investing requires a blend of disciplined financial analysis, deep
+              agricultural knowledge, and strategic long-term planning. Whether you are interested
+              in farmland, commercial operations, or agribusiness, the key to enduring value lies
+              in understanding how natural resources, management capability, and market forces
+              interact.
+            </p>
+            <p className="text-green-200/90 text-sm leading-relaxed mb-8">
+              By adhering to a structured evaluation framework, investors can navigate risks,
+              identify genuine opportunities, and build portfolios that deliver sustainable
+              profitability in a changing world.
+            </p>
+            <Button asChild size="lg" className="bg-amber-500 hover:bg-amber-600 text-green-950 font-bold">
+              <Link to="/contact">
+                Contact Agrovest For A Consultation <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
