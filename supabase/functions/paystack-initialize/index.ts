@@ -1,192 +1,56 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const corsHeaders = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    console.log('CORS preflight request received');
-    return new Response('ok', { headers: corsHeaders });
-  }
-
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
-    // Authenticate the user
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(
-        JSON.stringify({ error: 'Authentication required' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      );
-    }
-
+    if (!authHeader?.startsWith('Bearer ')) return json({ error: 'Authentication required' }, 401);
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-    
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
+    const supabaseAuth = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') ?? '', { global: { headers: { Authorization: authHeader } } });
     const token = authHeader.replace('Bearer ', '');
     const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token);
-    if (userError || !userData?.user) {
-      console.error('Auth check failed:', userError);
-      return new Response(
-        JSON.stringify({ error: 'Invalid authentication' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
-      );
-    }
-
+    if (userError || !userData?.user) return json({ error: 'Invalid authentication' }, 401);
     const authenticatedUserId = userData.user.id;
-
-    const { email, amount: clientAmount, metadata, reference } = await req.json();
+    const { email, metadata, reference } = await req.json();
     const adminClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+    let amount: number;
+    let order: any = null;
 
-    let amount = Number(clientAmount);
-
-    // Authoritative pricing. A client-supplied amount is only ever a fallback
-    // for flows that have no server-side record yet, and it is rejected
-    // outright whenever a matching order exists for the reference.
-    const { data: order } = reference
-      ? await adminClient
-          .from('orders')
-          .select('id, user_id, total_amount, payment_status')
-          .eq('payment_reference', reference)
-          .maybeSingle()
-      : { data: null };
-
-    if (order) {
-      if (order.user_id !== authenticatedUserId) {
-        return new Response(
-          JSON.stringify({ error: 'Forbidden' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 }
-        );
-      }
-      if (order.payment_status === 'paid') {
-        return new Response(
-          JSON.stringify({ error: 'This order has already been paid' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-        );
-      }
+    if (metadata?.purchase_type === 'membership' && metadata?.package_code) {
+      const { data: pkg } = await adminClient.from('mlm_packages').select('price').eq('package_code', metadata.package_code).maybeSingle();
+      if (!pkg?.price) return json({ error: 'Unknown membership package' }, 400);
+      amount = Number(pkg.price);
+    } else {
+      if (!reference) return json({ error: 'Order reference is required' }, 400);
+      const { data, error } = await adminClient.from('orders').select('id, user_id, total_amount, payment_status').eq('payment_reference', reference).maybeSingle();
+      if (error || !data) return json({ error: 'Order not found' }, 404);
+      order = data;
+      if (order.user_id !== authenticatedUserId) return json({ error: 'Forbidden' }, 403);
+      if (order.payment_status === 'paid') return json({ error: 'This order has already been paid' }, 400);
       amount = Number(order.total_amount);
     }
 
-    // For membership purchases the authoritative price lives server-side —
-    // never trust the amount computed by the client.
-    if (metadata?.purchase_type === 'membership' && metadata?.package_code) {
-      const { data: pkg } = await adminClient
-        .from('mlm_packages')
-        .select('price')
-        .eq('package_code', metadata.package_code)
-        .maybeSingle();
-      if (!pkg?.price) {
-        return new Response(
-          JSON.stringify({ error: 'Unknown membership package' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-        );
-      }
-      amount = Number(pkg.price);
-    }
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid amount' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      );
-    }
-
-
-    console.log('Incoming request:', { email, amount, metadata, reference, user_id: authenticatedUserId });
-
+    if (!email || !Number.isFinite(amount) || amount <= 0) return json({ error: 'Invalid amount or email' }, 400);
     const PAYSTACK_SECRET_KEY = Deno.env.get('PAYSTACK_SECRET_KEY');
-    if (!PAYSTACK_SECRET_KEY) {
-      console.error('PAYSTACK_SECRET_KEY is NOT set in environment variables!');
-      return new Response(
-        JSON.stringify({ error: 'Paystack secret key not configured' }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        }
-      );
-    }
-
+    if (!PAYSTACK_SECRET_KEY) return json({ error: 'Paystack secret key not configured' }, 500);
     const callbackUrl = `${req.headers.get('origin') || 'http://localhost:3000'}/payment-success`;
-
-    console.log('Sending request to Paystack:', {
-      email, amount: amount * 100, reference, metadata, callback_url: callbackUrl
-    });
-
     const response = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-        amount: amount * 100,
-        currency: 'NGN',
-        reference,
-        metadata,
-        callback_url: callbackUrl,
-      }),
+      headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, amount: amount * 100, currency: 'NGN', reference, metadata, callback_url: callbackUrl }),
     });
-
-    console.log('Paystack API status:', response.status);
     const paystackData = await response.json();
-    console.log('Paystack API response data:', paystackData);
-
-    // Note: we deliberately do NOT insert a `payments` row here. That table
-    // requires property_id, plan_type, months, principal_amount, and
-    // several other NOT NULL columns that this generic initialize endpoint
-    // has no way to know — a prior version tried to insert here anyway and
-    // always failed on those constraints (silently, since the result was
-    // never checked). The correct place to create that row is after
-    // Paystack confirms the payment succeeded — see PaymentSuccess.tsx,
-    // which has the full context needed to populate every required field.
-    if (paystackData.status && paystackData.data?.reference) {
-      const supabaseAdmin = createClient(
-        supabaseUrl,
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-
-      const isMembership = metadata?.purchase_type === 'membership';
-      if (isMembership) {
-        const purchaseInsertResult = await supabaseAdmin.from('mlm_membership_purchases').insert([{
-          user_id: authenticatedUserId,
-          package_code: metadata?.package_code,
-          amount: amount,
-          status: 'pending',
-          paystack_reference: paystackData.data.reference,
-          purchase_type: 'membership',
-        }]);
-        if (purchaseInsertResult.error) {
-          console.error('Failed to insert MLM membership purchase:', purchaseInsertResult.error);
-        } else {
-          console.log('Inserted MLM membership purchase:', purchaseInsertResult);
-        }
-      }
+    if (paystackData.status && paystackData.data?.reference && metadata?.purchase_type === 'membership') {
+      const { error } = await adminClient.from('mlm_membership_purchases').upsert({ user_id: authenticatedUserId, package_code: metadata.package_code, amount, status: 'pending', paystack_reference: paystackData.data.reference, purchase_type: 'membership' }, { onConflict: 'paystack_reference' });
+      if (error) console.error('Failed to record membership purchase:', error);
     }
-
-    return new Response(
-      JSON.stringify(paystackData),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: response.status,
-      },
-    );
-
+    return new Response(JSON.stringify(paystackData), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: response.status });
   } catch (error) {
-    console.error('Edge function error:', error);
-    return new Response(
-      JSON.stringify({ error: 'An error occurred processing your payment request' }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      },
-    );
+    console.error('paystack-initialize error:', error);
+    return json({ error: 'An error occurred processing your payment request' }, 500);
   }
 });
