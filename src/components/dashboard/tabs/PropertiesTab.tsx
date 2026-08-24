@@ -24,12 +24,10 @@ const PropertiesTab = () => {
     setProperties(data || []);
     setLoading(false);
   };
-
   useEffect(() => { loadProperties(); }, []);
 
   const grouped = useMemo(() => properties.map((p) => {
-    const total = asNumber(p.total_amount);
-    const paid = asNumber(p.amount_paid);
+    const total = asNumber(p.total_amount), paid = asNumber(p.amount_paid);
     return { ...p, balance: Math.max(total - paid, 0), plotCount: Math.max(1, asNumber(p.quantity) || (p.plot_id ? String(p.plot_id).split(',').map((x: string) => x.trim()).filter(Boolean).length : 1)) };
   }), [properties]);
 
@@ -46,20 +44,26 @@ const PropertiesTab = () => {
       if (fnError) throw fnError;
       const checkoutUrl = data?.data?.authorization_url || data?.authorization_url || data?.data?.checkout_url || data?.checkout_url;
       if (checkoutUrl) window.location.href = checkoutUrl; else throw new Error(data?.message || data?.error || 'Payment checkout could not be created.');
-    } catch (e: any) { setError(e?.message || 'Unable to start payment. Please try again.'); }
-    finally { setPayingId(null); }
+    } catch (e: any) { setError(e?.message || 'Unable to start payment. Please try again.'); } finally { setPayingId(null); }
   };
 
   const startDocumentationPayment = async (property: any) => {
-    if (!property.documentation_price || property.documentation_price <= 0) return setError('No documentation fee has been set for this property yet.');
     setDocumentationPayingId(property.order_id); setError('');
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('paystack-initialize', { body: { email: property.customer_email, amount: property.documentation_price, payment_type: 'documentation', order_id: property.order_id, metadata: { order_id: property.order_id, payment_type: 'documentation', property_name: property.property_name, plot_id: property.plot_id, quantity: property.plotCount, documentation_type_id: property.documentation_type_id } } });
+      const { data: request, error: requestError } = await supabase.rpc('create_documentation_payment_request', { _order_id: property.order_id });
+      if (requestError) throw requestError;
+      const paymentId = request?.payment_id;
+      if (!paymentId) throw new Error('Documentation payment request could not be created.');
+      const { data: checkout, error: checkoutError } = await supabase.rpc('get_documentation_payment_checkout', { _payment_id: paymentId });
+      if (checkoutError) throw checkoutError;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const email = sessionData.session?.user?.email;
+      if (!email) throw new Error('Your account email could not be found.');
+      const { data, error: fnError } = await supabase.functions.invoke('paystack-initialize', { body: { email, order_id: property.order_id, payment_id: paymentId, amount: checkout.amount, payment_type: 'documentation', metadata: { order_id: property.order_id, payment_id: paymentId, payment_type: 'documentation', documentation_type_id: checkout.documentation_type_id, documentation_name: checkout.documentation_name, property_name: checkout.property_name } } });
       if (fnError) throw fnError;
       const checkoutUrl = data?.data?.authorization_url || data?.authorization_url || data?.data?.checkout_url || data?.checkout_url;
       if (checkoutUrl) window.location.href = checkoutUrl; else throw new Error(data?.message || data?.error || 'Documentation payment checkout could not be created.');
-    } catch (e: any) { setError(e?.message || 'Unable to start documentation payment. Please try again.'); }
-    finally { setDocumentationPayingId(null); }
+    } catch (e: any) { setError(e?.message || 'Unable to start documentation payment. Please try again.'); } finally { setDocumentationPayingId(null); }
   };
 
   if (loading) return <Card className="border-white/10 bg-background/70 backdrop-blur-xl"><CardContent className="flex items-center justify-center py-16"><Loader2 className="mr-2 animate-spin" /> Loading your properties...</CardContent></Card>;
@@ -76,7 +80,7 @@ const PropertiesTab = () => {
             <div className="mt-5 grid gap-3 sm:grid-cols-4"><div className="rounded-xl bg-black/10 p-3"><p className="text-xs text-muted-foreground">Plots</p><p className="font-semibold">{p.plotCount}</p></div><div className="rounded-xl bg-black/10 p-3"><p className="text-xs text-muted-foreground">Purchase Price</p><p className="font-semibold">{money(total)}</p></div><div className="rounded-xl bg-black/10 p-3"><p className="text-xs text-muted-foreground">Amount Paid</p><p className="font-semibold">{money(paid)}</p></div><div className="rounded-xl bg-black/10 p-3"><p className="text-xs text-muted-foreground">Balance</p><p className="font-semibold">{money(balance)}</p></div></div>
             <div className="mt-5"><div className="mb-2 flex justify-between text-xs text-muted-foreground"><span>Payment progress</span><span>{Math.round(progress)}%</span></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} /></div></div>
             {balance > 0 && <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.025] p-4"><div className="mb-3 flex items-center gap-2 text-sm font-medium"><WalletCards size={16} /> Flexible installment payment</div><p className="mb-3 text-xs text-muted-foreground">There is no fixed amount. Pay whatever amount you currently have, up to your outstanding balance. Approved payments reduce the earliest outstanding installment.</p><div className="flex flex-col gap-2 sm:flex-row"><Input type="number" min="1" max={balance} value={amounts[p.order_id] || ''} onChange={(e) => setAmounts((x) => ({ ...x, [p.order_id]: e.target.value }))} placeholder={`Up to ${money(balance)}`} /><Button onClick={() => startPayment(p)} disabled={payingId === p.order_id}>{payingId === p.order_id ? <Loader2 className="mr-2 animate-spin" size={16} /> : <CreditCard className="mr-2" size={16} />} Make Payment</Button></div></div>}
-            <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.025] p-4"><div className="flex items-center gap-2 text-sm font-medium"><FileText size={16} /> Documentation</div><p className="mt-1 text-xs text-muted-foreground">Documentation fee for this property. This is separate from your land purchase balance.</p><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs text-muted-foreground">Documentation Fee</p><p className="text-lg font-semibold">{p.documentation_price > 0 ? money(p.documentation_price) : 'Not set yet'}</p>{p.documentation_name && <p className="text-xs text-muted-foreground mt-1">{p.documentation_name}</p>}</div><Button variant="outline" onClick={() => startDocumentationPayment(p)} disabled={!p.documentation_price || p.documentation_price <= 0 || documentationPayingId === p.order_id}>{documentationPayingId === p.order_id ? <Loader2 className="mr-2 animate-spin" size={16} /> : <CreditCard className="mr-2" size={16} />} Pay Documentation</Button></div></div>
+            <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.025] p-4"><div className="flex items-center gap-2 text-sm font-medium"><FileText size={16} /> Documentation</div><p className="mt-1 text-xs text-muted-foreground">Documentation fee for this property. This is separate from your land purchase balance.</p><div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs text-muted-foreground">Documentation Fee</p><p className="text-lg font-semibold">{p.documentation_price > 0 ? money(p.documentation_price) : 'Not set yet'}</p>{p.documentation_name && <p className="text-xs text-muted-foreground mt-1">{p.documentation_name}</p>}</div><Button variant="outline" onClick={() => startDocumentationPayment(p)} disabled={documentationPayingId === p.order_id}>{documentationPayingId === p.order_id ? <Loader2 className="mr-2 animate-spin" size={16} /> : <CreditCard className="mr-2" size={16} />} Pay Documentation</Button></div></div>
             <div className="mt-5 border-t border-white/10 pt-4"><div className="flex items-center gap-2 text-sm font-medium"><Clock3 size={15} /> Timeline</div><div className="mt-3 grid gap-2 text-xs text-muted-foreground"><div className="flex items-center gap-2"><CheckCircle2 size={14} /> Order created {p.created_at ? new Date(p.created_at).toLocaleDateString('en-NG') : ''}</div>{paid > 0 && <div className="flex items-center gap-2"><CheckCircle2 size={14} /> Payments received: {money(paid)}</div>}<div className="flex items-center gap-2"><CalendarDays size={14} /> {balance <= 0 ? 'Property fully paid' : 'Payment plan in progress'}</div></div></div>
           </div>;
         })}
