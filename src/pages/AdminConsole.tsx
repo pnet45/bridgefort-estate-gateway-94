@@ -70,7 +70,7 @@ const AdminConsole = () => {
         {hasPermission('admin:view_crm') && <TabsTrigger value="crm" className={ADMIN_TAB_CLASS}><CheckSquare className="h-4 w-4 shrink-0"/><span>CRM</span></TabsTrigger>}
         {hasPermission('admin:view_users') && <TabsTrigger value="users" className={ADMIN_TAB_CLASS}><Users className="h-4 w-4 shrink-0"/><span>Users</span></TabsTrigger>}
         {hasPermission('admin:view_approvals') && <TabsTrigger value="approvals" className={`${ADMIN_TAB_CLASS} relative`}><UserCheck className="h-4 w-4 shrink-0"/><span>Approvals</span>{pendingCount > 0 && <span className="ml-1 h-5 min-w-5 px-1 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{pendingCount > 99 ? '99+' : pendingCount}</span>}</TabsTrigger>}
-        {hasPermission('admin:view_approvals') && <TabsTrigger value="subscribers" className={ADMIN_TAB_CLASS}><Users className="h-4 w-4 shrink-0"/><span>Subscribers</span></TabsTrigger>}
+        {hasPermission('admin:view_subscribers') && <TabsTrigger value="subscribers" className={ADMIN_TAB_CLASS}><Users className="h-4 w-4 shrink-0"/><span>Subscribers</span></TabsTrigger>}
         {hasPermission('admin:view_email_center') && <TabsTrigger value="emails" className={ADMIN_TAB_CLASS}><Mail className="h-4 w-4 shrink-0"/><span>Emails</span></TabsTrigger>}
         {hasPermission('admin:view_analytics') && <TabsTrigger value="analytics" className={ADMIN_TAB_CLASS}><TrendingUp className="h-4 w-4 shrink-0"/><span>Analytics</span></TabsTrigger>}
         {hasPermission('admin:view_mlm_funnel') && <TabsTrigger value="mlm-funnel" className={ADMIN_TAB_CLASS}><Network className="h-4 w-4 shrink-0"/><span>BHRealtors Funnel</span></TabsTrigger>}
