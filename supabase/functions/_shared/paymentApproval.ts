@@ -1,27 +1,38 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// Shared helper: after a gateway confirms a successful checkout charge,
-// record the gateway event and create one pending approval request. The
-// database trigger owns the linked order/payment/documentation state change.
 
+// Queue a successful gateway payment for Admin approval. For installment
+// payments the gateway reference is unique per payment, so orderId is used to
+// resolve the original order instead of assuming the gateway reference equals
+// orders.payment_reference.
 export async function queueOrderForApproval(
   admin: any,
-  opts: { reference: string; paidAmount: number; channel: string }
+  opts: { reference: string; orderId?: string; paidAmount: number; channel: string }
 ) {
-  const { reference, paidAmount, channel } = opts;
-  if (!reference) return;
+  const { reference, orderId, paidAmount, channel } = opts;
+  if (!reference || paidAmount <= 0) return;
 
-  const { data: order, error: orderError } = await admin
+  let orderQuery = admin
     .from("orders")
-    .select("id, user_id, items, total_amount, payment_status, customer_name")
-    .eq("payment_reference", reference)
-    .maybeSingle();
-  if (orderError || !order) return;
+    .select("id, user_id, items, total_amount, amount_paid, balance, payment_status, customer_name")
+    .limit(1);
 
-  const amount = paidAmount > 0 ? paidAmount : Number(order.total_amount ?? 0);
-  if (amount <= 0) return;
+  let order: any = null;
+  if (orderId) {
+    const { data } = await orderQuery.eq("id", orderId).maybeSingle();
+    order = data;
+  } else {
+    const { data } = await orderQuery.eq("payment_reference", reference).maybeSingle();
+    order = data;
+  }
+  if (!order) return;
 
-  // Immutable, idempotent gateway history. The order total remains the
-  // authoritative NGN amount; this row records what the gateway confirmed.
+  const outstanding = Math.max(0, Number(order.total_amount ?? 0) - Number(order.amount_paid ?? 0));
+  if (paidAmount > outstanding + 1) {
+    console.error("Gateway payment exceeds order balance", { reference, orderId: order.id, paidAmount, outstanding });
+    return;
+  }
+
+  const amount = paidAmount;
   const gateway = channel === "Stripe" ? "Stripe" : channel === "Paystack" ? "Paystack" : "Manual";
   const { error: historyError } = await admin.from("payment_gateway_events").upsert({
     gateway,
@@ -31,7 +42,7 @@ export async function queueOrderForApproval(
     amount,
     currency: "NGN",
     status: "success",
-    metadata: { channel, order_total: Number(order.total_amount ?? 0) },
+    metadata: { channel, order_total: Number(order.total_amount ?? 0), order_id: order.id, installment: amount < Number(order.total_amount ?? 0) },
   }, { onConflict: "gateway,reference", ignoreDuplicates: true });
   if (historyError) console.error("Could not record gateway payment history:", historyError);
 
@@ -42,7 +53,7 @@ export async function queueOrderForApproval(
     .maybeSingle();
   if (existingRequest) return;
 
-  const settled = ["awaiting_approval", "paid", "approved", "rejected"];
+  const settled = ["rejected"];
   if (settled.includes(String(order.payment_status ?? ""))) return;
 
   const items: any[] = Array.isArray(order.items) ? order.items : [];
@@ -62,7 +73,7 @@ export async function queueOrderForApproval(
     amount,
     reference,
     related_payment_id: plan?.id ?? null,
-    description: `${requestType === "documentation" ? "Documentation fee" : requestType === "agrovest" ? "Agrovest" : "Property"} payment via ${channel} — ${label || "checkout"}`,
+    description: `${requestType === "documentation" ? "Documentation fee" : requestType === "agrovest" ? "Agrovest" : "Property"} payment via ${channel} — ${label || "checkout"}${amount < Number(order.total_amount ?? 0) ? ` — installment payment against Order ${order.id}` : ""}`,
     status: "pending",
   });
   if (insertError) {
