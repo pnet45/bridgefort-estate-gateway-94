@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Users, Wallet, Copy, Share2, RefreshCw, ArrowUpRight, Loader2, Lock, CheckCircle2, Network, Trophy, TrendingUp, Building2, Sprout, Target } from 'lucide-react';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
 import RealtorsRegistrationForm from '@/components/bhRealtors/RealtorsRegistrationForm';
