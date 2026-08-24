@@ -434,7 +434,7 @@ const Agrovest: React.FC = () => {
               harvesting and marketing — while investors receive agreed profit shares.
             </p>
             <p className="text-xl font-extrabold tracking-wide">
-              You Invest. <span className="text-amber-300">We Farm.</span> You Earn.
+              You Invest. <span className="text-amber-300">We Farm.</span> <span className="text-amber-900">You Earn.</span>
             </p>
           </Glass>
         </div>
