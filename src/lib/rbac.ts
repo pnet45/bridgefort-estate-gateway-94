@@ -4,6 +4,7 @@ export const ADMIN_TAB_PERMISSION_MAP: Record<string, string> = {
   crm: 'admin:view_crm',
   users: 'admin:view_users',
   approvals: 'admin:view_approvals',
+  subscribers: 'admin:view_subscribers',
   emails: 'admin:view_email_center',
   analytics: 'admin:view_analytics',
   'mlm-funnel': 'admin:view_mlm_funnel',
