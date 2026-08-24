@@ -25,7 +25,8 @@ serve(async (req) => {
     if (userError || !user) return json({ error: "Invalid authentication" }, 401);
 
     const { data: canApprove, error: permissionError } = await admin.rpc("can_approve_admin_request", { _user_id: user.id });
-    if (permissionError || canApprove !== true) return json({ error: "Only Super_Admin, Admin-Dir or Admin-IT can approve admin requests" }, 403);
+    if (permissionError) return json({ error: `Unable to verify approval permission: ${permissionError.message}` }, 500);
+    if (canApprove !== true) return json({ error: "You do not have permission to approve admin requests" }, 403);
 
     const body = await req.json().catch(() => ({}));
     const requestId = typeof body.requestId === "string" ? body.requestId : "";
@@ -35,7 +36,7 @@ serve(async (req) => {
     const { data: pendingRequest, error: fetchError } = await admin.from("pending_admin_requests").select("*").eq("id", requestId).eq("status", "pending").single();
     if (fetchError || !pendingRequest) return json({ error: "Pending request not found" }, 404);
     const finalRole = approvedRole || pendingRequest.requested_role || null;
-    if (finalRole && !ALLOWED_DEPARTMENT_ROLES.has(finalRole)) return json({ error: "Invalid department role" }, 400);
+    if (finalRole && !ALLOWED_DEPARTMENT_ROLES.has(finalRole)) return json({ error: `Invalid department role: ${finalRole}` }, 400);
 
     if (finalRole === "admin_dir") {
       const [{ data: isSuper, error: superError }, { data: isDirector, error: directorError }] = await Promise.all([
