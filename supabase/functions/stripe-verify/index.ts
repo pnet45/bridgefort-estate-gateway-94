@@ -1,51 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { queueOrderForApproval } from "../_shared/paymentApproval.ts";
-
-const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const authed = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") ?? "", { global: { headers: { Authorization: authHeader } } });
-    const { data: claimsData, error: claimsError } = await authed.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (claimsError || !claimsData?.claims) return json({ error: "Unauthorized" }, 401);
-    const callerId = claimsData.claims.sub as string;
-    const { session_id } = await req.json();
-    if (!session_id || typeof session_id !== "string" || !/^cs_[a-zA-Z0-9_]+$/.test(session_id)) return json({ error: "session_id required" }, 400);
-
-    const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!STRIPE_SECRET_KEY) return json({ error: "Stripe not configured" }, 500);
-    const res = await fetch(`https://api.stripe.com/v1/checkout/sessions/${session_id}`, { headers: { Authorization: `Bearer ${STRIPE_SECRET_KEY}` } });
-    const session = await res.json();
-    if (!res.ok) return json({ error: "Unable to retrieve Stripe checkout session" }, res.status);
-    if (session?.metadata?.user_id && session.metadata.user_id !== callerId) return json({ error: "Forbidden" }, 403);
-
-    const reference = String(session?.client_reference_id ?? session?.metadata?.reference ?? "");
-    if (!reference) return json({ error: "Order reference missing from Stripe session" }, 400);
-    const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
-    const { data: order } = await admin.from("orders").select("id, user_id, total_amount, payment_status").eq("payment_reference", reference).maybeSingle();
-    if (!order) return json({ error: "Order not found" }, 404);
-    if (order.user_id !== callerId) return json({ error: "Forbidden" }, 403);
-
-    const expectedNgn = Number(order.total_amount);
-    const fxRate = Number(session?.metadata?.fx_rate ?? 0);
-    const stripeUsdCents = Number(session?.amount_total ?? 0);
-    const expectedUsdCents = fxRate > 0 ? Math.round((expectedNgn / fxRate) * 100) : 0;
-    if (!Number.isFinite(expectedNgn) || expectedNgn <= 0 || !stripeUsdCents || !expectedUsdCents || Math.abs(stripeUsdCents - expectedUsdCents) > 1) {
-      await admin.from("payments").update({ status: "amount_mismatch" }).eq("reference", reference);
-      return json({ status: false, message: "Stripe payment amount does not match the order amount." }, 400);
-    }
-
-    const paid = session?.payment_status === "paid";
-    if (paid) await queueOrderForApproval(admin, { reference, paidAmount: expectedNgn, channel: "Stripe" });
-    return json({ status: paid, session: { id: session.id, payment_status: session.payment_status, amount_total: session.amount_total, currency: session.currency, reference } });
-  } catch (e) {
-    console.error("stripe-verify error", e);
-    return json({ error: "An error occurred verifying the Stripe payment" }, 500);
-  }
-});
+const corsHeaders={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type"};const json=(b:unknown,s=200)=>new Response(JSON.stringify(b),{status:s,headers:{...corsHeaders,"Content-Type":"application/json"}});
+serve(async req=>{if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});try{const ah=req.headers.get("Authorization");if(!ah?.startsWith("Bearer "))return json({error:"Unauthorized"},401);const url=Deno.env.get("SUPABASE_URL")??"";const a=createClient(url,Deno.env.get("SUPABASE_ANON_KEY")??"",{global:{headers:{Authorization:ah}}});const{data:c,error:ce}=await a.auth.getClaims(ah.replace("Bearer ",""));if(ce||!c?.claims)return json({error:"Unauthorized"},401);const uid=String(c.claims.sub??"");const{session_id}=await req.json();if(!session_id||typeof session_id!=="string"||!/^cs_[a-zA-Z0-9_]+$/.test(session_id))return json({error:"session_id required"},400);const key=Deno.env.get("STRIPE_SECRET_KEY");if(!key)return json({error:"Stripe not configured"},500);const sr=await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(session_id)}`,{headers:{Authorization:`Bearer ${key}`}});const s=await sr.json();if(!sr.ok)return json({error:s?.error?.message??"Unable to retrieve Stripe checkout session"},sr.status);if(s?.metadata?.user_id&&String(s.metadata.user_id)!==uid)return json({error:"Forbidden"},403);const ref=String(s?.client_reference_id??s?.metadata?.reference??"");if(!ref)return json({error:"Order reference missing from Stripe session"},400);const admin=createClient(url,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")??"");const{data:o,error:oe}=await admin.from("orders").select("id,user_id,total_amount,payment_status").eq("payment_reference",ref).maybeSingle();if(oe)return json({error:oe.message},500);if(!o)return json({error:"Order not found"},404);if(o.user_id!==uid)return json({error:"Forbidden"},403);if(s?.payment_status!=="paid")return json({status:false,payment_status:s?.payment_status??"unpaid",session:{id:s.id,payment_status:s.payment_status,amount_total:s.amount_total,currency:s.currency,reference:ref}});const ngn=Number(o.total_amount),meta=Number(s?.metadata?.ngn_amount??0),fx=Number(s?.metadata?.fx_rate??0),usd=Number(s?.amount_total??0);if(!Number.isFinite(ngn)||ngn<=0)return json({error:"Invalid authoritative order amount"},409);if(!Number.isFinite(meta)||Math.abs(meta-ngn)>0.01)return json({error:"Stripe session does not match the order price"},409);if(!Number.isFinite(fx)||fx<=0||!Number.isFinite(usd)||usd<50)return json({error:"Invalid Stripe conversion data"},409);const expected=Math.max(50,Math.round((ngn/fx)*100));if(Math.abs(usd-expected)>1)return json({error:"Stripe charged amount does not match the order conversion"},409);await queueOrderForApproval(admin,{reference:ref,paidAmount:ngn,channel:"Stripe"});return json({status:true,payment_status:"paid",order_amount_ngn:ngn,session:{id:s.id,payment_status:s.payment_status,amount_total:s.amount_total,currency:s.currency,reference:ref}})}catch(e){console.error(e);return json({error:(e as Error)?.message??"An error occurred verifying the Stripe payment"},500)}});
