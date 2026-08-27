@@ -7,7 +7,6 @@ import { CalendarDays, Clock3, MapPin, Sprout, Tractor, Users, ArrowRight, Check
 export const AGRICULTURAL_TRAINING_TITLE = 'Farming to Wealth — Agricultural Training Programme (ATP) 2026';
 export const AGRICULTURAL_TRAINING_DATE = 'Tuesday, 25th August, 2026';
 export const AGRICULTURAL_TRAINING_EVENT_DATE = 'Tuesday, 25th August, 2026 at 11:00 a.m.';
-
 // Official ATP flyer, used as a shaded background on the featured/compact card below.
 const ATP_POSTER_IMAGE = '/lovable-uploads/atp-training-programme-poster.jpg';
 

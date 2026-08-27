@@ -12,11 +12,11 @@ export const AGRICULTURAL_TRAINING_EVENT_DATE = 'Tuesday, 25th August, 2026 at 1
 const ATP_POSTER_IMAGE = '/lovable-uploads/atp-training-programme-poster.jpg';
 
 const benefits = [
-  'Practical knowledge of modern farming techniques',
-  'How to start and manage a profitable agribusiness',
-  'Profitable crop and livestock farming opportunities',
-  'Understanding soil health, crop nutrition and pest management',
-  'Ways to improve productivity and reduce production costs',
+  '|Week 1 | Tuesday, Sept 1 | Advanced Prospecting & Lead Generation',
+  '|Week 2 | Tuesday, Sept 8 | Influence & Persuasion Mastery',
+  '|Week 3 | Tuesday, Sept 15  | High-Ticket Closing & Negotiation Excellence',
+  '|Week 4 | Tuesday, Sept 22  | Branding, Marketing & Positioning',
+  '|Week 5 | Tuesday, Sept 29  | Customer Loyalty, Referrals & Scale',
   'Accessing markets and building profitable value chains',
   'Agricultural financial management and record keeping',
   'Networking with experienced farmers and agricultural professionals',
@@ -48,25 +48,25 @@ const AgriculturalTrainingProgramme = ({ compact = false }: Props) => {
               <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-lime-300/10 blur-2xl" />
               <div className="relative grid gap-8 lg:grid-cols-[1.4fr_0.8fr] items-center">
                 <div>
-                  <Badge className="mb-4 border border-lime-200/30 bg-lime-300/15 text-lime-100 hover:bg-lime-300/20">Featured Training • 25 August 2026</Badge>
-                  <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-lime-200">Bridgefort Agrovest Consults presents</p>
-                  <h2 className="text-3xl font-black leading-tight md:text-5xl">Farming to Wealth</h2>
-                  <p className="mt-2 text-lg font-semibold text-emerald-100">Agricultural Training Programme (ATP) 2026</p>
-                  <p className="mt-4 max-w-3xl text-sm leading-7 text-emerald-50/90 md:text-base">A practical seminar and workshop for farmers, intending farmers, entrepreneurs and investors who want to understand how agriculture can become a structured, sustainable and profitable wealth-building venture.</p>
+                  <Badge className="mb-4 border border-lime-200/30 bg-lime-300/15 text-lime-100 hover:bg-lime-300/20">Featured Training • All Tuesdays in September 2026</Badge>
+                  <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-lime-200">Bridgefort Homes presents</p>
+                  <h2 className="text-3xl font-black leading-tight md:text-5xl">Advanced Sales & Marketing Clinic</h2>
+                  <p className="mt-2 text-lg font-semibold text-emerald-100">Five Tuesdays. Five Game-Changing Modules. One New You in Sales. FREE.</p>
+                  <p className="mt-4 max-w-3xl text-sm leading-7 text-emerald-50/90 md:text-base">It's not just a clinic — it's a TRANSFORMATION. ⭐ FREE to attend..</p>
                   <div className="mt-6 flex flex-wrap gap-3 text-sm text-emerald-50">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2"><CalendarDays className="h-4 w-4" /> Tuesday, 25 August</span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2"><CalendarDays className="h-4 w-4" /> All Tuesdays, in September</span>
                     <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2"><Clock3 className="h-4 w-4" /> 11:00 a.m.</span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2"><MapPin className="h-4 w-4" /> Festac Town, Lagos</span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2"><MapPin className="h-4 w-4" /> Bridgefort Homes Center, Suite 8, Gacoum Plaza, 23 Road, opp. K-Close, Festac Town, Lagos</span>
                   </div>
                   <div className="mt-7 flex flex-wrap gap-3">
-                    <Button onClick={() => setRegistrationOpen(true)} className="bg-lime-300 text-emerald-950 hover:bg-lime-200 font-bold">Register for ATP Training<ArrowRight className="ml-2 h-4 w-4" /></Button>
+                    <Button onClick={() => setRegistrationOpen(true)} className="bg-lime-300 text-emerald-950 hover:bg-lime-200 font-bold">Register for Sales Clinic Training<ArrowRight className="ml-2 h-4 w-4" /></Button>
                     <Button asChild variant="outline" className="border-white/40 bg-white/5 text-white hover:bg-white hover:text-emerald-950"><a href="/training">View Training Details</a></Button>
                   </div>
                 </div>
                 <div className="rounded-3xl border border-white/15 bg-white/10 p-6 backdrop-blur-md">
                   <div className="mb-5 flex items-center gap-3"><Sprout className="h-7 w-7 text-lime-300" /><span className="font-bold">What you will gain</span></div>
                   <ul className="space-y-3 text-sm text-emerald-50/90">{benefits.slice(0, 5).map((benefit) => <li key={benefit} className="flex gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-lime-300" />{benefit}</li>)}</ul>
-                  <div className="mt-5 border-t border-white/10 pt-5 text-sm font-semibold text-lime-200">Farming to Wealth • Learn • Practise • Invest • Profit</div>
+                  <div className="mt-5 border-t border-white/10 pt-5 text-sm font-semibold text-lime-200">Market Like a Pro • Learn • Practise • Sell • Resell</div>
                 </div>
               </div>
             </div>
@@ -84,10 +84,10 @@ const AgriculturalTrainingProgramme = ({ compact = false }: Props) => {
         <div className="container-custom relative">
           <div className="mx-auto max-w-6xl">
             <div className="mb-10 text-center">
-              <Badge className="mb-4 border-lime-200/30 bg-lime-300/15 px-4 py-2 text-lime-100">Featured Event • Agricultural Training Programme</Badge>
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-lime-200">Bridgefort Agrovest Consults</p>
-              <h1 className="mt-3 text-4xl font-black tracking-tight md:text-6xl">Farming to Wealth</h1>
-              <p className="mt-3 text-xl font-semibold text-emerald-100 md:text-2xl">Agricultural Training Programme (ATP) 2026</p>
+              <Badge className="mb-4 border-lime-200/30 bg-lime-300/15 px-4 py-2 text-lime-100">Featured Event • Advance Marketing Clinic</Badge>
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-lime-200">Bridgefort Homes Development</p>
+              <h1 className="mt-3 text-4xl font-black tracking-tight md:text-6xl">Advanced Sales & Marketing Clinic</h1>
+              <p className="mt-3 text-xl font-semibold text-emerald-100 md:text-2xl">Advanced Sales & Marketing Clinic</p>
               <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-emerald-50/85 md:text-lg">Don't just hear about agriculture. Learn it. Practise it. Invest in it. Profit from it.</p>
             </div>
             <div className="grid gap-5 md:grid-cols-3">
