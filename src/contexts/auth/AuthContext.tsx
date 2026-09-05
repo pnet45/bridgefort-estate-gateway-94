@@ -172,7 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      if (event === 'SIGNED_UP') {
+      if ((event as string) === 'SIGNED_UP') {
         setTimeout(() => {
           if (mounted) sendWelcomeEmail(nextSession.user);
         }, 0);
