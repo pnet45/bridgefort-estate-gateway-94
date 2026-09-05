@@ -89,6 +89,14 @@ function AppLayout() {
   const location = useLocation();
   const isAdminRoute = location.pathname === '/admin-console' || location.pathname.startsWith('/admin-console?');
 
+  // Google Analytics — fire a page_view on every client-side route change (SPA)
+  useEffect(() => {
+    const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+    if (typeof w.gtag === 'function') {
+      w.gtag('event', 'page_view', { page_path: location.pathname + location.search });
+    }
+  }, [location.pathname, location.search]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <RecaptchaProvider>
