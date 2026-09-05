@@ -100,14 +100,6 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
-type TooltipPayloadItem = Record<string, any> & {
-  dataKey?: string
-  name?: string
-  value?: number
-  color?: string
-  payload?: Record<string, any>
-}
-
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
@@ -117,8 +109,8 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: "line" | "dot" | "dashed"
       nameKey?: string
       labelKey?: string
-      payload?: TooltipPayloadItem[]
-      label?: string | number
+      payload?: any[]
+      label?: any
     }
 >(
   (
