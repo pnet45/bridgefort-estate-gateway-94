@@ -67,18 +67,14 @@ const BHRealtorsSubscription: React.FC = () => {
     }
     setBusy(true);
     try {
-      const { data: created, error } = await (supabase.from('bh_subscriptions' as any).insert({
-        user_id: user.id,
-        estate_slug: estate.slug,
-        estate_name: `${estate.name}, ${estate.location}`,
-        plot_size: plot.size,
-        total_amount: plot.price,
-        frequency,
-        installment_amount: installment,
-        total_installments: totalInstallments,
-        expected_end_date: expectedEnd.toISOString().slice(0, 10),
-      }).select().single() as any);
+      // Create the subscription through a trusted edge function that computes
+      // pricing server-side — the client no longer supplies amounts directly.
+      const { data: result, error } = await supabase.functions.invoke('create-bh-subscription', {
+        body: { estate_slug: estate.slug, plot_size: plot.size, frequency },
+      });
       if (error) throw error;
+      if (!result?.subscription) throw new Error(result?.error || 'Could not create subscription');
+      const created = result.subscription;
 
       const pay = await initializePayment({
         email: user.email ?? '',
