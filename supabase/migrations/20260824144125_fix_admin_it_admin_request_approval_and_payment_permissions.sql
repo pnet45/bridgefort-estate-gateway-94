@@ -1,4 +1,0 @@
--- Historical production migration placeholder.
--- This migration is already recorded as applied on production under version 20260824144125.
--- The original production SQL was not preserved in the current repository history.
--- Do not execute this file against a database where version 20260824144125 is not already applied.
