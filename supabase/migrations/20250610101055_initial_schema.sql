@@ -37,6 +37,17 @@ CREATE POLICY "Users can delete their own media files"
 ON storage.objects FOR DELETE
 USING (bucket_id = 'media-files' AND auth.uid()::text = (storage.foldername(name))[1]);
 
+-- This migration can run on a fresh project as well as the legacy project.
+-- The former version assumed a profiles table had been created by an earlier,
+-- external migration and failed before the columns below could be added.
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  first_name TEXT,
+  last_name TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Modify the profiles table to include all the new fields
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS date_of_birth DATE;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS gender TEXT;
