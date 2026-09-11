@@ -18,83 +18,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const accessRequestRef = useRef(0);
 
   const clearAccess = useCallback(() => {
-    setUserRole(null);
-    setRoles([]);
-    setPermissions([]);
-    setProfile(null);
+    setUserRole(null); setRoles([]); setPermissions([]); setProfile(null);
   }, []);
 
   const fetchProfile = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-      if (error) {
-        if (error.code !== 'PGRST116') console.error('Error fetching profile:', error);
-        return;
-      }
+      if (error) { if (error.code !== 'PGRST116') console.error('Error fetching profile:', error); return; }
       setProfile(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
+    } catch (error) { console.error('Error fetching profile:', error); }
   }, []);
 
   const fetchUserAccess = useCallback(async (userId: string) => {
     const requestId = ++accessRequestRef.current;
     try {
-      const [
-        { data: legacyRolesData, error: legacyRolesError },
-        { data: adminRoleData, error: adminRoleError },
-        { data: adminPermissionData, error: adminPermissionError },
-      ] = await Promise.all([
+      const [{ data: legacyRolesData, error: legacyRolesError }, { data: adminRoleData, error: adminRoleError }, { data: adminPermissionData, error: adminPermissionError }] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', userId),
         supabase.from('admin_roles').select('role_name').eq('user_id', userId),
         supabase.from('admin_permissions').select('permission_key').eq('user_id', userId),
       ]);
-
       if (requestId !== accessRequestRef.current) return;
       if (legacyRolesError) console.error('fetchUserAccess: user_roles query failed:', legacyRolesError);
       if (adminRoleError) console.error('fetchUserAccess: admin_roles query failed:', adminRoleError);
       if (adminPermissionError) console.error('fetchUserAccess: admin_permissions query failed:', adminPermissionError);
-
       const legacyRoles = (legacyRolesData ?? []).map((entry: { role: string }) => entry.role);
       const dbRoles = (adminRoleData ?? []).map((entry: { role_name: string }) => entry.role_name);
       const explicitPermissions = (adminPermissionData ?? []).map((entry: { permission_key: string }) => entry.permission_key);
       const roleSet = Array.from(new Set([...legacyRoles, ...dbRoles]));
       const permissionSet = new Set<string>(explicitPermissions);
-
       if (roleSet.length > 0) {
         const { data: linkedPermissionsData, error: linkedPermissionsError } = await supabase.from('role_permissions').select('permission_key').in('role', roleSet);
         if (requestId !== accessRequestRef.current) return;
         if (linkedPermissionsError) console.error('fetchUserAccess: role_permissions query failed:', linkedPermissionsError);
         (linkedPermissionsData ?? []).forEach((entry: { permission_key: string }) => permissionSet.add(entry.permission_key));
       }
-
       const isLegacyAdmin = roleSet.includes('admin') || roleSet.includes('super_admin');
-      if (isLegacyAdmin) {
-        ['admin:all','admin:view_dashboard','admin:view_properties','admin:view_crm','admin:view_users','admin:view_approvals','admin:view_email_center','admin:view_analytics','admin:view_mlm_funnel','admin:view_activity','admin:view_content','admin:view_cms','admin:view_other_payments','admin:manage_permissions','admin:manage_departments','mailbox:read','mailbox:write','mailbox:sync'].forEach((permission) => permissionSet.add(permission));
-      }
-
+      if (isLegacyAdmin) ['admin:all','admin:view_dashboard','admin:view_properties','admin:view_crm','admin:view_users','admin:view_approvals','admin:view_email_center','admin:view_analytics','admin:view_mlm_funnel','admin:view_activity','admin:view_content','admin:view_cms','admin:view_other_payments','admin:manage_permissions','admin:manage_departments','mailbox:read','mailbox:write','mailbox:sync'].forEach((permission) => permissionSet.add(permission));
       if (requestId !== accessRequestRef.current) return;
       const normalizedRoles = roleSet.length ? roleSet : ['user'];
-      setRoles(normalizedRoles);
-      setPermissions(Array.from(permissionSet));
-      setUserRole(getPrimaryRole(normalizedRoles));
+      setRoles(normalizedRoles); setPermissions(Array.from(permissionSet)); setUserRole(getPrimaryRole(normalizedRoles));
     } catch (error) {
       if (requestId !== accessRequestRef.current) return;
       console.error('Error fetching user role and permissions:', error);
-      setRoles([]);
-      setPermissions([]);
-      setUserRole(null);
+      setRoles([]); setPermissions([]); setUserRole(null);
     }
   }, []);
 
   const hydrateSession = useCallback(async (nextSession: Session | null) => {
-    setSession(nextSession);
-    setUser(nextSession?.user ?? null);
-    if (!nextSession?.user) {
-      accessRequestRef.current += 1;
-      clearAccess();
-      return;
-    }
+    setSession(nextSession); setUser(nextSession?.user ?? null);
+    if (!nextSession?.user) { accessRequestRef.current += 1; clearAccess(); return; }
     await Promise.all([fetchUserAccess(nextSession.user.id), fetchProfile(nextSession.user.id)]);
   }, [clearAccess, fetchProfile, fetchUserAccess]);
 
@@ -105,45 +77,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         if (error) console.error('Initial session lookup failed:', error);
         if (mounted) await hydrateSession(initialSession);
-      } catch (error) {
-        console.error('Auth initialization failed:', error);
-        if (mounted) clearAccess();
-      } finally {
-        if (mounted) setLoading(false);
-      }
+      } catch (error) { console.error('Auth initialization failed:', error); if (mounted) clearAccess(); }
+      finally { if (mounted) setLoading(false); }
     };
     initialize();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, nextSession) => {
       if (!mounted) return;
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
-      if (!nextSession?.user) {
-        accessRequestRef.current += 1;
-        clearAccess();
-        setLoading(false);
-        return;
-      }
+      setSession(nextSession); setUser(nextSession?.user ?? null);
+      if (!nextSession?.user) { accessRequestRef.current += 1; clearAccess(); setLoading(false); return; }
       setLoading(true);
       setTimeout(() => {
         if (!mounted) return;
-        Promise.all([fetchUserAccess(nextSession.user.id), fetchProfile(nextSession.user.id)]).finally(() => {
-          if (mounted) setLoading(false);
-        });
+        Promise.all([fetchUserAccess(nextSession.user.id), fetchProfile(nextSession.user.id)]).finally(() => { if (mounted) setLoading(false); });
       }, 0);
     });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    return () => { mounted = false; subscription.unsubscribe(); };
   }, [clearAccess, fetchProfile, fetchUserAccess, hydrateSession]);
 
-  const refreshProfile = async () => {
-    if (!user) return;
-    await fetchProfile(user.id);
-    await fetchUserAccess(user.id);
-  };
+  const refreshProfile = async () => { if (!user) return; await fetchProfile(user.id); await fetchUserAccess(user.id); };
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
@@ -152,23 +104,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: { emailRedirectTo: redirectUrl, data: { first_name: firstName || '', last_name: lastName || '' } },
-    });
+    const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: redirectUrl, data: { first_name: firstName || '', last_name: lastName || '' } } });
     return { error, data };
   };
 
+  const signOut = async () => {
+    accessRequestRef.current += 1; clearAccess(); setSession(null); setUser(null);
+    const { error } = await supabase.auth.signOut();
+    if (error) toast({ title: 'Error signing out', description: error.message, variant: 'destructive' });
+    return { error };
+  };
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` });
+    return { error };
+  };
+
+  const updatePassword = async (password: string) => { const { error } = await supabase.auth.updateUser({ password }); return { error }; };
+
   const signInWithGoogle = async () => {
-    const redirectTo = `${window.location.origin}/`;
-    return await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } });
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/auth/callback`, queryParams: { access_type: 'offline', prompt: 'consent' } } });
+    return { error };
+  };
+
+  const hasMailboxAccess = async (mailboxEmail: string | null | undefined, provider: 'gmail' | 'resend' | string = 'gmail') => {
+    if (!user || !mailboxEmail) return false;
+    const normalizedEmail = mailboxEmail.trim().toLowerCase();
+    if (!normalizedEmail) return false;
+    if (hasPermission(permissions, 'admin:all')) return true;
+    if (!hasPermission(permissions, 'mailbox:read')) return false;
+    const { data, error } = await supabase.from('admin_mailboxes').select('id').eq('user_id', user.id).eq('mailbox_provider', provider).ilike('mailbox_email', normalizedEmail).maybeSingle();
+    if (error) { console.error('Mailbox access lookup failed:', error); return false; }
+    return !!data;
   };
 
   const value: AuthContextType = {
-    user, session, profile, loading, userRole, roles, permissions,
-    signIn, signUp, signInWithGoogle, refreshProfile,
-    hasPermission: (permission: string) => hasPermission(permissions, permission),
+    user, session, profile, userRole, roles, permissions, loading, isLoading: loading,
+    hasPermission: (permission) => hasPermission(permissions, permission),
+    hasMailboxAccess, signIn, signUp, signOut, resetPassword, updatePassword, refreshProfile, signInWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
