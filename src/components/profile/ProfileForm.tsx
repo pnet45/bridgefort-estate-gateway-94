@@ -44,8 +44,8 @@ const ProfileForm = () => {
             phoneNumber: data.phone_number || '', stateOfOrigin: data.state_of_origin || '', localGovernment: data.local_government || '', address: data.address || '', currentResidence: data.current_residence || '', languagesSpoken: Array.isArray(data.languages_spoken) ? data.languages_spoken.join(', ') : data.languages_spoken || '',
             occupation: data.occupation || '', employerName: data.employer_name || '', employerAddress: data.employer_address || '',
             nextOfKinName: data.next_of_kin_name || '', nextOfKinRelationship: data.next_of_kin_relationship || '', nextOfKinAddress: data.next_of_kin_address || '', nextOfKinPhone: data.next_of_kin_phone || '', nextOfKinEmail: data.next_of_kin_email || '',
-            idType: data.id_type || '', idNumber: data.id_number || '', idExpiry: data.id_expiry || '', sourceOfFunds: data.source_of_income || '', annualIncomeBracket: data.annual_income_bracket || '', taxId: data.tax_id || '', nin: data.nin || '',
-            bankUsed: data.bank_used || '', accountNumber: data.account_number || '', accountName: data.account_name || '', employmentStatus: data.employment_status || '', employerCountry: data.employer_country || '',
+            idType: data.id_type || '', idNumber: data.id_number || '', idExpiry: data.id_expiry || '', sourceOfFunds: data.source_of_income || '', annualIncomeBracket: '', taxId: '', nin: '',
+            bankUsed: '', accountNumber: '', accountName: '', employmentStatus: data.employment_status || '', employerCountry: data.employer_country || '',
             isForeigner: Boolean(data.is_foreigner), residencePermit: data.residence_permit || '', visaStatus: data.visa_status || '', amlRiskRating: data.aml_risk_rating || '', amlNotes: data.aml_notes || '',
           });
         }
