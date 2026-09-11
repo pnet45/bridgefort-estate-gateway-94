@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import Navbar from '@/components/Navbar';
@@ -7,17 +7,24 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, Wallet, Copy, Share2, RefreshCw, ArrowUpRight, Loader2, Lock, CheckCircle2, Network, Trophy, TrendingUp, Building2, Sprout, Target } from 'lucide-react';
+import { Users, Wallet, RefreshCw, ArrowUpRight, Loader2, Lock, CheckCircle2, Network, Trophy, TrendingUp, Building2, Sprout, Target, Star, Crown, BriefcaseBusiness } from 'lucide-react';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
 import RealtorsRegistrationForm from '@/components/bhRealtors/RealtorsRegistrationForm';
 import ReferralLeaderboard from '@/components/bhRealtors/ReferralLeaderboard';
 import DownlineTree from '@/components/bhRealtors/DownlineTree';
 import CommissionHistory from '@/components/bhRealtors/CommissionHistory';
+import ReferralShareCard from '@/components/bhRealtors/ReferralShareCard';
 
 const rank: Record<string, number> = { associate: 1, gold: 2, classic_gold: 3 };
 const naira = (n: number) => `₦${Number(n || 0).toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
 const glass = 'border border-white/15 bg-white/65 dark:bg-slate-950/70 backdrop-blur-2xl shadow-xl shadow-black/5 dark:shadow-black/30';
 const muted = 'text-slate-600 dark:text-slate-200';
+
+const packageVisuals: Record<string, { image: string; accent: string; soft: string; icon: React.ReactNode; label: string }> = {
+  associate: { image: '/images/LoginImageLANDFORSALE.png', accent: 'from-sky-600 to-estate-blue', soft: 'bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-200', icon: <BriefcaseBusiness className="h-5 w-5" />, label: 'STARTER LEVEL' },
+  gold: { image: '/images/Luxury Homes.jpeg', accent: 'from-amber-500 to-yellow-700', soft: 'bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-200', icon: <Star className="h-5 w-5" />, label: 'GROWTH LEVEL' },
+  classic_gold: { image: '/images/LoginImageLANDFORSALE.png', accent: 'from-violet-600 to-purple-900', soft: 'bg-violet-50 text-violet-700 dark:bg-violet-400/10 dark:text-violet-200', icon: <Crown className="h-5 w-5" />, label: 'PREMIUM LEVEL' },
+};
 
 const BHRealtors: React.FC = () => {
   const { user, profile, loading, refreshProfile } = useAuth();
@@ -69,25 +76,12 @@ const BHRealtors: React.FC = () => {
   useEffect(() => { if (user) void load(); }, [user]);
 
   const currentPackage = packages.find(p => p.package_code === currentCode) || packages.find(p => p.package_code === 'associate') || packages[0];
-  const eligiblePackages = useMemo(() => packages.filter(p => !isRealtor || rank[p.package_code] > currentRank), [packages, isRealtor, currentRank]);
 
   const openRegistration = (pkg: BhRealtorsPackage) => {
     if (!user) { toast({ title: 'Sign in required', description: 'Please sign in before joining BHRealtors.', variant: 'destructive' }); return; }
     if (isRealtor && rank[pkg.package_code] <= currentRank) return;
     setSelectedPackage(pkg);
     setRegistrationOpen(true);
-  };
-
-  const copyReferral = async () => {
-    if (!referralLink) return;
-    await navigator.clipboard.writeText(referralLink);
-    toast({ title: 'Referral link copied', description: 'Share it with people you want to introduce to BHRealtors.' });
-  };
-  const shareReferral = async () => {
-    if (!referralLink) return copyReferral();
-    if (navigator.share) {
-      try { await navigator.share({ title: 'Join BHRealtors', text: 'Join Bridgefort Homes Realtors with my referral link.', url: referralLink }); } catch (e: any) { if (e?.name !== 'AbortError') await copyReferral(); }
-    } else await copyReferral();
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-950"><Loader2 className="animate-spin h-8 w-8 text-estate-blue" /></div>;
@@ -126,11 +120,36 @@ const BHRealtors: React.FC = () => {
 
           <section className={`${glass} relative overflow-hidden rounded-3xl p-7 md:p-9`}><div className="absolute right-0 top-0 h-48 w-48 overflow-hidden rounded-bl-[5rem] opacity-90"><img src="/images/Luxury Homes.jpeg" alt="Luxury real estate" className="h-full w-full object-cover" /></div><div className="relative max-w-3xl pr-4 md:pr-40"><div className="flex items-center gap-3"><Building2 className="h-6 w-6 text-estate-purple" /><h2 className="text-2xl font-black text-estate-blue dark:text-white">Sell property. Build trust. Create wealth.</h2></div><p className={`mt-4 leading-7 ${muted}`}>Real estate is a long-term wealth strategy. With BHRealtors, your work is not just about making a sale; it is about helping people secure land and property they can hold, develop and potentially benefit from as the surrounding area grows.</p><div className="mt-5 grid gap-3 sm:grid-cols-3"><div className="rounded-2xl bg-slate-900/5 dark:bg-white/5 p-4"><Target className="h-5 w-5 text-estate-purple" /><p className={`mt-2 text-sm ${muted}`}>Find genuine buyers</p></div><div className="rounded-2xl bg-slate-900/5 dark:bg-white/5 p-4"><Users className="h-5 w-5 text-estate-purple" /><p className={`mt-2 text-sm ${muted}`}>Grow your network</p></div><div className="rounded-2xl bg-slate-900/5 dark:bg-white/5 p-4"><TrendingUp className="h-5 w-5 text-estate-purple" /><p className={`mt-2 text-sm ${muted}`}>Grow your income</p></div></div></div></section>
 
-          <section id="packages"><div className="mb-5"><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Membership & growth</p><h2 className="mt-1 text-3xl font-black text-estate-blue dark:text-white">Choose your level. Build your future.</h2><p className={`mt-2 ${muted}`}>Associate can move directly to Gold or directly to Classic Gold. You are not required to upgrade one level at a time.</p></div><div className="grid gap-5 md:grid-cols-3">{packages.map(pkg => { const active = pkg.package_code === currentCode && isRealtor; const higher = !isRealtor || rank[pkg.package_code] > currentRank; const salesRate = pkg.sales_commission_pct ?? (pkg.package_code === 'associate' ? 5 : pkg.package_code === 'gold' ? 10 : 15); return <div key={pkg.package_code} className={`${glass} relative overflow-hidden rounded-3xl p-6 ${active ? 'ring-2 ring-estate-purple/60' : ''}`}><div className="absolute right-0 top-0 h-28 w-28 overflow-hidden rounded-bl-[3rem]"><img src={pkg.package_code === 'classic_gold' ? '/images/Luxury Homes.jpeg' : '/images/LoginImageLANDFORSALE.png'} alt="Real estate" className="h-full w-full object-cover opacity-60" /></div><div className="relative"><p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300">{pkg.package_name}</p><p className="mt-1 text-3xl font-black text-estate-blue dark:text-white">{naira(pkg.price)}</p>{active && <Badge className="mt-2 bg-estate-purple text-white">Current</Badge>}<p className={`mt-5 min-h-20 text-sm leading-6 ${muted}`}>{pkg.description}</p><div className="mt-5 space-y-2 border-t border-slate-200/60 dark:border-white/10 pt-4 text-sm"><p className={`flex justify-between ${muted}`}><span>Membership L1 / L2</span><strong className="text-slate-950 dark:text-white">{pkg.direct_commission_pct}% / {pkg.indirect_commission_pct}%</strong></p><p className={`flex justify-between ${muted}`}><span>Estate-land sale</span><strong className="text-slate-950 dark:text-white">{salesRate}%</strong></p></div>{higher && <Button className="mt-6 w-full bg-estate-blue hover:bg-estate-darkBlue" onClick={() => openRegistration(pkg)}>{isRealtor ? `Upgrade to ${pkg.package_name}` : `Join ${pkg.package_name} — ${naira(pkg.price)}`}</Button>}{active && <div className="mt-5 flex gap-2 rounded-xl bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-200"><CheckCircle2 className="h-4 w-4" /> You are currently on this package.</div>}</div></div>; })}</div></section>
+          <section id="packages">
+            <div className="mb-6"><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Membership & growth</p><h2 className="mt-1 text-3xl font-black text-estate-blue dark:text-white">Choose your level. Build your future.</h2><p className={`mt-2 max-w-3xl ${muted}`}>Associate can move directly to Gold or directly to Classic Gold. You are not required to upgrade one level at a time.</p></div>
+            <div className="grid items-stretch gap-5 md:grid-cols-3">
+              {packages.map(pkg => {
+                const active = pkg.package_code === currentCode && isRealtor;
+                const higher = !isRealtor || rank[pkg.package_code] > currentRank;
+                const salesRate = pkg.sales_commission_pct ?? (pkg.package_code === 'associate' ? 5 : pkg.package_code === 'gold' ? 10 : 15);
+                const visual = packageVisuals[pkg.package_code] || packageVisuals.associate;
+                return <article key={pkg.package_code} className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl dark:bg-slate-950 ${active ? 'ring-2 ring-estate-purple ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-950' : 'border-slate-200 dark:border-white/10'}`}>
+                  <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${visual.accent}`}>
+                    <img src={visual.image} alt={`${pkg.package_name} BHRealtors package`} className="h-full w-full object-cover opacity-55 mix-blend-overlay transition duration-500 group-hover:scale-105 group-hover:opacity-70" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">{visual.icon}{visual.label}</div>
+                    <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-3"><div><p className="text-sm font-semibold text-white/80">{pkg.package_name}</p><p className="mt-1 text-3xl font-black text-white">{naira(pkg.price)}</p></div>{active && <Badge className="border border-white/20 bg-white/20 text-white">Current</Badge>}</div>
+                  </div>
+                  <div className="flex flex-1 flex-col p-5 sm:p-6">
+                    <div className="flex flex-wrap gap-2"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>L1: {pkg.direct_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>L2: {pkg.indirect_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>Sales: {salesRate}%</span></div>
+                    <p className={`mt-5 min-h-[96px] text-sm leading-6 ${muted}`}>{pkg.description}</p>
+                    <div className="mt-5 grid grid-cols-2 gap-2"><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Membership</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{pkg.direct_commission_pct}% / {pkg.indirect_commission_pct}%</p></div><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Land sales</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{salesRate}%</p></div></div>
+                    <div className="mt-auto pt-5">{higher && <Button className={`w-full bg-gradient-to-r ${visual.accent} text-white shadow-lg hover:opacity-95`} onClick={() => openRegistration(pkg)}>{isRealtor ? `Upgrade to ${pkg.package_name}` : `Join ${pkg.package_name} — ${naira(pkg.price)}`}</Button>}{active && <div className="mt-3 flex items-start gap-2 rounded-xl bg-emerald-500/10 px-3 py-2.5 text-xs leading-5 text-emerald-700 dark:text-emerald-200"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />You are currently on this package.</div>}</div>
+                  </div>
+                </article>;
+              })}
+            </div>
+          </section>
 
           {!isRealtor && <section className={`${glass} rounded-3xl p-7`}><div className="flex items-center gap-3"><Sprout className="h-6 w-6 text-emerald-500" /><h2 className="text-xl font-black text-estate-blue dark:text-white">Start with a real opportunity</h2></div><p className={`mt-3 max-w-3xl leading-7 ${muted}`}>Join a network where property sales, referrals and personal development work together. Start at the level that fits your plan, learn the market, build relationships and grow your income responsibly.</p></section>}
 
-          {isRealtor && <section className={`${glass} rounded-3xl p-6`}><div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-300">Your referral link</p><p className="mt-1 break-all font-semibold text-slate-950 dark:text-white">{referralLink || 'Referral code is being prepared…'}</p></div><div className="flex gap-2"><Button variant="outline" onClick={() => void copyReferral()} className="bg-white/50 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"><Copy className="h-4 w-4 mr-2" /> Copy</Button><Button variant="outline" onClick={() => void shareReferral()} className="bg-white/50 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"><Share2 className="h-4 w-4 mr-2" /> Share</Button></div></div></section>}
+          {isRealtor && referralCode && <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />}
+          {isRealtor && !referralCode && <section className={`${glass} rounded-3xl p-6`}><p className="text-sm font-semibold text-slate-900 dark:text-white">Your referral code is being prepared.</p><p className={`mt-1 text-sm ${muted}`}>Refresh the page shortly and your BHRealtors sharing tools will appear here.</p></section>}
 
           {isRealtor && <div className="grid gap-5 lg:grid-cols-2"><div className={`${glass} rounded-3xl p-6`}><div className="mb-4 flex items-center gap-2"><Trophy className="h-5 w-5 text-estate-purple" /><h2 className="font-bold text-slate-950 dark:text-white">Referral leaderboard</h2></div><ReferralLeaderboard /></div><div className={`${glass} rounded-3xl p-6`}><div className="mb-4 flex items-center gap-2"><Network className="h-5 w-5 text-estate-purple" /><h2 className="font-bold text-slate-950 dark:text-white">Referral tree</h2></div><DownlineTree /></div></div>}
 
