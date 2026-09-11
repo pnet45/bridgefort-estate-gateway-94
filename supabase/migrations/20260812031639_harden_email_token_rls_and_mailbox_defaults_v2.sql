@@ -1,0 +1,13 @@
+DROP POLICY IF EXISTS mail_tokens_access_own ON public.mail_tokens;
+DROP POLICY IF EXISTS mail_tokens_write_own ON public.mail_tokens;
+CREATE POLICY mail_tokens_access_authorized ON public.mail_tokens FOR SELECT TO authenticated USING (auth.uid() = user_id AND public.user_mailbox_access(auth.uid(), mailbox_email, provider));
+CREATE POLICY mail_tokens_write_authorized ON public.mail_tokens FOR ALL TO authenticated USING (auth.uid() = user_id AND public.user_mailbox_access(auth.uid(), mailbox_email, provider)) WITH CHECK (auth.uid() = user_id AND public.user_mailbox_access(auth.uid(), mailbox_email, provider));
+DROP POLICY IF EXISTS email_sessions_access_own ON public.email_sessions;
+DROP POLICY IF EXISTS email_sessions_write_own ON public.email_sessions;
+CREATE POLICY email_sessions_access_authorized ON public.email_sessions FOR SELECT TO authenticated USING (auth.uid() = user_id AND public.user_mailbox_access(auth.uid(), mailbox_email, provider));
+CREATE POLICY email_sessions_write_authorized ON public.email_sessions FOR ALL TO authenticated USING (auth.uid() = user_id AND public.user_mailbox_access(auth.uid(), mailbox_email, provider)) WITH CHECK (auth.uid() = user_id AND public.user_mailbox_access(auth.uid(), mailbox_email, provider));
+DROP POLICY IF EXISTS role_default_mailboxes_read_authenticated ON public.role_default_mailboxes;
+CREATE POLICY role_default_mailboxes_read_authorized ON public.role_default_mailboxes FOR SELECT TO authenticated USING (public.is_global_admin(auth.uid()) OR EXISTS (SELECT 1 FROM public.admin_roles ar WHERE ar.user_id = auth.uid() AND ar.role_name = role_default_mailboxes.role_name AND (ar.expires_at IS NULL OR ar.expires_at > now())));
+REVOKE ALL ON public.gmail_oauth_tokens FROM anon, authenticated;
+REVOKE ALL ON public.gmail_oauth_state FROM anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.gmail_oauth_state TO authenticated;

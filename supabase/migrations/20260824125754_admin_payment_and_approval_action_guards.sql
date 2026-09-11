@@ -1,0 +1,57 @@
+create or replace function public.admin_approve_payment_request(_request_id uuid, _decision text, _notes text default null)
+returns public.payment_requests
+language plpgsql security definer set search_path=public
+as $$
+declare v public.payment_requests%rowtype; caller uuid:=auth.uid();
+begin
+ if caller is null or not (public.user_has_permission(caller,'admin:approve_payments') or public.user_has_permission(caller,'admin:all')) then raise exception using errcode='42501',message='Not authorized to approve payments'; end if;
+ if _decision not in ('approved','rejected') then raise exception 'Invalid payment decision'; end if;
+ select * into v from public.payment_requests where id=_request_id for update;
+ if not found then raise exception 'Payment approval request not found'; end if;
+ if v.status <> 'pending' then raise exception 'Payment request is already finalized'; end if;
+ update public.payment_requests set status=_decision, admin_notes=coalesce(_notes,admin_notes), processed_by=caller, processed_at=now(), updated_at=now() where id=_request_id returning * into v;
+ insert into public.admin_activity_logs(admin_id,action_type,action_description,entity_type,entity_id,metadata) values(caller,'payment_approval',case when _decision='approved' then 'Approved payment request' else 'Rejected payment request' end,'payment_request',v.id::text,jsonb_build_object('decision',_decision,'amount',v.amount,'reference',v.reference));
+ return v;
+end; $$;
+revoke all on function public.admin_approve_payment_request(uuid,text,text) from public;
+grant execute on function public.admin_approve_payment_request(uuid,text,text) to authenticated;
+
+create or replace function public.admin_approve_admin_request(_request_id uuid,_decision text,_rejection_reason text default null)
+returns public.pending_admin_requests
+language plpgsql security definer set search_path=public
+as $$
+declare v public.pending_admin_requests%rowtype; caller uuid:=auth.uid();
+begin
+ if caller is null or not (public.user_has_permission(caller,'admin:manage_users') or public.user_has_permission(caller,'admin:manage_departments') or public.user_has_permission(caller,'admin:all')) then raise exception using errcode='42501',message='Not authorized to approve admin requests'; end if;
+ if _decision not in ('approved','rejected') then raise exception 'Invalid admin request decision'; end if;
+ select * into v from public.pending_admin_requests where id=_request_id for update;
+ if not found then raise exception 'Admin request not found'; end if;
+ if v.status <> 'pending' then raise exception 'Admin request is already finalized'; end if;
+ if _decision='approved' then
+   if v.user_id is null then raise exception 'Admin request has no user account'; end if;
+   insert into public.admin_roles(user_id,role_name,granted_by,granted_at) values(v.user_id,v.requested_role,caller,now()) on conflict do nothing;
+ end if;
+ update public.pending_admin_requests set status=_decision,reviewed_at=now(),reviewed_by=caller,rejection_reason=case when _decision='rejected' then _rejection_reason else null end where id=_request_id returning * into v;
+ insert into public.admin_activity_logs(admin_id,action_type,action_description,entity_type,entity_id,metadata) values(caller,'admin_request_approval',case when _decision='approved' then 'Approved admin access request' else 'Rejected admin access request' end,'pending_admin_request',v.id::text,jsonb_build_object('decision',_decision,'requested_role',v.requested_role,'user_id',v.user_id));
+ return v;
+end; $$;
+revoke all on function public.admin_approve_admin_request(uuid,text,text) from public;
+grant execute on function public.admin_approve_admin_request(uuid,text,text) to authenticated;
+
+create or replace function public.admin_approve_withdrawal(_request_id uuid,_decision text,_notes text default null)
+returns public.withdrawal_requests
+language plpgsql security definer set search_path=public
+as $$
+declare v public.withdrawal_requests%rowtype; caller uuid:=auth.uid();
+begin
+ if caller is null or not (public.user_has_permission(caller,'admin:approve_payments') or public.user_has_permission(caller,'admin:all')) then raise exception using errcode='42501',message='Not authorized to approve withdrawals'; end if;
+ if _decision not in ('approved','rejected') then raise exception 'Invalid withdrawal decision'; end if;
+ select * into v from public.withdrawal_requests where id=_request_id for update;
+ if not found then raise exception 'Withdrawal request not found'; end if;
+ if v.status <> 'pending' then raise exception 'Withdrawal request is already finalized'; end if;
+ update public.withdrawal_requests set status=_decision,admin_notes=coalesce(_notes,admin_notes),processed_by=caller,processed_at=now(),updated_at=now() where id=_request_id returning * into v;
+ insert into public.admin_activity_logs(admin_id,action_type,action_description,entity_type,entity_id,metadata) values(caller,'withdrawal_approval',case when _decision='approved' then 'Approved withdrawal request' else 'Rejected withdrawal request' end,'withdrawal_request',v.id::text,jsonb_build_object('decision',_decision,'amount',v.amount,'user_id',v.user_id));
+ return v;
+end; $$;
+revoke all on function public.admin_approve_withdrawal(uuid,text,text) from public;
+grant execute on function public.admin_approve_withdrawal(uuid,text,text) to authenticated;
