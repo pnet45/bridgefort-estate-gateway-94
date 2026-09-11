@@ -1,7 +1,3 @@
--- Fix Gmail mailbox sessions so one company mailbox can safely have
--- multiple authorized Google identities and each OAuth flow is bound to
--- the exact mailbox the administrator selected.
-
 alter table public.gmail_oauth_tokens
   add column if not exists mailbox_id uuid references public.admin_mailboxes(id) on delete cascade,
   add column if not exists google_account_email text,
@@ -38,9 +34,7 @@ create or replace function public.list_privileged_mailbox_managers()
 returns table (id uuid, email text, legacy_role text, rbac_roles text[])
 language sql stable security definer set search_path = public
 as $$
-  select u.id,
-    lower(coalesce(u.email, '')) as email,
-    null::text as legacy_role,
+  select u.id, lower(coalesce(u.email, '')) as email, null::text as legacy_role,
     coalesce(array_agg(distinct ar.role_name) filter (where ar.role_name is not null), '{}'::text[]) as rbac_roles
   from auth.users u
   left join public.admin_roles ar on ar.user_id = u.id
@@ -57,30 +51,25 @@ create or replace function public.get_available_mailboxes(_user_id uuid)
 returns table (mailbox_email text, mailbox_provider text, is_connected boolean)
 language sql stable security definer set search_path = public
 as $$
-  select m.mailbox_email,
-    m.mailbox_provider,
+  select m.mailbox_email, m.mailbox_provider,
     case when lower(m.mailbox_provider) <> 'gmail' then true
-      else exists (
-        select 1 from public.gmail_oauth_tokens t
-        where t.mailbox_id = m.mailbox_id and t.is_active = true
-          and exists (
-            select 1 from public.admin_mailboxes a
-            cross join lateral regexp_split_to_table(coalesce(a.provider_account_id, ''), '[,;[:space:]]+') assigned(account)
-            where a.id = m.mailbox_id
-              and a.status = 'active'
-              and lower(a.mailbox_provider) = 'gmail'
-              and lower(trim(assigned.account)) = lower(t.google_account_email)
-          )
-      )
-    end as is_connected
+    else exists (
+      select 1 from public.gmail_oauth_tokens t
+      where t.mailbox_id = m.mailbox_id and t.is_active = true
+        and exists (
+          select 1 from public.admin_mailboxes a
+          cross join lateral regexp_split_to_table(coalesce(a.provider_account_id, ''), '[,;[:space:]]+') assigned(account)
+          where a.id = m.mailbox_id and a.status = 'active'
+            and lower(a.mailbox_provider) = 'gmail'
+            and lower(trim(assigned.account)) = lower(t.google_account_email)
+        )
+    ) end as is_connected
   from (
     select distinct am.id as mailbox_id, am.mailbox_email, am.mailbox_provider
-    from public.admin_mailboxes am
-    where am.user_id = _user_id and am.status = 'active'
+    from public.admin_mailboxes am where am.user_id = _user_id and am.status = 'active'
     union
     select distinct am.id as mailbox_id, am.mailbox_email, am.mailbox_provider
-    from public.admin_mailboxes am
-    where am.status = 'active' and public.user_has_permission(_user_id, 'admin:all')
+    from public.admin_mailboxes am where am.status = 'active' and public.user_has_permission(_user_id, 'admin:all')
   ) m
   where _user_id = auth.uid() or public.user_has_permission(auth.uid(), 'admin:manage_permissions')
   order by m.mailbox_email;

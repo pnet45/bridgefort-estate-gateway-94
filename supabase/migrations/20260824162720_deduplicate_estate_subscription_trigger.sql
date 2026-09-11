@@ -1,0 +1,1 @@
+drop trigger if exists trg_issue_estate_subscription on public.orders; create trigger trg_issue_estate_subscription after insert or update of payment_status on public.orders for each row execute function public.issue_estate_subscription_for_order();
