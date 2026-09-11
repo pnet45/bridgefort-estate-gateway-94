@@ -4132,6 +4132,7 @@ export type Database = {
       }
     }
     Functions: {
+      __tmp_export_migrations: { Args: { p_key: string }; Returns: Json }
       admin_approve_admin_request: {
         Args: {
           _decision: string
