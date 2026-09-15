@@ -29,6 +29,7 @@ import { Toaster as SonnerToaster } from '@/components/ui/sonner';
 import { NotificationModalHost } from '@/components/notifications/NotificationModalHost';
 import { ComparisonProvider } from '@/contexts/comparison/ComparisonContext';
 import ComparisonTray from '@/components/properties/ComparisonTray';
+import { Analytics } from '@vercel/analytics/react';
 
 const Index = lazy(() => import('@/pages/Index'));
 const Home = lazy(() => import('@/pages/Home'));
@@ -212,6 +213,7 @@ function AppLayout() {
         </EcommerceProvider>
       </AuthProvider>
     </RecaptchaProvider>
+    <Analytics />
     </QueryClientProvider>
   );
 }
