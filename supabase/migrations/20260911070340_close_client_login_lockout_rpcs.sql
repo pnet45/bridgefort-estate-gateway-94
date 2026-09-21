@@ -1,0 +1,2 @@
+-- Remote migration history marker: close_client_login_lockout_rpcs
+-- The connected Supabase project is the source of truth and already contains this migration.

@@ -1,0 +1,2 @@
+-- Remote migration history marker: comment_bhrealtor_membership_helper_internal
+-- The connected Supabase project is the source of truth and already contains this migration.

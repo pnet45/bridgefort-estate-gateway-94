@@ -1,0 +1,2 @@
+-- Remote migration history marker: remove_redundant_duplicate_indexes
+-- The connected Supabase project is the source of truth and already contains this migration.

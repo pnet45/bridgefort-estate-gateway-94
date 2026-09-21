@@ -1,0 +1,2 @@
+-- Remote migration history marker: harden_has_role_target_scope
+-- The connected Supabase project is the source of truth and already contains this migration.
