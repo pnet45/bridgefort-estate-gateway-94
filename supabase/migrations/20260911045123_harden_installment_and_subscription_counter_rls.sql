@@ -1,0 +1,2 @@
+-- Remote migration history marker: harden_installment_and_subscription_counter_rls
+-- The connected Supabase project is the source of truth and already contains this migration.

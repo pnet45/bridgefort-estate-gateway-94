@@ -1,0 +1,2 @@
+-- Remote migration history marker: restrict_trigger_only_rpc_execution
+-- The connected Supabase project is the source of truth and already contains this migration.

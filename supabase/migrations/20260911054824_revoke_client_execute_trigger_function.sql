@@ -1,0 +1,2 @@
+-- Remote migration history marker: revoke_client_execute_trigger_function
+-- The connected Supabase project is the source of truth and already contains this migration.

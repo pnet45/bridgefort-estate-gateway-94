@@ -1,0 +1,2 @@
+-- Remote migration history marker: restore_client_execute_auth_helpers
+-- The connected Supabase project is the source of truth and already contains this migration.

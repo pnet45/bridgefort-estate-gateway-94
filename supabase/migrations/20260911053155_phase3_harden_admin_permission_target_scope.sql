@@ -1,0 +1,2 @@
+-- Remote migration history marker: phase3_harden_admin_permission_target_scope
+-- The connected Supabase project is the source of truth and already contains this migration.
