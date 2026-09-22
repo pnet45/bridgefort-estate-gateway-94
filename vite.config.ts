@@ -5,15 +5,6 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(async ({ mode }) => {
-  let mcpPlugin = null;
-
-  try {
-    const module = await import("@lovable.dev/mcp-js/stacks/supabase/vite");
-    mcpPlugin = module.mcpPlugin;
-  } catch {
-    mcpPlugin = null;
-  }
-
   return {
     server: {
       host: "::",
@@ -21,7 +12,6 @@ export default defineConfig(async ({ mode }) => {
     },
     plugins: [
       react(),
-      mcpPlugin ? mcpPlugin() : null,
       mode === "development" && componentTagger(),
     ].filter(Boolean),
 
