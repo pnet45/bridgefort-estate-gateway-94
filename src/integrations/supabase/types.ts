@@ -4410,6 +4410,7 @@ export type Database = {
       capture_property_inquiry: {
         Args: {
           _action_type: string
+          _authenticated_user_id?: string
           _email?: string
           _listing_id: string
           _name?: string
