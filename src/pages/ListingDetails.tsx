@@ -6,10 +6,11 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Bed, Bath, Car, Maximize, Calendar, Phone, Mail, ArrowLeft, Star, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Bed, Bath, Car, Maximize, Calendar, ArrowLeft, Star, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import PropertyReviews from '@/components/reviews/PropertyReviews';
 import { usePropertyView } from '@/hooks/usePropertyViews';
+import ListingInquiryActions from '@/components/listings/ListingInquiryActions';
 
 const ListingDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -200,24 +201,7 @@ const ListingDetails = () => {
                 <h3 className="font-bold text-lg">Interested in this property?</h3>
                 <p className="text-sm text-muted-foreground">Contact the listing agent to schedule a viewing or request more information.</p>
                 {listing.owner_name && <p className="font-semibold">{listing.owner_name}</p>}
-                {listing.owner_phone && (
-                  <a href={`tel:${listing.owner_phone}`} className="w-full">
-                    <Button className="w-full" size="lg"><Phone className="w-4 h-4 mr-2" />Call Agent</Button>
-                  </a>
-                )}
-                {listing.owner_email && (
-                  <a href={`mailto:${listing.owner_email}`} className="w-full">
-                    <Button variant="outline" className="w-full" size="lg"><Mail className="w-4 h-4 mr-2" />Email Agent</Button>
-                  </a>
-                )}
-                <a
-                  href={`https://wa.me/${listing.owner_phone?.replace(/\D/g, '')}?text=Hi, I'm interested in ${listing.title}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full"
-                >
-                  <Button variant="secondary" className="w-full" size="lg">WhatsApp</Button>
-                </a>
+                <ListingInquiryActions listingId={listing.id} title={listing.title} agentEmail={listing.owner_email} agentPhone={listing.owner_phone} />
               </div>
 
               {/* Disclosures */}
