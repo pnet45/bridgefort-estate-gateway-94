@@ -1130,7 +1130,9 @@ export type Database = {
       crm_follow_ups: {
         Row: {
           action_type: string
+          cancelled_at: string | null
           completed_at: string | null
+          completion_notes: string | null
           created_at: string
           created_by: string | null
           id: string
@@ -1140,7 +1142,9 @@ export type Database = {
         }
         Insert: {
           action_type?: string
+          cancelled_at?: string | null
           completed_at?: string | null
+          completion_notes?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -1150,7 +1154,9 @@ export type Database = {
         }
         Update: {
           action_type?: string
+          cancelled_at?: string | null
           completed_at?: string | null
+          completion_notes?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -1220,43 +1226,82 @@ export type Database = {
       crm_leads: {
         Row: {
           assigned_to: string | null
+          closed_at: string | null
+          closing_notes: string | null
+          conversion_outcome: string | null
+          conversion_value: number | null
           created_at: string
+          customer_id: string | null
           email: string | null
+          estate_id: string | null
           estate_interest: string | null
           id: string
           last_contacted_at: string | null
+          listing_id: string | null
           name: string
           notes: string | null
+          order_id: string | null
+          outcome_reason: string | null
+          payment_id: string | null
           phone: string | null
+          priority: string
           source: string | null
+          source_record_id: string | null
+          source_record_type: string | null
           status: string
           updated_at: string
         }
         Insert: {
           assigned_to?: string | null
+          closed_at?: string | null
+          closing_notes?: string | null
+          conversion_outcome?: string | null
+          conversion_value?: number | null
           created_at?: string
+          customer_id?: string | null
           email?: string | null
+          estate_id?: string | null
           estate_interest?: string | null
           id?: string
           last_contacted_at?: string | null
+          listing_id?: string | null
           name: string
           notes?: string | null
+          order_id?: string | null
+          outcome_reason?: string | null
+          payment_id?: string | null
           phone?: string | null
+          priority?: string
           source?: string | null
+          source_record_id?: string | null
+          source_record_type?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           assigned_to?: string | null
+          closed_at?: string | null
+          closing_notes?: string | null
+          conversion_outcome?: string | null
+          conversion_value?: number | null
           created_at?: string
+          customer_id?: string | null
           email?: string | null
+          estate_id?: string | null
           estate_interest?: string | null
           id?: string
           last_contacted_at?: string | null
+          listing_id?: string | null
           name?: string
           notes?: string | null
+          order_id?: string | null
+          outcome_reason?: string | null
+          payment_id?: string | null
           phone?: string | null
+          priority?: string
           source?: string | null
+          source_record_id?: string | null
+          source_record_type?: string | null
           status?: string
           updated_at?: string
         }
@@ -1266,6 +1311,48 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estate"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "my_properties"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "crm_leads_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_leads_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
             referencedColumns: ["id"]
           },
         ]
@@ -4320,6 +4407,16 @@ export type Database = {
       }
       can_manage_departments: { Args: { _user_id?: string }; Returns: boolean }
       can_manage_mailboxes: { Args: { _user_id?: string }; Returns: boolean }
+      capture_property_inquiry: {
+        Args: {
+          _action_type: string
+          _email?: string
+          _listing_id: string
+          _name?: string
+          _phone?: string
+        }
+        Returns: string
+      }
       cleanup_old_login_attempts: { Args: never; Returns: undefined }
       clear_failed_logins: { Args: { clear_email: string }; Returns: undefined }
       count_users: { Args: never; Returns: number }
@@ -4516,6 +4613,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id?: string }; Returns: boolean }
+      is_crm_operator: { Args: { _user_id: string }; Returns: boolean }
       is_global_admin: { Args: { _user_id?: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       list_all_users: {
