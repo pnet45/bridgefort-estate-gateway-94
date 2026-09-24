@@ -97,20 +97,9 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     // Simulate payment processing
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // --- Add: Detect documentation item(s) and record to DB ---
-    const docsInCart = cart.filter(item => item.plot.id.startsWith("doc-"));
-    if (docsInCart.length > 0 && customerInfo.email) {
-      for (const docItem of docsInCart) {
-        const estateId = docItem.plot.id.replace("doc-", "");
-        // Record documentation payment intent with status pending
-        await supabase.from("estate_documentation_payments").insert({
-          user_id: null, // supabase client will use authenticated user
-          estate_id: estateId,
-          amount: docItem.plot.pricePerPlot,
-          status: "pending"
-        });
-      }
-    }
+    // Documentation payment records are now created server-side by the
+    // create-checkout-order edge function (service role) with verified
+    // pricing — clients can no longer insert them directly.
 
     const order: Order = {
       id: `ORDER-${Date.now()}`,

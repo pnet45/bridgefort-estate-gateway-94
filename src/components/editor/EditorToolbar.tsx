@@ -40,7 +40,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ editor, onInsertImage }) 
     editor.chain().focus().setMark('textStyle', { fontFamily: SYSTEM_FONT }).run();
   };
 
-  const setLineHeight = (value: string) => editor.chain().focus().setLineHeight(value).run();
+  const setLineHeight = (value: string) => (editor.chain().focus() as any).setLineHeight(value).run();
   const openLinkPrompt = () => { setLinkUrl((editor.getAttributes('link').href as string) || ''); setLinkPromptOpen(true); };
   const applyLink = () => {
     const url = linkUrl.trim();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Bell, Mail, UserCheck, X, Check } from 'lucide-react';
+import { Bell, Mail, UserCheck, X, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
@@ -8,7 +8,7 @@ import { toast } from '@/hooks/use-toast';
 
 interface Notification {
   id: string;
-  type: 'contact_message' | 'admin_request';
+  type: 'contact_message' | 'admin_request' | 'property_inquiry';
   title: string;
   message: string;
   created_at: string;
@@ -83,9 +83,27 @@ const AdminNotificationCenter: React.FC<AdminNotificationCenterProps> = ({
       })
       .subscribe();
 
+    const inquiryChannel = supabase
+      .channel('notification-property-inquiries')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'crm_leads' }, (payload) => {
+        const lead = payload.new as { id: string; name: string; estate_interest: string | null; created_at: string };
+        setNotifications(prev => [{
+          id: `inquiry-${lead.id}`,
+          type: 'property_inquiry',
+          title: 'New Property Inquiry',
+          message: `${lead.name}${lead.estate_interest ? ` · ${lead.estate_interest}` : ''}`,
+          created_at: lead.created_at,
+          read: false,
+          entityId: lead.id,
+        }, ...prev]);
+        toast({ title: 'New Property Inquiry', description: `${lead.name} entered the inquiry pipeline` });
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(contactChannel);
       supabase.removeChannel(adminChannel);
+      supabase.removeChannel(inquiryChannel);
     };
   }, []);
 
@@ -105,6 +123,12 @@ const AdminNotificationCenter: React.FC<AdminNotificationCenterProps> = ({
         .from('pending_admin_requests')
         .select('*')
         .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      const { data: propertyInquiries } = await supabase
+        .from('crm_leads')
+        .select('id, name, estate_interest, created_at')
         .order('created_at', { ascending: false })
         .limit(10);
 
@@ -128,7 +152,17 @@ const AdminNotificationCenter: React.FC<AdminNotificationCenterProps> = ({
         entityId: r.id
       }));
 
-      const allNotifications = [...contactNotifications, ...adminNotifications]
+      const inquiryNotifications: Notification[] = (propertyInquiries || []).map(lead => ({
+        id: `inquiry-${lead.id}`,
+        type: 'property_inquiry',
+        title: 'Property Inquiry',
+        message: `${lead.name}${lead.estate_interest ? ` · ${lead.estate_interest}` : ''}`,
+        created_at: lead.created_at,
+        read: false,
+        entityId: lead.id,
+      }));
+
+      const allNotifications = [...contactNotifications, ...adminNotifications, ...inquiryNotifications]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       setNotifications(allNotifications);
@@ -144,6 +178,8 @@ const AdminNotificationCenter: React.FC<AdminNotificationCenterProps> = ({
       onNavigate('overview');
     } else if (notification.type === 'admin_request') {
       onNavigate('approvals');
+    } else if (notification.type === 'property_inquiry') {
+      onNavigate('crm');
     }
     onClose();
   };
@@ -196,6 +232,8 @@ const AdminNotificationCenter: React.FC<AdminNotificationCenterProps> = ({
                 }`}>
                   {notification.type === 'contact_message' ? (
                     <Mail className="h-4 w-4" />
+                  ) : notification.type === 'property_inquiry' ? (
+                    <Target className="h-4 w-4" />
                   ) : (
                     <UserCheck className="h-4 w-4" />
                   )}

@@ -15,7 +15,7 @@ import { toast } from '@/hooks/use-toast';
 import {
   Plus, Search, Phone, Mail, User, Calendar, Clock,
   MessageSquare, Trash2, Pencil, CheckCircle, Filter,
-  PhoneCall, MailPlus, Users as UsersIcon, TrendingUp, Download
+  PhoneCall, MailPlus, Users as UsersIcon, TrendingUp, Download, Target, CircleDollarSign
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -32,6 +32,15 @@ interface Lead {
   last_contacted_at: string | null;
   created_at: string;
   updated_at: string;
+  estate_id: string | null;
+  listing_id: string | null;
+  priority: string;
+  conversion_value: number | null;
+  closed_at: string | null;
+  outcome_reason: string | null;
+  closing_notes: string | null;
+  order_id: string | null;
+  payment_id: string | null;
 }
 
 interface FollowUp {
@@ -42,6 +51,8 @@ interface FollowUp {
   action_type: string;
   notes: string | null;
   created_at: string;
+  cancelled_at: string | null;
+  completion_notes: string | null;
 }
 
 interface Activity {
@@ -64,6 +75,9 @@ const STATUS_COLORS: Record<string, string> = {
 const STATUSES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
 const SOURCES = ['website', 'referral', 'social_media', 'walk_in', 'phone', 'email', 'event', 'other'];
 const ACTION_TYPES = ['call', 'email', 'meeting', 'whatsapp', 'site_visit', 'other'];
+const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
+interface TeamMember { id: string; first_name: string | null; last_name: string | null; email: string | null }
+interface PropertyOption { id: string; name: string; kind: 'estate' | 'listing' }
 
 const AdminCRMLeads: React.FC = () => {
   const { user } = useAuth();
@@ -71,11 +85,18 @@ const AdminCRMLeads: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [assigneeFilter, setAssigneeFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
+  const [overdueOnly, setOverdueOnly] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [properties, setProperties] = useState<PropertyOption[]>([]);
+  const [showOutcomeForm, setShowOutcomeForm] = useState(false);
   const [showFollowUpForm, setShowFollowUpForm] = useState(false);
   // Earliest pending (not-yet-completed) follow-up per lead, so "next action"
   // is visible on every card without opening each lead individually.
@@ -83,12 +104,13 @@ const AdminCRMLeads: React.FC = () => {
 
   const [form, setForm] = useState({
     name: '', email: '', phone: '', source: 'website', status: 'new',
-    estate_interest: '', notes: '',
+    estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '',
   });
 
   const [followUpForm, setFollowUpForm] = useState({
     scheduled_at: '', action_type: 'call', notes: '',
   });
+  const [outcomeForm, setOutcomeForm] = useState({ status: 'won', conversion_value: '', closed_at: new Date().toISOString().slice(0, 10), outcome_reason: '', closing_notes: '', order_id: '', payment_id: '' });
 
   const fetchLeads = useCallback(async () => {
     const { data, error } = await supabase
@@ -103,6 +125,7 @@ const AdminCRMLeads: React.FC = () => {
       .from('crm_follow_ups')
       .select('*')
       .is('completed_at', null)
+      .is('cancelled_at', null)
       .order('scheduled_at', { ascending: true });
 
     const nextByLead: Record<string, FollowUp> = {};
@@ -115,6 +138,26 @@ const AdminCRMLeads: React.FC = () => {
   }, []);
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      const [{ data: roleRows }, { data: estates }, { data: listings }] = await Promise.all([
+        supabase.from('user_roles').select('user_id, role').in('role', ['admin', 'staff']),
+        supabase.from('estate').select('id, name').order('name'),
+        supabase.from('listings').select('id, title').eq('status', 'approved').order('title'),
+      ]);
+      const ids = [...new Set((roleRows || []).map(row => row.user_id))];
+      if (ids.length) {
+        const { data } = await supabase.from('profiles').select('id, first_name, last_name, email').in('id', ids);
+        setTeamMembers(data || []);
+      }
+      setProperties([
+        ...(estates || []).map(item => ({ id: item.id, name: item.name, kind: 'estate' as const })),
+        ...(listings || []).map(item => ({ id: item.id, name: item.title, kind: 'listing' as const })),
+      ]);
+    };
+    void fetchOptions();
+  }, []);
 
   const fetchLeadDetails = async (leadId: string) => {
     const [{ data: fups }, { data: acts }] = await Promise.all([
@@ -135,20 +178,28 @@ const AdminCRMLeads: React.FC = () => {
       toast({ title: 'Name is required', variant: 'destructive' });
       return;
     }
+    const selectedProperty = properties.find(item => `${item.kind}:${item.id}` === form.property_key);
+    const payload = {
+      name: form.name, email: form.email || null, phone: form.phone || null, source: form.source,
+      status: form.status, estate_interest: selectedProperty?.name || form.estate_interest || null,
+      notes: form.notes || null, assigned_to: form.assigned_to || null, priority: form.priority,
+      estate_id: selectedProperty?.kind === 'estate' ? selectedProperty.id : null,
+      listing_id: selectedProperty?.kind === 'listing' ? selectedProperty.id : null,
+    };
     if (editingLead) {
       const { error } = await supabase.from('crm_leads')
-        .update({ ...form, updated_at: new Date().toISOString() })
+        .update({ ...payload, updated_at: new Date().toISOString() })
         .eq('id', editingLead.id);
       if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return; }
       toast({ title: 'Lead updated' });
     } else {
-      const { error } = await supabase.from('crm_leads').insert({ ...form });
+      const { error } = await supabase.from('crm_leads').insert(payload);
       if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return; }
       toast({ title: 'Lead created' });
     }
     setIsFormOpen(false);
     setEditingLead(null);
-    setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '' });
+    setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' });
     fetchLeads();
   };
 
@@ -161,6 +212,12 @@ const AdminCRMLeads: React.FC = () => {
   };
 
   const handleStatusChange = async (lead: Lead, newStatus: string) => {
+    if (newStatus === 'won' || newStatus === 'lost') {
+      setSelectedLead(lead);
+      setOutcomeForm({ status: newStatus, conversion_value: lead.conversion_value?.toString() || '', closed_at: lead.closed_at?.slice(0, 10) || new Date().toISOString().slice(0, 10), outcome_reason: lead.outcome_reason || '', closing_notes: lead.closing_notes || '', order_id: lead.order_id || '', payment_id: lead.payment_id || '' });
+      setShowOutcomeForm(true);
+      return;
+    }
     await supabase.from('crm_leads').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', lead.id);
     await supabase.from('crm_lead_activities').insert({
       lead_id: lead.id, activity_type: 'status_change',
@@ -169,6 +226,24 @@ const AdminCRMLeads: React.FC = () => {
     });
     fetchLeads();
     if (selectedLead?.id === lead.id) fetchLeadDetails(lead.id);
+  };
+
+  const handleSaveOutcome = async () => {
+    if (!selectedLead || !outcomeForm.closed_at || !outcomeForm.outcome_reason.trim() || (outcomeForm.status === 'won' && outcomeForm.conversion_value === '')) {
+      toast({ title: 'Complete the outcome details', description: 'Close date, reason, and won value are required.', variant: 'destructive' }); return;
+    }
+    const { error } = await supabase.from('crm_leads').update({
+      status: outcomeForm.status,
+      conversion_value: outcomeForm.status === 'won' ? Number(outcomeForm.conversion_value) : null,
+      closed_at: new Date(`${outcomeForm.closed_at}T12:00:00`).toISOString(),
+      outcome_reason: outcomeForm.outcome_reason,
+      closing_notes: outcomeForm.closing_notes || null,
+      order_id: outcomeForm.order_id || null,
+      payment_id: outcomeForm.payment_id || null,
+    }).eq('id', selectedLead.id);
+    if (error) { toast({ title: 'Outcome not saved', description: error.message, variant: 'destructive' }); return; }
+    await supabase.from('crm_lead_activities').insert({ lead_id: selectedLead.id, activity_type: 'conversion', description: `Lead marked ${outcomeForm.status}: ${outcomeForm.outcome_reason}`, created_by: user?.id });
+    setShowOutcomeForm(false); setSelectedLead({ ...selectedLead, status: outcomeForm.status }); fetchLeads(); fetchLeadDetails(selectedLead.id);
   };
 
   const handleAddFollowUp = async () => {
@@ -193,13 +268,28 @@ const AdminCRMLeads: React.FC = () => {
   };
 
   const handleCompleteFollowUp = async (fup: FollowUp) => {
-    await supabase.from('crm_follow_ups').update({ completed_at: new Date().toISOString() }).eq('id', fup.id);
+    const completionNotes = window.prompt('Add completion notes (optional):') ?? '';
+    await supabase.from('crm_follow_ups').update({ completed_at: new Date().toISOString(), completion_notes: completionNotes || null }).eq('id', fup.id);
     await supabase.from('crm_lead_activities').insert({
       lead_id: fup.lead_id, activity_type: 'follow_up_completed',
-      description: `Completed ${fup.action_type} follow-up`,
+      description: `Completed ${fup.action_type} follow-up${completionNotes ? `: ${completionNotes}` : ''}`,
       created_by: user?.id,
     });
     await supabase.from('crm_leads').update({ last_contacted_at: new Date().toISOString() }).eq('id', fup.lead_id);
+    fetchLeadDetails(fup.lead_id);
+    fetchLeads();
+  };
+
+  const handleCancelFollowUp = async (fup: FollowUp) => {
+    const cancellationReason = window.prompt('Why is this follow-up being cancelled?');
+    if (!cancellationReason?.trim()) return;
+    await supabase.from('crm_follow_ups').update({ cancelled_at: new Date().toISOString(), completion_notes: cancellationReason.trim() }).eq('id', fup.id);
+    await supabase.from('crm_lead_activities').insert({
+      lead_id: fup.lead_id,
+      activity_type: 'follow_up_cancelled',
+      description: `Cancelled ${fup.action_type} follow-up: ${cancellationReason.trim()}`,
+      created_by: user?.id,
+    });
     fetchLeadDetails(fup.lead_id);
     fetchLeads();
   };
@@ -241,7 +331,11 @@ const AdminCRMLeads: React.FC = () => {
       (l.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (l.phone?.includes(searchTerm));
     const matchStatus = statusFilter === 'all' || l.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchAssignee = assigneeFilter === 'all' || (assigneeFilter === 'unassigned' ? !l.assigned_to : l.assigned_to === assigneeFilter);
+    const matchPriority = priorityFilter === 'all' || l.priority === priorityFilter;
+    const matchSource = sourceFilter === 'all' || l.source === sourceFilter;
+    const matchOverdue = !overdueOnly || Boolean(nextActionByLead[l.id] && new Date(nextActionByLead[l.id].scheduled_at) < new Date());
+    return matchSearch && matchStatus && matchAssignee && matchPriority && matchSource && matchOverdue;
   });
 
   const stats = {
@@ -250,6 +344,8 @@ const AdminCRMLeads: React.FC = () => {
     qualified: leads.filter(l => l.status === 'qualified').length,
     won: leads.filter(l => l.status === 'won').length,
     overdue: Object.values(nextActionByLead).filter(f => new Date(f.scheduled_at) < new Date()).length,
+    value: leads.filter(l => l.status === 'won').reduce((sum, lead) => sum + (lead.conversion_value || 0), 0),
+    winRate: leads.filter(l => l.status === 'won' || l.status === 'lost').length ? Math.round(leads.filter(l => l.status === 'won').length / leads.filter(l => l.status === 'won' || l.status === 'lost').length * 100) : 0,
   };
 
   const handleExportCsv = () => {
@@ -275,13 +371,15 @@ const AdminCRMLeads: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-3">
         {[
           { label: 'Total Leads', value: stats.total, icon: UsersIcon, color: 'text-blue-400' },
           { label: 'New', value: stats.new, icon: Plus, color: 'text-green-400' },
           { label: 'Qualified', value: stats.qualified, icon: TrendingUp, color: 'text-purple-400' },
           { label: 'Won', value: stats.won, icon: CheckCircle, color: 'text-emerald-400' },
           { label: 'Overdue', value: stats.overdue, icon: Clock, color: 'text-red-400' },
+          { label: 'Win Rate', value: `${stats.winRate}%`, icon: Target, color: 'text-cyan-400' },
+          { label: 'Won Value', value: `₦${Math.round(stats.value / 1000000)}m`, icon: CircleDollarSign, color: 'text-emerald-400' },
         ].map(s => (
           <Card key={s.label} className="bg-slate-700/50 border-slate-600">
             <CardContent className="p-4 flex items-center gap-3">
@@ -311,7 +409,11 @@ const AdminCRMLeads: React.FC = () => {
             {STATUSES.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '' }); setIsFormOpen(true); }} className="gap-1">
+        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}><SelectTrigger className="w-[160px] bg-slate-700 border-slate-600 text-white"><SelectValue placeholder="Assignee" /></SelectTrigger><SelectContent><SelectItem value="all">All assignees</SelectItem><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select>
+        <Select value={priorityFilter} onValueChange={setPriorityFilter}><SelectTrigger className="w-[130px] bg-slate-700 border-slate-600 text-white"><SelectValue placeholder="Priority" /></SelectTrigger><SelectContent><SelectItem value="all">All priorities</SelectItem>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select>
+        <Select value={sourceFilter} onValueChange={setSourceFilter}><SelectTrigger className="w-[140px] bg-slate-700 border-slate-600 text-white"><SelectValue placeholder="Source" /></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{[...new Set(leads.map(lead => lead.source).filter(Boolean))].map(source => <SelectItem key={source} value={source}>{source.replace('_', ' ')}</SelectItem>)}</SelectContent></Select>
+        <Button variant={overdueOnly ? 'default' : 'outline'} onClick={() => setOverdueOnly(value => !value)}><Clock className="h-4 w-4 mr-1" />Overdue</Button>
+        <Button onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' }); setIsFormOpen(true); }} className="gap-1">
           <Plus className="h-4 w-4" /> Add Lead
         </Button>
         <Button variant="outline" onClick={handleExportCsv} className="gap-1 border-slate-600 text-white hover:bg-slate-700">
@@ -352,7 +454,7 @@ const AdminCRMLeads: React.FC = () => {
                         </div>
                         <div className="flex gap-1 shrink-0">
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400"
-                            onClick={e => { e.stopPropagation(); setEditingLead(lead); setForm({ name: lead.name, email: lead.email || '', phone: lead.phone || '', source: lead.source, status: lead.status, estate_interest: lead.estate_interest || '', notes: lead.notes || '' }); setIsFormOpen(true); }}>
+                            onClick={e => { e.stopPropagation(); setEditingLead(lead); setForm({ name: lead.name, email: lead.email || '', phone: lead.phone || '', source: lead.source, status: lead.status, estate_interest: lead.estate_interest || '', notes: lead.notes || '', assigned_to: lead.assigned_to || '', priority: lead.priority, property_key: lead.estate_id ? `estate:${lead.estate_id}` : lead.listing_id ? `listing:${lead.listing_id}` : '' }); setIsFormOpen(true); }}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400"
@@ -387,6 +489,7 @@ const AdminCRMLeads: React.FC = () => {
                     </SelectContent>
                   </Select>
                   <Badge variant="outline" className="text-xs text-slate-400">{selectedLead.source}</Badge>
+                  <Badge variant="outline" className="text-xs text-slate-400">{selectedLead.priority}</Badge>
                 </div>
               </CardHeader>
               <ScrollArea className="h-[400px] px-4 pb-4">
@@ -402,6 +505,10 @@ const AdminCRMLeads: React.FC = () => {
                         dangerouslySetInnerHTML={{ __html: sanitizeRichText(selectedLead.notes) }}
                       />
                     )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div><Label className="text-xs text-slate-400">Assigned to</Label><Select value={selectedLead.assigned_to || 'unassigned'} onValueChange={async value => { const assigned = value === 'unassigned' ? null : value; await supabase.from('crm_leads').update({ assigned_to: assigned }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, assigned_to: assigned }); fetchLeads(); }}><SelectTrigger className="bg-slate-600 border-slate-500 text-white"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label className="text-xs text-slate-400">Priority</Label><Select value={selectedLead.priority} onValueChange={async priority => { await supabase.from('crm_leads').update({ priority }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, priority }); fetchLeads(); }}><SelectTrigger className="bg-slate-600 border-slate-500 text-white"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div>
                   </div>
 
                   {/* Quick Actions */}
@@ -449,17 +556,14 @@ const AdminCRMLeads: React.FC = () => {
                       <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Follow-ups</h4>
                       <div className="space-y-1">
                         {followUps.map(f => (
-                          <div key={f.id} className={`flex items-center justify-between text-xs p-2 rounded ${f.completed_at ? 'bg-green-900/20' : 'bg-slate-600'}`}>
+                          <div key={f.id} className={`flex items-center justify-between text-xs p-2 rounded ${f.completed_at ? 'bg-green-900/20' : f.cancelled_at ? 'bg-red-900/20' : 'bg-slate-600'}`}>
                             <div>
                               <span className="text-white">{f.action_type}</span>
                               <span className="text-slate-400 ml-2">{format(new Date(f.scheduled_at), 'MMM d, h:mm a')}</span>
                               {f.notes && <span className="text-slate-500 ml-2">— {f.notes}</span>}
+                              {f.completion_notes && <span className="block text-slate-400 mt-1">{f.completion_notes}</span>}
                             </div>
-                            {!f.completed_at && (
-                              <Button size="sm" variant="ghost" className="h-6 text-xs text-green-400" onClick={() => handleCompleteFollowUp(f)}>
-                                <CheckCircle className="h-3 w-3 mr-1" /> Done
-                              </Button>
-                            )}
+                            {!f.completed_at && !f.cancelled_at && <div className="flex gap-1"><Button size="sm" variant="ghost" className="h-6 text-xs text-green-400" onClick={() => handleCompleteFollowUp(f)}><CheckCircle className="h-3 w-3 mr-1" /> Done</Button><Button size="sm" variant="ghost" className="h-6 text-xs text-red-400" onClick={() => handleCancelFollowUp(f)}>Cancel</Button></div>}
                           </div>
                         ))}
                       </div>
@@ -508,6 +612,8 @@ const AdminCRMLeads: React.FC = () => {
                 <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="bg-slate-700 border-slate-600 text-white" />
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-300">Assignee</Label><Select value={form.assigned_to || 'unassigned'} onValueChange={value => setForm(current => ({ ...current, assigned_to: value === 'unassigned' ? '' : value }))}><SelectTrigger className="bg-slate-700 border-slate-600 text-white"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div><div><Label className="text-slate-300">Priority</Label><Select value={form.priority} onValueChange={priority => setForm(current => ({ ...current, priority }))}><SelectTrigger className="bg-slate-700 border-slate-600 text-white"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div></div>
+            <div><Label className="text-slate-300">Property</Label><Select value={form.property_key || 'none'} onValueChange={property_key => setForm(current => ({ ...current, property_key: property_key === 'none' ? '' : property_key }))}><SelectTrigger className="bg-slate-700 border-slate-600 text-white"><SelectValue placeholder="Select a property" /></SelectTrigger><SelectContent><SelectItem value="none">No linked property</SelectItem>{properties.map(property => <SelectItem key={`${property.kind}:${property.id}`} value={`${property.kind}:${property.id}`}>{property.name} · {property.kind}</SelectItem>)}</SelectContent></Select></div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-slate-300">Source</Label>
@@ -548,6 +654,7 @@ const AdminCRMLeads: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <Dialog open={showOutcomeForm} onOpenChange={setShowOutcomeForm}><DialogContent className="bg-slate-800 border-slate-700"><DialogHeader><DialogTitle className="text-white">Record conversion outcome</DialogTitle></DialogHeader><div className="space-y-3"><div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-300">Outcome</Label><Select value={outcomeForm.status} onValueChange={status => setOutcomeForm(current => ({ ...current, status }))}><SelectTrigger className="bg-slate-700 border-slate-600 text-white"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="won">Won</SelectItem><SelectItem value="lost">Lost</SelectItem></SelectContent></Select></div><div><Label className="text-slate-300">Close date</Label><Input type="date" value={outcomeForm.closed_at} onChange={event => setOutcomeForm(current => ({ ...current, closed_at: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div></div>{outcomeForm.status === 'won' && <div><Label className="text-slate-300">Conversion value (₦)</Label><Input type="number" min="0" value={outcomeForm.conversion_value} onChange={event => setOutcomeForm(current => ({ ...current, conversion_value: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div>}<div><Label className="text-slate-300">Outcome reason *</Label><Input value={outcomeForm.outcome_reason} onChange={event => setOutcomeForm(current => ({ ...current, outcome_reason: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div><div><Label className="text-slate-300">Closing notes</Label><Input value={outcomeForm.closing_notes} onChange={event => setOutcomeForm(current => ({ ...current, closing_notes: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div><div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-300">Order ID (optional)</Label><Input value={outcomeForm.order_id} onChange={event => setOutcomeForm(current => ({ ...current, order_id: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div><div><Label className="text-slate-300">Payment ID (optional)</Label><Input value={outcomeForm.payment_id} onChange={event => setOutcomeForm(current => ({ ...current, payment_id: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div></div><Button className="w-full" onClick={handleSaveOutcome}>Save outcome</Button></div></DialogContent></Dialog>
     </div>
   );
 };

@@ -1,8 +1,3 @@
--- Allow the mailbox access RPC to be called safely by authenticated
--- browser sessions and service-role edge functions. Service-role calls do
--- not have auth.uid(), so the previous guard incorrectly rejected every
--- mailbox connection attempt from the Gmail edge functions.
-
 create or replace function public.user_mailbox_access(_user_id uuid, _mailbox_email text, _provider text default 'gmail')
 returns boolean
 language sql
@@ -21,7 +16,8 @@ as $$
       or public.user_has_permission(_user_id, 'admin:all')
     then true
     else exists (
-      select 1 from public.admin_mailboxes am
+      select 1
+      from public.admin_mailboxes am
       where am.user_id = _user_id
         and lower(am.mailbox_email) = lower(_mailbox_email)
         and lower(coalesce(am.mailbox_provider, _provider)) = lower(_provider)

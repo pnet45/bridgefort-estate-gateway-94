@@ -1,0 +1,2 @@
+-- Remote migration history marker: phase1_lock_client_financial_rpcs
+-- The connected Supabase project is the source of truth and already contains this migration.

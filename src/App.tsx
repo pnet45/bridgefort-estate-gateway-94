@@ -1,5 +1,5 @@
 
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth';
@@ -88,6 +88,14 @@ const queryClient = new QueryClient();
 function AppLayout() {
   const location = useLocation();
   const isAdminRoute = location.pathname === '/admin-console' || location.pathname.startsWith('/admin-console?');
+
+  // Google Analytics — fire a page_view on every client-side route change (SPA)
+  useEffect(() => {
+    const w = window as unknown as { gtag?: (...args: unknown[]) => void };
+    if (typeof w.gtag === 'function') {
+      w.gtag('event', 'page_view', { page_path: location.pathname + location.search });
+    }
+  }, [location.pathname, location.search]);
 
   return (
     <QueryClientProvider client={queryClient}>

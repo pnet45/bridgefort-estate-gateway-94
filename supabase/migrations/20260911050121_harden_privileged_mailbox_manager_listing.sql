@@ -1,0 +1,2 @@
+-- Remote migration history marker: harden_privileged_mailbox_manager_listing
+-- The connected Supabase project is the source of truth and already contains this migration.

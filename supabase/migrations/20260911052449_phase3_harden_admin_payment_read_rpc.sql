@@ -1,0 +1,2 @@
+-- Remote migration history marker: phase3_harden_admin_payment_read_rpc
+-- The connected Supabase project is the source of truth and already contains this migration.

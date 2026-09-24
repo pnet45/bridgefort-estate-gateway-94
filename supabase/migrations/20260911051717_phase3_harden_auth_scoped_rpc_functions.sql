@@ -1,0 +1,2 @@
+-- Remote migration history marker: phase3_harden_auth_scoped_rpc_functions
+-- The connected Supabase project is the source of truth and already contains this migration.

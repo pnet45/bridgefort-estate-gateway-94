@@ -1,0 +1,2 @@
+-- Remote migration history marker: harden_targeted_admin_permission_helpers
+-- The connected Supabase project is the source of truth and already contains this migration.
