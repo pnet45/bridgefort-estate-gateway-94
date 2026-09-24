@@ -37,7 +37,7 @@ const ListingInquiryActions = ({ listingId, title, agentEmail, agentPhone }: Pro
       actionType: action,
       name: user ? [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || undefined : guestContact.name || undefined,
       email: user?.email || guestContact.email || undefined,
-      phone: profile?.phone || guestContact.phone || undefined,
+      phone: profile?.phone_number || guestContact.phone || undefined,
     };
     const { error } = await supabase.functions.invoke('capture-property-inquiry', { body });
     setSubmitting(false);
