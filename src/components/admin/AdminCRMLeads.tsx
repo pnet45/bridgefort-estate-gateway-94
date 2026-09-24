@@ -268,13 +268,28 @@ const AdminCRMLeads: React.FC = () => {
   };
 
   const handleCompleteFollowUp = async (fup: FollowUp) => {
-    await supabase.from('crm_follow_ups').update({ completed_at: new Date().toISOString() }).eq('id', fup.id);
+    const completionNotes = window.prompt('Add completion notes (optional):') ?? '';
+    await supabase.from('crm_follow_ups').update({ completed_at: new Date().toISOString(), completion_notes: completionNotes || null }).eq('id', fup.id);
     await supabase.from('crm_lead_activities').insert({
       lead_id: fup.lead_id, activity_type: 'follow_up_completed',
-      description: `Completed ${fup.action_type} follow-up`,
+      description: `Completed ${fup.action_type} follow-up${completionNotes ? `: ${completionNotes}` : ''}`,
       created_by: user?.id,
     });
     await supabase.from('crm_leads').update({ last_contacted_at: new Date().toISOString() }).eq('id', fup.lead_id);
+    fetchLeadDetails(fup.lead_id);
+    fetchLeads();
+  };
+
+  const handleCancelFollowUp = async (fup: FollowUp) => {
+    const cancellationReason = window.prompt('Why is this follow-up being cancelled?');
+    if (!cancellationReason?.trim()) return;
+    await supabase.from('crm_follow_ups').update({ cancelled_at: new Date().toISOString(), completion_notes: cancellationReason.trim() }).eq('id', fup.id);
+    await supabase.from('crm_lead_activities').insert({
+      lead_id: fup.lead_id,
+      activity_type: 'follow_up_cancelled',
+      description: `Cancelled ${fup.action_type} follow-up: ${cancellationReason.trim()}`,
+      created_by: user?.id,
+    });
     fetchLeadDetails(fup.lead_id);
     fetchLeads();
   };
@@ -541,17 +556,14 @@ const AdminCRMLeads: React.FC = () => {
                       <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Follow-ups</h4>
                       <div className="space-y-1">
                         {followUps.map(f => (
-                          <div key={f.id} className={`flex items-center justify-between text-xs p-2 rounded ${f.completed_at ? 'bg-green-900/20' : 'bg-slate-600'}`}>
+                          <div key={f.id} className={`flex items-center justify-between text-xs p-2 rounded ${f.completed_at ? 'bg-green-900/20' : f.cancelled_at ? 'bg-red-900/20' : 'bg-slate-600'}`}>
                             <div>
                               <span className="text-white">{f.action_type}</span>
                               <span className="text-slate-400 ml-2">{format(new Date(f.scheduled_at), 'MMM d, h:mm a')}</span>
                               {f.notes && <span className="text-slate-500 ml-2">— {f.notes}</span>}
+                              {f.completion_notes && <span className="block text-slate-400 mt-1">{f.completion_notes}</span>}
                             </div>
-                            {!f.completed_at && (
-                              <Button size="sm" variant="ghost" className="h-6 text-xs text-green-400" onClick={() => handleCompleteFollowUp(f)}>
-                                <CheckCircle className="h-3 w-3 mr-1" /> Done
-                              </Button>
-                            )}
+                            {!f.completed_at && !f.cancelled_at && <div className="flex gap-1"><Button size="sm" variant="ghost" className="h-6 text-xs text-green-400" onClick={() => handleCompleteFollowUp(f)}><CheckCircle className="h-3 w-3 mr-1" /> Done</Button><Button size="sm" variant="ghost" className="h-6 text-xs text-red-400" onClick={() => handleCancelFollowUp(f)}>Cancel</Button></div>}
                           </div>
                         ))}
                       </div>
