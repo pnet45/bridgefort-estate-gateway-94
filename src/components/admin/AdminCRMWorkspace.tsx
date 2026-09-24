@@ -7,7 +7,7 @@ import { Activity, AlertCircle, ArrowRight, CalendarClock, CheckCircle2, CircleD
 import { format } from 'date-fns';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
 
-type Lead = { id: string; name: string; status: string; source: string; priority: string; conversion_value: number | null; estate_interest: string | null; assigned_to: string | null; created_at: string };
+type Lead = { id: string; name: string; phone: string | null; status: string; source: string; priority: string; conversion_value: number | null; estate_interest: string | null; assigned_to: string | null; created_at: string };
 type FollowUp = { id: string; lead_id: string; scheduled_at: string; action_type: string; notes: string | null; completed_at: string | null; cancelled_at: string | null };
 
 const STATUSES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
@@ -22,7 +22,7 @@ const AdminCRMWorkspace: React.FC = () => {
   const loadWorkspace = useCallback(async () => {
     setLoading(true);
     const [{ data: leadRows, error: leadError }, { data: followUpRows, error: followUpError }] = await Promise.all([
-      supabase.from('crm_leads').select('id,name,status,source,priority,conversion_value,estate_interest,assigned_to,created_at').order('created_at', { ascending: false }),
+      supabase.from('crm_leads').select('id,name,phone,status,source,priority,conversion_value,estate_interest,assigned_to,created_at').order('created_at', { ascending: false }),
       supabase.from('crm_follow_ups').select('id,lead_id,scheduled_at,action_type,notes,completed_at,cancelled_at').is('completed_at', null).is('cancelled_at', null).order('scheduled_at', { ascending: true }),
     ]);
     if (!leadError) setLeads((leadRows || []) as Lead[]);
