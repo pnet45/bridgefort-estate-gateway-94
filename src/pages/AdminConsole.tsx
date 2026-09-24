@@ -30,7 +30,7 @@ import AdminContentHub from '@/components/admin/AdminContentHub';
 import AdminCircularGalleryContent from '@/components/admin/content/AdminCircularGalleryContent';
 import AdminOtherPayments from '@/components/admin/AdminOtherPayments';
 import AdminRolePermissions from '@/components/admin/AdminRolePermissions';
-import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
+import AdminCRMWorkspace from '@/components/admin/AdminCRMWorkspace';
 import AdminBirthdayWidget from '@/components/admin/AdminBirthdayWidget';
 import AdminEstateViewsLeaderboard from '@/components/admin/AdminEstateViewsLeaderboard';
 import AdminTravelDashboard from '@/components/admin/AdminTravelDashboard';
@@ -86,7 +86,7 @@ const AdminConsole = () => {
       </TabsList>
       <TabsContent value="overview" className="space-y-6"><AdminDashboardStats/><div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><div className="lg:col-span-2 space-y-6"><AdminInbox/><AdminEstateViewsLeaderboard/></div><div className="space-y-6"><AdminOnlineUsers/><AdminChat/></div></div></TabsContent>
       <TabsContent value="properties"><AdminPropertyManagement/></TabsContent>
-      <TabsContent value="crm" className="space-y-6"><AdminBirthdayWidget/><AdminCRMLeads/><div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><AdminTaskManager/><AdminCalendar/></div><div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><AdminNotices/><AdminNotes/><AdminFileSharing/></div></TabsContent>
+      <TabsContent value="crm" className="space-y-6"><AdminBirthdayWidget/><AdminCRMWorkspace/><div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><AdminTaskManager/><AdminCalendar/></div><div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><AdminNotices/><AdminNotes/><AdminFileSharing/></div></TabsContent>
       <TabsContent value="users"><UserManagementTab/></TabsContent>
       <TabsContent value="approvals"><AdminApprovalsHub onCountChange={setPendingCount}/></TabsContent>
       <TabsContent value="subscribers"><AdminEstateSubscribers/></TabsContent>
