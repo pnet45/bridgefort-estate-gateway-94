@@ -13,8 +13,8 @@ type Subscriber = {
   subscription_number: string; subscriber_name: string; estate_name: string; estate_code: string;
   client_id: string | null; order_id: string | null; subscription_status: string;
   payment_plan: string | null; subscription_amount: number; subscribed_at: string;
-  client_email: string | null; plot_count: number; order_total: number; amount_paid: number;
-  outstanding_balance: number; pbo_referral_code?: string | null; phone_number?: string | null;
+  client_email: string | null; phone_number: string | null; plot_count: number; order_total: number;
+  amount_paid: number; outstanding_balance: number; pbo_referral_code: string | null;
 };
 
 type History = {
@@ -53,17 +53,27 @@ const AdminEstateSubscribers: React.FC = () => {
         _estate_code: estate === 'all' ? null : estate,
       });
       if (error) throw error;
-      const subscribers = ((data || []) as Subscriber[]).map((r) => ({ ...r, pbo_referral_code: null, phone_number: null }));
+      const subscribers = ((data || []) as Subscriber[]).map((r) => ({
+        ...r,
+        client_email: r.client_email || null,
+        phone_number: r.phone_number || null,
+        pbo_referral_code: r.pbo_referral_code || null,
+      }));
       const ids = subscribers.map((r) => r.client_id).filter((id): id is string => Boolean(id));
       if (ids.length) {
         const { data: profiles, error: profileError } = await supabase.from('profiles')
-          .select('id, pbo_referral_code, phone_number').in('id', ids);
+          .select('id, email, first_name, last_name, full_name, phone_number, pbo_referral_code')
+          .in('id', ids);
         if (!profileError) {
           const map = new Map((profiles || []).map((p) => [p.id, p]));
           subscribers.forEach((r) => {
             const p = r.client_id ? map.get(r.client_id) : undefined;
-            r.pbo_referral_code = p?.pbo_referral_code || null;
-            r.phone_number = p?.phone_number || null;
+            if (!p) return;
+            const profileName = [p.first_name, p.last_name].filter(Boolean).join(' ').trim() || p.full_name || r.subscriber_name;
+            r.subscriber_name = r.subscriber_name || profileName || 'Unnamed Subscriber';
+            r.client_email = r.client_email || p.email || null;
+            r.phone_number = r.phone_number || p.phone_number || null;
+            r.pbo_referral_code = r.pbo_referral_code || p.pbo_referral_code || null;
           });
         }
       }

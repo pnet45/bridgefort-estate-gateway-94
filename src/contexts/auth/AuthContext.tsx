@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         (linkedPermissionsData ?? []).forEach((entry: { permission_key: string }) => permissionSet.add(entry.permission_key));
       }
       const isLegacyAdmin = roleSet.includes('admin') || roleSet.includes('super_admin');
-      if (isLegacyAdmin) ['admin:all','admin:view_dashboard','admin:view_properties','admin:view_crm','admin:view_users','admin:view_approvals','admin:view_email_center','admin:view_analytics','admin:view_mlm_funnel','admin:view_activity','admin:view_content','admin:view_cms','admin:view_other_payments','admin:manage_permissions','admin:manage_departments','mailbox:read','mailbox:write','mailbox:sync'].forEach((permission) => permissionSet.add(permission));
+      if (isLegacyAdmin) ['admin:all','admin:view_dashboard','admin:view_properties','admin:view_crm','admin:view_users','admin:view_approvals','admin:view_subscribers','admin:view_email_center','admin:view_analytics','admin:view_mlm_funnel','admin:view_activity','admin:view_content','admin:view_cms','admin:view_other_payments','admin:manage_permissions','admin:manage_departments','mailbox:read','mailbox:write','mailbox:sync'].forEach((permission) => permissionSet.add(permission));
       if (requestId !== accessRequestRef.current) return;
       const normalizedRoles = roleSet.length ? roleSet : ['user'];
       setRoles(normalizedRoles); setPermissions(Array.from(permissionSet)); setUserRole(getPrimaryRole(normalizedRoles));
