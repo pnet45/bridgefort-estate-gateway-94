@@ -1,0 +1,67 @@
+[
+  {
+    "event_name": "user_signed_in",
+    "event_description": "A user successfully signed in to their account.",
+    "file": "src/pages/Auth.tsx"
+  },
+  {
+    "event_name": "user_signed_up",
+    "event_description": "A user successfully created an account.",
+    "file": "src/pages/Auth.tsx"
+  },
+  {
+    "event_name": "contact_message_submitted",
+    "event_description": "A visitor successfully submitted the contact form.",
+    "file": "src/components/ContactForm.tsx"
+  },
+  {
+    "event_name": "career_application_submitted",
+    "event_description": "A candidate successfully submitted a career application.",
+    "file": "src/components/career/CareerForm.tsx"
+  },
+  {
+    "event_name": "inspection_booked",
+    "event_description": "An authenticated user successfully booked a property inspection.",
+    "file": "src/components/dashboard/InspectionBookingForm.tsx"
+  },
+  {
+    "event_name": "listing_submitted",
+    "event_description": "A user submitted a new property listing for approval.",
+    "file": "src/components/listings/ListingForm.tsx"
+  },
+  {
+    "event_name": "training_registration_submitted",
+    "event_description": "A visitor successfully registered for a training event.",
+    "file": "src/components/training/TrainingRegistrationForm.tsx"
+  },
+  {
+    "event_name": "travel_enquiry_submitted",
+    "event_description": "A visitor successfully submitted a travel enquiry.",
+    "file": "src/components/travels/TravelsBookingForm.tsx"
+  },
+  {
+    "event_name": "newsletter_subscribed",
+    "event_description": "A visitor successfully subscribed to the newsletter.",
+    "file": "src/components/NewsletterForm.tsx"
+  },
+  {
+    "event_name": "checkout_started",
+    "event_description": "An authenticated user created an order and began payment.",
+    "file": "src/components/ecommerce/CheckoutForm.tsx"
+  },
+  {
+    "event_name": "checkout_order_created",
+    "event_description": "The server created a checkout order using authoritative pricing.",
+    "file": "supabase/functions/create-checkout-order/index.ts"
+  },
+  {
+    "event_name": "payment_succeeded",
+    "event_description": "The server verified and processed a successful payment.",
+    "file": "supabase/functions/paystack-webhook/index.ts"
+  },
+  {
+    "event_name": "payment_succeeded",
+    "event_description": "The server verified and processed a successful Stripe payment.",
+    "file": "supabase/functions/stripe-verify/index.ts"
+  }
+]

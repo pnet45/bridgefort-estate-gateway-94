@@ -1,0 +1,1 @@
+{"provider":"openai","package":"posthog-node","otel_init_file":"supabase/functions/_shared/posthog.ts"}

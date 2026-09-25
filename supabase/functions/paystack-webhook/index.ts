@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { queueOrderForApproval } from "../_shared/paymentApproval.ts";
+import { captureServerEvent } from "../_shared/posthog.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -82,6 +83,13 @@ serve(async (req) => {
       await queueOrderForApproval(admin, {
         reference, orderId: order.id, paidAmount, channel: "Paystack",
       });
+      await captureServerEvent(order.user_id, "payment_succeeded", {
+        order_id: order.id,
+        amount: paidAmount,
+        currency: "NGN",
+        payment_provider: "paystack",
+        purchase_type: "order",
+      });
       return json({ received: true, processed: "order" });
     }
 
@@ -116,6 +124,13 @@ serve(async (req) => {
         amount: paidAmount, currency: "NGN", status: "success",
         metadata: { source: "paystack-webhook", purchase_type: "membership", package_code: purchase.package_code },
       }, { onConflict: "gateway,reference", ignoreDuplicates: true });
+      await captureServerEvent(purchase.user_id, "payment_succeeded", {
+        amount: paidAmount,
+        currency: "NGN",
+        payment_provider: "paystack",
+        purchase_type: "membership",
+        package_code: purchase.package_code,
+      });
       return json({ received: true, processed: "membership" });
     }
 

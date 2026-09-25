@@ -2,6 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { captureServerEvent } from "../_shared/posthog.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -53,6 +54,8 @@ serve(async (req) => {
       title +
       "'. Cover current trends, local context, investment advice, and actionable insights. The article should be over 800 words and useful for both prospective buyers and investors.";
 
+    const traceId = crypto.randomUUID();
+    const startedAt = performance.now();
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -74,6 +77,27 @@ serve(async (req) => {
     const generatedArticle =
       data.choices?.[0]?.message?.content ||
       "<p>Sorry, could not generate article at this time.</p>";
+
+    await captureServerEvent(String(claimsData.claims.sub), "$ai_generation", {
+      $ai_trace_id: traceId,
+      $ai_session_id: null,
+      $ai_span_name: "generate_blog_article",
+      $ai_model: "gpt-4o-mini",
+      $ai_provider: "openai",
+      $ai_input: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: title },
+      ],
+      $ai_input_tokens: data.usage?.prompt_tokens,
+      $ai_output_choices: [{ role: "assistant", content: generatedArticle }],
+      $ai_output_tokens: data.usage?.completion_tokens,
+      $ai_latency: (performance.now() - startedAt) / 1000,
+      $ai_http_status: response.status,
+      $ai_is_error: !response.ok,
+      $ai_stream: false,
+      $ai_temperature: 0.85,
+      $ai_max_tokens: 2048,
+    });
 
     return new Response(JSON.stringify({ generatedArticle }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

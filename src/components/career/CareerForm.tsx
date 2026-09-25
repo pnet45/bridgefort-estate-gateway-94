@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { captureEvent, captureException } from '@/lib/posthog';
 
 import PersonalInfoFields from "./PersonalInfoFields";
 import JobDetailFields from "./JobDetailFields";
@@ -55,6 +56,12 @@ const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
 
       if (error) throw error;
 
+      captureEvent('career_application_submitted', {
+        position: formData.position,
+        has_resume: Boolean(formData.resume_url),
+        has_cover_letter: Boolean(formData.cover_letter),
+      });
+
       toast({
         title: "Application submitted successfully!",
         description: "Thank you for your interest. We'll review your application and get back to you soon."
@@ -76,6 +83,7 @@ const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
       });
 
     } catch (error) {
+      captureException(error, { workflow: 'career_application' });
       console.error('Error submitting application:', error);
       toast({
         title: "Submission failed",

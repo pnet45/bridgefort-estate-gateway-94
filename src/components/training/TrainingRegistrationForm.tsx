@@ -12,6 +12,7 @@ import PersonalInfoFields from './PersonalInfoFields';
 import AddressFields from './AddressFields';
 import AdditionalOptionsFields from './AdditionalOptionsFields';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { captureEvent, captureException } from '@/lib/posthog';
 
 const TrainingRegistrationForm = ({ open, onClose, eventTitle, eventDate }: TrainingRegistrationFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,6 +89,13 @@ const TrainingRegistrationForm = ({ open, onClose, eventTitle, eventDate }: Trai
         // Don't fail the registration if email fails
       }
       
+      captureEvent('training_registration_submitted', {
+        event_title: eventTitle || 'Training Event',
+        needs_reminder: data.needReminder,
+        invited_another: data.inviteAnother,
+        is_pbo: data.isPBO,
+      });
+
       toast({
         title: "Registration Successful! ✓",
         description: "Thank you for registering! Check your email for confirmation details.",
@@ -96,6 +104,7 @@ const TrainingRegistrationForm = ({ open, onClose, eventTitle, eventDate }: Trai
       form.reset();
       onClose();
     } catch (error: any) {
+      captureException(error, { workflow: 'training_registration' });
       toast({
         title: "Registration Failed",
         description: error.message || "There was a problem submitting your registration. Please try again.",

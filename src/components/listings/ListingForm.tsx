@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Loader2, Plus, X, ArrowLeft, ImagePlus, MapPin, Home, Banknote, UserRound, Sparkles } from 'lucide-react';
 import { REGIONS, PROPERTY_TYPES, type Listing } from '@/types/listing';
+import { captureEvent, captureException } from '@/lib/posthog';
 
 interface Props {
   listingId?: string;
@@ -161,7 +162,17 @@ const ListingForm = ({ listingId, initialData }: Props) => {
       : await supabase.from('listings').insert(payload);
 
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      captureException(error, { workflow: 'listing_submission', operation: listingId ? 'update' : 'create' });
+      return toast.error(error.message);
+    }
+    captureEvent('listing_submitted', {
+      operation: listingId ? 'update' : 'create',
+      region: form.region,
+      property_type: form.property_type,
+      price_period: form.price_period,
+      photo_count: form.photos?.length || 0,
+    });
     toast.success(listingId ? 'Listing updated — pending admin re-approval' : 'Listing submitted for admin approval');
     navigate('/listings/my');
   };

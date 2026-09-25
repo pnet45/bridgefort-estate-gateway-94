@@ -9,6 +9,7 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import ReCaptcha, { RECAPTCHA_ENABLED } from '@/components/ui/ReCaptcha';
 import type ReCAPTCHA from 'react-google-recaptcha';
+import { captureEvent, captureException } from '@/lib/posthog';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -91,6 +92,12 @@ const ContactForm = () => {
         throw error;
       }
 
+      captureEvent('contact_message_submitted', {
+        has_phone: Boolean(formData.phone),
+        subject_length: formData.subject.length,
+        message_length: formData.message.length,
+      });
+
       toast({
         title: "Message Sent Successfully",
         description: "Thank you for contacting us. We'll get back to you soon!",
@@ -98,6 +105,7 @@ const ContactForm = () => {
 
       resetForm();
     } catch (error) {
+      captureException(error, { workflow: 'contact_form' });
       console.error('Error submitting contact form:', error);
       toast({
         title: "Error",

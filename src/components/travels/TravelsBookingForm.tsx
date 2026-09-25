@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { captureEvent, captureException } from '@/lib/posthog';
 
 /* reCAPTCHA is temporarily disabled.
    Keep these imports so it can be enabled again later.
@@ -328,6 +329,12 @@ const TravelsBookingForm: React.FC<Props> = ({
       // --------------------------------------------------------
 
       setSubmitted(true);
+      captureEvent('travel_enquiry_submitted', {
+        package: result.data.package,
+        traveler_count: result.data.travelers,
+        trip_length_days: Math.ceil((new Date(result.data.return).getTime() - new Date(result.data.departure).getTime()) / 86400000),
+        has_destination: Boolean(result.data.destination),
+      });
 
       toast({
         title: 'Enquiry received ✈️',
@@ -345,6 +352,7 @@ const TravelsBookingForm: React.FC<Props> = ({
         }, 1200);
       }
     } catch (err: any) {
+      captureException(err, { workflow: 'travel_enquiry' });
       // ========================================================
       // reCAPTCHA RESET TEMPORARILY DISABLED
       // ========================================================

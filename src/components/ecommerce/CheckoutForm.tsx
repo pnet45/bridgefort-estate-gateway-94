@@ -13,6 +13,7 @@ import CustomerInfoForm from './CustomerInfoForm';
 import PaymentPlanSelector from './PaymentPlanSelector';
 import { calculatePaymentBreakdown, PaymentPlanType } from "@/utils/paymentPlan";
 import { useRecaptchaV3 } from '@/hooks/useRecaptchaV3';
+import { captureEvent, captureException, getPostHogCorrelationHeaders } from '@/lib/posthog';
 
 interface CheckoutFormProps {
   onBack?: () => void;
@@ -97,6 +98,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       // item up in the database, applies the plan interest and creates the
       // order + payment-plan rows with the authoritative amount.
       const { data: orderData, error: orderError } = await supabase.functions.invoke('create-checkout-order', {
+        headers: getPostHogCorrelationHeaders(),
         body: {
           items: cart.map(item => ({
             item_id: item.plot.id,
@@ -121,6 +123,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
 
       const reference: string = orderData.reference;
       const payAmount: number = orderData.pay_amount;
+
+      captureEvent('checkout_started', {
+        payment_method: method,
+        payment_plan: orderData.plan_type,
+        item_count: cart.reduce((total, item) => total + item.quantity, 0),
+        amount: payAmount,
+        currency: 'NGN',
+      });
 
       if (method === 'stripe') {
         const { data: stripeData, error: stripeError } = await supabase.functions.invoke('stripe-initialize', {
@@ -174,6 +184,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       }
 
     } catch (error) {
+      captureException(error, { workflow: 'checkout' });
       console.error('[Checkout] Payment error:', error);
       toast({
         title: "Payment Error",

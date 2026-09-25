@@ -13,6 +13,7 @@ import EstateSelect from "./input/EstateSelect";
 import DateInput from "./input/DateInput";
 import TimeInput from "./input/TimeInput";
 import MessageTextarea from "./input/MessageTextarea";
+import { captureEvent, captureException } from '@/lib/posthog';
 
 interface InspectionBookingFormProps {
   onBookingCreated?: () => void;
@@ -99,6 +100,12 @@ const InspectionBookingForm = ({ onBookingCreated, initialEstateName }: Inspecti
         throw error;
       }
 
+      captureEvent('inspection_booked', {
+        estate_name: formData.estate_name,
+        days_until_inspection: Math.ceil((new Date(formData.inspection_date).getTime() - Date.now()) / 86400000),
+        has_message: Boolean(formData.message),
+      });
+
       toast({
         title: "Inspection booked successfully",
         description: "We'll contact you to confirm your inspection appointment"
@@ -118,6 +125,7 @@ const InspectionBookingForm = ({ onBookingCreated, initialEstateName }: Inspecti
       }
 
     } catch (error) {
+      captureException(error, { workflow: 'inspection_booking' });
       console.error('Error booking inspection:', error);
       toast({
         title: "Booking failed",

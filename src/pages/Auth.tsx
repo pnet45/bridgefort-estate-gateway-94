@@ -15,6 +15,7 @@ import { Lock } from 'lucide-react';
 import { supabase, setRememberMe } from '@/integrations/supabase/client';
 import PasswordStrengthChecklist, { isPasswordStrong } from '@/components/ui/PasswordStrengthChecklist';
 import { validateEmailFormat } from '@/lib/emailValidation';
+import { captureEvent, captureException, identifyUser } from '@/lib/posthog';
 
 type AuthProps = {
   pageTitle?: string;
@@ -190,6 +191,14 @@ const Auth = ({
           }
         }
 
+        if (signedInUser) {
+          identifyUser(signedInUser.id, { email: signedInUser.email });
+          captureEvent('user_signed_in', {
+            account_type: isPBO ? 'realtor' : 'client',
+            auth_method: 'password',
+          });
+        }
+
         toast({
           title: "Login successful",
           description: "Welcome back!"
@@ -224,6 +233,7 @@ const Auth = ({
         }
       }
     } catch (error) {
+      captureException(error, { workflow: 'sign_in' });
       toast({
         title: "Login failed",
         description: "An unexpected error occurred",
@@ -465,6 +475,17 @@ const Auth = ({
           return;
         }
 
+        identifyUser(data.user.id, {
+          email: data.user.email,
+          name: `${firstName} ${lastName}`.trim() || undefined,
+          role: isRegisteringAsPBO ? 'realtor' : 'client',
+        });
+        captureEvent('user_signed_up', {
+          account_type: isRegisteringAsPBO ? 'realtor' : 'client',
+          has_sponsor: Boolean(sponsorCode.trim()),
+          auth_method: 'password',
+        });
+
         toast({
           title: "Registration successful!",
           description: "Please check your email to verify your account."
@@ -481,6 +502,7 @@ const Auth = ({
         });
       }
     } catch (error: any) {
+      captureException(error, { workflow: 'sign_up' });
       if (error.code === 'auth/email-already-in-use') {
         toast({
           title: "Registration failed",

@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { captureEvent, captureException } from '@/lib/posthog';
 
 const NewsletterForm = () => {
   const [email, setEmail] = useState('');
@@ -29,6 +30,7 @@ const NewsletterForm = () => {
           throw error;
         }
       } else {
+        captureEvent('newsletter_subscribed', { source: 'newsletter_form' });
         toast({
           title: "Subscribed!",
           description: "Thank you for subscribing to our newsletter."
@@ -36,6 +38,7 @@ const NewsletterForm = () => {
         setEmail('');
       }
     } catch (error) {
+      captureException(error, { workflow: 'newsletter_subscription' });
       console.error('Error subscribing to newsletter:', error);
       toast({
         title: "Error",

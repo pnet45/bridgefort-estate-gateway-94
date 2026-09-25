@@ -5,8 +5,9 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { captureServerEvent, getPostHogDistinctId, getPostHogSessionId } from "../_shared/posthog.ts";
 
-const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" };
+const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-posthog-distinct-id, x-posthog-session-id" };
 const PLAN_RATES: Record<string, { months: number; rate: number }> = { outright: { months: 1, rate: 0 }, "1-3": { months: 3, rate: 0.05 }, "4-6": { months: 6, rate: 0.1 }, "7-12": { months: 12, rate: 0.15 } };
 const AGROVEST_PLOT_PRICE = 800000;
 const DOC_FIELD_BY_NAME: Record<string, string> = { "Survey Plan": "survey_plan", "Deed of Assignment": "deed_of_assignment", "Plot Demarcation": "plot_demarcation", "Plot Maintenance Fee": "plot_maintenance_fee" };
@@ -110,6 +111,16 @@ serve(async (req) => {
         if (docError) console.warn("Documentation payment row not created:", docError.message);
       }
     }
+
+    await captureServerEvent(getPostHogDistinctId(req, userId), "checkout_order_created", {
+      order_id: order.id,
+      amount: payAmount,
+      total_amount: totalAmount,
+      currency: "NGN",
+      payment_plan: effectivePlan,
+      item_count: pricedItems.reduce((total, item) => total + Number(item.quantity ?? 0), 0),
+      $session_id: getPostHogSessionId(req),
+    });
 
     return json({ order_id: order.id, reference, pay_amount: payAmount, total_amount: totalAmount, principal_amount: principal, interest_amount: interestAmount, plan_type: effectivePlan, months });
   } catch (error) {

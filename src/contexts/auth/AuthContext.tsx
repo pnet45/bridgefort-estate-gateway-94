@@ -3,6 +3,7 @@ import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { getPrimaryRole, hasPermission } from '@/lib/rbac';
+import { identifyUser, resetPostHog } from '@/lib/posthog';
 import { AuthContextType, UserProfile } from './authTypes';
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,6 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const hydrateSession = useCallback(async (nextSession: Session | null) => {
     setSession(nextSession); setUser(nextSession?.user ?? null);
     if (!nextSession?.user) { accessRequestRef.current += 1; clearAccess(); return; }
+    identifyUser(nextSession.user.id, { email: nextSession.user.email });
     await Promise.all([fetchUserAccess(nextSession.user.id), fetchProfile(nextSession.user.id)]);
   }, [clearAccess, fetchProfile, fetchUserAccess]);
 
@@ -110,6 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     accessRequestRef.current += 1; clearAccess(); setSession(null); setUser(null);
+    resetPostHog();
     const { error } = await supabase.auth.signOut();
     if (error) toast({ title: 'Error signing out', description: error.message, variant: 'destructive' });
     return { error };
