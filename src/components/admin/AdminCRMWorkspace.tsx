@@ -10,7 +10,6 @@ import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
 type Lead = { id: string; name: string; phone: string | null; status: string; source: string; priority: string; conversion_value: number | null; estate_interest: string | null; assigned_to: string | null; created_at: string };
 type FollowUp = { id: string; lead_id: string; scheduled_at: string; action_type: string; notes: string | null; completed_at: string | null; cancelled_at: string | null };
 type Journey = { id: string; service_type: string; status: string; priority: string; source: string | null; assigned_to: string | null; lead_id: string | null; customer_id: string | null; updated_at: string };
-const JOURNEY_STATUSES = ['NEW','CONTACTED','QUALIFIED','INTERESTED','ACTION_REQUIRED','IN_PROGRESS','CONVERTED','LOST','CLOSED'];
 
 const STATUSES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
 const formatNaira = (value: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(value);
