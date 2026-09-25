@@ -6,13 +6,16 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import NewProfileForm from '@/components/profile/NewProfileForm';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profileExists, setProfileExists] = useState(false);
+  const [completion, setCompletion] = useState(0);
+  const [profileStatus, setProfileStatus] = useState('DRAFT');
+  const [kycStatus, setKycStatus] = useState('NOT_STARTED');
 
   useEffect(() => {
     if (!user) {
@@ -25,12 +28,15 @@ const Profile = () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id,profile_completion_percentage,profile_status,kyc_status')
           .eq('id', user.id)
           .maybeSingle();
 
         if (!error) {
           setProfileExists(!!data);
+          setCompletion(data?.profile_completion_percentage ?? 0);
+          setProfileStatus(data?.profile_status ?? 'DRAFT');
+          setKycStatus(data?.kyc_status ?? 'NOT_STARTED');
         }
       } catch (error) {
         console.error('Error checking profile:', error);
@@ -59,8 +65,24 @@ const Profile = () => {
       <Navbar />
       
       <main className="flex-grow pt-28 pb-12">
-        <div className="container-custom">
+        <div className="container-custom px-4 sm:px-6">
           <div className="mb-6">
+            <div className="rounded-2xl border bg-white p-4 sm:p-5 shadow-sm mb-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-sm font-semibold text-estate-blue"><ShieldCheck className="h-4 w-4" />Profile readiness</div>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">Your completion is calculated from the information required by Bridgefort.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">{profileStatus.replaceAll('_',' ')}</span>
+                  {kycStatus === 'VERIFIED' && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="flex justify-between text-xs font-medium text-gray-600 mb-1"><span>Profile completion</span><span>{completion}%</span></div>
+                <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden"><div className="h-full rounded-full bg-estate-blue transition-all" style={{ width: `${completion}%` }} /></div>
+              </div>
+            </div>
             <h1 className="text-3xl font-bold text-estate-blue mb-2">
               {profileExists ? 'Update Your Profile' : 'Complete Your Profile'}
             </h1>
