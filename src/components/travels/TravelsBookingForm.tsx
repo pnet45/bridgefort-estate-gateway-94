@@ -424,7 +424,7 @@ const TravelsBookingForm: React.FC<Props> = ({
           transition={{
             duration: 0.5,
           }}
-          className="bg-card border rounded-2xl shadow-xl p-6 md:p-10"
+          className="bg-card border rounded-2xl shadow-xl p-4 sm:p-6 md:p-10"
         >
 
           {/* ===================================================
@@ -491,7 +491,7 @@ const TravelsBookingForm: React.FC<Props> = ({
                     set('name', e.target.value)
                   }
                   maxLength={100}
-                  className="mt-1.5 h-11"
+                  className="mt-1.5 h-11 text-base"
                   autoComplete="name"
                 />
 
@@ -519,7 +519,7 @@ const TravelsBookingForm: React.FC<Props> = ({
                     set('email', e.target.value)
                   }
                   maxLength={255}
-                  className="mt-1.5 h-11"
+                  className="mt-1.5 h-11 text-base"
                   autoComplete="email"
                 />
 
@@ -796,13 +796,13 @@ const TravelsBookingForm: React.FC<Props> = ({
                   SUBMIT BUTTON
               ================================================== */}
 
-              <div className="md:col-span-2 flex justify-end gap-4 pt-2 border-t">
+              <div className="md:col-span-2 flex flex-col sm:flex-row sm:justify-end gap-3 pt-3 border-t">
 
                 <Button
                   type="submit"
                   variant="cta"
                   size="lg"
-                  className="gap-2"
+                  className="gap-2 w-full sm:w-auto min-h-11"
                   disabled={
                     submitting ||
                     !!availabilityWarning
