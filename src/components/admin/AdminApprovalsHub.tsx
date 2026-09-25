@@ -8,20 +8,13 @@ import AdminWithdrawalRequests from './AdminWithdrawalRequests';
 import AdminPaymentRequests from './AdminPaymentRequests';
 import AdminListingApprovals from './AdminListingApprovals';
 
-const ADMIN_APPROVAL_ROLES = new Set(['super_admin', 'admin_dir', 'admin_acct', 'admin', 'admin_it']);
-const PAYMENT_APPROVER_ROLES = new Set(['super_admin', 'admin_dir', 'admin_acct', 'admin']);
-const LISTING_APPROVER_ROLES = new Set(['super_admin', 'admin_dir', 'admin_it', 'admin']);
-const WITHDRAWAL_APPROVER_ROLES = new Set(['super_admin', 'admin_dir', 'admin_acct', 'admin']);
-
 const AdminApprovalsHub: React.FC<{ onCountChange?: (n: number) => void }> = ({ onCountChange }) => {
-  const { hasPermission, userRole } = useAuth();
+  const { hasPermission } = useAuth();
   const [innerTab, setInnerTab] = useState('admin-requests');
-  const role = userRole || '';
-
-  const canViewAdminRequests = hasPermission('admin:view_approvals') || hasPermission('admin:all') || ADMIN_APPROVAL_ROLES.has(role);
-  const canApprovePayments = hasPermission('admin:approve_payments') || hasPermission('admin:all') || PAYMENT_APPROVER_ROLES.has(role);
-  const canApproveWithdrawals = hasPermission('admin:approve_withdrawals') || hasPermission('admin:all') || WITHDRAWAL_APPROVER_ROLES.has(role);
-  const canApproveListings = hasPermission('admin:approve_listings') || hasPermission('admin:all') || LISTING_APPROVER_ROLES.has(role);
+  const canViewAdminRequests = hasPermission('admin:view_approvals') || hasPermission('approvals.view');
+  const canApprovePayments = hasPermission('admin:approve_payments') || hasPermission('payment.approve');
+  const canApproveWithdrawals = hasPermission('admin:approve_withdrawals') || hasPermission('withdrawal.approve');
+  const canApproveListings = hasPermission('admin:approve_listings') || hasPermission('listing.approve');
 
   const firstAvailable = canViewAdminRequests ? 'admin-requests' : canApproveListings ? 'listings' : canApprovePayments ? 'payments' : canApproveWithdrawals ? 'withdrawals' : '';
   const activeTab = !firstAvailable ? '' : ((innerTab === 'admin-requests' && !canViewAdminRequests) ||
