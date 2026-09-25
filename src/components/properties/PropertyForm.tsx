@@ -215,6 +215,18 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
       return;
     }
     
+    if ((formData.sold_plots ?? 0) > (formData.total_plots ?? 0) && (formData.total_plots ?? 0) > 0) {
+      toast({ title: 'Check plot inventory', description: 'Sold plots cannot be greater than total plots.', variant: 'destructive' });
+      return;
+    }
+    if (formData.promo_price && formData.actual_price && formData.promo_price > formData.actual_price) {
+      toast({ title: 'Check pricing', description: 'Promo price should not be higher than the actual price.', variant: 'destructive' });
+      return;
+    }
+    if (formData.prelaunch_price && formData.actual_price && formData.prelaunch_price > formData.actual_price) {
+      toast({ title: 'Check pricing', description: 'Pre-launch price should not be higher than the actual price.', variant: 'destructive' });
+      return;
+    }
     setIsSubmitting(true);
     
     try {
@@ -323,7 +335,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-md">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-estate-blue">
           {isEditing ? `Edit ${estate.name}` : 'Add New Property'}
@@ -452,7 +464,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           <div className="space-y-2">
             <Label htmlFor="promo_price">Promo Price (₦)</Label>
             <Input 
@@ -690,7 +702,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
           <p className="text-sm text-muted-foreground">Upload images and videos of the property</p>
         </div>
         
-        <div className="flex justify-end space-x-4 pt-4">
+        <div className="sticky bottom-0 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-white/95 backdrop-blur border-t flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:space-x-4 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
