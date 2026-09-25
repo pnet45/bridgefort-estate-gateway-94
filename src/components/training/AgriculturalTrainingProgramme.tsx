@@ -105,7 +105,20 @@ const AgriculturalTrainingProgramme = ({ compact = false }: Props) => {
                 <div className="rounded-3xl border border-white/10 bg-white/10 p-6 backdrop-blur-md"><div className="flex items-center gap-3"><Users className="h-6 w-6 text-lime-300" /><h2 className="text-xl font-bold">Speakers</h2></div><p className="mt-3 text-sm text-indigo-50/90"><strong>Dr. Dalvin Silva</strong> and other sales professional  & experienced marketers.</p><div className="mt-4 flex items-center gap-2 text-sm text-lime-200"><Award className="h-4 w-4" /> Practical and proven step-by-step guide</div></div>
               </div>
             </div>
-            <div className="mt-10 rounded-3xl border border-amber-200/20 bg-gradient-to-r from-amber-300/10 to-lime-300/10 p-6 md:p-8"><div className="grid gap-5 md:grid-cols-2"><div><p className="text-sm font-semibold uppercase tracking-wider text-lime-200">Who should attend?</p><h3 className="mt-1 text-xl font-bold"> >> Sales professionals and business owners who want to close bigger deals</h3><p className="mt-2 text-sm text-indigo-50/80"> Entrepreneurs, startups & founders building their pipeline.</p></div><div><p className="text-sm font-semibold uppercase tracking-wider text-lime-200"></p><h3 className="mt-1 text-xl font-bold"> >> Real estate agents & investors.</h3><p className="mt-2 text-sm text-indigo-50/80">Training, Marketing managers, brand leads & content creators.</p></div></div></div>
+            <div className="mt-10 rounded-3xl border border-amber-200/20 bg-gradient-to-r from-amber-300/10 to-lime-300/10 p-6 md:p-8">
+              <div className="grid gap-5 md:grid-cols-2">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-wider text-lime-200">Who should attend?</p>
+                  <h3 className="mt-1 text-xl font-bold">Sales professionals and business owners who want to close bigger deals</h3>
+                  <p className="mt-2 text-sm text-indigo-50/80">Entrepreneurs, startups & founders building their pipeline.</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-wider text-lime-200">Who should attend?</p>
+                  <h3 className="mt-1 text-xl font-bold">Real estate agents & investors.</h3>
+                  <p className="mt-2 text-sm text-indigo-50/80">Training, marketing managers, brand leads & content creators.</p>
+                </div>
+              </div>
+            </div>
             <div className="mt-10 flex flex-col items-center justify-between gap-5 rounded-3xl bg-white p-6 text-center text-indigo-950 md:flex-row md:text-left md:p-8"><div><p className="text-sm font-semibold uppercase tracking-wider text-indigo-700">Your journey can start here</p><h2 className="mt-1 text-2xl font-black md:text-3xl">Learn. Practise. Close deals. and Grow.</h2><p className="mt-2 text-sm text-indigo-800/80">Whether you're starting from scratch or financial advisor, consultant, service provider, or just somone ready to transform your income and influence, this is your opportunity! come with questions and leave with direction.</p></div><Button onClick={() => setRegistrationOpen(true)} size="lg" className="shrink-0 bg-indigo-800 px-7 font-bold text-white hover:bg-indigo-700">Register for SMC Training<ArrowRight className="ml-2 h-4 w-4" /></Button></div>
           </div>
         </div>
