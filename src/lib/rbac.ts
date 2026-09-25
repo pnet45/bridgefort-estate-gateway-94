@@ -32,6 +32,8 @@ export const CANONICAL_PERMISSION_ALIASES: Record<string, string[]> = {
   'payment.view': ['admin:view_approvals'],
   'payment.verify': ['admin:view_approvals'],
   'payment.approve': ['admin:approve_payments'],
+  'withdrawal.approve': ['admin:approve_withdrawals'],
+  'listing.approve': ['admin:approve_listings'],
   'booking.view': ['admin:view_travels'],
   'booking.manage': ['admin:view_travels'],
   'approvals.view': ['admin:view_approvals'],
