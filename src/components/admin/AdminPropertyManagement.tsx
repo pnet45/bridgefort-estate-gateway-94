@@ -351,7 +351,29 @@ const AdminPropertyManagement: React.FC = () => {
           )}
         </div>
       ) : (
-        <ScrollArea className="h-[500px]">
+        <>
+        <div className="md:hidden space-y-3 max-h-[560px] overflow-y-auto pr-1">
+          {filteredEstates.map((estate) => (
+            <div key={estate.id} className="rounded-xl border border-slate-700 bg-slate-900/70 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-semibold text-white truncate">{estate.name}</p>
+                  <p className="text-xs text-slate-400 mt-1 truncate">{estate.location || 'Location not set'}</p>
+                </div>
+                <Badge variant="outline" className="shrink-0 text-slate-300 border-slate-600">{estate.type || 'Land'}</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
+                <div><p className="text-[11px] text-slate-500">Current price</p><p className="font-semibold text-white">{estate.promo_price ? `₦${estate.promo_price.toLocaleString()}` : estate.actual_price ? `₦${estate.actual_price.toLocaleString()}` : '—'}</p></div>
+                <div><p className="text-[11px] text-slate-500">Inventory</p><p className="font-semibold text-white">{estate.sold_plots ?? 0} / {estate.total_plots ?? 0}</p></div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <Button variant="outline" className="flex-1 min-h-10" onClick={() => handleEdit(estate)}><Pencil className="h-4 w-4 mr-2" />Edit</Button>
+                <Button variant="outline" className="min-h-10 text-red-400" onClick={() => handleDelete(estate)}><Trash2 className="h-4 w-4" /></Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <ScrollArea className="hidden md:block h-[500px]">
           <Table>
             <TableHeader>
               <TableRow className="border-slate-700 hover:bg-slate-700/50">
@@ -401,6 +423,7 @@ const AdminPropertyManagement: React.FC = () => {
             </TableBody>
           </Table>
         </ScrollArea>
+        </>
       )}
 
       <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if (!open) setPendingCategory(undefined); }}>
