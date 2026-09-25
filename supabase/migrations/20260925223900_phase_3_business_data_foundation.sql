@@ -1,4 +1,6 @@
 -- Phase 3 business/data foundation
+-- Functions in this migration explicitly pin search_path for security.
+
 create table if not exists public.service_journeys (
   id uuid primary key default gen_random_uuid(),
   customer_id uuid references public.profiles(id) on delete set null,
@@ -146,3 +148,7 @@ drop trigger if exists trg_audit_travel_booking_state on public.travel_bookings;
 create trigger trg_audit_travel_booking_state after update of status on public.travel_bookings for each row execute function public.audit_business_state_change();
 drop trigger if exists trg_audit_profile_state on public.profiles;
 create trigger trg_audit_profile_state after update of profile_status,kyc_status on public.profiles for each row execute function public.audit_business_state_change();
+
+-- Security hardening for the two invoker functions above.
+alter function public.calculate_profile_completion(uuid) set search_path=public;
+alter function public.refresh_profile_completion() set search_path=public;
