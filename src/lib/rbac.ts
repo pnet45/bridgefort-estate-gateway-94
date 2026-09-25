@@ -19,13 +19,38 @@ export const ADMIN_TAB_PERMISSION_MAP: Record<string, string> = {
   travels: 'admin:view_travels',
 };
 
+export const CANONICAL_PERMISSION_ALIASES: Record<string, string[]> = {
+  'crm.view': ['admin:view_crm'],
+  'crm.create': ['admin:view_crm'],
+  'crm.edit': ['admin:view_crm'],
+  'crm.assign': ['admin:view_crm'],
+  'crm.export': ['admin:view_crm'],
+  'property.view': ['admin:view_properties'],
+  'property.create': ['admin:view_properties'],
+  'property.edit': ['admin:view_properties'],
+  'property.publish': ['admin:view_properties'],
+  'payment.view': ['admin:view_approvals'],
+  'payment.verify': ['admin:view_approvals'],
+  'payment.approve': ['admin:view_approvals'],
+  'booking.view': ['admin:view_travels'],
+  'booking.manage': ['admin:view_travels'],
+  'approvals.view': ['admin:view_approvals'],
+  'approvals.decide': ['admin:view_approvals'],
+  'users.view': ['admin:view_users'],
+  'users.manage': ['admin:view_users'],
+  'roles.view': ['admin:manage_permissions'],
+  'roles.manage': ['admin:manage_permissions'],
+  'reports.view': ['admin:view_analytics'],
+  'reports.export': ['admin:view_analytics'],
+};
+
 export function hasPermission(permissionSet: string[] | null | undefined, required: string | string[]): boolean {
   if (!permissionSet || permissionSet.length === 0) return false;
   const requiredPermissions = Array.isArray(required) ? required : [required];
   return requiredPermissions.some((permission) => {
     if (!permission) return false;
     if (permission === 'admin:all' || permission === 'super_admin') return true;
-    return permissionSet.includes(permission) || permissionSet.includes('admin:all');
+    return permissionSet.includes(permission) || (CANONICAL_PERMISSION_ALIASES[permission] ?? []).some((alias) => permissionSet.includes(alias)) || permissionSet.includes('admin:all');
   });
 }
 
