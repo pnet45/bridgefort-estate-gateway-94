@@ -3,12 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Activity, AlertCircle, ArrowRight, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, Phone, RefreshCw, Target, TrendingUp, Users } from 'lucide-react';
+import { Activity, AlertCircle, ArrowRight, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, Phone, RefreshCw, Target, TrendingUp, Users, BriefcaseBusiness } from 'lucide-react';
 import { format } from 'date-fns';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
 
 type Lead = { id: string; name: string; phone: string | null; status: string; source: string; priority: string; conversion_value: number | null; estate_interest: string | null; assigned_to: string | null; created_at: string };
 type FollowUp = { id: string; lead_id: string; scheduled_at: string; action_type: string; notes: string | null; completed_at: string | null; cancelled_at: string | null };
+type Journey = { id: string; service_type: string; status: string; priority: string; source: string | null; assigned_to: string | null; lead_id: string | null; customer_id: string | null; updated_at: string };
+const JOURNEY_STATUSES = ['NEW','CONTACTED','QUALIFIED','INTERESTED','ACTION_REQUIRED','IN_PROGRESS','CONVERTED','LOST','CLOSED'];
 
 const STATUSES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
 const formatNaira = (value: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(value);
@@ -17,16 +19,19 @@ const titleCase = (value: string) => value.replace(/[_-]/g, ' ').replace(/\b\w/g
 const AdminCRMWorkspace: React.FC = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
+  const [journeys, setJourneys] = useState<Journey[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadWorkspace = useCallback(async () => {
     setLoading(true);
-    const [{ data: leadRows, error: leadError }, { data: followUpRows, error: followUpError }] = await Promise.all([
+    const [{ data: leadRows, error: leadError }, { data: followUpRows, error: followUpError }, { data: journeyRows, error: journeyError }] = await Promise.all([
       supabase.from('crm_leads').select('id,name,phone,status,source,priority,conversion_value,estate_interest,assigned_to,created_at').order('created_at', { ascending: false }),
       supabase.from('crm_follow_ups').select('id,lead_id,scheduled_at,action_type,notes,completed_at,cancelled_at').is('completed_at', null).is('cancelled_at', null).order('scheduled_at', { ascending: true }),
+      supabase.from('service_journeys').select('id,service_type,status,priority,source,assigned_to,lead_id,customer_id,updated_at').order('updated_at', { ascending: false }).limit(100),
     ]);
     if (!leadError) setLeads((leadRows || []) as Lead[]);
     if (!followUpError) setFollowUps((followUpRows || []) as FollowUp[]);
+    if (!journeyError) setJourneys((journeyRows || []) as Journey[]);
     setLoading(false);
   }, []);
 
@@ -38,6 +43,7 @@ const AdminCRMWorkspace: React.FC = () => {
     const today = new Date().toDateString();
     return {
       total: leads.length,
+      journeys: journeys.length,
       newLeads: leads.filter(lead => lead.status === 'new').length,
       qualified: leads.filter(lead => lead.status === 'qualified').length,
       won: won.length,
@@ -46,7 +52,7 @@ const AdminCRMWorkspace: React.FC = () => {
       winRate: closed.length ? Math.round((won.length / closed.length) * 100) : 0,
       wonValue: won.reduce((sum, lead) => sum + Number(lead.conversion_value || 0), 0),
     };
-  }, [leads, followUps]);
+  }, [leads, followUps, journeys]);
 
   const pipeline = useMemo(() => STATUSES.map(status => ({ status, count: leads.filter(lead => lead.status === status).length })), [leads]);
 
@@ -110,6 +116,31 @@ const AdminCRMWorkspace: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+
+
+
+          <Card className="bg-slate-900/40 border-slate-700">
+            <CardHeader className="pb-2">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="text-sm text-white flex items-center gap-2"><BriefcaseBusiness className="h-4 w-4 text-primary" />Service Journeys</CardTitle>
+                <span className="text-xs text-slate-500">{metrics.journeys} linked service records</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                {Array.from(new Set(journeys.map(j => j.service_type))).slice(0,5).map(type => {
+                  const count = journeys.filter(j => j.service_type === type).length;
+                  const active = journeys.filter(j => j.service_type === type && !['CONVERTED','LOST','CLOSED','COMPLETED','CANCELLED','DECLINED','EXPIRED'].includes(j.status)).length;
+                  return <div key={type} className="rounded-xl border border-slate-700 bg-slate-800/70 p-3">
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500">{titleCase(type)}</p>
+                    <p className="mt-1 text-xl font-semibold text-white">{count}</p>
+                    <p className="text-[11px] text-slate-400">{active} active</p>
+                  </div>;
+                })}
+                {journeys.length === 0 && <p className="col-span-full py-4 text-center text-sm text-slate-500">Service journeys will appear here as customers interact with Bridgefort services.</p>}
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="bg-slate-900/40 border-slate-700">
             <CardHeader className="pb-2">
