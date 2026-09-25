@@ -224,8 +224,7 @@ const NewProfileForm = () => {
           profile_picture_url: kycDocs['passport_photo']?.url || null,
           banking_details: formData.bankName ? `${formData.bankName} - ${formData.accountNumber} - ${formData.accountName}` : null,
           terms_accepted: termsAccepted,
-          profile_completed: true,
-          profile_completion_percentage: 100,
+          profile_status: 'IN_PROGRESS',
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'id'
@@ -235,7 +234,7 @@ const NewProfileForm = () => {
 
       toast({
         title: "Profile Updated",
-        description: "Your comprehensive profile & KYC were saved successfully!"
+        description: "Your profile was saved. Completion and KYC status are now calculated by the system."
       });
       notifyProfileUpdated();
 
