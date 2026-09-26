@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   web:
-    name: Lint and build web app
+    name: Typecheck, lint and build web app
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -34,8 +34,14 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
+      - name: Typecheck
+        run: npx tsc --noEmit
+
       - name: Lint
         run: npm run lint
 
       - name: Build
+        env:
+          VITE_SUPABASE_URL: https://xyvspvtdaacqfmfocvhw.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-publishable-key
         run: npm run build
