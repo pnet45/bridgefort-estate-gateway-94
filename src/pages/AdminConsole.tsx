@@ -38,6 +38,7 @@ import AdminDepartmentManagement from '@/components/admin/AdminDepartmentManagem
 import AdminTrainingRegistrations from '@/components/admin/AdminTrainingRegistrations';
 import AdminEstateSubscribers from '@/components/admin/AdminEstateSubscribers';
 import { toast } from '@/hooks/use-toast';
+import AdminGmailSecurityMigration from '@/components/admin/AdminGmailSecurityMigration';
 
 type TawkWindow = Window & { Tawk_API?: { hideWidget?: () => void; showWidget?: () => void; onLoad?: () => void } };
 const ADMIN_TAB_CLASS = 'text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm whitespace-nowrap';
@@ -81,6 +82,7 @@ const AdminConsole = () => {
         {hasPermission('admin:view_cms') && <TabsTrigger value="gallery" className={ADMIN_TAB_CLASS}><Images className="h-4 w-4 shrink-0"/><span>Circular Gallery</span></TabsTrigger>}
         {hasPermission('admin:view_other_payments') && <TabsTrigger value="other-payments" className={ADMIN_TAB_CLASS}><DollarSign className="h-4 w-4 shrink-0"/><span>Other Payments</span></TabsTrigger>}
         {hasPermission('admin:manage_permissions') && <TabsTrigger value="permissions" className={ADMIN_TAB_CLASS}><Settings className="h-4 w-4 shrink-0"/><span>Permissions</span></TabsTrigger>}
+        {hasPermission('admin:all') && <TabsTrigger value="security" className={ADMIN_TAB_CLASS}><Shield className="h-4 w-4 shrink-0"/><span>Security</span></TabsTrigger>}
         {hasPermission('admin:manage_departments') && <TabsTrigger value="departments" className={ADMIN_TAB_CLASS}><Building2 className="h-4 w-4 shrink-0"/><span>Departments</span></TabsTrigger>}
         {hasPermission('admin:view_travels') && <TabsTrigger value="travels" className={ADMIN_TAB_CLASS}><Plane className="h-4 w-4 shrink-0"/><span>Travels</span>{isSuperAdmin&&<span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">Restricted</span>}</TabsTrigger>}
       </TabsList>
@@ -99,6 +101,7 @@ const AdminConsole = () => {
       <TabsContent value="cms"><AdminContentHub/></TabsContent>
       <TabsContent value="gallery"><AdminCircularGalleryContent/></TabsContent>
       <TabsContent value="other-payments"><AdminOtherPayments/></TabsContent>
+      {hasPermission('admin:all')&&<TabsContent value="security" className="space-y-6"><AdminGmailSecurityMigration/></TabsContent>
       <TabsContent value="permissions"><AdminRolePermissions/></TabsContent>
       {hasPermission('admin:manage_departments')&&<TabsContent value="departments"><AdminDepartmentManagement/></TabsContent>}
       {hasPermission('admin:view_travels')&&<TabsContent value="travels"><AdminTravelDashboard/></TabsContent>}
