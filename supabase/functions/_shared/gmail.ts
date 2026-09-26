@@ -8,12 +8,44 @@ export function requireEnv(name: string) {
   return v;
 }
 
+function tokenKey(): CryptoKey {
+  const raw = requireEnv('GMAIL_TOKEN_ENCRYPTION_KEY');
+  const bytes = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
+  if (bytes.length !== 32) throw new Error('GMAIL_TOKEN_ENCRYPTION_KEY must be a base64-encoded 32-byte key');
+  return crypto.subtle.importKey('raw', bytes, 'AES-GCM', false, ['encrypt', 'decrypt']) as Promise<CryptoKey> as unknown as CryptoKey;
+}
+
+async function getTokenKey(): Promise<CryptoKey> {
+  const raw = requireEnv('GMAIL_TOKEN_ENCRYPTION_KEY');
+  const bytes = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
+  if (bytes.length !== 32) throw new Error('GMAIL_TOKEN_ENCRYPTION_KEY must be a base64-encoded 32-byte key');
+  return crypto.subtle.importKey('raw', bytes, 'AES-GCM', false, ['encrypt', 'decrypt']);
+}
+
+export async function encryptGmailToken(value: string): Promise<string> {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await getTokenKey();
+  const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(value)));
+  const combined = new Uint8Array(iv.length + ciphertext.length);
+  combined.set(iv, 0);
+  combined.set(ciphertext, iv.length);
+  return btoa(String.fromCharCode(...combined));
+}
+
+export async function decryptGmailToken(value: string): Promise<string> {
+  const combined = Uint8Array.from(atob(value), (c) => c.charCodeAt(0));
+  if (combined.length <= 12) throw new Error('Invalid encrypted Gmail token');
+  const key = await getTokenKey();
+  const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: combined.slice(0, 12) }, key, combined.slice(12));
+  return new TextDecoder().decode(plaintext);
+}
+
 export async function getValidAccessToken(
   svc: ReturnType<typeof createClient>,
   mailboxEmail: string,
   googleAccountEmail?: string,
 ) {
-  let q = svc.from('gmail_oauth_tokens').select('*').eq('email', mailboxEmail).eq('is_active', true);
+  let q = svc.from('gmail_oauth_tokens').select('id, email, mailbox_id, google_account_email, encrypted_access_token, encrypted_refresh_token, access_token, refresh_token, expires_at, is_active').eq('email', mailboxEmail).eq('is_active', true);
   if (googleAccountEmail) q = q.ilike('google_account_email', googleAccountEmail);
   const { data: rows, error } = await q.order('updated_at', { ascending: false }).limit(1);
   if (error) throw new Error(`Failed to read Gmail token: ${error.message}`);
@@ -21,18 +53,34 @@ export async function getValidAccessToken(
   if (!tokenRow) throw new Error(`Gmail connection for ${mailboxEmail}${googleAccountEmail ? ` (${googleAccountEmail})` : ''} is not connected`);
 
   const expiresAt = new Date(tokenRow.expires_at as string).getTime();
-  if (expiresAt - Date.now() >= 60000) return tokenRow.access_token as string;
+  const accessToken = tokenRow.encrypted_access_token
+    ? await decryptGmailToken(tokenRow.encrypted_access_token as string)
+    : tokenRow.access_token as string;
+  const refreshToken = tokenRow.encrypted_refresh_token
+    ? await decryptGmailToken(tokenRow.encrypted_refresh_token as string)
+    : tokenRow.refresh_token as string;
+
+  if (expiresAt - Date.now() >= 60000) return accessToken;
 
   const clientId = requireEnv('GOOGLE_CLIENT_ID');
   const clientSecret = requireEnv('GOOGLE_CLIENT_SECRET');
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: tokenRow.refresh_token as string, grant_type: 'refresh_token' }),
+    body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken, grant_type: 'refresh_token' }),
   });
   const refreshed = await res.json();
   if (!res.ok) throw new Error(`Failed to refresh Gmail token: ${refreshed.error_description || refreshed.error || res.status}`);
-  await svc.from('gmail_oauth_tokens').update({ access_token: refreshed.access_token, expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString() }).eq('id', tokenRow.id as string);
+
+  const encryptedAccessToken = await encryptGmailToken(refreshed.access_token as string);
+  const { error: updateError } = await svc.from('gmail_oauth_tokens').update({
+    encrypted_access_token: encryptedAccessToken,
+    encrypted_refresh_token: tokenRow.encrypted_refresh_token || await encryptGmailToken(refreshToken),
+    expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
+    access_token: null,
+    refresh_token: null,
+  }).eq('id', tokenRow.id as string);
+  if (updateError) throw new Error(`Failed to store refreshed Gmail token: ${updateError.message}`);
   return refreshed.access_token as string;
 }
 
