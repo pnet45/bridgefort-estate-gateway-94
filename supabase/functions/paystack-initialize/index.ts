@@ -1,11 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+import { corsHeaders, corsJson } from "../_shared/cors.ts";
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const cors = corsHeaders(req, "POST, OPTIONS");
+  const json = (body: unknown, status = 200) => corsJson(req, body, status, "POST, OPTIONS");
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) return json({ error: 'Authentication required' }, 401);
@@ -28,10 +29,6 @@ serve(async (req) => {
       amount = Number(pkg.price);
       if (!reference) reference = `MEM_${authenticatedUserId.slice(0, 8)}_${Date.now()}`;
     } else {
-      // Estate/property payments MUST resolve to an existing Order. The Order
-      // total is authoritative for outright/full payments. For flexible
-      // installment payments, only the requested installment amount is used,
-      // and it is capped by the Order's current outstanding balance.
       if (order_id) {
         const { data, error } = await adminClient
           .from('orders')
@@ -75,7 +72,12 @@ serve(async (req) => {
     if (!email || !Number.isFinite(amount) || amount <= 0) return json({ error: 'Invalid amount or email' }, 400);
     const PAYSTACK_SECRET_KEY = Deno.env.get('PAYSTACK_SECRET_KEY');
     if (!PAYSTACK_SECRET_KEY) return json({ error: 'Paystack secret key not configured' }, 500);
-    const callbackUrl = `${req.headers.get('origin') || 'http://localhost:3000'}/payment-success`;
+
+    // Never derive a payment callback from an arbitrary request Origin. Use an
+    // explicitly configured application URL so an attacker cannot turn the
+    // payment provider callback into an open redirect.
+    const appUrl = (Deno.env.get('APP_URL') || 'https://www.bridgeforthomes.com').replace(/\/$/, '');
+    const callbackUrl = `${appUrl}/payment-success`;
     const finalMetadata = {
       ...metadata,
       order_id: order?.id ?? metadata?.order_id ?? null,
@@ -94,7 +96,7 @@ serve(async (req) => {
       const { error } = await adminClient.from('mlm_membership_purchases').upsert({ user_id: authenticatedUserId, package_code: metadata.package_code, amount, status: 'pending', paystack_reference: paystackData.data.reference, purchase_type: 'membership' }, { onConflict: 'paystack_reference' });
       if (error) console.error('Failed to record membership purchase:', error);
     }
-    return new Response(JSON.stringify(paystackData), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: response.status });
+    return new Response(JSON.stringify(paystackData), { headers: { ...cors, 'Content-Type': 'application/json' }, status: response.status });
   } catch (error) {
     console.error('paystack-initialize error:', error);
     return json({ error: 'An error occurred processing your payment request' }, 500);
