@@ -1,13 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error(
-    'Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY. Configure the Bridgefort environment before starting the application.'
-  );
-}
+// Prefer deployment-time configuration. The fallback preserves compatibility
+// with existing deployments until Vercel/hosting environment variables are set.
+// Supabase anon/publishable keys are intended for browser use; privileged
+// service-role keys must never be placed here.
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL ?? 'https://xyvspvtdaacqfmfocvhw.supabase.co';
+const supabaseKey =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5dnNwdnRkYWFjcWZtZm9jdmh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0NDQ0MTIsImV4cCI6MjA2MzAyMDQxMn0.BP9KKHlIEbNntxX0DOTzidU-kNzSTBI2tz7SbbXHmMw';
 
 // --- "Remember me" support -------------------------------------------------
 // Supabase persists the session in whatever `storage` we give it. By default
