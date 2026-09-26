@@ -67,3 +67,9 @@ verify_jwt = false
 
 [functions.mcp]
 verify_jwt = false
+
+# One-time administrative credential migration. Supabase's JWT gateway
+# provides the first authentication boundary; the function also enforces
+# the canonical admin:all permission before using service-role access.
+[functions.gmail-token-migrate]
+verify_jwt = true
