@@ -935,6 +935,42 @@ export type Database = {
         }
         Relationships: []
       }
+      business_audit_log: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          metadata: Json
+          new_state: string | null
+          previous_state: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          metadata?: Json
+          new_state?: string | null
+          previous_state?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          new_state?: string | null
+          previous_state?: string | null
+        }
+        Relationships: []
+      }
       centertraining: {
         Row: {
           address: string
@@ -1126,6 +1162,57 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      crm_activities: {
+        Row: {
+          activity_type: string
+          created_at: string
+          created_by: string | null
+          id: string
+          journey_id: string | null
+          lead_id: string | null
+          notes: string | null
+          outcome: string | null
+          subject: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          journey_id?: string | null
+          lead_id?: string | null
+          notes?: string | null
+          outcome?: string | null
+          subject?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          journey_id?: string | null
+          lead_id?: string | null
+          notes?: string | null
+          outcome?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "service_journeys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_follow_ups: {
         Row: {
@@ -2028,6 +2115,8 @@ export type Database = {
           connected_by: string | null
           created_at: string
           email: string
+          encrypted_access_token: string | null
+          encrypted_refresh_token: string | null
           expires_at: string
           google_account_email: string | null
           id: string
@@ -2041,6 +2130,8 @@ export type Database = {
           connected_by?: string | null
           created_at?: string
           email: string
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string | null
           expires_at: string
           google_account_email?: string | null
           id?: string
@@ -2054,6 +2145,8 @@ export type Database = {
           connected_by?: string | null
           created_at?: string
           email?: string
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string | null
           expires_at?: string
           google_account_email?: string | null
           id?: string
@@ -3314,6 +3407,7 @@ export type Database = {
           is_pbo: boolean | null
           is_politically_exposed: boolean
           kyc_docs: Json | null
+          kyc_status: string
           languages_spoken: string[] | null
           last_name: string | null
           local_government: string | null
@@ -3336,6 +3430,7 @@ export type Database = {
           profile_completed: boolean | null
           profile_completion_percentage: number | null
           profile_picture_url: string | null
+          profile_status: string
           referred_by_code: string | null
           referred_by_id: string | null
           referrer_email: string | null
@@ -3399,6 +3494,7 @@ export type Database = {
           is_pbo?: boolean | null
           is_politically_exposed?: boolean
           kyc_docs?: Json | null
+          kyc_status?: string
           languages_spoken?: string[] | null
           last_name?: string | null
           local_government?: string | null
@@ -3421,6 +3517,7 @@ export type Database = {
           profile_completed?: boolean | null
           profile_completion_percentage?: number | null
           profile_picture_url?: string | null
+          profile_status?: string
           referred_by_code?: string | null
           referred_by_id?: string | null
           referrer_email?: string | null
@@ -3484,6 +3581,7 @@ export type Database = {
           is_pbo?: boolean | null
           is_politically_exposed?: boolean
           kyc_docs?: Json | null
+          kyc_status?: string
           languages_spoken?: string[] | null
           last_name?: string | null
           local_government?: string | null
@@ -3506,6 +3604,7 @@ export type Database = {
           profile_completed?: boolean | null
           profile_completion_percentage?: number | null
           profile_picture_url?: string | null
+          profile_status?: string
           referred_by_code?: string | null
           referred_by_id?: string | null
           referrer_email?: string | null
@@ -3799,6 +3898,94 @@ export type Database = {
         }
         Relationships: []
       }
+      service_journeys: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          customer_id: string | null
+          estate_id: string | null
+          id: string
+          lead_id: string | null
+          listing_id: string | null
+          notes: string | null
+          order_id: string | null
+          outcome: string | null
+          outcome_value: number | null
+          priority: string
+          service_type: string
+          source: string | null
+          source_record_id: string | null
+          source_record_type: string | null
+          status: string
+          travel_booking_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          customer_id?: string | null
+          estate_id?: string | null
+          id?: string
+          lead_id?: string | null
+          listing_id?: string | null
+          notes?: string | null
+          order_id?: string | null
+          outcome?: string | null
+          outcome_value?: number | null
+          priority?: string
+          service_type: string
+          source?: string | null
+          source_record_id?: string | null
+          source_record_type?: string | null
+          status?: string
+          travel_booking_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          customer_id?: string | null
+          estate_id?: string | null
+          id?: string
+          lead_id?: string | null
+          listing_id?: string | null
+          notes?: string | null
+          order_id?: string | null
+          outcome?: string | null
+          outcome_value?: number | null
+          priority?: string
+          service_type?: string
+          source?: string | null
+          source_record_id?: string | null
+          source_record_type?: string | null
+          status?: string
+          travel_booking_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_journeys_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_journeys_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estate"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_journeys_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_attendance: {
         Row: {
           attendance_date: string | null
@@ -3972,7 +4159,10 @@ export type Database = {
       }
       travel_bookings: {
         Row: {
+          assigned_to: string | null
           created_at: string
+          crm_lead_id: string | null
+          customer_id: string | null
           departure_date: string
           destination: string | null
           email: string
@@ -3982,12 +4172,16 @@ export type Database = {
           package: string
           phone: string
           return_date: string
+          service_journey_id: string | null
           status: string
           travelers: number
           updated_at: string
         }
         Insert: {
+          assigned_to?: string | null
           created_at?: string
+          crm_lead_id?: string | null
+          customer_id?: string | null
           departure_date: string
           destination?: string | null
           email: string
@@ -3997,12 +4191,16 @@ export type Database = {
           package: string
           phone: string
           return_date: string
+          service_journey_id?: string | null
           status?: string
           travelers: number
           updated_at?: string
         }
         Update: {
+          assigned_to?: string | null
           created_at?: string
+          crm_lead_id?: string | null
+          customer_id?: string | null
           departure_date?: string
           destination?: string | null
           email?: string
@@ -4012,11 +4210,34 @@ export type Database = {
           package?: string
           phone?: string
           return_date?: string
+          service_journey_id?: string | null
           status?: string
           travelers?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "travel_bookings_crm_lead_id_fkey"
+            columns: ["crm_lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_bookings_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_bookings_service_journey_id_fkey"
+            columns: ["service_journey_id"]
+            isOneToOne: false
+            referencedRelation: "service_journeys"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       travel_package_blackouts: {
         Row: {
@@ -4383,6 +4604,10 @@ export type Database = {
           _total_amount: number
         }
         Returns: undefined
+      }
+      calculate_profile_completion: {
+        Args: { p_profile_id: string }
+        Returns: number
       }
       can_approve_admin_request: {
         Args: { _user_id?: string }
