@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { requireEnv } from "../_shared/gmail.ts";
+import { decryptGmailToken, encryptGmailToken, requireEnv } from "../_shared/gmail.ts";
 
 const accounts = (v: string | null | undefined) => [...new Set((v || "").split(/[,;\n]+/).map((x) => x.trim().toLowerCase()).filter(Boolean))];
 const redirect = (app: string, params: Record<string, string>) => {
@@ -46,10 +46,6 @@ Deno.serve(async (req) => {
     });
     if (accessError || !access) return redirect(appUrl, { gmail_error: "mailbox_not_authorized" });
 
-    // A company mailbox can be assigned to several administrators. Google
-    // identities are therefore collected from every active Gmail assignment
-    // for this mailbox, rather than only from the administrator who clicked
-    // Connect. This also supports global/department-level mailbox access.
     const { data: assignments, error: mailboxError } = await svc
       .from("admin_mailboxes")
       .select("id, user_id, provider_account_id")
@@ -80,19 +76,14 @@ Deno.serve(async (req) => {
     const profile = await profileResponse.json();
     const googleEmail = String(profile.emailAddress || "").trim().toLowerCase();
     if (!profileResponse.ok || !googleEmail) return redirect(appUrl, { gmail_error: "profile_fetch_failed" });
-    if (!assignedAccounts.includes(googleEmail)) {
-      return redirect(appUrl, { gmail_error: "google_account_not_assigned", gmail_attempted_email: googleEmail });
-    }
+    if (!assignedAccounts.includes(googleEmail)) return redirect(appUrl, { gmail_error: "google_account_not_assigned", gmail_attempted_email: googleEmail });
 
-    // Bind the token to an assignment that explicitly contains the Google
-    // identity. If multiple admins share that identity, the first matching
-    // active assignment is sufficient because access is mailbox-scoped.
     const matchingAssignment = assignedByMailbox.find((row) => row.accounts.includes(googleEmail));
     const mailboxId = matchingAssignment?.id || assignments[0].id;
 
     const { data: existingRows, error: existingError } = await svc
       .from("gmail_oauth_tokens")
-      .select("id, refresh_token")
+      .select("id, encrypted_refresh_token, refresh_token")
       .eq("mailbox_id", mailboxId)
       .ilike("google_account_email", googleEmail)
       .order("updated_at", { ascending: false })
@@ -100,15 +91,21 @@ Deno.serve(async (req) => {
     if (existingError) return redirect(appUrl, { gmail_error: "token_lookup_failed" });
 
     const existing = existingRows?.[0];
-    const refreshToken = tokenData.refresh_token || existing?.refresh_token;
+    let refreshToken = tokenData.refresh_token as string | undefined;
+    if (!refreshToken && existing?.encrypted_refresh_token) {
+      refreshToken = await decryptGmailToken(existing.encrypted_refresh_token as string);
+    }
+    if (!refreshToken && existing?.refresh_token) refreshToken = existing.refresh_token as string;
     if (!refreshToken) return redirect(appUrl, { gmail_error: "no_refresh_token", gmail_attempted_email: googleEmail });
 
     const payload = {
       email: mailboxEmail,
       mailbox_id: mailboxId,
       google_account_email: googleEmail,
-      access_token: tokenData.access_token,
-      refresh_token: refreshToken,
+      encrypted_access_token: await encryptGmailToken(String(tokenData.access_token)),
+      encrypted_refresh_token: await encryptGmailToken(refreshToken),
+      access_token: null,
+      refresh_token: null,
       expires_at: new Date(Date.now() + Number(tokenData.expires_in || 3600) * 1000).toISOString(),
       connected_by: oauthState.requested_by,
       is_active: true,
