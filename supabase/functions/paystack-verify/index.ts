@@ -3,15 +3,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { queueOrderForApproval } from '../_shared/paymentApproval.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+import { corsHeaders, corsJson } from '../_shared/cors.ts';
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const cors = corsHeaders(req, "POST, OPTIONS");
+  const json = (body: unknown, status = 200) => corsJson(req, body, status, "POST, OPTIONS");
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+  if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
 
   try {
     const authHeader = req.headers.get('Authorization');
@@ -39,38 +37,23 @@ serve(async (req) => {
     if (currency !== 'NGN' || !Number.isFinite(paidAmount) || paidAmount <= 0) return json({ status: false, message: 'Invalid payment currency or amount.' }, 400);
 
     const fields: Record<string, string> = {};
-    (data.data?.metadata?.custom_fields || []).forEach((f: any) => {
-      if (f?.variable_name) fields[f.variable_name] = f.value;
-    });
+    (data.data?.metadata?.custom_fields || []).forEach((f: any) => { if (f?.variable_name) fields[f.variable_name] = f.value; });
     const metadata = data.data?.metadata || {};
     const isStartPlan = String(reference).startsWith('STARTPLAN_') && fields.payment_type === 'promo_start_plan';
     const isPromoInstallment = String(reference).startsWith('PROMO_');
     const metadataOrderId = metadata?.order_id ? String(metadata.order_id) : null;
 
-    // Resolve an estate order either by its original reference or by the
-    // immutable order_id carried in Paystack metadata for flexible installment
-    // transactions, whose gateway reference is intentionally unique per payment.
     let orderQuery = admin.from('orders').select('id, user_id, total_amount, amount_paid, balance, payment_status, items, payment_reference').limit(1);
     let order: any = null;
-    if (metadataOrderId) {
-      const { data: byId } = await orderQuery.eq('id', metadataOrderId).maybeSingle();
-      order = byId;
-    }
-    if (!order) {
-      const { data: byReference } = await admin.from('orders').select('id, user_id, total_amount, amount_paid, balance, payment_status, items, payment_reference').eq('payment_reference', reference).maybeSingle();
-      order = byReference;
-    }
+    if (metadataOrderId) { const { data: byId } = await orderQuery.eq('id', metadataOrderId).maybeSingle(); order = byId; }
+    if (!order) { const { data: byReference } = await admin.from('orders').select('id, user_id, total_amount, amount_paid, balance, payment_status, items, payment_reference').eq('payment_reference', reference).maybeSingle(); order = byReference; }
 
     const { data: membershipPurchase } = await admin.from('mlm_membership_purchases').select('id, package_code, status, user_id, amount, purchase_type').eq('paystack_reference', reference).maybeSingle();
-
     if (order && order.user_id !== authenticatedUserId) return json({ error: 'Forbidden' }, 403);
     if (membershipPurchase && membershipPurchase.user_id !== authenticatedUserId) return json({ error: 'Forbidden' }, 403);
     if (order && membershipPurchase) return json({ error: 'Ambiguous payment reference' }, 409);
     if (!order && !membershipPurchase && !isStartPlan && !isPromoInstallment) return json({ error: 'Payment reference is not associated with your account' }, 404);
 
-    // Estate orders allow a flexible partial payment. A normal property
-    // checkout must equal the full order amount; an installment checkout may
-    // be any positive amount up to the outstanding order balance.
     if (order || membershipPurchase) {
       let expectedAmount: number | null = null;
       if (order) {
@@ -118,7 +101,6 @@ serve(async (req) => {
     }
 
     if (order) await queueOrderForApproval(admin, { reference, orderId: order.id, paidAmount, channel: 'Paystack' });
-
     if (membershipPurchase && membershipPurchase.status === 'pending') {
       const { data: pkg } = await admin.from('mlm_packages').select('package_code, package_name').eq('package_code', membershipPurchase.package_code).single();
       if (pkg) {
@@ -127,7 +109,6 @@ serve(async (req) => {
         if (completedPurchase) await admin.from('profiles').update({ current_package: pkg.package_code, is_pbo: true, is_active: true, updated_at: new Date().toISOString() }).eq('id', membershipPurchase.user_id);
       }
     }
-
     return json(data, response.status);
   } catch (error) {
     console.error('paystack-verify error:', error);
