@@ -8,13 +8,6 @@ export function requireEnv(name: string) {
   return v;
 }
 
-function tokenKey(): CryptoKey {
-  const raw = requireEnv('GMAIL_TOKEN_ENCRYPTION_KEY');
-  const bytes = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
-  if (bytes.length !== 32) throw new Error('GMAIL_TOKEN_ENCRYPTION_KEY must be a base64-encoded 32-byte key');
-  return crypto.subtle.importKey('raw', bytes, 'AES-GCM', false, ['encrypt', 'decrypt']) as Promise<CryptoKey> as unknown as CryptoKey;
-}
-
 async function getTokenKey(): Promise<CryptoKey> {
   const raw = requireEnv('GMAIL_TOKEN_ENCRYPTION_KEY');
   const bytes = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
@@ -73,10 +66,11 @@ export async function getValidAccessToken(
   if (!res.ok) throw new Error(`Failed to refresh Gmail token: ${refreshed.error_description || refreshed.error || res.status}`);
 
   const encryptedAccessToken = await encryptGmailToken(refreshed.access_token as string);
+  const encryptedRefreshToken = tokenRow.encrypted_refresh_token || await encryptGmailToken(refreshToken);
   const { error: updateError } = await svc.from('gmail_oauth_tokens').update({
     encrypted_access_token: encryptedAccessToken,
-    encrypted_refresh_token: tokenRow.encrypted_refresh_token || await encryptGmailToken(refreshToken),
-    expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
+    encrypted_refresh_token: encryptedRefreshToken,
+    expires_at: new Date(Date.now() + Number(refreshed.expires_in || 3600) * 1000).toISOString(),
     access_token: null,
     refresh_token: null,
   }).eq('id', tokenRow.id as string);
@@ -135,26 +129,11 @@ export function extractEmailAddress(value = '') {
 }
 
 export function extractEmailAddresses(value = '') {
-  return value
-    .split(',')
-    .map(part => extractEmailAddress(part))
-    .filter(Boolean);
+  return value.split(',').map(part => extractEmailAddress(part)).filter(Boolean);
 }
 
 export function stripHtml(value = '') {
-  return value
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<br\s*\/?\s*>/gi, '\n')
-    .replace(/<\/(p|div|li|h[1-6])>/gi, '\n')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/\s+\n/g, '\n')
-    .replace(/\n\s+/g, '\n')
-    .trim();
+  return value.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<br\s*\/?\s*>/gi, '\n').replace(/<\/(p|div|li|h[1-6])>/gi, '\n').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/\s+\n/g, '\n').replace(/\n\s+/g, '\n').trim();
 }
 
 export function gmailLabelsToFolder(labels: string[] = []) {
@@ -175,20 +154,5 @@ export function parseMessage(msg: any) {
   const text = parts.find(p => p.mimeType === 'text/plain' && p.body?.data);
   const htmlBody = decodeBody(html?.body?.data);
   const textBody = decodeBody(text?.body?.data);
-  return {
-    id: msg.id,
-    threadId: msg.threadId,
-    labelIds: msg.labelIds || [],
-    snippet: msg.snippet || '',
-    internalDate: msg.internalDate,
-    from: h.from || '',
-    to: h.to || '',
-    cc: h.cc || '',
-    subject: h.subject || '(No Subject)',
-    date: h.date || '',
-    text: textBody,
-    html: htmlBody,
-    body: textBody || stripHtml(htmlBody) || msg.snippet || '',
-    attachments: parts.filter(p => p.filename && p.body?.attachmentId).map(p => ({ id: p.body.attachmentId, filename: p.filename, content_type: p.mimeType, size: p.body.size || 0 })),
-  };
+  return { id: msg.id, threadId: msg.threadId, labelIds: msg.labelIds || [], snippet: msg.snippet || '', internalDate: msg.internalDate, from: h.from || '', to: h.to || '', cc: h.cc || '', subject: h.subject || '(No Subject)', date: h.date || '', text: textBody, html: htmlBody, body: textBody || stripHtml(htmlBody) || msg.snippet || '', attachments: parts.filter(p => p.filename && p.body?.attachmentId).map(p => ({ id: p.body.attachmentId, filename: p.filename, content_type: p.mimeType, size: p.body.size || 0 })) };
 }
