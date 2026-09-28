@@ -42,6 +42,10 @@ const AdminTravelDashboard: React.FC = () => {
   const [editStatus, setEditStatus] = useState('received');
   const [editNote, setEditNote] = useState('');
   const [saving, setSaving] = useState(false);
+  const [emailBooking, setEmailBooking] = useState<Booking | null>(null);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [emailSending, setEmailSending] = useState(false);
 
   // Blackout form
   const [boForm, setBoForm] = useState({ package: 'Explorer', start_date: '', end_date: '', reason: '' });
@@ -93,6 +97,45 @@ const AdminTravelDashboard: React.FC = () => {
     toast({ title: 'Booking updated', description: 'Customer has been notified by email.' });
     setEditing(null);
     fetchAll();
+  };
+
+  const openEmail = (b: Booking) => {
+    setEmailBooking(b);
+    setEmailSubject('Regarding your Bridgefort Travels booking');
+    setEmailMessage(
+      `Dear ${b.name.split(' ')[0] || b.name},
+
+Thank you for booking with Bridgefort Travels. We are reaching out regarding your travel booking for ${b.destination || 'your selected destination'}.
+
+Please reply to this email if you have any questions or need further assistance.
+
+Best regards,
+Bridgefort Travels`
+    );
+  };
+
+  const sendCustomerEmail = async () => {
+    if (!emailBooking || !emailSubject.trim() || !emailMessage.trim()) return;
+    setEmailSending(true);
+    const { data, error } = await supabase.functions.invoke('manage-travel-booking', {
+      body: {
+        action: 'send_message',
+        bookingId: emailBooking.id,
+        subject: emailSubject.trim(),
+        message: emailMessage.trim(),
+      },
+    });
+    setEmailSending(false);
+    if (error || !data?.success) {
+      toast({
+        title: 'Email failed',
+        description: error?.message || data?.error || 'The email could not be sent.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    toast({ title: 'Email sent', description: `Sent to ${emailBooking.email} using Resend.` });
+    setEmailBooking(null);
   };
 
   const resendEmail = async (b: Booking) => {
@@ -231,8 +274,11 @@ const AdminTravelDashboard: React.FC = () => {
                         <td className="p-3 text-xs text-slate-400">{new Date(b.created_at).toLocaleDateString()}</td>
                         <td className="p-3 text-right space-x-1">
                           <Button size="sm" variant="outline" onClick={() => openEdit(b)}>Manage</Button>
-                          <Button size="sm" variant="ghost" onClick={() => resendEmail(b)} className="text-slate-300">
+                          <Button size="sm" variant="ghost" onClick={() => openEmail(b)} className="text-slate-300" title="Email customer">
                             <Mail className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => resendEmail(b)} className="text-slate-400" title="Resend booking confirmation">
+                            <RefreshCw className="h-3.5 w-3.5" />
                           </Button>
                         </td>
                       </tr>
@@ -320,6 +366,39 @@ const AdminTravelDashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      <Dialog open={!!emailBooking} onOpenChange={(o) => !o && setEmailBooking(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Email travel customer</DialogTitle>
+          </DialogHeader>
+          {emailBooking && (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-muted/50 p-3 text-sm">
+                <div className="font-medium">{emailBooking.name}</div>
+                <div className="text-muted-foreground">{emailBooking.email}</div>
+                <div className="text-muted-foreground">{emailBooking.package} · {emailBooking.destination || 'Destination pending'}</div>
+              </div>
+              <div>
+                <Label>Subject</Label>
+                <Input value={emailSubject} onChange={e => setEmailSubject(e.target.value)} maxLength={200} placeholder="Email subject" />
+              </div>
+              <div>
+                <Label>Message</Label>
+                <Textarea value={emailMessage} onChange={e => setEmailMessage(e.target.value)} rows={9} maxLength={10000} placeholder="Write your message to the customer..." />
+                <p className="mt-1 text-xs text-muted-foreground">This message will be sent to {emailBooking.email} through Resend from Bridgefort Travels.</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailBooking(null)}>Cancel</Button>
+            <Button onClick={sendCustomerEmail} disabled={emailSending || !emailSubject.trim() || !emailMessage.trim()}>
+              {emailSending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Mail className="h-4 w-4 mr-1" />}
+              {emailSending ? 'Sending…' : 'Send email'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="max-w-lg">
