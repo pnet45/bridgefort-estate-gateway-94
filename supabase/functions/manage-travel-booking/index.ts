@@ -9,140 +9,141 @@ const corsHeaders = {
 };
 
 const ALLOWED_STATUSES = ["received", "confirmed", "rejected", "cancelled"];
+const FROM_EMAIL = "Bridgefort Travels <travels@bridgeforthomes.com>";
+
+const response = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+  status,
+  headers: { ...corsHeaders, "Content-Type": "application/json" },
+});
+
+const escapeHtml = (value: unknown) => String(value ?? "")
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/\"/g, "&quot;")
+  .replace(/'/g, "&#039;");
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return response({ error: "Method not allowed" }, 405);
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!authHeader) return response({ error: "Unauthorized" }, 401);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { persistSession: false, autoRefreshToken: false } },
     );
 
-    // Identify caller
-    const token = authHeader.replace("Bearer ", "");
+    const token = authHeader.replace(/^Bearer\s+/i, "");
     const { data: userData, error: userErr } = await supabase.auth.getUser(token);
-    if (userErr || !userData.user) {
-      return new Response(JSON.stringify({ error: "Invalid session" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const userId = userData.user.id;
+    if (userErr || !userData.user) return response({ error: "Invalid session" }, 401);
 
-    // Super-admin check
+    const userId = userData.user.id;
     const { data: isSuper } = await supabase.rpc("is_super_admin", { _user_id: userId });
-    if (!isSuper) {
-      return new Response(JSON.stringify({ error: "Forbidden — super admin only" }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!isSuper) return response({ error: "Forbidden — super admin only" }, 403);
 
     const body = await req.json();
     const { action, bookingId } = body;
-    if (!bookingId || typeof bookingId !== "string") {
-      return new Response(JSON.stringify({ error: "bookingId required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!bookingId || typeof bookingId !== "string") return response({ error: "bookingId required" }, 400);
 
     const { data: booking, error: fetchErr } = await supabase
-      .from("travel_bookings").select("*").eq("id", bookingId).single();
-    if (fetchErr || !booking) {
-      return new Response(JSON.stringify({ error: "Booking not found" }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+      .from("travel_bookings")
+      .select("*")
+      .eq("id", bookingId)
+      .single();
+    if (fetchErr || !booking) return response({ error: "Booking not found" }, 404);
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resend = resendKey ? new Resend(resendKey) : null;
-    const from = "Bridgefort Travels <noreply@bridgeforthomes.com>";
-    const origin = req.headers.get("origin") || "https://bridgefort.lovable.app";
+    const origin = req.headers.get("origin") || "https://bridgeforthomes.com";
     const statusUrl = `${origin}/travels/booking/${booking.confirmation_token}`;
 
     if (action === "update_status") {
-      const { status, status_note } = body;
-      if (!ALLOWED_STATUSES.includes(status)) {
-        return new Response(JSON.stringify({ error: "Invalid status" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+      const status = String(body.status ?? "");
+      const statusNote = body.status_note ? String(body.status_note).trim().slice(0, 2000) : null;
+      if (!ALLOWED_STATUSES.includes(status)) return response({ error: "Invalid status" }, 400);
+
       const { error: upErr } = await supabase
         .from("travel_bookings")
-        .update({ status, status_note: status_note || null })
+        .update({ status, status_note: statusNote })
         .eq("id", bookingId);
       if (upErr) throw upErr;
 
-      // Notify customer
+      const label = status === "confirmed" ? "Confirmed ✅"
+        : status === "rejected" ? "Rejected"
+        : status === "cancelled" ? "Cancelled" : "Received";
+      const colour = status === "confirmed" ? "#16a34a"
+        : status === "rejected" ? "#dc2626"
+        : status === "cancelled" ? "#6b7280" : "#4f46e5";
+
       if (resend) {
-        const label = status === "confirmed" ? "Confirmed ✅"
-                    : status === "rejected" ? "Rejected"
-                    : status === "cancelled" ? "Cancelled" : "Received";
-        const colour = status === "confirmed" ? "#16a34a"
-                     : status === "rejected" ? "#dc2626"
-                     : status === "cancelled" ? "#6b7280" : "#4f46e5";
-        const html = `
-          <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111">
-            <h2 style="color:${colour}">Booking ${label}</h2>
-            <p>Hi ${booking.name.split(" ")[0]}, your travel booking status has been updated.</p>
-            <p><strong>Status:</strong> <span style="color:${colour}">${label}</span></p>
-            ${status_note ? `<p><strong>Note:</strong> ${String(status_note).replace(/</g, "&lt;")}</p>` : ""}
-            <p><a href="${statusUrl}" style="display:inline-block;background:${colour};color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none">View booking</a></p>
-          </div>`;
-        await resend.emails.send({
-          from, to: [booking.email],
+        const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111"><h2 style="color:${colour}">Booking ${label}</h2><p>Hi ${escapeHtml(booking.name.split(" ")[0])}, your Bridgefort Travels booking has been updated.</p><p><strong>Status:</strong> ${escapeHtml(label)}</p>${statusNote ? `<p><strong>Note:</strong> ${escapeHtml(statusNote)}</p>` : ""}<p><a href="${escapeHtml(statusUrl)}" style="display:inline-block;background:${colour};color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none">View booking</a></p></div>`;
+        const sent = await resend.emails.send({
+          from: FROM_EMAIL,
+          to: [booking.email],
           subject: `Bridgefort Travels — booking ${label}`,
           html,
-        }).catch((e) => console.error("status email:", e));
+        });
+        if (sent.error) console.error("status email:", sent.error);
       }
 
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return response({ success: true, status });
+    }
+
+    if (action === "send_message") {
+      const subject = String(body.subject ?? "").trim().slice(0, 200);
+      const message = String(body.message ?? "").trim().slice(0, 10000);
+      if (!subject || !message) return response({ error: "Subject and message are required" }, 400);
+      if (!resend) return response({ error: "Email is not configured" }, 500);
+
+      const html = `<div style="font-family:Arial,sans-serif;max-width:650px;margin:0 auto;padding:24px;color:#111"><p>Dear ${escapeHtml(booking.name)},</p><div>${escapeHtml(message).replace(/\n/g, "<br/>")}</div><hr style="margin:24px 0;border:0;border-top:1px solid #ddd"><p style="font-size:12px;color:#666">Bridgefort Travels<br/>travels@bridgeforthomes.com</p></div>`;
+      const sent = await resend.emails.send({ from: FROM_EMAIL, to: [booking.email], subject, html });
+      if (sent.error) throw new Error(sent.error.message || "Email could not be sent");
+
+      const { error: logErr } = await supabase.from("admin_emails").insert({
+        sender_id: userId,
+        from_email: "travels@bridgeforthomes.com",
+        from_name: "Bridgefort Travels",
+        to_email: booking.email,
+        to_name: booking.name,
+        subject,
+        body: message,
+        html,
+        folder: "sent",
+        is_read: true,
+        source: "travel_booking",
+        external_ref: booking.id,
+        account_email: "travels@bridgeforthomes.com",
       });
+      if (logErr) console.error("travel sent-mail log:", logErr);
+
+      const { error: activityErr } = await supabase.from("crm_activities").insert({
+        lead_id: booking.crm_lead_id,
+        journey_id: booking.service_journey_id,
+        activity_type: "TRAVEL_BOOKING_EMAIL_SENT",
+        subject,
+        notes: message,
+        created_by: userId,
+      });
+      if (activityErr) console.error("travel activity log:", activityErr);
+
+      return response({ success: true, sent: true });
     }
 
     if (action === "resend_confirmation") {
-      if (!resend) {
-        return new Response(JSON.stringify({ error: "Email not configured" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const html = `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111">
-          <h2 style="color:#4f46e5">Your Bridgefort Travels booking</h2>
-          <p>Hi ${booking.name.split(" ")[0]}, here is your booking summary (current status: <strong>${booking.status}</strong>).</p>
-          <ul>
-            <li><strong>Package:</strong> ${booking.package}</li>
-            <li><strong>Destination:</strong> ${booking.destination || "—"}</li>
-            <li><strong>Departure:</strong> ${booking.departure_date}</li>
-            <li><strong>Return:</strong> ${booking.return_date}</li>
-            <li><strong>Travelers:</strong> ${booking.travelers}</li>
-          </ul>
-          <p><a href="${statusUrl}" style="display:inline-block;background:#4f46e5;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none">Track your booking</a></p>
-        </div>`;
-      await resend.emails.send({
-        from, to: [booking.email],
-        subject: "Bridgefort Travels — booking confirmation (resent)",
-        html,
-      });
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      if (!resend) return response({ error: "Email not configured" }, 500);
+      const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111"><h2 style="color:#4f46e5">Your Bridgefort Travels booking</h2><p>Hi ${escapeHtml(booking.name.split(" ")[0])}, here is your booking summary (current status: <strong>${escapeHtml(booking.status)}</strong>).</p><ul><li><strong>Package:</strong> ${escapeHtml(booking.package)}</li><li><strong>Destination:</strong> ${escapeHtml(booking.destination || "—")}</li><li><strong>Departure:</strong> ${escapeHtml(booking.departure_date)}</li><li><strong>Return:</strong> ${escapeHtml(booking.return_date)}</li><li><strong>Travelers:</strong> ${booking.travelers}</li></ul><p><a href="${escapeHtml(statusUrl)}" style="display:inline-block;background:#4f46e5;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none">Track your booking</a></p></div>`;
+      const sent = await resend.emails.send({ from: FROM_EMAIL, to: [booking.email], subject: "Bridgefort Travels — booking confirmation (resent)", html });
+      if (sent.error) throw new Error(sent.error.message || "Email could not be sent");
+      return response({ success: true });
     }
 
-    return new Response(JSON.stringify({ error: "Unknown action" }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return response({ error: "Unknown action" }, 400);
   } catch (e: any) {
     console.error("manage-travel-booking error:", e);
-    return new Response(JSON.stringify({ error: e.message || "Internal error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return response({ error: e?.message || "Internal error" }, 500);
   }
 });
