@@ -42,8 +42,14 @@ serve(async (req) => {
     if (userErr || !userData.user) return response({ error: "Invalid session" }, 401);
 
     const userId = userData.user.id;
-    const { data: isSuper } = await supabase.rpc("is_super_admin", { _user_id: userId });
-    if (!isSuper) return response({ error: "Forbidden — super admin only" }, 403);
+    const { data: canManageBookings } = await supabase.rpc("user_has_permission", {
+      _user_id: userId,
+      _permission: "booking.manage",
+    });
+    const { data: isGlobalAdmin } = await supabase.rpc("is_global_admin", { _user_id: userId });
+    if (!canManageBookings && !isGlobalAdmin) {
+      return response({ error: "Forbidden — booking.manage permission required" }, 403);
+    }
 
     const body = await req.json();
     const { action, bookingId } = body;
