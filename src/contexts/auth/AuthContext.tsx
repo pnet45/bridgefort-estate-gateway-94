@@ -45,19 +45,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const legacyRoles = (legacyRolesData ?? []).map((entry: { role: string }) => entry.role);
       const dbRoles = (adminRoleData ?? []).map((entry: { role_name: string }) => entry.role_name);
       const explicitPermissions = (adminPermissionData ?? []).map((entry: { permission_key: string }) => entry.permission_key);
-      const roleSet = Array.from(new Set([...legacyRoles, ...dbRoles]));
+
+      // Canonical admin authorization comes only from admin_roles + admin_permissions.
+      // Legacy user_roles remain readable for compatibility/display, but can no longer
+      // grant blanket admin access.
+      const nonAdminLegacyRoles = legacyRoles.filter((role) => ![
+        'admin', 'super_admin', 'manager', 'team_leader', 'associate', 'staff',
+        'admin_dir', 'admin_adm', 'admin_acct', 'admin_sales', 'admin_cs', 'admin_legal', 'admin_it',
+      ].includes(role));
+      const roleSet = Array.from(new Set([...dbRoles, ...nonAdminLegacyRoles]));
       const permissionSet = new Set<string>(explicitPermissions);
+
       if (roleSet.length > 0) {
-        const { data: linkedPermissionsData, error: linkedPermissionsError } = await supabase.from('role_permissions').select('permission_key').in('role', roleSet);
+        const { data: linkedPermissionsData, error: linkedPermissionsError } = await supabase
+          .from('role_permissions')
+          .select('permission_key')
+          .in('role', roleSet)
+          .eq('is_enabled', true);
         if (requestId !== accessRequestRef.current) return;
         if (linkedPermissionsError) console.error('fetchUserAccess: role_permissions query failed:', linkedPermissionsError);
         (linkedPermissionsData ?? []).forEach((entry: { permission_key: string }) => permissionSet.add(entry.permission_key));
       }
-      const isLegacyAdmin = roleSet.includes('admin') || roleSet.includes('super_admin');
-      if (isLegacyAdmin) ['admin:all','admin:view_dashboard','admin:view_properties','admin:view_crm','admin:view_users','admin:view_approvals','admin:view_subscribers','admin:view_email_center','admin:view_analytics','admin:view_mlm_funnel','admin:view_activity','admin:view_content','admin:view_cms','admin:view_other_payments','admin:manage_permissions','admin:manage_departments','mailbox:read','mailbox:write','mailbox:sync'].forEach((permission) => permissionSet.add(permission));
+
       if (requestId !== accessRequestRef.current) return;
       const normalizedRoles = roleSet.length ? roleSet : ['user'];
-      setRoles(normalizedRoles); setPermissions(Array.from(permissionSet)); setUserRole(getPrimaryRole(normalizedRoles));
+      setRoles(normalizedRoles);
+      setPermissions(Array.from(permissionSet));
+      setUserRole(getPrimaryRole(normalizedRoles));
     } catch (error) {
       if (requestId !== accessRequestRef.current) return;
       console.error('Error fetching user role and permissions:', error);
