@@ -30,7 +30,7 @@ const BUSINESS_ROLE_LABELS: Record<(typeof BUSINESS_ROLES)[number], string> = {
 
 const getSafeRoleLabel = (role: string | null | undefined, fallback?: string | null) => {
   const normalized = role?.toLowerCase();
-  if (normalized === 'super_admin' || normalized === 'admin_dir') return 'Administrator';
+  if (normalized === 'super_admin' || normalized === 'admin_dir') return '$Admin';
   return fallback || BUSINESS_ROLE_LABELS[normalized as keyof typeof BUSINESS_ROLE_LABELS] || 'No role';
 };
 
@@ -136,7 +136,7 @@ const UserManagementTab = () => {
   };
 
   const handleUpdateRole = async (target: UserWithRole, newRole: string) => {
-    if (target.isGlobalAdmin) return toast.error('Protected administrator accounts cannot be reassigned here');
+    if (target.isGlobalAdmin) return toast.error('This account is managed by the authorization system');
     if (!BUSINESS_ROLES.includes(newRole as (typeof BUSINESS_ROLES)[number])) return toast.error('Only User, Client and PBO roles can be assigned here');
     try {
       const { error } = await supabase.rpc('admin_set_user_role', { _target_user_id: target.id, _role: newRole });
@@ -147,7 +147,7 @@ const UserManagementTab = () => {
   };
 
   const handleToggleLock = async (target: UserWithRole) => {
-    if (target.isGlobalAdmin) return toast.error('Protected administrator accounts cannot be modified here');
+    if (target.isGlobalAdmin) return toast.error('This account is managed by the authorization system');
     const locking = !target.account_locked;
     const reason = locking ? (window.prompt('Reason for locking this account:', 'Account under review') || 'Account locked by admin') : null;
     try {
@@ -172,7 +172,7 @@ const UserManagementTab = () => {
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />User Management</CardTitle><CardDescription>Manage user accounts, roles and account security. Protected administrator accounts are not editable here.</CardDescription></div>
+            <div><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" />User Management</CardTitle><CardDescription>Manage user accounts, roles and account security.</CardDescription></div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => { fetchData(); fetchLockedAccounts(); }}><RefreshCw className="mr-2 h-4 w-4" />Refresh</Button>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -201,7 +201,7 @@ const UserManagementTab = () => {
             <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SelectValue placeholder="Filter status" /></SelectTrigger><SelectContent><SelectItem value="all">All statuses</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="locked">Locked</SelectItem></SelectContent></Select>
           </div>
 
-          {loading ? <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div> : <div className="overflow-x-auto rounded-lg border"><Table><TableHeader><TableRow><TableHead>Name {cycleSort('name')}</TableHead><TableHead>Email {cycleSort('email')}</TableHead><TableHead>Role {cycleSort('role')}</TableHead><TableHead>Joined {cycleSort('created_at')}</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader><TableBody>{filteredUsers.length === 0 ? <TableRow><TableCell colSpan={6} className="py-12 text-center text-muted-foreground">No users match the current filters.</TableCell></TableRow> : filteredUsers.map(user => <TableRow key={user.id} className={user.isGlobalAdmin ? 'bg-muted/30' : undefined}><TableCell className="font-medium">{`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}</TableCell><TableCell>{user.email}</TableCell><TableCell><div className="flex items-center gap-2"><Badge variant={user.isGlobalAdmin ? 'default' : 'secondary'}>{user.roleDisplay}</Badge>{user.isGlobalAdmin && <ShieldCheck className="h-4 w-4 text-primary" />}</div></TableCell><TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell><TableCell>{user.account_locked ? <Badge variant="destructive">Locked</Badge> : <Badge variant="outline">Active</Badge>}</TableCell><TableCell><div className="flex justify-end gap-2">{user.isGlobalAdmin ? <Badge variant="outline" className="gap-1"><ShieldCheck className="h-3.5 w-3.5" />Protected</Badge> : <><Select value={user.role || ''} onValueChange={value => handleUpdateRole(user, value)}><SelectTrigger className="w-40"><SelectValue placeholder="Change role" /></SelectTrigger><SelectContent>{roles.map(r => <SelectItem key={r.name} value={r.name}>{r.display_name || BUSINESS_ROLE_LABELS[r.name as keyof typeof BUSINESS_ROLE_LABELS]}</SelectItem>)}</SelectContent></Select><Button size="icon" variant="outline" onClick={() => handleToggleLock(user)} title={user.account_locked ? 'Unlock account' : 'Lock account'}>{user.account_locked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}</Button></>}</div></TableCell></TableRow>)}</TableBody></Table></div>}
+          {loading ? <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div> : <div className="overflow-x-auto rounded-lg border"><Table><TableHeader><TableRow><TableHead>Name {cycleSort('name')}</TableHead><TableHead>Email {cycleSort('email')}</TableHead><TableHead>Role {cycleSort('role')}</TableHead><TableHead>Joined {cycleSort('created_at')}</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader><TableBody>{filteredUsers.length === 0 ? <TableRow><TableCell colSpan={6} className="py-12 text-center text-muted-foreground">No users match the current filters.</TableCell></TableRow> : filteredUsers.map(user => <TableRow key={user.id} className={user.isGlobalAdmin ? 'bg-muted/30' : undefined}><TableCell className="font-medium">{`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}</TableCell><TableCell>{user.email}</TableCell><TableCell><div className="flex items-center gap-2"><Badge variant="secondary">{user.roleDisplay}</Badge></div></TableCell><TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell><TableCell>{user.account_locked ? <Badge variant="destructive">Locked</Badge> : <Badge variant="outline">Active</Badge>}</TableCell><TableCell><div className="flex justify-end gap-2">{user.isGlobalAdmin ? null : <><Select value={user.role || ''} onValueChange={value => handleUpdateRole(user, value)}><SelectTrigger className="w-40"><SelectValue placeholder="Change role" /></SelectTrigger><SelectContent>{roles.map(r => <SelectItem key={r.name} value={r.name}>{r.display_name || BUSINESS_ROLE_LABELS[r.name as keyof typeof BUSINESS_ROLE_LABELS]}</SelectItem>)}</SelectContent></Select><Button size="icon" variant="outline" onClick={() => handleToggleLock(user)} title={user.account_locked ? 'Unlock account' : 'Lock account'}>{user.account_locked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}</Button></>}</div></TableCell></TableRow>)}</TableBody></Table></div>}
         </CardContent>
       </Card>
 
