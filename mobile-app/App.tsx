@@ -1,7 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { AuthProvider } from './context/AuthContext';
-import { useAuth } from './context/authContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthScreen from './screens/AuthScreen';
 import HomeScreen from './screens/HomeScreen';
 import DashboardScreen from './screens/DashboardScreen';
