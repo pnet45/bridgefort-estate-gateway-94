@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Activity, AlertCircle, ArrowRight, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, Phone, RefreshCw, Target, TrendingUp, Users, BriefcaseBusiness } from 'lucide-react';
 import { format } from 'date-fns';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
+import AdminCustomer360 from '@/components/admin/AdminCustomer360';
 
 type Lead = { id: string; name: string; phone: string | null; status: string; source: string; priority: string; conversion_value: number | null; estate_interest: string | null; assigned_to: string | null; created_at: string };
 type FollowUp = { id: string; lead_id: string; scheduled_at: string; action_type: string; notes: string | null; completed_at: string | null; cancelled_at: string | null };
@@ -168,6 +169,7 @@ const AdminCRMWorkspace: React.FC = () => {
         </CardContent>
       </Card>
       <AdminCRMLeads />
+      <AdminCustomer360 />
     </div>
   );
 };
