@@ -44,6 +44,14 @@ Migration:
 - No customer, payment, booking, inventory, or account rows were modified.
 - Global `admin_dir` / `super_admin` authority remains intact.
 
+### Additional authorization fix
+
+The `approve-admin-request` Edge Function was also reconciled. Its Admin-Dir grant check previously accepted a legacy `user_roles.super_admin` row. It now checks the canonical `admin_roles` table for either `admin_dir` or `super_admin`.
+
+- GitHub commit: `d4992cfcdfb74a88f46e38a54ed730690b5576c8`
+- Supabase deployment: ACTIVE, version 117
+- JWT verification remains enabled.
+
 ### Remaining Phase 12 work
 The remaining SECURITY DEFINER findings will be reviewed by category rather than mass-revoked. Functions used by RLS or required authenticated customer workflows will be preserved with their authorization checks; genuinely privileged Data API functions will be restricted to the minimum required callers.
 
