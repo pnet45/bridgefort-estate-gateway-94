@@ -181,6 +181,21 @@ Migration:
 
 No mailbox assignment, user role, or account data was changed by this cleanup.
 
+### Phase 12E — BHRealtor referral leaderboard authorization cleanup
+
+The authenticated `get_pbo_referral_leaderboard()` RPC was reviewed after the BHRealtors dashboard was moved from direct relation reads to the protected RPC. The function returned aggregate Realtor referral information to any authenticated caller, even when the caller was not a BHRealtor or global administrator.
+
+The RPC now requires the caller to be either:
+- a BHRealtor (`profiles.is_pbo = true`); or
+- a global administrator (`admin_dir` / `super_admin` through `is_global_admin`).
+
+Anonymous execution remains revoked and authenticated execution remains available for the intended BHRealtor workflow.
+
+Migration:
+`supabase/migrations/20261003032537_phase_12_bhrealtor_leaderboard_authorization.sql`
+
+No referral, commission, wallet, or profile records were modified.
+
 ### Remaining Phase 12 work
 The remaining SECURITY DEFINER findings will continue to be reviewed by category rather than mass-revoked. Functions used by RLS or required authenticated customer workflows will be preserved with their authorization checks; genuinely privileged Data API functions will be restricted to the minimum required callers.
 
