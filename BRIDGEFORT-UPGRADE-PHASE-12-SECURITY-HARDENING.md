@@ -177,7 +177,7 @@ The function was updated to use only the canonical `mailbox:write` permission fo
 Anonymous execution remains revoked and authenticated execution remains available to the intended mailbox-management workflow.
 
 Migration:
-`20261003032640_phase_12_mailbox_manager_authorization_cleanup`
+`20261003032332_phase_12_mailbox_manager_authorization_cleanup`
 
 No mailbox assignment, user role, or account data was changed by this cleanup.
 
