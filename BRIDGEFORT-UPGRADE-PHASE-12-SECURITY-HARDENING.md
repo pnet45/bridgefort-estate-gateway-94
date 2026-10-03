@@ -168,6 +168,19 @@ No new referral table, wallet table, commission table or competing downline mode
 - No production financial data was modified.
 - No emojis or decorative AI-style copy were introduced into the BHRealtors UI changes. The existing Lucide icon system is used for interface affordances.
 
+### Phase 12D — Mailbox manager authorization cleanup
+
+Reviewed the remaining authenticated mailbox-management RPC surface. `list_privileged_mailbox_managers()` was still checking the legacy `has_role(...,'admin')` path when determining which users could be returned as mailbox managers.
+
+The function was updated to use only the canonical `mailbox:write` permission for candidate managers, while the requesting administrator must have `admin:manage_mailboxes` or `admin:all`.
+
+Anonymous execution remains revoked and authenticated execution remains available to the intended mailbox-management workflow.
+
+Migration:
+`20261003032640_phase_12_mailbox_manager_authorization_cleanup`
+
+No mailbox assignment, user role, or account data was changed by this cleanup.
+
 ### Remaining Phase 12 work
 The remaining SECURITY DEFINER findings will continue to be reviewed by category rather than mass-revoked. Functions used by RLS or required authenticated customer workflows will be preserved with their authorization checks; genuinely privileged Data API functions will be restricted to the minimum required callers.
 
