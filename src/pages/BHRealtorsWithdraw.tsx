@@ -18,6 +18,9 @@ const BHRealtorsWithdraw: React.FC = () => {
   const { user, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [walletBalance, setWalletBalance] = useState(0);
+  const [canWithdraw, setCanWithdraw] = useState(false);
+  const [packageName, setPackageName] = useState('Associate');
+  const [pendingAmount, setPendingAmount] = useState(0);
   const [balanceHidden, setBalanceHidden] = useState(false);
   const [bank, setBank] = useState<BankDetails | null>(null);
   const [amount, setAmount] = useState('');
@@ -34,17 +37,22 @@ const BHRealtorsWithdraw: React.FC = () => {
     if (!user) return;
     setLoading(true);
     try {
-      const [{ data: profileRow, error: profileError }, { data: requests, error: requestsError }] = await Promise.all([
-        supabase.from('profiles').select('wallet_balance, banking_details').eq('id', user.id).single(),
-        supabase.from('withdrawal_requests').select('id, amount, status, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
+      const [{ data: profileRow, error: profileError }, { data: dashboard, error: dashboardError }] = await Promise.all([
+        supabase.from('profiles').select('banking_details').eq('id', user.id).single(),
+        supabase.rpc('get_my_bhrealtor_dashboard'),
       ]);
       if (profileError) throw profileError;
-      if (requestsError) throw requestsError;
-      setWalletBalance(Number(profileRow?.wallet_balance ?? 0));
+      if (dashboardError) throw dashboardError;
+      const summary = (dashboard || {}) as any;
+      const wallet = Number(summary.available_balance ?? summary.profile?.wallet_balance ?? 0);
+      setWalletBalance(wallet);
+      setCanWithdraw(Boolean(summary.can_withdraw));
+      setPackageName(String(summary.profile?.package || 'associate').replace(/_/g, ' '));
+      setPendingAmount(Number(summary.pending_withdrawal_total || 0));
       if (profileRow?.banking_details) {
         try { setBank(JSON.parse(profileRow.banking_details)); } catch { setBank(null); }
       } else setBank(null);
-      setHistory((requests || []) as WithdrawalRow[]);
+      setHistory((Array.isArray(summary.withdrawals) ? summary.withdrawals : []) as WithdrawalRow[]);
     } catch (error) {
       console.error('Error loading withdrawal data:', error);
       toast({ title: 'Unable to load wallet', description: 'Please refresh and try again.', variant: 'destructive' });
@@ -73,6 +81,9 @@ const BHRealtorsWithdraw: React.FC = () => {
     if (!user) return;
     if (!bank?.bank_name || !bank.account_number || !bank.account_name) {
       toast({ title: 'Bank details missing', description: 'Complete your BHRealtors bank details before requesting a withdrawal.', variant: 'destructive' }); return;
+    }
+    if (!canWithdraw) {
+      toast({ title: 'Withdrawal not available', description: 'Your current BHRealtors package does not have withdrawal access yet.', variant: 'destructive' }); return;
     }
     if (!numericAmount || numericAmount <= 0 || numericAmount > walletBalance) {
       toast({ title: 'Invalid withdrawal amount', description: amountError || 'Enter a valid amount within your available balance.', variant: 'destructive' }); return;
@@ -125,7 +136,7 @@ const BHRealtorsWithdraw: React.FC = () => {
           <div className="rounded-3xl border border-white/60 bg-white/70 backdrop-blur-xl p-6 shadow-sm">
             <div className="flex items-center justify-between"><p className="text-sm uppercase tracking-[0.2em] text-slate-500">Available balance</p><button type="button" onClick={() => loadData()} className="text-xs text-estate-blue">Refresh</button></div>
             <div className="flex items-center gap-3 mt-2"><p className="text-3xl font-bold text-estate-blue">{balanceHidden ? '₦••••••' : `₦${walletBalance.toLocaleString()}`}</p><button type="button" onClick={() => setBalanceHidden(v => !v)} aria-label="Toggle balance">{balanceHidden ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button></div>
-            <p className="text-xs text-slate-500 mt-2">Only available commissions can be withdrawn. Associate commissions remain locked until upgrade.</p>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs"><Badge variant={canWithdraw ? 'default' : 'secondary'}>{canWithdraw ? 'Withdrawal enabled' : 'Withdrawal locked'}</Badge><span className="rounded-full bg-slate-100 px-2.5 py-1 capitalize text-slate-600">{packageName} package</span>{pendingAmount > 0 && <span className="rounded-full bg-amber-50 px-2.5 py-1 text-amber-700">₦{pendingAmount.toLocaleString()} pending</span>}</div><p className="text-xs text-slate-500 mt-2">Only available commissions can be withdrawn. Your bank details are captured from your Realtor profile.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -136,7 +147,7 @@ const BHRealtorsWithdraw: React.FC = () => {
             <div className="rounded-3xl border border-slate-200 bg-white p-6"><Label htmlFor="wd-password" className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Confirm your password</Label><Input id="wd-password" type="password" value={password} onChange={e => { setPassword(e.target.value); setPasswordVerified(null); }} onBlur={verifyPassword} placeholder="Your account password" required />{verifyingPassword ? <p className="text-xs text-slate-500 mt-2 flex gap-1"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Verifying…</p> : passwordVerified === true ? <p className="text-xs text-emerald-600 mt-2 flex gap-1"><Check className="h-3.5 w-3.5" /> Password verified</p> : passwordVerified === false ? <p className="text-xs text-destructive mt-2 flex gap-1"><X className="h-3.5 w-3.5" /> Incorrect password</p> : <p className="text-xs text-slate-400 mt-2">Password verification is required for withdrawal.</p>}</div>
 
             <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900"><p className="flex gap-2"><AlertTriangle className="h-4 w-4 shrink-0" /> Withdrawal requests are reviewed by authorized admins before payout.</p><p className="flex gap-2 mt-2"><Clock className="h-4 w-4 shrink-0" /> Approved payouts are normally processed within the company's payout window.</p></div>
-            <Button type="submit" disabled={submitting || passwordVerified !== true || !!amountError || !bank} className="w-full bg-estate-blue hover:bg-estate-darkBlue">{submitting ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Submitting request…</span> : 'Submit Withdrawal Request'}</Button>
+            <Button type="submit" disabled={submitting || !canWithdraw || walletBalance <= 0 || passwordVerified !== true || !!amountError || !bank} className="w-full bg-estate-blue hover:bg-estate-darkBlue">{submitting ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Submitting request…</span> : !canWithdraw ? 'Withdrawal unavailable for this package' : walletBalance <= 0 ? 'No available balance' : 'Submit Withdrawal Request'}</Button>
           </form>
 
           <div className="rounded-3xl border border-slate-200 bg-white p-6"><p className="font-semibold mb-4">Your withdrawal requests</p>{history.length === 0 ? <p className="text-sm text-slate-500">You haven't requested a withdrawal yet.</p> : <div className="space-y-3">{history.map(h => <div key={h.id} className="flex items-center justify-between rounded-xl bg-slate-50 p-3"><div><p className="font-semibold">₦{Number(h.amount).toLocaleString()}</p><p className="text-xs text-slate-500">{new Date(h.created_at).toLocaleString()}</p></div>{statusBadge(h.status)}</div>)}</div>}</div>

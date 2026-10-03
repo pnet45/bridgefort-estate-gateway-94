@@ -34,7 +34,11 @@ const BHRealtors: React.FC = () => {
   const [memberCount, setMemberCount] = useState(0);
   const [pboCount, setPboCount] = useState(0);
   const [downlineCount, setDownlineCount] = useState(0);
+  const [activeDownlineCount, setActiveDownlineCount] = useState(0);
   const [locked, setLocked] = useState(0);
+  const [earned, setEarned] = useState(0);
+  const [pendingWithdrawal, setPendingWithdrawal] = useState(0);
+  const [canWithdraw, setCanWithdraw] = useState(false);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -48,25 +52,29 @@ const BHRealtors: React.FC = () => {
     if (!user) return;
     setBusy(true);
     try {
-      const [pkgResult, members, pbo, downline, commissions, history] = await Promise.all([
+      const [pkgResult, members, pbo, dashboardResult] = await Promise.all([
         supabase.from('mlm_packages').select('package_code, package_name, price, direct_commission_pct, indirect_commission_pct, withdrawable, description, sales_commission_pct, sales_commission_locked, first_level_sales_commission_pct').order('price'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_pbo', true).eq('is_active', true),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('referred_by_id', user.id),
-        supabase.from('mlm_commissions').select('commission_amount, status').eq('beneficiary_id', user.id),
-        supabase.from('withdrawal_requests').select('id, amount, status, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(6),
+        supabase.rpc('get_my_bhrealtor_dashboard'),
       ]);
+      if (pkgResult.error) throw pkgResult.error;
+      if (dashboardResult.error) throw dashboardResult.error;
       if (pkgResult.data?.length) {
         const dbPackages = pkgResult.data as BhRealtorsPackage[];
         setPackages(dbPackages);
         setSelectedPackage(prev => dbPackages.find(p => p.package_code === prev.package_code) || dbPackages[0]);
       }
+      const dashboard = (dashboardResult.data || {}) as any;
       setMemberCount(members.count || 0);
       setPboCount(pbo.count || 0);
-      setDownlineCount(downline.count || 0);
-      const rows = commissions.data || [];
-      setLocked(rows.filter((r: any) => r.status === 'locked').reduce((s: number, r: any) => s + Number(r.commission_amount || 0), 0));
-      setWithdrawals(history.data || []);
+      setDownlineCount(Number(dashboard.direct_referrals || 0));
+      setActiveDownlineCount(Number(dashboard.active_direct_referrals || 0));
+      setLocked(Number(dashboard.locked_commissions || 0));
+      setEarned(Number(dashboard.total_commissions_earned || 0));
+      setPendingWithdrawal(Number(dashboard.pending_withdrawal_total || 0));
+      setCanWithdraw(Boolean(dashboard.can_withdraw));
+      setWithdrawals(Array.isArray(dashboard.withdrawals) ? dashboard.withdrawals : []);
     } catch (error) {
       console.error('BHRealtors load error:', error);
       toast({ title: 'Unable to load BHRealtors data', description: 'Please refresh and try again.', variant: 'destructive' });
@@ -76,6 +84,7 @@ const BHRealtors: React.FC = () => {
   useEffect(() => { if (user) void load(); }, [user]);
 
   const currentPackage = packages.find(p => p.package_code === currentCode) || packages.find(p => p.package_code === 'associate') || packages[0];
+  const availableBalance = Number(profile?.wallet_balance ?? 0);
 
   const openRegistration = (pkg: BhRealtorsPackage) => {
     if (!user) { toast({ title: 'Sign in required', description: 'Please sign in before joining BHRealtors.', variant: 'destructive' }); return; }
@@ -109,13 +118,13 @@ const BHRealtors: React.FC = () => {
             </div>
           </section>
 
-          <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-            {[[Users, 'Registered', memberCount], [Network, 'Active Realtors', pboCount], [Users, 'My direct referrals', downlineCount], [Lock, 'Locked commissions', naira(locked)], [Wallet, 'Wallet balance', naira(profile?.wallet_balance ?? 0)]].map(([Icon, label, value]: any) => <div key={label} className={`${glass} rounded-2xl p-4`}><Icon className="h-5 w-5 text-estate-purple" /><p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">{label}</p><p className="mt-1 text-xl font-bold text-slate-950 dark:text-white">{value}</p></div>)}
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+            {[[Users, 'Registered', memberCount], [Network, 'Active Realtors', pboCount], [Users, 'Direct referrals', downlineCount], [CheckCircle2, 'Active direct', activeDownlineCount], [TrendingUp, 'Commission earned', naira(earned)], [Wallet, 'Available balance', naira(availableBalance)]].map(([Icon, label, value]: any) => <div key={label} className={`${glass} rounded-2xl p-4`}><Icon className="h-5 w-5 text-estate-purple" /><p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">{label}</p><p className="mt-1 text-xl font-bold text-slate-950 dark:text-white">{value}</p></div>)}
           </section>
 
           {isRealtor && <section className="grid gap-5 lg:grid-cols-3">
             <div className={`${glass} lg:col-span-2 rounded-3xl p-6`}><div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-300">Current package / rank</p><h2 className="mt-1 text-3xl font-black text-estate-blue dark:text-white">{currentPackage?.package_name || currentCode}</h2><p className={`mt-2 text-sm ${muted}`}>Estate-land sales commission: {currentPackage?.sales_commission_pct ?? (currentCode === 'associate' ? 5 : currentCode === 'gold' ? 10 : 15)}%. {currentRank === 1 ? 'Commission is locked until you upgrade.' : 'Eligible commissions are withdrawable.'}</p></div><Badge className={currentRank >= 2 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200' : 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200'}>{currentRank >= 2 ? 'Withdrawable' : 'Locked'}</Badge></div></div>
-            <Link to="/bh-realtors/withdraw" className="group rounded-3xl border border-white/15 bg-estate-blue p-6 text-white shadow-2xl transition hover:-translate-y-1 hover:shadow-estate-blue/20"><Wallet className="h-7 w-7" /><p className="mt-5 text-sm text-slate-200">Wallet balance</p><p className="mt-1 text-3xl font-black">{naira(profile?.wallet_balance ?? 0)}</p><span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">Withdraw <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-1 group-hover:-translate-y-1" /></span></Link>
+            <Link to="/bh-realtors/withdraw" className="group rounded-3xl border border-white/15 bg-estate-blue p-6 text-white shadow-2xl transition hover:-translate-y-1 hover:shadow-estate-blue/20"><Wallet className="h-7 w-7" /><p className="mt-5 text-sm text-slate-200">Available commission</p><p className="mt-1 text-3xl font-black">{naira(availableBalance)}</p><span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">{canWithdraw ? 'Withdraw funds' : 'View withdrawal details'} <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-1 group-hover:-translate-y-1" /></span>{pendingWithdrawal > 0 && <p className="mt-2 text-xs text-white/70">{naira(pendingWithdrawal)} pending review</p>}</Link>
           </section>}
 
           <section className={`${glass} relative overflow-hidden rounded-3xl p-7 md:p-9`}><div className="absolute right-0 top-0 h-48 w-48 overflow-hidden rounded-bl-[5rem] opacity-90"><img src="/images/Luxury Homes.jpeg" alt="Luxury real estate" className="h-full w-full object-cover" /></div><div className="relative max-w-3xl pr-4 md:pr-40"><div className="flex items-center gap-3"><Building2 className="h-6 w-6 text-estate-purple" /><h2 className="text-2xl font-black text-estate-blue dark:text-white">Sell property. Build trust. Create wealth.</h2></div><p className={`mt-4 leading-7 ${muted}`}>Real estate is a long-term wealth strategy. With BHRealtors, your work is not just about making a sale; it is about helping people secure land and property they can hold, develop and potentially benefit from as the surrounding area grows.</p><div className="mt-5 grid gap-3 sm:grid-cols-3"><div className="rounded-2xl bg-slate-900/5 dark:bg-white/5 p-4"><Target className="h-5 w-5 text-estate-purple" /><p className={`mt-2 text-sm ${muted}`}>Find genuine buyers</p></div><div className="rounded-2xl bg-slate-900/5 dark:bg-white/5 p-4"><Users className="h-5 w-5 text-estate-purple" /><p className={`mt-2 text-sm ${muted}`}>Grow your network</p></div><div className="rounded-2xl bg-slate-900/5 dark:bg-white/5 p-4"><TrendingUp className="h-5 w-5 text-estate-purple" /><p className={`mt-2 text-sm ${muted}`}>Grow your income</p></div></div></div></section>

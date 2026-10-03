@@ -15,6 +15,7 @@ type Subscriber = {
   payment_plan: string | null; subscription_amount: number; subscribed_at: string;
   client_email: string | null; phone_number: string | null; plot_count: number; order_total: number;
   amount_paid: number; outstanding_balance: number; pbo_referral_code: string | null;
+  order_payment_status: string | null; payment_reference: string | null;
 };
 
 type History = {
@@ -72,7 +73,7 @@ const AdminEstateSubscribers: React.FC = () => {
             const profileName = [p.first_name, p.last_name].filter(Boolean).join(' ').trim() || p.full_name || r.subscriber_name;
             r.subscriber_name = r.subscriber_name || profileName || 'Unnamed Subscriber';
             r.client_email = r.client_email || p.email || null;
-            r.phone_number = r.phone_number || p.phone_number || null;
+                r.phone_number = r.phone_number || p.phone_number || null;
             r.pbo_referral_code = r.pbo_referral_code || p.pbo_referral_code || null;
           });
         }
@@ -178,7 +179,7 @@ const AdminEstateSubscribers: React.FC = () => {
     <CardContent className="space-y-4 p-3 sm:p-4">
       <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-2.5 sm:p-3">
         <div className="flex flex-col gap-2 sm:flex-row">
-          <div className="relative min-w-0 flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"/><Input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()} placeholder="Search name, subscription no. or email" className="h-10 border-slate-700 bg-slate-950 pl-9 text-sm text-white placeholder:text-slate-500"/></div>
+          <div className="relative min-w-0 flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"/><Input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && load()} placeholder="Search name, subscription no., email, phone or referral code" className="h-10 border-slate-700 bg-slate-950 pl-9 text-sm text-white placeholder:text-slate-500"/></div>
           <Button onClick={load} disabled={loading} className="h-10 bg-primary text-white hover:bg-primary/90"><Search className="h-4 w-4"/><span className="ml-2">Search</span></Button>
           <Button type="button" variant="outline" onClick={() => setFiltersOpen((v) => !v)} className="h-10 border-slate-700 bg-slate-950 text-slate-200 hover:bg-white/10 hover:text-white sm:hidden"><Filter className="mr-2 h-4 w-4"/>Filters<ChevronDown className={`ml-auto h-4 w-4 ${filtersOpen ? 'rotate-180' : ''}`}/></Button>
         </div>
@@ -196,7 +197,7 @@ const AdminEstateSubscribers: React.FC = () => {
 
     <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}><DialogContent className="max-h-[92vh] w-[calc(100%-1rem)] overflow-y-auto border-slate-700 bg-slate-950 p-0 text-white sm:max-w-3xl"><DialogHeader className="border-b border-slate-800 px-4 py-4 sm:px-6"><DialogTitle className="flex items-center gap-2"><Users className="h-5 w-5 text-primary"/><span className="truncate">{selected?.subscriber_name}</span></DialogTitle><DialogDescription className="text-xs text-slate-400">Subscription details, payment history and referral sharing.</DialogDescription></DialogHeader>
       {selected && <div className="space-y-5 p-4 sm:p-6">
-        <section><div className="mb-2 flex items-center justify-between"><h4 className="text-sm font-semibold">Subscription overview</h4><Badge variant={statusVariant(selected.subscription_status)}>{selected.subscription_status}</Badge></div><div className="grid grid-cols-2 gap-2 sm:grid-cols-3"><Detail label="Subscription No." value={selected.subscription_number} mono/><Detail label="Estate" value={selected.estate_name}/><Detail label="Payment Plan" value={selected.payment_plan || '—'}/><Detail label="Plots" value={String(selected.plot_count)}/><Detail label="Subscribed" value={date(selected.subscribed_at)}/><Detail label="Order Total" value={money(selected.order_total)}/><Detail label="Amount Paid" value={money(selected.amount_paid)} good/><Detail label="Outstanding" value={money(selected.outstanding_balance)} warn/><Detail label="Email" value={selected.client_email || '—'}/><Detail label="Phone" value={selected.phone_number || '—'}/></div></section>
+        <section><div className="mb-2 flex items-center justify-between"><h4 className="text-sm font-semibold">Subscription overview</h4><Badge variant={statusVariant(selected.subscription_status)}>{selected.subscription_status}</Badge></div><div className="grid grid-cols-2 gap-2 sm:grid-cols-3"><Detail label="Subscription No." value={selected.subscription_number} mono/><Detail label="Estate" value={selected.estate_name}/><Detail label="Payment Plan" value={selected.payment_plan || '—'}/><Detail label="Plots" value={String(selected.plot_count)}/><Detail label="Subscribed" value={date(selected.subscribed_at)}/><Detail label="Order Total" value={money(selected.order_total)}/><Detail label="Amount Paid" value={money(selected.amount_paid)} good/><Detail label="Outstanding" value={money(selected.outstanding_balance)} warn/><Detail label="Email" value={selected.client_email || '—'}/><Detail label="Phone" value={selected.phone_number || '—'}/><Detail label="Payment Status" value={selected.order_payment_status || '—'}/><Detail label="Payment Reference" value={selected.payment_reference || '—'} mono/><Detail label="Referral Code" value={selected.pbo_referral_code || '—'} mono/></div></section>
 
         <section className="rounded-xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 p-3 sm:p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><h4 className="flex items-center gap-2 text-sm font-semibold"><Share2 className="h-4 w-4 text-primary"/>Referral sharing</h4><p className="mt-1 text-xs text-slate-400">Copy the code, share the link, or send the branded QR card.</p></div>{code && <Badge className="font-mono text-primary">{code}</Badge>}</div>
           {code ? <><div className="mt-3 flex flex-col gap-2 sm:flex-row"><div className="flex min-w-0 flex-1 items-center rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5"><span className="min-w-0 flex-1 truncate font-mono font-semibold">{code}</span><Button variant="ghost" size="sm" onClick={copyReferral} className="ml-2 shrink-0">{referralCopied ? <CheckCircle2 className="mr-1.5 h-4 w-4 text-emerald-400"/> : <Copy className="mr-1.5 h-4 w-4"/>}{referralCopied ? 'Copied' : 'Copy'}</Button></div><Button onClick={shareReferral} disabled={referralBusy} className="bg-primary text-white hover:bg-primary/90"><Share2 className="mr-2 h-4 w-4"/>Share link</Button></div>
