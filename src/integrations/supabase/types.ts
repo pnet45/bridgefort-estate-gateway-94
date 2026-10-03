@@ -4160,6 +4160,7 @@ export type Database = {
       travel_bookings: {
         Row: {
           assigned_to: string | null
+          confirmation_token: string | null
           created_at: string
           crm_lead_id: string | null
           customer_id: string | null
@@ -4174,11 +4175,13 @@ export type Database = {
           return_date: string
           service_journey_id: string | null
           status: string
+          status_note: string | null
           travelers: number
           updated_at: string
         }
         Insert: {
           assigned_to?: string | null
+          confirmation_token?: string | null
           created_at?: string
           crm_lead_id?: string | null
           customer_id?: string | null
@@ -4193,11 +4196,13 @@ export type Database = {
           return_date: string
           service_journey_id?: string | null
           status?: string
+          status_note?: string | null
           travelers: number
           updated_at?: string
         }
         Update: {
           assigned_to?: string | null
+          confirmation_token?: string | null
           created_at?: string
           crm_lead_id?: string | null
           customer_id?: string | null
@@ -4212,6 +4217,7 @@ export type Database = {
           return_date?: string
           service_journey_id?: string | null
           status?: string
+          status_note?: string | null
           travelers?: number
           updated_at?: string
         }
@@ -4503,9 +4509,13 @@ export type Database = {
           estate_code: string
           estate_name: string
           order_id: string
+          order_payment_status: string
           order_total: number
           outstanding_balance: number
           payment_plan: string
+          payment_reference: string
+          pbo_referral_code: string
+          phone_number: string
           plot_count: number
           subscribed_at: string
           subscriber_name: string
