@@ -39,6 +39,7 @@ const BHRealtors: React.FC = () => {
   const [earned, setEarned] = useState(0);
   const [pendingWithdrawal, setPendingWithdrawal] = useState(0);
   const [canWithdraw, setCanWithdraw] = useState(false);
+  const [availableBalance, setAvailableBalance] = useState(0);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -74,6 +75,7 @@ const BHRealtors: React.FC = () => {
       setEarned(Number(dashboard.total_commissions_earned || 0));
       setPendingWithdrawal(Number(dashboard.pending_withdrawal_total || 0));
       setCanWithdraw(Boolean(dashboard.can_withdraw));
+      setAvailableBalance(Number(dashboard.available_balance ?? dashboard.profile?.wallet_balance ?? 0));
       setWithdrawals(Array.isArray(dashboard.withdrawals) ? dashboard.withdrawals : []);
     } catch (error) {
       console.error('BHRealtors load error:', error);
@@ -84,7 +86,6 @@ const BHRealtors: React.FC = () => {
   useEffect(() => { if (user) void load(); }, [user]);
 
   const currentPackage = packages.find(p => p.package_code === currentCode) || packages.find(p => p.package_code === 'associate') || packages[0];
-  const availableBalance = Number(profile?.wallet_balance ?? 0);
 
   const openRegistration = (pkg: BhRealtorsPackage) => {
     if (!user) { toast({ title: 'Sign in required', description: 'Please sign in before joining BHRealtors.', variant: 'destructive' }); return; }
