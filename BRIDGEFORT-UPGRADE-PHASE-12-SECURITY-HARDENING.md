@@ -81,6 +81,99 @@ Migration:
 UI commit:
 `df4999f5186bec4e1b80c8410d227c4e8b2f63c5`
 
+
+### Phase 12C — BHRealtors dashboard, referral centre and withdrawal flow
+
+The BHRealtors page was reviewed as an existing feature set rather than a new module. The goal was to make the Realtor experience clearer while keeping referral, commission and withdrawal records on the existing business tables and RPCs.
+
+#### Dashboard read-model hardening
+Migration:
+`supabase/migrations/20261003031825_phase_12_bhrealtor_dashboard_read_model.sql`
+
+The existing `get_my_bhrealtor_dashboard()` read model was expanded to return:
+- current Realtor profile/package/rank and referral code;
+- available wallet balance;
+- direct referral count;
+- active direct referral count;
+- total commissions earned;
+- locked commissions;
+- paid withdrawal total;
+- pending withdrawal total;
+- withdrawal eligibility;
+- recent commissions;
+- recent withdrawals;
+- direct network members.
+
+The function remains `SECURITY DEFINER`, pinned to `search_path=public`, requires an authenticated user, and is not executable by `anon`. This keeps the browser from needing broad direct reads across financial tables.
+
+#### BHRealtors UI restructuring
+Updated:
+- `src/pages/BHRealtors.tsx`
+- `src/pages/BHRealtorsWithdraw.tsx`
+- `src/components/bhRealtors/ReferralLeaderboard.tsx`
+- `src/components/bhRealtors/DownlineTree.tsx`
+
+Relevant UI commits: `5d5e14d382e5c8b71b8165b3798c479546cede7c`, `422357bcae667717fbaa19d241ca5f28660937f6`, `ea5fcef5fda26c84bcd17540e49308f7302a61af`, `6b5b5f825aa8a74874352b6eca1c95339d8f8bcc`, `7630b76fca78639e81a534c58c222b1a6189e2eb`.
+
+The dashboard now presents the Realtor's operational information more clearly. The referral code and sharing card remain the single primary referral action area, so the page does not repeat the same tools in multiple sections:
+- registered members;
+- active Realtors;
+- direct referrals;
+- active direct referrals;
+- commission earned;
+- available commission balance;
+- current package/rank;
+- withdrawal eligibility;
+- pending withdrawal amount;
+- recent withdrawal activity.
+
+The referral experience is centered around the existing referral share card, which provides the referral code, referral link, QR code, browser/device sharing, WhatsApp, Telegram, Facebook, X, email sharing, referral-image generation and image sharing/download.
+
+The duplicate referral-center implementation inside the leaderboard was removed so the page has one clear referral-sharing area.
+
+#### Downline visibility
+The direct BHRealtor network now uses the protected `get_my_bhrealtor_network_tree()` read model for the signed-in user's root network. The expandable tree still loads deeper levels where the existing profile access path permits it.
+
+The tree now shows:
+- direct referral count;
+- active direct count;
+- member name;
+- Realtor/member state;
+- package;
+- rank;
+- joined date;
+- expandable deeper referrals where available.
+
+#### Withdrawal flow
+The withdrawal page now uses the canonical BHRealtor dashboard read model for wallet eligibility, balance, package state, pending withdrawal amount and withdrawal history instead of relying on a separate direct financial read path.
+
+The submit button now reflects the real business state:
+- withdrawal unavailable when the current package is not eligible;
+- no available balance when the wallet is empty;
+- submission enabled only after required password verification, bank details and amount validation;
+- existing transactional `submit_withdrawal_request()` remains the authoritative write path.
+
+No withdrawal request, wallet balance or customer financial record was created or changed as part of this UI/read-model work.
+
+#### Referral leaderboard access
+The leaderboard now calls the existing `get_pbo_referral_leaderboard()` RPC instead of directly reading the leaderboard relation from the browser.
+
+No new referral table, wallet table, commission table or competing downline model was introduced.
+
+### Phase 12C verification
+- Dashboard RPC migration applied successfully as version `20261003031825`.
+- `get_my_bhrealtor_dashboard()`: SECURITY DEFINER, `search_path=public`, authenticated execution enabled, anonymous execution disabled.
+- Withdrawal submission remains protected by the private transactional function and enforces `auth.uid() = p_user_id`, package withdrawal eligibility and wallet-balance checks.
+- No production withdrawal was submitted.
+- No production financial data was modified.
+- No emojis or decorative AI-style copy were introduced into the BHRealtors UI changes. The existing Lucide icon system is used for interface affordances.
+
+### Remaining Phase 12 work
+The remaining SECURITY DEFINER findings will continue to be reviewed by category rather than mass-revoked. Functions used by RLS or required authenticated customer workflows will be preserved with their authorization checks; genuinely privileged Data API functions will be restricted to the minimum required callers.
+
+### Release note
+Current Vercel status is blocked by the platform's build-rate limit. No application build failure was reported by the status checks reviewed during this phase.
+
 ### Remaining Phase 12 work
 The remaining SECURITY DEFINER findings will be reviewed by category rather than mass-revoked. Functions used by RLS or required authenticated customer workflows will be preserved with their authorization checks; genuinely privileged Data API functions will be restricted to the minimum required callers.
 
