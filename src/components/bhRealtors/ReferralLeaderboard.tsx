@@ -20,11 +20,8 @@ const ReferralLeaderboard = () => {
 
   const load = async () => {
     setRefreshing(true);
-    const { data, error } = await (supabase as any)
-      .from('pbo_referral_leaderboard')
-      .select('*')
-      .limit(10);
-    if (!error) setRows((data || []) as LeaderboardRow[]);
+    const { data, error } = await supabase.rpc('get_pbo_referral_leaderboard');
+    if (!error) setRows((Array.isArray(data) ? data.slice(0, 10) : []) as LeaderboardRow[]);
     setLoading(false);
     setRefreshing(false);
   };
