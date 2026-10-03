@@ -113,7 +113,9 @@ Updated:
 - `src/components/bhRealtors/ReferralLeaderboard.tsx`
 - `src/components/bhRealtors/DownlineTree.tsx`
 
-The dashboard now presents the Realtor's operational information more clearly:
+Relevant UI commits: `5d5e14d382e5c8b71b8165b3798c479546cede7c`, `422357bcae667717fbaa19d241ca5f28660937f6`, `ea5fcef5fda26c84bcd17540e49308f7302a61af`, `6b5b5f825aa8a74874352b6eca1c95339d8f8bcc`, `7630b76fca78639e81a534c58c222b1a6189e2eb`.
+
+The dashboard now presents the Realtor's operational information more clearly. The referral code and sharing card remain the single primary referral action area, so the page does not repeat the same tools in multiple sections:
 - registered members;
 - active Realtors;
 - direct referrals;
@@ -164,7 +166,7 @@ No new referral table, wallet table, commission table or competing downline mode
 - Withdrawal submission remains protected by the private transactional function and enforces `auth.uid() = p_user_id`, package withdrawal eligibility and wallet-balance checks.
 - No production withdrawal was submitted.
 - No production financial data was modified.
-- No emojis or decorative AI-style copy were introduced into the BHRealtors UI changes.
+- No emojis or decorative AI-style copy were introduced into the BHRealtors UI changes. The existing Lucide icon system is used for interface affordances.
 
 ### Remaining Phase 12 work
 The remaining SECURITY DEFINER findings will continue to be reviewed by category rather than mass-revoked. Functions used by RLS or required authenticated customer workflows will be preserved with their authorization checks; genuinely privileged Data API functions will be restricted to the minimum required callers.
