@@ -63,16 +63,16 @@ const AdminEstateSubscribers: React.FC = () => {
       const ids = subscribers.map((r) => r.client_id).filter((id): id is string => Boolean(id));
       if (ids.length) {
         const { data: profiles, error: profileError } = await supabase.from('profiles')
-          .select('id, email, first_name, last_name, full_name, phone_number, pbo_referral_code')
+          .select('id, first_name, last_name, phone_number, pbo_referral_code')
           .in('id', ids);
         if (!profileError) {
           const map = new Map((profiles || []).map((p) => [p.id, p]));
           subscribers.forEach((r) => {
             const p = r.client_id ? map.get(r.client_id) : undefined;
             if (!p) return;
-            const profileName = [p.first_name, p.last_name].filter(Boolean).join(' ').trim() || p.full_name || r.subscriber_name;
+            const profileName = [p.first_name, p.last_name].filter(Boolean).join(' ').trim() || r.subscriber_name;
             r.subscriber_name = r.subscriber_name || profileName || 'Unnamed Subscriber';
-            r.client_email = r.client_email || p.email || null;
+            r.client_email = r.client_email || null;
                 r.phone_number = r.phone_number || p.phone_number || null;
             r.pbo_referral_code = r.pbo_referral_code || p.pbo_referral_code || null;
           });
