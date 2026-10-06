@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     const allowed = new Set(["list-labels","list-messages","get-message","get-attachment","modify-message","trash-message","untrash-message","send-message"]);
     if (!allowed.has(action)) throw Object.assign(new Error("Invalid action"), { status: 400 });
 
-    let mailboxEmail = String(body?.mailboxEmail || "").trim().toLowerCase();
+    const mailboxEmail = String(body?.mailboxEmail || "").trim().toLowerCase();
     if (!mailboxEmail) throw Object.assign(new Error("No Gmail mailbox selected"), { status: 400 });
 
     const { data: access, error: ae } = await svc.rpc("user_mailbox_access", {
