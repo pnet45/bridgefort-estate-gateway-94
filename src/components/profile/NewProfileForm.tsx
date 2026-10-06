@@ -48,6 +48,7 @@ const NewProfileForm = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [referralLookupLoading, setReferralLookupLoading] = useState(false);
   const [referralLookup, setReferralLookup] = useState<{ realtor_id: string; first_name: string; last_initial: string; package: string } | null>(null);
+  const [existingReferralId, setExistingReferralId] = useState<string | null>(null);
   const formRef = useRef<FormState>(initialForm);
   formRef.current = form;
   const index = steps.findIndex(s => s.key === activeStep);
@@ -62,6 +63,7 @@ const NewProfileForm = () => {
         const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
         if (error) throw error;
         if (data) {
+          setExistingReferralId(data.referred_by_id || null);
           const banking = (data.banking_details || '').split(' - ');
           setForm(prev => ({ ...prev,
             firstName: data.first_name || '', lastName: data.last_name || '', dateOfBirth: data.date_of_birth || '', gender: data.gender || '', maritalStatus: data.marital_status || '', spouseName: data.spouse_name || '', nationality: data.nationality || '', languagesSpoken: data.languages_spoken || [], phoneNumber: data.phone_number || '', stateOfOrigin: data.state_of_origin || '', localGovernment: data.local_government || '', address: data.address || '', currentResidence: data.current_residence || '',
@@ -113,7 +115,7 @@ const NewProfileForm = () => {
     if (!user || saving || !validateStep(activeStep)) return;
     setSaving(true); setSavedStep(null);
     try {
-      const referralId = activeStep === 'referrer' || form.referrerCode ? await resolveReferralBeforeSave() : referralLookup?.realtor_id || null;
+      const referralId = form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
       if (form.referrerCode && !referralId) { setSaving(false); return; }
       const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }, { onConflict: 'id' });
       if (error) throw error;
@@ -126,7 +128,7 @@ const NewProfileForm = () => {
   const submitProfile = async () => {
     if (!termsAccepted || !user || saving || !validateStep('review')) return;
     setSaving(true);
-    try { const referralId = form.referrerCode ? await resolveReferralBeforeSave() : referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); }
+    try { const referralId = form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); }
     catch (error: any) { console.error('Profile submission error:', error); toast({ title: 'Submission failed', description: error?.message || 'Please try again.', variant: 'destructive' }); }
     finally { setSaving(false); }
   };
