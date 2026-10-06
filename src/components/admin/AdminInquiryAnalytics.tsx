@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -102,9 +103,16 @@ const AdminInquiryAnalytics: React.FC = () => {
 
   const volume = useMemo(() => {
     const map = new Map<string, number>();
+    const cursor = new Date(`${from}T00:00:00`);
+    const last = new Date(`${to}T00:00:00`);
+    while (cursor <= last) {
+      const day = format(cursor, 'yyyy-MM-dd');
+      map.set(day, 0);
+      cursor.setDate(cursor.getDate() + 1);
+    }
     filtered.forEach(l => { const d = format(new Date(l.created_at), 'yyyy-MM-dd'); map.set(d, (map.get(d) || 0) + 1); });
-    return [...map.entries()].reverse().map(([date, count]) => ({ date, count }));
-  }, [filtered]);
+    return [...map.entries()].map(([date, count]) => ({ date, count }));
+  }, [filtered, from, to]);
 
   const breakdown = useCallback((keyFn: (l: Lead) => string) => {
     const map = new Map<string, { key: string; total: number; won: number; lost: number; value: number; followUps: number }>();
@@ -172,21 +180,21 @@ const AdminInquiryAnalytics: React.FC = () => {
     doc.save(`inquiries_${from}_to_${to}.pdf`);
   };
 
-  const Table = ({ title, rows }: { title: string; rows: ReturnType<typeof breakdown> }) => (
+  const BreakdownTable = ({ title, rows }: { title: string; rows: ReturnType<typeof breakdown> }) => (
     <Card className="bg-slate-900/40 border-slate-700">
       <CardHeader className="pb-2"><CardTitle className="text-sm text-white">{title}</CardTitle></CardHeader>
       <CardContent className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead><tr className="text-left text-xs text-slate-500"><th className="py-1">Name</th><th>Leads</th><th>Follow-ups</th><th>Won</th><th>Lost</th><th>Win rate</th><th>Value</th></tr></thead>
-          <tbody>
+        <Table>
+          <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Leads</TableHead><TableHead>Follow-ups</TableHead><TableHead>Won</TableHead><TableHead>Lost</TableHead><TableHead>Win rate</TableHead><TableHead>Value</TableHead></TableRow></TableHeader>
+          <TableBody>
             {rows.map(r => { const c = r.won + r.lost; return (
-              <tr key={r.key} className="border-t border-slate-800 text-slate-300">
-                <td className="py-1.5 pr-2">{r.key}</td><td>{r.total}</td><td>{r.followUps}</td><td>{r.won}</td><td>{r.lost}</td>
-                <td>{c ? `${Math.round((r.won / c) * 100)}%` : '—'}</td><td>{naira(r.value)}</td>
-              </tr>); })}
-            {!rows.length && <tr><td colSpan={7} className="py-4 text-center text-slate-500">No data</td></tr>}
-          </tbody>
-        </table>
+              <TableRow key={r.key}>
+                <TableCell className="py-1.5 pr-2">{r.key}</TableCell><TableCell>{r.total}</TableCell><TableCell>{r.followUps}</TableCell><TableCell>{r.won}</TableCell><TableCell>{r.lost}</TableCell>
+                <TableCell>{c ? `${Math.round((r.won / c) * 100)}%` : '—'}</TableCell><TableCell>{naira(r.value)}</TableCell>
+              </TableRow>); })}
+            {!rows.length && <TableRow><TableCell colSpan={7} className="py-4 text-center text-slate-500">No data</TableCell></TableRow>}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );
@@ -248,8 +256,8 @@ const AdminInquiryAnalytics: React.FC = () => {
         </Card>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <Table title="By property" rows={byProperty} />
-          <Table title="By agent" rows={byAgent} />
+              <BreakdownTable title="By property" rows={byProperty} />
+          <BreakdownTable title="By agent" rows={byAgent} />
         </div>
       </CardContent>
     </Card>
