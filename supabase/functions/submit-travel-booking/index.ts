@@ -1,3 +1,4 @@
+import { bridgefortEmail } from "../_shared/email-template.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "https://esm.sh/resend@2.0.0";
@@ -120,7 +121,7 @@ serve(async (req) => {
       to_name: "Bridgefort Travels",
       subject: adminSubject,
       body: adminBody,
-      html: `<div style="font-family:Arial,sans-serif"><h2>New travel booking received</h2><p><strong>Customer:</strong> ${escapeHtml(name)}</p><p><strong>Email:</strong> ${escapeHtml(email)}</p><p><strong>Phone:</strong> ${escapeHtml(phone)}</p><p><strong>Package:</strong> ${escapeHtml(packageName)}</p><p><strong>Destination:</strong> ${escapeHtml(destination || "—")}</p><p><strong>Departure:</strong> ${escapeHtml(departureDate)}</p><p><strong>Return:</strong> ${escapeHtml(returnDate)}</p><p><strong>Travelers:</strong> ${travelers}</p><p><strong>Notes:</strong> ${escapeHtml(notes || "—")}</p></div>`,
+      html: bridgefortEmail(`<div style="font-family:Arial,sans-serif"><h2>New travel booking received</h2><p><strong>Customer:</strong> ${escapeHtml(name)}</p><p><strong>Email:</strong> ${escapeHtml(email)}</p><p><strong>Phone:</strong> ${escapeHtml(phone)}</p><p><strong>Package:</strong> ${escapeHtml(packageName)}</p><p><strong>Destination:</strong> ${escapeHtml(destination || "—")}</p><p><strong>Departure:</strong> ${escapeHtml(departureDate)}</p><p><strong>Return:</strong> ${escapeHtml(returnDate)}</p><p><strong>Travelers:</strong> ${travelers}</p><p><strong>Notes:</strong> ${escapeHtml(notes || "—")}</p></div>`),
       folder: "inbox",
       is_read: false,
       source: "travel_booking",
