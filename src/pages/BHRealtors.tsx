@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import Navbar from '@/components/Navbar';
@@ -30,7 +30,7 @@ const packageVisuals: Record<string, { image: string; accent: string; soft: stri
   classic_gold: { image: '/images/LoginImageLANDFORSALE.png', accent: 'from-violet-600 to-purple-900', soft: 'bg-violet-50 text-violet-700 dark:bg-violet-400/10 dark:text-violet-200', icon: <Crown className="h-5 w-5" />, label: 'PREMIUM LEVEL' },
 };
 
-type DashboardData = {
+interface RealtorSale {\n  sale_id: string;\n  client_first_name: string | null;\n  plot_id: string | null;\n  plots_bought: number;\n  estate_name: string | null;\n  payment_status: string | null;\n  amount_paid: number;\n  balance: number;\n  sale_date: string | null;\n}\n\ntype DashboardData = {
   profile?: {
     is_pbo?: boolean;
     is_active?: boolean;
@@ -64,7 +64,7 @@ const BHRealtors: React.FC = () => {
   const [availableBalance, setAvailableBalance] = useState(0);
   const [withdrawals, setWithdrawals] = useState<DashboardData['withdrawals']>([]);
   const [commissionRows, setCommissionRows] = useState<CommissionRow[]>([]);
-  const [sales, setSales] = useState<any[]>([]);
+  const [sales, setSales] = useState<RealtorSale[]>([]);
   const [copiedCode, setCopiedCode] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dashboardError, setDashboardError] = useState(false);
@@ -76,7 +76,7 @@ const BHRealtors: React.FC = () => {
   const referralCode = profile?.pbo_referral_code || '';
   const referralLink = typeof window !== 'undefined' && referralCode ? `${window.location.origin}/auth?ref=${encodeURIComponent(referralCode)}` : '';
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user) return;
     setBusy(true);
     setDashboardError(false);
@@ -84,7 +84,7 @@ const BHRealtors: React.FC = () => {
     const [pkgResult, dashboardResult, salesResult] = await Promise.all([
       supabase.from('mlm_packages').select('package_code, package_name, price, direct_commission_pct, indirect_commission_pct, withdrawable, description, sales_commission_pct, sales_commission_locked, first_level_sales_commission_pct').order('price'),
       supabase.rpc('get_my_bhrealtor_dashboard'),
-      supabase.rpc('get_my_bhrealtor_sales' as any),
+      supabase.rpc('get_my_bhrealtor_sales' as never) as unknown as Promise<{ data: RealtorSale[] | null; error: { message: string } | null }>,
     ]);
 
     if (pkgResult.data?.length) {
@@ -211,7 +211,7 @@ const BHRealtors: React.FC = () => {
               [LockKeyhole, 'Locked commission', naira(locked)],
               [Wallet, 'Available balance', naira(availableBalance)],
               [Wallet, 'Pending withdrawal', naira(pendingWithdrawal)],
-            ].map(([Icon, label, value]: any) => (
+            ].map(([Icon, label, value]) => (
               <div key={label} className={`${glass} rounded-2xl p-4`}>
                 <Icon className="h-5 w-5 text-estate-purple" />
                 <p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">{label}</p>
