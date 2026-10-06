@@ -136,7 +136,7 @@ serve(async (req) => {
         from,
         to: [email],
         subject: "Bridgefort Travels — enquiry received",
-        html: customerHtml,
+        html: bridgefortEmail(customerHtml),
       }).catch((e) => console.error("customer confirmation:", e));
     }
 
