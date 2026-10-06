@@ -22,9 +22,8 @@ interface OrderRow {
   created_at: string;
 }
 
-// Bridgefort Agrovest's published annual profit-share ranges, used to
-// project an expected cumulative return based on how much of the 5-year
-// term has elapsed since purchase.
+// Bridgefort Agrovest's published annual profit-share ranges. These are
+// participant shares of net profits, not guaranteed returns on the subscription amount.
 const YEAR_RANGES = [
   { min: 10, max: 20, cadence: 'Paid annually' },
   { min: 30, max: 40, cadence: 'Paid quarterly' },
@@ -55,6 +54,7 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
       propertyName: string;
       quantity: number;
       amount: number;
+      unit: string;
       purchaseDate: Date;
       progress: ReturnType<typeof computeProgress>;
     }[] = [];
@@ -87,7 +87,7 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
   }, [orders]);
 
   const totalInvested = holdings.reduce((sum, h) => sum + h.amount, 0);
-  const totalPlots = holdings.reduce((sum, h) => sum + h.quantity, 0);
+  const totalUnits = holdings.reduce((sum, h) => sum + h.quantity, 0);
 
   if (holdings.length === 0) {
     return (
@@ -115,7 +115,7 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
               <Wallet className="h-4 w-4" /> Total Invested
             </div>
             <p className="text-2xl font-bold text-green-800">₦{totalInvested.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{totalPlots} subscribed unit{totalPlots === 1 ? '' : 's'}</p>
+            <p className="text-xs text-muted-foreground mt-1">{totalUnits} subscribed unit{totalUnits === 1 ? '' : 's'}</p>
           </CardContent>
         </Card>
         <Card className="border-green-100">
@@ -152,7 +152,7 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                {h.quantity} {h.unit}{h.quantity === 1 ? '' : h.unit === 'pond' ? 's' : h.unit === 'pair' ? 's' : 's'} · ₦{h.amount.toLocaleString()} · purchased{' '}
+                {h.quantity} {h.unit}{h.quantity === 1 ? '' : 's'} · ₦{h.amount.toLocaleString()} · purchased{' '}
                 {h.purchaseDate.toLocaleDateString()}
               </p>
             </CardHeader>
