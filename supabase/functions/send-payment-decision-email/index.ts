@@ -1,3 +1,4 @@
+import { bridgefortEmail } from "../_shared/email-template.ts";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Sends the client an email when an admin approves or rejects their payment
 // request. Admin-only: the caller's JWT must carry the `admin` role.
@@ -86,7 +87,7 @@ serve(async (req) => {
       from: "Bridgefort Homes <noreply@bridgeforthomes.com>",
       to: [email],
       subject: `Payment ${approved ? "approved" : "rejected"} — ${amount}`,
-      html,
+      html: bridgefortEmail(html),
     });
 
     if ((sent as any)?.error) {
