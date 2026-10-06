@@ -85,7 +85,7 @@ const CartSidebar = () => {
                         <h4 className="font-semibold text-sm truncate">{item.plot.propertyName}</h4>
                         <p className="text-xs text-gray-600 truncate">{item.plot.location}</p>
                         <p className="text-sm font-bold text-estate-red">
-                          ₦{item.plot.pricePerPlot.toLocaleString()}
+                          ₦{item.plot.pricePerPlot.toLocaleString()} per {item.plot.unit || 'plot'}
                         </p>
                         
                         <div className="flex items-center justify-between mt-2">
@@ -106,6 +106,7 @@ const CartSidebar = () => {
                               size="sm"
                               className="h-6 w-6 p-0"
                               onClick={() => handleQuantityUpdate(item.plot.id, item.quantity + 1)}
+                              disabled={item.plot.propertyType === 'Agrovest' && item.quantity >= 50}
                             >
                               <Plus size={12} />
                             </Button>
