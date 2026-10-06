@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const AgrovestFeature = () => {
   const bullets = [
-    { icon: ShieldCheck, text: 'Government-allocated farmland, professionally managed' },
+    { icon: ShieldCheck, text: 'Professionally managed agricultural operations' },
     { icon: TrendingUp, text: 'Projected share of net profits: 10%–20% Year 1, 30%–40% Years 2–3, 40%–50% Years 4–5' },
     { icon: Sprout, text: 'Food crops, cash crops, aquaculture and livestock operations' },
     { icon: Calendar, text: '5-year investment term, renewable thereafter' },
