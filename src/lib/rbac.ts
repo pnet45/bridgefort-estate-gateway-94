@@ -1,6 +1,7 @@
 export const ADMIN_TAB_PERMISSION_MAP: Record<string, string> = {
   overview: 'admin:view_dashboard',
   properties: 'admin:view_properties',
+  allocations: 'admin:view_allocations',
   crm: 'admin:view_crm',
   users: 'admin:view_users',
   approvals: 'admin:view_approvals',
@@ -29,6 +30,8 @@ export const CANONICAL_PERMISSION_ALIASES: Record<string, string[]> = {
   'property.create': ['admin:view_properties'],
   'property.edit': ['admin:view_properties'],
   'property.publish': ['admin:view_properties'],
+  'inventory.view': ['admin:view_allocations'],
+  'inventory.manage': ['admin:manage_allocations'],
   'payment.view': ['admin:view_approvals'],
   'payment.verify': ['admin:view_approvals'],
   'payment.approve': ['admin:approve_payments'],
