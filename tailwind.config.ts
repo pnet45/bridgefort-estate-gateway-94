@@ -88,5 +88,5 @@ export default {
       },
     },
   },
-  import tailwindAnimate from "tailwindcss-animate";\nimport tailwindTypography from "@tailwindcss/typography";\n\n// plugins are declared below\nplugins: [tailwindAnimate, tailwindTypography],
+  import tailwindAnimate from "tailwindcss-animate";\nimport tailwindTypography from "@tailwindcss/typography";\n\n// plugins are declared below\nplugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;
