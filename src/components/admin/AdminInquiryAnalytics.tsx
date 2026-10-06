@@ -23,7 +23,7 @@ type Member = { id: string; first_name: string | null; last_name: string | null;
 
 const UNASSIGNED = '__none';
 const naira = (v: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(v);
-const propertyOf = (l: Lead) => l.estate_interest || 'Unspecified';
+const propertyOf = (l: Lead) => l.estate_interest || l.estate_id || l.listing_id || 'Unspecified';
 const strip = (s: string | null) => (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
 const AdminInquiryAnalytics: React.FC = () => {
