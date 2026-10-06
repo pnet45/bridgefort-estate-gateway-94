@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { agrovestCategories, getAgrovestCategory } from '@/data/agrovestCategories';
 import { useEcommerce } from '@/contexts/ecommerce';
+
+const MAX_AGROVEST_UNITS = 50;
 
 const AGROVEST_CATEGORY_PRICING: Record<string, { price: number; unit: string; unitPlural: string; operation: string }> = {
   'oil-palm': { price: 1000000, unit: 'plot', unitPlural: 'plots', operation: 'Cash Crops Farming' },
@@ -31,6 +33,7 @@ const AgrovestCategoryDetail: React.FC = () => {
   const category = getAgrovestCategory(slug || '');
   const { addToCart } = useEcommerce();
   const pricing = AGROVEST_CATEGORY_PRICING[category?.slug || ''];
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (category) {
@@ -58,7 +61,7 @@ const AgrovestCategoryDetail: React.FC = () => {
         propertyType: 'Agrovest',
         unit: pricing.unit as 'plot' | 'pond' | 'pair',
       },
-      1
+      quantity
     );
   };
 
@@ -109,9 +112,32 @@ const AgrovestCategoryDetail: React.FC = () => {
           <div>
             <h2 className="text-2xl font-bold text-green-900 mb-4">About This {category.tag}</h2>
             <p className="text-muted-foreground leading-relaxed mb-6">{category.description}</p>
-            {pricing ? <Button className="bg-green-700 hover:bg-green-800" onClick={handleAddToCart}>
-              <ShoppingCart className="mr-2 h-4 w-4" /> Join {pricing.operation} — ₦{pricing.price.toLocaleString()} / {pricing.unit}
-            </Button> : <p className="rounded-xl border border-green-100 bg-green-50 p-4 text-sm text-green-900">This facility supports the Agrovest operation and is not a separate participant subscription unit.</p>}
+            {pricing ? (
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-3 rounded-xl border border-green-100 bg-green-50 p-4">
+                  <div className="flex-1 min-w-[180px]">
+                    <p className="text-sm font-semibold text-green-900">Number of {pricing.unitPlural}</p>
+                    <p className="text-xs text-muted-foreground">₦{pricing.price.toLocaleString()} per {pricing.unit}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button type="button" variant="outline" size="icon" onClick={() => setQuantity((q) => Math.max(1, q - 1))} disabled={quantity <= 1} aria-label={`Decrease ${pricing.unitPlural}`}>
+                      −
+                    </Button>
+                    <span className="w-8 text-center font-bold text-green-900">{quantity}</span>
+                    <Button type="button" variant="outline" size="icon" onClick={() => setQuantity((q) => Math.min(MAX_AGROVEST_UNITS, q + 1))} disabled={quantity >= MAX_AGROVEST_UNITS} aria-label={`Increase ${pricing.unitPlural}`}>
+                      +
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-lg font-bold text-green-900">Total: ₦{(pricing.price * quantity).toLocaleString()}</p>
+                  <Button className="bg-green-700 hover:bg-green-800" onClick={handleAddToCart}>
+                    <ShoppingCart className="mr-2 h-4 w-4" /> Add {quantity} {pricing.unit}{quantity === 1 ? '' : 's'} — ₦{(pricing.price * quantity).toLocaleString()}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground">You can subscribe for one or more {pricing.unitPlural}, up to {MAX_AGROVEST_UNITS} units on this cart line.</p>
+              </div>
+            ) : <p className="rounded-xl border border-green-100 bg-green-50 p-4 text-sm text-green-900">This facility supports the Agrovest operation and is not a separate participant subscription unit.</p>}
           </div>
         </div>
       </section>
