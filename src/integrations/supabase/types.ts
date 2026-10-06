@@ -1657,6 +1657,12 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_automation_campaigns: {
+        Row: { id:string; campaign_key:string; name:string; description:string|null; category:string; enabled:boolean; schedule_time:string; timezone:string; cooldown_days:number; threshold_value:number|null; subject:string; body:string; audience_rules:Json; last_run_at:string|null; last_run_status:string|null; last_run_count:number; updated_by:string|null; created_at:string; updated_at:string }
+        Insert: { id?:string; campaign_key:string; name:string; description?:string|null; category?:string; enabled?:boolean; schedule_time?:string; timezone?:string; cooldown_days?:number; threshold_value?:number|null; subject:string; body:string; audience_rules?:Json; last_run_at?:string|null; last_run_status?:string|null; last_run_count?:number; updated_by?:string|null; created_at?:string; updated_at?:string }
+        Update: { id?:string; campaign_key?:string; name?:string; description?:string|null; category?:string; enabled?:boolean; schedule_time?:string; timezone?:string; cooldown_days?:number; threshold_value?:number|null; subject?:string; body?:string; audience_rules?:Json; last_run_at?:string|null; last_run_status?:string|null; last_run_count?:number; updated_by?:string|null; created_at?:string; updated_at?:string }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           body: string
