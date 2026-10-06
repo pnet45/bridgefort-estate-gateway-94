@@ -9,6 +9,7 @@ export interface Plot {
   imageUrl: string;
   size: number;
   propertyType: string;
+  unit?: 'plot' | 'pond' | 'pair';
   phase?: number;
 }
 
