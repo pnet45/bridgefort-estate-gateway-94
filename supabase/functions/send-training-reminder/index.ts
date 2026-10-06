@@ -1,3 +1,4 @@
+import { bridgefortEmail } from "../_shared/email-template.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 
 const corsHeaders = {
@@ -115,7 +116,7 @@ Deno.serve(async (req) => {
               from: 'Bridgefort Homes Development Ltd Training <training@pwanbridgefort.ng>',
               to: [registration.email],
               subject: `Reminder: ${event.title} Tomorrow!`,
-              html: `
+              html: bridgefortEmail(`
                 <!DOCTYPE html>
                 <html>
                   <head>
@@ -179,7 +180,7 @@ Deno.serve(async (req) => {
                     </div>
                   </body>
                 </html>
-              `,
+              `),
             }),
           });
 
