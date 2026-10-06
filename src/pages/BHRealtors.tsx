@@ -49,7 +49,7 @@ const BHRealtors: React.FC = () => {
   const currentRank = rank[currentCode] || 1;
   const isRealtor = Boolean(profile?.is_pbo && profile?.is_active);
   const referralCode = profile?.pbo_referral_code || '';
-  const referralLink = typeof window !== 'undefined' && referralCode ? `${window.location.origin}/bridgefort-realtors-login?ref=${encodeURIComponent(referralCode)}` : '';
+  const referralLink = typeof window !== 'undefined' && referralCode ? `${window.location.origin}/auth?ref=${encodeURIComponent(referralCode)}` : '';
 
   const load = async () => {
     if (!user) return;
