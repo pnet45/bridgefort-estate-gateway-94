@@ -11,7 +11,7 @@ import { format, subDays } from 'date-fns';
 import jsPDF from 'jspdf';
 
 type Lead = {
-  id: string; name: string; email: string | null; phone: string | null; source: string; status: string; priority: string;
+  id: string; name: string; email: string | null; phone: string | null; notes: string | null; source: string; status: string; priority: string;
   assigned_to: string | null; estate_interest: string | null; estate_id: string | null; listing_id: string | null;
   conversion_value: number | null; closed_at: string | null; outcome_reason: string | null; closing_notes: string | null;
   order_id: string | null; payment_id: string | null; created_at: string;
@@ -40,7 +40,7 @@ const AdminInquiryAnalytics: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     const [l, f, a, r] = await Promise.all([
-      supabase.from('crm_leads').select('id,name,email,phone,source,status,priority,assigned_to,estate_interest,estate_id,listing_id,conversion_value,closed_at,outcome_reason,closing_notes,order_id,payment_id,created_at').order('created_at', { ascending: false }),
+      supabase.from('crm_leads').select('id,name,email,phone,notes,source,status,priority,assigned_to,estate_interest,estate_id,listing_id,conversion_value,closed_at,outcome_reason,closing_notes,order_id,payment_id,created_at').order('created_at', { ascending: false }),
       supabase.from('crm_follow_ups').select('id,lead_id,scheduled_at,completed_at,cancelled_at,action_type,notes,completion_notes'),
       supabase.from('crm_lead_activities').select('id,lead_id,activity_type,description,created_at').order('created_at', { ascending: true }),
       supabase.from('user_roles').select('user_id').in('role', ['admin', 'staff', 'super_admin']),
@@ -129,9 +129,9 @@ const AdminInquiryAnalytics: React.FC = () => {
     .map(f => `${format(new Date(f.scheduled_at), 'yyyy-MM-dd')} ${f.action_type} [${f.completed_at ? 'done' : f.cancelled_at ? 'cancelled' : 'pending'}]${f.notes ? ` ${strip(f.notes)}` : ''}${f.completion_notes ? ` -> ${strip(f.completion_notes)}` : ''}`).join(' | ');
 
   const exportCSV = () => {
-    const headers = ['Lead ID', 'Name', 'Email', 'Phone', 'Source', 'Property', 'Assigned Agent', 'Priority', 'Status', 'Created', 'Status History', 'Follow-ups', 'Outcome Value (NGN)', 'Closed At', 'Outcome Reason', 'Closing Notes', 'Order ID', 'Payment ID'];
+    const headers = ['Lead ID', 'Name', 'Email', 'Phone', 'Lead Notes', 'Source', 'Property', 'Assigned Agent', 'Priority', 'Status', 'Created', 'Status History', 'Follow-ups', 'Outcome Value (NGN)', 'Closed At', 'Outcome Reason', 'Closing Notes', 'Order ID', 'Payment ID'];
     const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const rows = filtered.map(l => [l.id, l.name, l.email, l.phone, l.source, propertyOf(l), agentName(l.assigned_to), l.priority, l.status,
+    const rows = filtered.map(l => [l.id, l.name, l.email, l.phone, strip(l.notes), l.source, propertyOf(l), agentName(l.assigned_to), l.priority, l.status,
       format(new Date(l.created_at), 'yyyy-MM-dd HH:mm'), historyOf(l.id), followOf(l.id), l.conversion_value ?? '', l.closed_at ? format(new Date(l.closed_at), 'yyyy-MM-dd') : '',
       l.outcome_reason, strip(l.closing_notes), l.order_id, l.payment_id].map(esc).join(','));
     const blob = new Blob([[headers.map(esc).join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -156,8 +156,7 @@ const AdminInquiryAnalytics: React.FC = () => {
       const lines: string[] = [
         `Contact: ${l.email || '—'} / ${l.phone || '—'}   Source: ${l.source}   Property: ${propertyOf(l)}   Agent: ${agentName(l.assigned_to)}   Priority: ${l.priority}   Created: ${format(new Date(l.created_at), 'yyyy-MM-dd')}`,
       ];
-      const leadRecord = leads.find(item => item.id === l.id);
-      void leadRecord;
+      if (l.notes) lines.push(`Lead notes: ${strip(l.notes)}`);
       const h = historyOf(l.id); if (h) lines.push(`Status history: ${h}`);
       const f = followOf(l.id); if (f) lines.push(`Follow-ups: ${f}`);
       if (l.status === 'won' || l.status === 'lost') lines.push(`Outcome: ${l.status.toUpperCase()}${l.conversion_value ? ` NGN ${Number(l.conversion_value).toLocaleString()}` : ''}${l.closed_at ? ` on ${format(new Date(l.closed_at), 'yyyy-MM-dd')}` : ''} — ${l.outcome_reason || ''}${l.closing_notes ? ` | ${strip(l.closing_notes)}` : ''}${l.order_id ? ` | Order ${l.order_id}` : ''}${l.payment_id ? ` | Payment ${l.payment_id}` : ''}`);
