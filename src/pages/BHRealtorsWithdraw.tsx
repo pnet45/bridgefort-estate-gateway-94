@@ -57,9 +57,9 @@ const BHRealtorsWithdraw: React.FC = () => {
       console.error('Error loading withdrawal data:', error);
       toast({ title: 'Unable to load wallet', description: 'Please refresh and try again.', variant: 'destructive' });
     } finally { setLoading(false); }
-  };
+  }, [user]);
 
-  useEffect(() => { loadData(); }, [user]);
+  useEffect(() => { void loadData(); }, [loadData]);
 
   const numericAmount = Number(amount);
   const amountError = !amount ? null : !numericAmount || numericAmount <= 0
