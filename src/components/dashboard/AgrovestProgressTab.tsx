@@ -26,11 +26,11 @@ interface OrderRow {
 // project an expected cumulative return based on how much of the 5-year
 // term has elapsed since purchase.
 const YEAR_RANGES = [
-  { min: 10, max: 20 }, // Year 1 - paid annually
-  { min: 30, max: 40 }, // Year 2 - paid quarterly
-  { min: 30, max: 40 }, // Year 3 - paid quarterly
-  { min: 40, max: 50 }, // Year 4 - paid quarterly
-  { min: 40, max: 50 }, // Year 5 - paid quarterly
+  { min: 10, max: 20, cadence: 'Paid annually' },
+  { min: 30, max: 40, cadence: 'Paid quarterly' },
+  { min: 30, max: 40, cadence: 'Paid quarterly' },
+  { min: 40, max: 50, cadence: 'Paid quarterly' },
+  { min: 40, max: 50, cadence: 'Paid quarterly' },
 ];
 const TOTAL_MONTHS = 60;
 const MS_PER_MONTH = 1000 * 60 * 60 * 24 * 30.4375;
@@ -41,20 +41,10 @@ const computeProgress = (purchaseDate: Date, now: Date) => {
   const timeProgressPct = (monthsElapsed / TOTAL_MONTHS) * 100;
 
   const fullYearsCompleted = Math.min(Math.floor(monthsElapsed / 12), 5);
-  let cumulativeReturnPct = 0;
-  for (let y = 0; y < fullYearsCompleted; y++) {
-    const r = YEAR_RANGES[y];
-    cumulativeReturnPct += (r.min + r.max) / 2;
-  }
   const remainderMonths = monthsElapsed - fullYearsCompleted * 12;
-  if (fullYearsCompleted < 5 && remainderMonths > 0) {
-    const r = YEAR_RANGES[fullYearsCompleted];
-    cumulativeReturnPct += ((r.min + r.max) / 2) * (remainderMonths / 12);
-  }
-
   const currentYear = Math.min(fullYearsCompleted + (remainderMonths > 0 || fullYearsCompleted === 0 ? 1 : 0), 5);
-
-  return { timeProgressPct, cumulativeReturnPct, currentYear, monthsElapsed };
+  const currentRange = YEAR_RANGES[currentYear - 1] || YEAR_RANGES[4];
+  return { timeProgressPct, currentYear, currentRange, monthsElapsed };
 };
 
 const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
@@ -98,14 +88,6 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
 
   const totalInvested = holdings.reduce((sum, h) => sum + h.amount, 0);
   const totalPlots = holdings.reduce((sum, h) => sum + h.quantity, 0);
-  const blendedReturnPct =
-    totalInvested > 0
-      ? holdings.reduce((sum, h) => sum + h.amount * h.progress.cumulativeReturnPct, 0) / totalInvested
-      : 0;
-  const expectedReturnAmount = holdings.reduce(
-    (sum, h) => sum + h.amount * (h.progress.cumulativeReturnPct / 100),
-    0
-  );
 
   if (holdings.length === 0) {
     return (
@@ -139,10 +121,10 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
         <Card className="border-green-100">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
-              <TrendingUp className="h-4 w-4" /> Expected Return So Far
+              <TrendingUp className="h-4 w-4" /> Profit-Share Programme
             </div>
-            <p className="text-2xl font-bold text-green-800">{blendedReturnPct.toFixed(1)}%</p>
-            <p className="text-xs text-muted-foreground mt-1">≈ ₦{Math.round(expectedReturnAmount).toLocaleString()}</p>
+            <p className="text-lg font-bold text-green-800">10–20% → 30–40% → 40–50%</p>
+            <p className="text-xs text-muted-foreground mt-1">Share of net profits, subject to the programme terms</p>
           </CardContent>
         </Card>
         <Card className="border-green-100">
@@ -182,20 +164,18 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
                 </div>
                 <Progress value={h.progress.timeProgressPct} className="h-2" />
               </div>
-              <div>
-                <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                  <span>Expected cumulative return</span>
-                  <span className="font-semibold text-green-700">
-                    {h.progress.cumulativeReturnPct.toFixed(1)}%
-                  </span>
+              <div className="rounded-xl border border-amber-100 bg-amber-50/60 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs text-muted-foreground">Current programme year</span>
+                  <span className="font-semibold text-green-800">Year {h.progress.currentYear}: {h.progress.currentRange.min}%–{h.progress.currentRange.max}% of net profits</span>
                 </div>
-                <Progress
-                  value={Math.min(h.progress.cumulativeReturnPct, 100)}
-                  className="h-2 [&>div]:bg-amber-500"
-                />
+                <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{h.progress.currentRange.cadence}</span>
+                  <span>Projected share</span>
+                </div>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Projected figures use the current Bridgefort Agrovest ranges: 10–20% Year 1, 30–40% Years 2–3 and 40–50% Years 4–5. Actual returns depend on agricultural operations, harvest and market outcomes and are not guaranteed.
+                The percentages are a share of net profits generated by the relevant agricultural operation, not a guaranteed percentage of your subscription amount. Actual distributions depend on production, harvest, processing, sales and the applicable programme terms.
               </p>
             </CardContent>
           </Card>
