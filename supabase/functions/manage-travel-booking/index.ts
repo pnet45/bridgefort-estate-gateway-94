@@ -1,3 +1,4 @@
+import { bridgefortEmail } from "../_shared/email-template.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "https://esm.sh/resend@2.0.0";
@@ -106,7 +107,7 @@ serve(async (req) => {
       if (!resend) return response({ error: "Email is not configured" }, 500);
 
       const html = `<div style="font-family:Arial,sans-serif;max-width:650px;margin:0 auto;padding:24px;color:#111"><p>Dear ${escapeHtml(booking.name)},</p><div>${escapeHtml(message).replace(/\n/g, "<br/>")}</div><hr style="margin:24px 0;border:0;border-top:1px solid #ddd"><p style="font-size:12px;color:#666">Bridgefort Travels<br/>travels@bridgeforthomes.com</p></div>`;
-      const sent = await resend.emails.send({ from: FROM_EMAIL, to: [booking.email], subject, html });
+      const sent = await resend.emails.send({ from: FROM_EMAIL, to: [booking.email], subject, html: bridgefortEmail(html) });
       if (sent.error) throw new Error(sent.error.message || "Email could not be sent");
 
       const { error: logErr } = await supabase.from("admin_emails").insert({
