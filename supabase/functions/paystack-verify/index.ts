@@ -50,7 +50,7 @@ serve(async (req) => {
     // Resolve an estate order either by its original reference or by the
     // immutable order_id carried in Paystack metadata for flexible installment
     // transactions, whose gateway reference is intentionally unique per payment.
-    let orderQuery = admin.from('orders').select('id, user_id, total_amount, amount_paid, balance, payment_status, items, payment_reference').limit(1);
+    const orderQuery = admin.from('orders').select('id, user_id, total_amount, amount_paid, balance, payment_status, items, payment_reference').limit(1);
     let order: any = null;
     if (metadataOrderId) {
       const { data: byId } = await orderQuery.eq('id', metadataOrderId).maybeSingle();
