@@ -47,7 +47,7 @@ const AgrovestCategoryDetail: React.FC = () => {
     if (!pricing) return;
     addToCart(
       {
-        id: `agrovest-${category.slug}`,
+        id: `agrovest-${pricing.operation === 'Food Crops Farming' ? 'food' : pricing.operation === 'Cash Crops Farming' ? 'cash' : pricing.operation === 'Aquaculture (Fish Farming)' ? 'aquaculture' : 'livestock'}`,
         propertyId: 'agrovest-estate',
         propertyName: `Bridgefort Agrovest Estate — ${category.name}`,
         location: 'Ijebu-Ife, Off Ijebu-Ode, Ogun State',
@@ -56,6 +56,7 @@ const AgrovestCategoryDetail: React.FC = () => {
         imageUrl: category.image,
         size: 1,
         propertyType: 'Agrovest',
+        unit: pricing.unit as 'plot' | 'pond' | 'pair',
       },
       1
     );
