@@ -92,7 +92,7 @@ serve(async (req) => {
           from: FROM_EMAIL,
           to: [booking.email],
           subject: `Bridgefort Travels — booking ${label}`,
-          html,
+          html: bridgefortEmail(html),
         });
         if (sent.error) console.error("status email:", sent.error);
       }
@@ -143,7 +143,7 @@ serve(async (req) => {
     if (action === "resend_confirmation") {
       if (!resend) return response({ error: "Email not configured" }, 500);
       const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111"><h2 style="color:#4f46e5">Your Bridgefort Travels booking</h2><p>Hi ${escapeHtml(booking.name.split(" ")[0])}, here is your booking summary (current status: <strong>${escapeHtml(booking.status)}</strong>).</p><ul><li><strong>Package:</strong> ${escapeHtml(booking.package)}</li><li><strong>Destination:</strong> ${escapeHtml(booking.destination || "—")}</li><li><strong>Departure:</strong> ${escapeHtml(booking.departure_date)}</li><li><strong>Return:</strong> ${escapeHtml(booking.return_date)}</li><li><strong>Travelers:</strong> ${booking.travelers}</li></ul><p><a href="${escapeHtml(statusUrl)}" style="display:inline-block;background:#4f46e5;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none">Track your booking</a></p></div>`;
-      const sent = await resend.emails.send({ from: FROM_EMAIL, to: [booking.email], subject: "Bridgefort Travels — booking confirmation (resent)", html });
+      const sent = await resend.emails.send({ from: FROM_EMAIL, to: [booking.email], subject: "Bridgefort Travels — booking confirmation (resent)", html: bridgefortEmail(html) });
       if (sent.error) throw new Error(sent.error.message || "Email could not be sent");
       return response({ success: true });
     }
