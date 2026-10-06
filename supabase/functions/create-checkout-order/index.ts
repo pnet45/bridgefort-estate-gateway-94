@@ -9,7 +9,12 @@ import { captureServerEvent, getPostHogDistinctId, getPostHogSessionId } from ".
 
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-posthog-distinct-id, x-posthog-session-id" };
 const PLAN_RATES: Record<string, { months: number; rate: number }> = { outright: { months: 1, rate: 0 }, "1-3": { months: 3, rate: 0.05 }, "4-6": { months: 6, rate: 0.1 }, "7-12": { months: 12, rate: 0.15 } };
-const AGROVEST_PLOT_PRICE = 800000;
+const AGROVEST_PRICING: Record<string, { price: number; unit: string; label: string }> = {
+  food: { price: 800000, unit: 'plot', label: 'Food Crops Farming' },
+  cash: { price: 1000000, unit: 'plot', label: 'Cash Crops Farming' },
+  aquaculture: { price: 1000000, unit: 'pond', label: 'Aquaculture (Fish Farming)' },
+  livestock: { price: 1000000, unit: 'pair', label: 'Livestock (Animal Rearing)' },
+};
 const DOC_FIELD_BY_NAME: Record<string, string> = { "Survey Plan": "survey_plan", "Deed of Assignment": "deed_of_assignment", "Plot Demarcation": "plot_demarcation", "Plot Maintenance Fee": "plot_maintenance_fee" };
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -47,8 +52,11 @@ serve(async (req) => {
       let label = "";
 
       if (propertyType === "Agrovest") {
-        unitPrice = AGROVEST_PLOT_PRICE;
-        label = "Bridgefort Agrovest Estate plot";
+        const agroKey = String(raw?.item_id ?? '').replace(/^agrovest-/, '').toLowerCase();
+        const agro = AGROVEST_PRICING[agroKey];
+        if (!agro) return json({ error: "Invalid Agrovest operation selected" }, 400);
+        unitPrice = agro.price;
+        label = `Bridgefort Agrovest Estate — ${agro.label}`;
       } else if (propertyType.startsWith("Documentation")) {
         isDocumentationPurchase = true;
         if (!UUID_RE.test(propertyId)) return json({ error: "Unknown documentation estate" }, 400);
@@ -88,7 +96,7 @@ serve(async (req) => {
 
       if (!unitPrice || unitPrice <= 0) return json({ error: "Price unavailable for an item in your cart" }, 400);
       principal += unitPrice * quantity;
-      pricedItems.push({ plot_id: itemId, property_id: propertyId, property_type: propertyType, property_name: label, plot_number: raw?.plot_number ?? null, quantity, price: unitPrice, price_source: "server_authoritative" });
+      pricedItems.push({ plot_id: itemId, item_id: itemId, property_id: propertyId, property_type: propertyType, property_name: label, plot_number: raw?.plot_number ?? null, quantity, price: unitPrice, price_source: "server_authoritative", investment_unit: propertyType === 'Agrovest' ? (AGROVEST_PRICING[String(itemId).replace(/^agrovest-/, '').toLowerCase()]?.unit ?? 'unit') : undefined });
     }
 
     const effectivePlan = isDocumentationPurchase ? "outright" : planType;
