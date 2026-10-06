@@ -86,7 +86,7 @@ where not exists (
 update public.crm_automation_campaigns
 set enabled=true,
     last_run_status='ready_connected_to_client_allocations',
-    body='Dear {{name}},\\n\\nThere is an important update regarding your Bridgefort Homes property at {{estate_name}}.\\n\\nProperty: {{estate_name}}\\nPlot: {{plot_id}}\\nStatus: {{status}}\\nAllocation date: {{allocation_date}}\\nPossession date: {{possession_date}}\\n\\n{{notes}}\\n\\nIf you need any clarification or assistance, please contact our Client Service Team.\\n\\nWarm regards,\\nBridgefort Homes Development Ltd.',
+    body='Dear {{name}},' || chr(92) || 'n' || chr(92) || 'nThere is an important update regarding your Bridgefort Homes property at {{estate_name}}.' || chr(92) || 'n' || chr(92) || 'nProperty: {{estate_name}}' || chr(92) || 'nPlot: {{plot_id}}' || chr(92) || 'nStatus: {{status}}' || chr(92) || 'nAllocation date: {{allocation_date}}' || chr(92) || 'nPossession date: {{possession_date}}' || chr(92) || 'n' || chr(92) || 'n{{notes}}' || chr(92) || 'n' || chr(92) || 'nIf you need any clarification or assistance, please contact our Client Service Team.' || chr(92) || 'n' || chr(92) || 'nWarm regards,' || chr(92) || 'nBridgefort Homes Development Ltd.',
     audience_rules=jsonb_build_object('exclude_admins',true,'source_table','client_allocations','send_on_status_change',true),
     updated_at=now()
 where campaign_key='allocation_update';
