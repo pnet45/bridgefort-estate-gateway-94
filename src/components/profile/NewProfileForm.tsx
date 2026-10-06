@@ -31,7 +31,7 @@ const initialForm: FormState = {
   isOrganization: false, companyName: '', companyAddress: '', companyRegistrationNumber: '', incorporationCountry: '', incorporationDate: '', natureOfCorporateBusiness: '', salesStatus: '',
   nextOfKinName: '', nextOfKinRelationship: '', nextOfKinAddress: '', nextOfKinPhone: '', nextOfKinEmail: '',
   sourceOfIncome: '', annualIncome: '', tinNumber: '', ninNumber: '', bankName: '', accountNumber: '', accountName: '', isForeigner: false, residencePermit: '', visaStatus: '',
-  isPoliticallyExposed: false, politicalExposureDetails: '', hasFinancialCrimesHistory: false, financialCrimesDetails: '', referrerName: '', referrerPhone: '', referrerEmail: '',
+  isPoliticallyExposed: false, politicalExposureDetails: '', hasFinancialCrimesHistory: false, financialCrimesDetails: '', referrerCode: '', referrerName: '', referrerPhone: '', referrerEmail: '',
   idType: '', idNumber: '', idCountryOfIssue: '', idDateOfIssue: '', idExpiry: '', idIssuingAuthority: '',
 };
 
