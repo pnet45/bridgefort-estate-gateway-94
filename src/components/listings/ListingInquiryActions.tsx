@@ -48,7 +48,10 @@ const ListingInquiryActions = ({ listingId, title, agentEmail, agentPhone }: Pro
     setPendingAction(null);
     toast({ title: 'Inquiry recorded', description: 'A property adviser will follow up with you.' });
     const destination = destinationFor(action);
-    if (destination) {\n      if (action === 'whatsapp') window.open(destination, '_blank', 'noopener,noreferrer');\n      else window.location.assign(destination);\n    }
+    if (destination) {
+      if (action === 'whatsapp') window.open(destination, '_blank', 'noopener,noreferrer');
+      else window.location.assign(destination);
+    }
   };
 
   const startAction = (action: ActionType) => {
