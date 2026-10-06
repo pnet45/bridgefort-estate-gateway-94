@@ -1,3 +1,4 @@
+import { bridgefortEmail } from "../_shared/email-template.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -70,7 +71,7 @@ async function sendViaResend(opts: { from: string; to: string; subject: string; 
       from: opts.from,
       to: [opts.to],
       subject: opts.subject,
-      html: opts.html,
+      html: bridgefortEmail(opts.html),
     }),
   });
   if (!res.ok) {
