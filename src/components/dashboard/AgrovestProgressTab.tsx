@@ -13,6 +13,7 @@ interface OrderItem {
   quantity: number;
   price: number;
   unit?: string;
+  investment_unit?: string;
 }
 
 interface OrderRow {
@@ -76,7 +77,7 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
           propertyName: item.property_name,
           quantity: item.quantity,
           amount: item.price * item.quantity,
-          unit: item.property_name?.toLowerCase().includes('aquaculture') || item.plot_id?.toLowerCase().includes('aquaculture') ? 'pond' : item.property_name?.toLowerCase().includes('livestock') ? 'pair' : 'plot',
+          unit: item.investment_unit || item.unit || (item.property_name?.toLowerCase().includes('aquaculture') || item.plot_id?.toLowerCase().includes('aquaculture') ? 'pond' : item.property_name?.toLowerCase().includes('livestock') ? 'pair' : 'plot'),
           purchaseDate,
           progress: computeProgress(purchaseDate, now),
         });
