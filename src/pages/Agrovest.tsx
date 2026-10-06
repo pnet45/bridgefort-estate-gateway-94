@@ -152,7 +152,7 @@ const investmentAssetTypes = [
 
 const financialIndicators = [
   { icon: LineChart, title: 'Cash Flow', text: 'The ability to cover operating expenses, debt service, and reinvestment needs while generating owner returns. Positive cash flow is the bedrock of resilience.' },
-  { icon: TrendingUp, title: 'Profit-Share Potential', text: 'Evaluated against production assumptions and the applicable net-profit-sharing terms.' }
+  { icon: TrendingUp, title: 'Profit-Share Potential', text: 'Evaluated against production assumptions and the applicable net-profit-sharing terms.' },
   { icon: BarChart3, title: 'Operating Margin', text: 'A measure of production efficiency, indicating how well management controls costs relative to revenue.' },
   { icon: Landmark, title: 'Asset Appreciation Potential', text: 'While land values may rise due to infrastructure development and population growth, we view this as a component of total return, not the sole strategy.' },
 ];
