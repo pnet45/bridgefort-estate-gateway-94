@@ -6,4 +6,7 @@
 - [x] Add admin/staff assignment, filters, reporting, and conversion details
 - [x] Add follow-up completion and cancellation notes
 - [x] Add live admin notifications for new property inquiries
-- [ ] Verify preview build and public inquiry flow
+- [x] Add admin AI lead-analysis assistant with priority and follow-up suggestions
+- [x] Add inquiry analytics by property, agent, and date range
+- [x] Add filtered CSV and PDF exports with status history, follow-ups, and outcomes
+- [ ] Verify preview build and authenticated inquiry workflows

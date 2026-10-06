@@ -74,7 +74,7 @@ const Profile = () => {
                   <p className="text-xs sm:text-sm text-gray-500 mt-1">Your completion is calculated from the information required by Bridgefort.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">{profileStatus.replaceAll('_',' ')}</span>
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">{profileStatus.replace(/_/g, ' ')}</span>
                   {kycStatus === 'VERIFIED' && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
                 </div>
               </div>
