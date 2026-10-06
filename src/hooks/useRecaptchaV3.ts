@@ -9,27 +9,21 @@ import { RECAPTCHA_DISABLED_TOKEN } from '@/components/ui/ReCaptcha';
  * short-circuits — keeps the app usable in dev / before keys are pasted.
  */
 export const useRecaptchaV3 = () => {
-  const ctx = (() => {
-    try {
-      return useGoogleReCaptcha();
-    } catch {
-      return null;
-    }
-  })();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const execute = useCallback(
     async (action: string): Promise<string> => {
-      if (!ctx?.executeRecaptcha) return RECAPTCHA_DISABLED_TOKEN;
+      if (!executeRecaptcha) return RECAPTCHA_DISABLED_TOKEN;
       try {
-        const token = await ctx.executeRecaptcha(action);
+        const token = await executeRecaptcha(action);
         return token || RECAPTCHA_DISABLED_TOKEN;
       } catch (e) {
         console.error('reCAPTCHA v3 execute failed', e);
         return RECAPTCHA_DISABLED_TOKEN;
       }
     },
-    [ctx]
+    [executeRecaptcha]
   );
 
-  return { execute, isReady: !!ctx?.executeRecaptcha };
+  return { execute, isReady: !!executeRecaptcha };
 };
