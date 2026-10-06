@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, FileText, Mail, LayoutDashboard, LogOut, Bell, Home, UserCheck, CheckSquare, Building, Activity, TrendingUp, DollarSign, Settings, Plane, Network, Images, Building2, Sprout } from 'lucide-react';
+import { Shield, Users, FileText, Mail, LayoutDashboard, LogOut, Bell, Home, UserCheck, CheckSquare, Building, Activity, TrendingUp, DollarSign, Settings, Plane, Network, Images, Building2, Sprout, MapPinned } from 'lucide-react';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import { getAllowedAdminTabs, isAdminRole } from '@/lib/rbac';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
@@ -20,6 +20,7 @@ import AdminFileSharing from '@/components/admin/AdminFileSharing';
 import AdminChat from '@/components/admin/AdminChat';
 import AdminOnlineUsers from '@/components/admin/AdminOnlineUsers';
 import AdminPropertyManagement from '@/components/admin/AdminPropertyManagement';
+import AdminClientAllocations from '@/components/admin/AdminClientAllocations';
 import AdminActivityLogs from '@/components/admin/AdminActivityLogs';
 import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
 import NotificationBell from '@/components/notifications/NotificationBell';
@@ -67,6 +68,7 @@ const AdminConsole = () => {
       <TabsList className="bg-slate-800 border border-slate-700 p-1.5 flex h-auto gap-1 justify-start rounded-xl max-w-full overflow-x-auto overflow-y-hidden flex-nowrap scrollbar-thin">
         {hasPermission('admin:view_dashboard') && <TabsTrigger value="overview" className={ADMIN_TAB_CLASS}><LayoutDashboard className="h-4 w-4 shrink-0"/><span>Dashboard</span></TabsTrigger>}
         {hasPermission('admin:view_properties') && <TabsTrigger value="properties" className={ADMIN_TAB_CLASS}><Building className="h-4 w-4 shrink-0"/><span>Properties</span></TabsTrigger>}
+        {hasPermission('admin:view_allocations') && <TabsTrigger value="allocations" className={ADMIN_TAB_CLASS}><MapPinned className="h-4 w-4 shrink-0"/><span>Allocations</span></TabsTrigger>}
         {hasPermission('admin:view_crm') && <TabsTrigger value="crm" className={ADMIN_TAB_CLASS}><CheckSquare className="h-4 w-4 shrink-0"/><span>CRM</span></TabsTrigger>}
         {hasPermission('admin:view_users') && <TabsTrigger value="users" className={ADMIN_TAB_CLASS}><Users className="h-4 w-4 shrink-0"/><span>Users</span></TabsTrigger>}
         {hasPermission('admin:view_approvals') && <TabsTrigger value="approvals" className={`${ADMIN_TAB_CLASS} relative`}><UserCheck className="h-4 w-4 shrink-0"/><span>Approvals</span>{pendingCount > 0 && <span className="ml-1 h-5 min-w-5 px-1 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{pendingCount > 99 ? '99+' : pendingCount}</span>}</TabsTrigger>}
@@ -86,6 +88,7 @@ const AdminConsole = () => {
       </TabsList>
       <TabsContent value="overview" className="space-y-6"><AdminDashboardStats/><div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><div className="lg:col-span-2 space-y-6"><AdminInbox/><AdminEstateViewsLeaderboard/></div><div className="space-y-6"><AdminOnlineUsers/><AdminChat/></div></div></TabsContent>
       <TabsContent value="properties"><AdminPropertyManagement/></TabsContent>
+      <TabsContent value="allocations"><AdminClientAllocations/></TabsContent>
       <TabsContent value="crm" className="space-y-6"><AdminBirthdayWidget/><AdminCRMWorkspace/><div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><AdminTaskManager/><AdminCalendar/></div><div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><AdminNotices/><AdminNotes/><AdminFileSharing/></div></TabsContent>
       <TabsContent value="users"><UserManagementTab/></TabsContent>
       <TabsContent value="approvals"><AdminApprovalsHub onCountChange={setPendingCount}/></TabsContent>
