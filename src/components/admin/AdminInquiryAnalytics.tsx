@@ -81,7 +81,10 @@ const AdminInquiryAnalytics: React.FC = () => {
 
   const ids = useMemo(() => new Set(filtered.map(l => l.id)), [filtered]);
   const fFollow = useMemo(() => followUps.filter(f => ids.has(f.lead_id)), [followUps, ids]);
-  const fActs = useMemo(() => activities.filter(a => ids.has(a.lead_id)), [activities, ids]);
+  const startMs = new Date(`${from}T00:00:00`).getTime();
+  const endMs = new Date(`${to}T23:59:59.999`).getTime();
+  const fActs = useMemo(() => activities.filter(a => ids.has(a.lead_id) && new Date(a.created_at).getTime() >= startMs && new Date(a.created_at).getTime() <= endMs), [activities, ids, startMs, endMs]);
+  const rangeFollowUps = useMemo(() => fFollow.filter(f => new Date(f.scheduled_at).getTime() >= startMs && new Date(f.scheduled_at).getTime() <= endMs), [fFollow, startMs, endMs]);
 
   const stats = useMemo(() => {
     const won = filtered.filter(l => l.status === 'won');
@@ -94,12 +97,12 @@ const AdminInquiryAnalytics: React.FC = () => {
       lossRate: closed ? Math.round((lost.length / closed) * 100) : 0,
       wonValue: won.reduce((s, l) => s + Number(l.conversion_value || 0), 0),
       statusChanges: fActs.filter(a => a.activity_type === 'status_change' || a.activity_type === 'conversion').length,
-      fuTotal: fFollow.length,
-      fuDone: fFollow.filter(f => f.completed_at).length,
-      fuCancelled: fFollow.filter(f => f.cancelled_at).length,
-      fuOverdue: fFollow.filter(f => !f.completed_at && !f.cancelled_at && new Date(f.scheduled_at).getTime() < now).length,
+       fuTotal: rangeFollowUps.length,
+       fuDone: rangeFollowUps.filter(f => f.completed_at).length,
+       fuCancelled: rangeFollowUps.filter(f => f.cancelled_at).length,
+       fuOverdue: rangeFollowUps.filter(f => !f.completed_at && !f.cancelled_at && new Date(f.scheduled_at).getTime() < now).length,
     };
-  }, [filtered, fFollow, fActs]);
+  }, [filtered, rangeFollowUps, fActs]);
 
   const volume = useMemo(() => {
     const map = new Map<string, number>();
@@ -115,18 +118,19 @@ const AdminInquiryAnalytics: React.FC = () => {
   }, [filtered, from, to]);
 
   const breakdown = useCallback((keyFn: (l: Lead) => string) => {
-    const map = new Map<string, { key: string; total: number; won: number; lost: number; value: number; followUps: number }>();
+    const map = new Map<string, { key: string; total: number; won: number; lost: number; value: number; statusChanges: number; followUps: number }>();
     filtered.forEach(l => {
       const k = keyFn(l);
-      const row = map.get(k) || { key: k, total: 0, won: 0, lost: 0, value: 0, followUps: 0 };
+      const row = map.get(k) || { key: k, total: 0, won: 0, lost: 0, value: 0, statusChanges: 0, followUps: 0 };
       row.total++;
       if (l.status === 'won') { row.won++; row.value += Number(l.conversion_value || 0); }
       if (l.status === 'lost') row.lost++;
-      row.followUps += fFollow.filter(f => f.lead_id === l.id).length;
+      row.followUps += rangeFollowUps.filter(f => f.lead_id === l.id).length;
+      row.statusChanges += fActs.filter(a => a.lead_id === l.id && (a.activity_type === 'status_change' || a.activity_type === 'conversion')).length;
       map.set(k, row);
     });
     return [...map.values()].sort((a, b) => b.total - a.total);
-  }, [filtered, fFollow]);
+  }, [filtered, rangeFollowUps, fActs]);
 
   const byProperty = useMemo(() => breakdown(propertyOf), [breakdown]);
   const byAgent = useMemo(() => breakdown(l => agentName(l.assigned_to)), [breakdown, agentName]);
@@ -185,14 +189,14 @@ const AdminInquiryAnalytics: React.FC = () => {
       <CardHeader className="pb-2"><CardTitle className="text-sm text-white">{title}</CardTitle></CardHeader>
       <CardContent className="overflow-x-auto">
         <Table>
-          <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Leads</TableHead><TableHead>Follow-ups</TableHead><TableHead>Won</TableHead><TableHead>Lost</TableHead><TableHead>Win rate</TableHead><TableHead>Value</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Leads</TableHead><TableHead>Status changes</TableHead><TableHead>Follow-ups</TableHead><TableHead>Won</TableHead><TableHead>Lost</TableHead><TableHead>Win rate</TableHead><TableHead>Value</TableHead></TableRow></TableHeader>
           <TableBody>
             {rows.map(r => { const c = r.won + r.lost; return (
               <TableRow key={r.key}>
-                <TableCell className="py-1.5 pr-2">{r.key}</TableCell><TableCell>{r.total}</TableCell><TableCell>{r.followUps}</TableCell><TableCell>{r.won}</TableCell><TableCell>{r.lost}</TableCell>
+                <TableCell className="py-1.5 pr-2">{r.key}</TableCell><TableCell>{r.total}</TableCell><TableCell>{r.statusChanges}</TableCell><TableCell>{r.followUps}</TableCell><TableCell>{r.won}</TableCell><TableCell>{r.lost}</TableCell>
                 <TableCell>{c ? `${Math.round((r.won / c) * 100)}%` : '—'}</TableCell><TableCell>{naira(r.value)}</TableCell>
               </TableRow>); })}
-            {!rows.length && <TableRow><TableCell colSpan={7} className="py-4 text-center text-slate-500">No data</TableCell></TableRow>}
+            {!rows.length && <TableRow><TableCell colSpan={8} className="py-4 text-center text-slate-500">No data</TableCell></TableRow>}
           </TableBody>
         </Table>
       </CardContent>
