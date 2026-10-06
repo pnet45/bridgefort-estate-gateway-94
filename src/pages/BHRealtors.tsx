@@ -30,7 +30,19 @@ const packageVisuals: Record<string, { image: string; accent: string; soft: stri
   classic_gold: { image: '/images/LoginImageLANDFORSALE.png', accent: 'from-violet-600 to-purple-900', soft: 'bg-violet-50 text-violet-700 dark:bg-violet-400/10 dark:text-violet-200', icon: <Crown className="h-5 w-5" />, label: 'PREMIUM LEVEL' },
 };
 
-interface RealtorSale {\n  sale_id: string;\n  client_first_name: string | null;\n  plot_id: string | null;\n  plots_bought: number;\n  estate_name: string | null;\n  payment_status: string | null;\n  amount_paid: number;\n  balance: number;\n  sale_date: string | null;\n}\n\ntype DashboardData = {
+interface RealtorSale {
+  sale_id: string;
+  client_first_name: string | null;
+  plot_id: string | null;
+  plots_bought: number;
+  estate_name: string | null;
+  payment_status: string | null;
+  amount_paid: number;
+  balance: number;
+  sale_date: string | null;
+}
+
+type DashboardData = {
   profile?: {
     is_pbo?: boolean;
     is_active?: boolean;
