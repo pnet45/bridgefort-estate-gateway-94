@@ -45,7 +45,7 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     toast({
       title: "Added to Cart",
-      description: `${quantity} plot(s) of ${plot.propertyName} added to cart`,
+      description: `${quantity} ${plot.unit || (plot.propertyName.toLowerCase().includes('aquaculture') ? 'pond' : plot.propertyName.toLowerCase().includes('livestock') ? 'pair' : 'plot')}${quantity === 1 ? '' : 's'} of ${plot.propertyName} added to cart`,
     });
 
     // Automatically open cart when adding items
