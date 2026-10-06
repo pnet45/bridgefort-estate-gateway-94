@@ -24,6 +24,7 @@ export function bridgefortEmail(
   const preheader = escapeHtml(options.preheader || "Bridgefort Homes Development Ltd.");
   const ctaLabel = escapeHtml(options.ctaLabel || "Visit Bridgefort Homes");
   const ctaUrl = escapeHtml(options.ctaUrl || WEBSITE);
+  const hasExistingButton = /display\\s*:\\s*inline-block[\\s\\S]{0,500}background\\s*:/i.test(body);
 
   return `<!doctype html>
 <html lang="en">
@@ -54,11 +55,8 @@ export function bridgefortEmail(
 </td></tr>
 <tr><td class="bf-content" style="padding:34px 30px 18px;">
 ${body}
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:28px auto 8px;">
-<tr><td class="bf-cta" style="border-radius:9px;background:#5b2a86;text-align:center;">
-<a href="${ctaUrl}" style="display:inline-block;padding:14px 25px;color:#fff;text-decoration:none;font-size:15px;font-weight:700;">${ctaLabel}</a>
-</td></tr>
-</table>
+<!-- CTA is supplied by the message when it already has a button; otherwise the shared default is shown. -->
+${hasExistingButton ? "" : `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:28px auto 8px;"><tr><td class="bf-cta" style="border-radius:9px;background:#5b2a86;text-align:center;"><a href="${ctaUrl}" style="display:inline-block;padding:14px 25px;color:#fff;text-decoration:none;font-size:15px;font-weight:700;">${ctaLabel}</a></td></tr></table>`}
 </td></tr>
 <tr><td class="bf-footer" style="background:#3b2057;padding:26px 24px;text-align:center;color:#fff;">
 <div style="font-size:16px;font-weight:800;">Bridgefort Homes Development Ltd.</div>
