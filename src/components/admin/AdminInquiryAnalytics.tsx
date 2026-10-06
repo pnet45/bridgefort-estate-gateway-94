@@ -102,7 +102,7 @@ const AdminInquiryAnalytics: React.FC = () => {
 
   const volume = useMemo(() => {
     const map = new Map<string, number>();
-    filtered.forEach(l => { const d = format(new Date(l.created_at), 'MMM d'); map.set(d, (map.get(d) || 0) + 1); });
+    filtered.forEach(l => { const d = format(new Date(l.created_at), 'yyyy-MM-dd'); map.set(d, (map.get(d) || 0) + 1); });
     return [...map.entries()].reverse().map(([date, count]) => ({ date, count }));
   }, [filtered]);
 
@@ -150,12 +150,14 @@ const AdminInquiryAnalytics: React.FC = () => {
     doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.text('PWAN Bridgefort — Inquiry Report', M, y); y += 18;
     doc.setFontSize(9); doc.setFont('helvetica', 'normal');
     doc.text(`Period: ${from} to ${to}  |  Property: ${property === 'all' ? 'All' : property}  |  Agent: ${agent === 'all' ? 'All' : agent === UNASSIGNED ? 'Unassigned' : agentName(agent)}  |  Status: ${status}  |  Generated ${format(new Date(), 'yyyy-MM-dd HH:mm')}`, M, y); y += 16;
-    doc.text(`Total: ${stats.total}   Won: ${stats.won}   Lost: ${stats.lost}   Win rate: ${stats.winRate}%   Won value: NGN ${stats.wonValue.toLocaleString()}   Follow-ups: ${stats.fuTotal} (${stats.fuDone} done, ${stats.fuOverdue} overdue)`, M, y); y += 20;
+    doc.text(`Total: ${stats.total}   Won: ${stats.won}   Lost: ${stats.lost}   Win rate: ${stats.winRate}%   Won value: NGN ${stats.wonValue.toLocaleString()}   Follow-ups: ${stats.fuTotal} (${stats.fuDone} done, ${stats.fuOverdue} overdue, ${stats.fuCancelled} cancelled)`, M, y); y += 20;
 
     filtered.forEach(l => {
       const lines: string[] = [
         `Contact: ${l.email || '—'} / ${l.phone || '—'}   Source: ${l.source}   Property: ${propertyOf(l)}   Agent: ${agentName(l.assigned_to)}   Priority: ${l.priority}   Created: ${format(new Date(l.created_at), 'yyyy-MM-dd')}`,
       ];
+      const leadRecord = leads.find(item => item.id === l.id);
+      void leadRecord;
       const h = historyOf(l.id); if (h) lines.push(`Status history: ${h}`);
       const f = followOf(l.id); if (f) lines.push(`Follow-ups: ${f}`);
       if (l.status === 'won' || l.status === 'lost') lines.push(`Outcome: ${l.status.toUpperCase()}${l.conversion_value ? ` NGN ${Number(l.conversion_value).toLocaleString()}` : ''}${l.closed_at ? ` on ${format(new Date(l.closed_at), 'yyyy-MM-dd')}` : ''} — ${l.outcome_reason || ''}${l.closing_notes ? ` | ${strip(l.closing_notes)}` : ''}${l.order_id ? ` | Order ${l.order_id}` : ''}${l.payment_id ? ` | Payment ${l.payment_id}` : ''}`);
