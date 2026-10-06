@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.110.0";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createOpenAI } from "npm:@ai-sdk/openai";
-import { NoObjectGeneratedError, Output, streamText } from "npm:ai";
+import { APICallError, NoObjectGeneratedError, Output, streamText } from "npm:ai";
 import { z } from "npm:zod@3.25.76";
 
 const json = (body: unknown, status = 200) =>
@@ -84,10 +84,8 @@ Deno.serve(async (req) => {
     } catch (error) {
       if (req.signal.aborted) return json({ error: "Analysis cancelled" }, 499);
       if (NoObjectGeneratedError.isInstance(error)) return json({ error: "The AI could not produce a valid analysis." }, 502);
-      if (typeof error === "object" && error !== null && "statusCode" in error) {
-        const status = Number((error as { statusCode?: number }).statusCode) || 500;
-        const message = "message" in error && typeof error.message === "string" ? error.message : "AI analysis failed";
-        return json({ error: message }, status);
+      if (APICallError.isInstance(error)) {
+        return json({ error: error.message || "AI analysis failed" }, error.statusCode);
       }
       throw error;
     }
