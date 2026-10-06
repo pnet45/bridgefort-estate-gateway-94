@@ -1,0 +1,48 @@
+import React,{useEffect,useState} from 'react';
+import {supabase} from '@/integrations/supabase/client';
+import {useAuth} from '@/contexts/auth';
+import {Card,CardContent,CardHeader,CardTitle} from '@/components/ui/card';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Textarea} from '@/components/ui/textarea';
+import {Label} from '@/components/ui/label';
+import {Switch} from '@/components/ui/switch';
+import {Badge} from '@/components/ui/badge';
+import {toast} from 'sonner';
+import {Save,RefreshCw,ShieldCheck,Clock3,Mail,Users,Eye} from 'lucide-react';
+
+type Automation={id:string;campaign_key:string;name:string;description:string;category:string;enabled:boolean;schedule_time:string;timezone:string;cooldown_days:number;threshold_value:number|null;subject:string;body:string;audience_rules:any;last_run_at:string|null;last_run_status:string|null;last_run_count:number};
+
+const categories:{key:string;label:string}[]=[
+ {key:'account_engagement',label:'Account Engagement'},{key:'payments',label:'Payments'},{key:'property',label:'Property Updates'},{key:'relationship',label:'Client Relationship'},{key:'subscriptions',label:'Subscriptions'}
+];
+
+export default function AdminClientEngagementAutomations(){
+ const {user,hasPermission}=useAuth(); const [items,setItems]=useState<Automation[]>([]); const [selected,setSelected]=useState<Automation|null>(null); const [loading,setLoading]=useState(true); const [saving,setSaving]=useState(false);
+ const canManage=hasPermission('admin:view_email_center');
+ const load=async()=>{setLoading(true);const {data,error}=await supabase.from('crm_automation_campaigns').select('*').order('category').order('name');if(error)toast.error(error.message);else{setItems((data||[]) as Automation[]);if(selected)setSelected((data||[]).find((x:any)=>x.id===selected.id)||null)}setLoading(false)};
+ useEffect(()=>{load()},[]);
+ const save=async()=>{if(!selected||!canManage)return;setSaving(true);const {error}=await supabase.from('crm_automation_campaigns').update({enabled:selected.enabled,schedule_time:selected.schedule_time,cooldown_days:selected.cooldown_days,threshold_value:selected.threshold_value,subject:selected.subject,body:selected.body,audience_rules:selected.audience_rules,updated_by:user?.id,updated_at:new Date().toISOString()}).eq('id',selected.id);if(error)toast.error(error.message);else{toast.success('Automation settings saved');await load()}setSaving(false)};
+ const test=async()=>{if(!selected)return;toast.info('Test-send control is reserved for the approved automation sender workflow. No client email was sent.')};
+ if(!canManage)return <Card><CardContent className="p-8 text-center"><ShieldCheck className="mx-auto mb-3 h-8 w-8 text-slate-400"/><p className="font-semibold">Automation access is restricted.</p><p className="mt-1 text-sm text-slate-500">You need the CRM email-center permission to manage client automations.</p></CardContent></Card>;
+ return <div className="grid min-h-[620px] grid-cols-1 gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
+  <Card className="border-slate-200"><CardHeader className="pb-3"><div className="flex items-center justify-between"><CardTitle className="text-base">Client Automations</CardTitle><Button variant="ghost" size="icon" onClick={load}><RefreshCw className={loading?'h-4 w-4 animate-spin':'h-4 w-4'}/></Button></div><p className="text-xs text-slate-500">Control which client communications run automatically.</p></CardHeader><CardContent className="space-y-4">
+   {categories.map(cat=><div key={cat.key}><p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{cat.label}</p><div className="space-y-1">{items.filter(x=>x.category===cat.key).map(a=><button key={a.id} onClick={()=>setSelected(a)} className={'w-full rounded-xl border p-3 text-left transition '+(selected?.id===a.id?'border-[#5b2a86] bg-[#faf7fd]':'border-slate-200 bg-white hover:bg-slate-50')}><div className="flex items-center justify-between gap-2"><span className="text-sm font-semibold text-slate-800">{a.name}</span><Badge variant="outline" className={a.enabled?'border-emerald-200 bg-emerald-50 text-emerald-700':'text-slate-500'}>{a.enabled?'On':'Off'}</Badge></div><p className="mt-1 text-[11px] leading-4 text-slate-500">{a.description}</p></button>)}</div></div>)}
+  </CardContent></Card>
+  <Card className="border-slate-200">{!selected?<CardContent className="flex h-full min-h-[560px] flex-col items-center justify-center text-center"><Mail className="mb-3 h-9 w-9 text-slate-300"/><p className="font-semibold">Select an automation</p><p className="mt-1 max-w-sm text-sm text-slate-500">Configure its schedule, audience rules and branded message from one CRM workspace.</p></CardContent>:
+   <><CardHeader className="border-b border-slate-100"><div className="flex items-start justify-between gap-4"><div><CardTitle className="text-lg">{selected.name}</CardTitle><p className="mt-1 text-sm text-slate-500">{selected.description}</p></div><div className="flex items-center gap-2"><span className="text-xs font-semibold text-slate-600">{selected.enabled?'Enabled':'Disabled'}</span><Switch checked={selected.enabled} onCheckedChange={v=>setSelected({...selected,enabled:v})}/></div></div></CardHeader>
+   <CardContent className="space-y-6 p-5">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+     <div><Label>Run time (Nigeria)</Label><Input type="time" step="900" value={selected.schedule_time?.slice(0,5)} onChange={e=>setSelected({...selected,schedule_time:e.target.value})}/><p className="mt-1 text-[10px] text-slate-500">Use 15-minute intervals.</p></div>
+     <div><Label>Cooldown (days)</Label><Input type="number" min={1} value={selected.cooldown_days} onChange={e=>setSelected({...selected,cooldown_days:Number(e.target.value)||1})}/></div>
+     <div><Label>Trigger threshold</Label><Input type="number" min={0} value={selected.threshold_value??0} onChange={e=>setSelected({...selected,threshold_value:Number(e.target.value)||0})}/></div>
+    </div>
+    <div><Label>Subject</Label><Input value={selected.subject} onChange={e=>setSelected({...selected,subject:e.target.value})}/></div>
+    <div><Label>Message template</Label><Textarea rows={11} value={selected.body} onChange={e=>setSelected({...selected,body:e.target.value})}/><p className="mt-2 text-[11px] text-slate-500">Available variables include <code>{'{{name}}'}</code>, <code>{'{{email}}'}</code>, <code>{'{{date}}'}</code>, <code>{'{{last_login_date}}'}</code>, <code>{'{{login_url}}'}</code>.</p></div>
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4"><div className="mb-3 flex items-center gap-2"><Users className="h-4 w-4 text-[#5b2a86]"/><span className="text-sm font-semibold">Audience & safety controls</span></div><label className="flex items-center gap-3 text-sm"><Switch checked={selected.audience_rules?.exclude_admins!==false} onCheckedChange={v=>setSelected({...selected,audience_rules:{...selected.audience_rules,exclude_admins:v}})}/><span>Exclude admins and internal team accounts</span></label><label className="mt-3 flex items-center gap-3 text-sm"><Switch checked={selected.audience_rules?.exclude_inactive_profiles!==false} onCheckedChange={v=>setSelected({...selected,audience_rules:{...selected.audience_rules,exclude_inactive_profiles:v}})}/><span>Exclude manually deactivated client profiles</span></label></div>
+    <div className="rounded-xl border border-[#eadcf6] bg-[#faf7fd] p-4"><div className="flex items-center gap-2 text-sm font-semibold text-[#5b2a86]"><Clock3 className="h-4 w-4"/>Last run</div><p className="mt-2 text-xs text-slate-600">{selected.last_run_at?new Date(selected.last_run_at).toLocaleString('en-NG'):'Not run yet'} · {selected.last_run_status||'Pending'} · {selected.last_run_count||0} sent</p></div>
+    <div className="flex flex-wrap justify-end gap-2"><Button variant="outline" onClick={test}><Eye className="mr-2 h-4 w-4"/>Preview / Test</Button><Button onClick={save} disabled={saving} className="bg-[#5b2a86] hover:bg-[#4b2270]"><Save className="mr-2 h-4 w-4"/>{saving?'Saving…':'Save Automation'}</Button></div>
+   </CardContent></>}
+  </Card>
+ </div>;
+}
