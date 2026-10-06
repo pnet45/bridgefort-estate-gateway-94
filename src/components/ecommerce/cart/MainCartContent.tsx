@@ -83,10 +83,13 @@ const MainCartContent: React.FC<MainCartContentProps> = ({
                               </h3>
                               <p className="text-gray-600">{item.plot.location}</p>
                               <p className="text-sm text-gray-500">
-                                Plot #{item.plot.plotNumber} • {item.plot.size}sqm • {item.plot.propertyType}
+                                {item.plot.propertyType === 'Agrovest'
+                                  ? (item.plot.unit || 'plot') + ' subscription'
+                                  : 'Plot #' + item.plot.plotNumber + ' • ' + item.plot.size + 'sqm'}
+                                {' • '}{item.plot.propertyType}
                               </p>
                               <p className="text-lg font-bold text-estate-red">
-                                ₦{item.plot.pricePerPlot.toLocaleString()} per plot
+                                ₦{item.plot.pricePerPlot.toLocaleString()} per {item.plot.unit || 'plot'}
                               </p>
                             </div>
                             <div className="flex flex-col items-end space-y-3">
@@ -105,6 +108,7 @@ const MainCartContent: React.FC<MainCartContentProps> = ({
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleQuantityUpdate(item.plot.id, item.quantity + 1)}
+                                  disabled={item.plot.propertyType === 'Agrovest' && item.quantity >= 50}
                                 >
                                   <Plus size={16} />
                                 </Button>
@@ -135,21 +139,10 @@ const MainCartContent: React.FC<MainCartContentProps> = ({
                 <CardTitle>Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Subtotal ({getTotalItems()} items):</span>
-                    <span className="font-semibold">₦{getTotalAmount().toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Processing Fee (2%):</span>
-                    <span>₦{(getTotalAmount() * 0.02).toLocaleString()}</span>
-                  </div>
-                </div>
-                <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total:</span>
                   <span className="text-estate-red">
-                    ₦{(getTotalAmount() * 1.02).toLocaleString()}
+                    ₦{getTotalAmount().toLocaleString()}
                   </span>
                 </div>
                 <Button 
