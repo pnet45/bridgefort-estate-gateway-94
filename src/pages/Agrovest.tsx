@@ -238,6 +238,7 @@ const Agrovest: React.FC = () => {
         imageUrl: selected.image,
         size: 1,
         propertyType: 'Agrovest',
+        unit: selected.unit,
       },
       quantity
     );
