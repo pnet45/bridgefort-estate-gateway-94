@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-nocheck -- this Edge Function uses Supabase/Deno runtime globals not available to the root TypeScript project.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
