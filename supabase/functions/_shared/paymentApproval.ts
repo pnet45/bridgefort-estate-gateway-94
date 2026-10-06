@@ -11,7 +11,7 @@ export async function queueOrderForApproval(
   const { reference, orderId, paidAmount, channel } = opts;
   if (!reference || paidAmount <= 0) return;
 
-  let orderQuery = admin
+  const orderQuery = admin
     .from("orders")
     .select("id, user_id, items, total_amount, amount_paid, balance, payment_status, customer_name")
     .limit(1);
