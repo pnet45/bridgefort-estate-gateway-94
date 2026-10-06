@@ -51,6 +51,16 @@ type Estate = {
   scheme: number | null;
 };
 
+type ClientProperty = {
+  order_id: string | null;
+  item_property_id: string | null;
+  plot_id: string | null;
+  property_name: string | null;
+  property_type: string | null;
+  payment_status: string | null;
+  balance: number | null;
+};
+
 type FormState = {
   user_id: string;
   estate_id: string;
@@ -107,6 +117,7 @@ const AdminClientAllocations: React.FC = () => {
   const [allocations, setAllocations] = useState<Allocation[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [estates, setEstates] = useState<Estate[]>([]);
+  const [clientProperties, setClientProperties] = useState<ClientProperty[]>([]);
   const [orders, setOrders] = useState<Array<{ id: string; label: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -182,6 +193,7 @@ const AdminClientAllocations: React.FC = () => {
     setEditing(null);
     setForm(emptyForm);
     setOrders([]);
+    setClientProperties([]);
     setDialogOpen(true);
   };
 
@@ -202,7 +214,27 @@ const AdminClientAllocations: React.FC = () => {
       notes: allocation.notes || '',
     });
     await loadOrders(allocation.user_id);
+    await loadClientProperties(allocation.user_id);
     setDialogOpen(true);
+  };
+
+  const loadClientProperties = async (userId: string) => {
+    if (!userId) {
+      setClientProperties([]);
+      return;
+    }
+    const { data, error } = await supabase
+      .from('my_properties')
+      .select('order_id,item_property_id,plot_id,property_name,property_type,payment_status,balance')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) {
+      toast({ title: 'Could not load client properties', description: error.message, variant: 'destructive' });
+      setClientProperties([]);
+      return;
+    }
+    setClientProperties((data || []) as ClientProperty[]);
   };
 
   const loadOrders = async (userId: string) => {
@@ -232,20 +264,24 @@ const AdminClientAllocations: React.FC = () => {
 
   const save = async () => {
     if (!canManage) return;
-    if (!form.user_id || !form.estate_id || !form.plot_id || !form.estate_id) {
-      toast({ title: 'Missing required details', description: 'Select a client, estate and plot before saving.', variant: 'destructive' });
+    if (!form.user_id || !form.estate_id || !form.property_id || !form.plot_id) {
+      toast({ title: 'Missing verified property details', description: 'Select the client, estate and an existing client property before saving the allocation.', variant: 'destructive' });
       return;
     }
 
     const estate = estates.find(e => e.id === form.estate_id);
-    if (!estate) return;
+    const clientProperty = clientProperties.find(p => (p.item_property_id || p.plot_id) === form.property_id);
+    if (!estate || !clientProperty) {
+      toast({ title: 'Property verification required', description: 'The selected property could not be verified against the client property records.', variant: 'destructive' });
+      return;
+    }
 
     setSaving(true);
     try {
       const payload = {
         user_id: form.user_id,
         estate_id: form.estate_id,
-        order_id: form.order_id || null,
+        order_id: clientProperty.order_id || form.order_id || null,
         property_id: form.property_id || null,
         plot_id: form.plot_id.trim(),
         plot_label: form.plot_label.trim() || null,
@@ -335,7 +371,7 @@ const AdminClientAllocations: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
             <div className="md:col-span-2">
               <label className="text-sm font-medium">Client *</label>
-              <Select value={form.user_id} onValueChange={async v => { setField('user_id', v); setField('order_id', ''); await loadOrders(v); }}>
+              <Select value={form.user_id} onValueChange={async v => { setField('user_id', v); setField('order_id', ''); setField('property_id', ''); setField('plot_id', ''); await loadOrders(v); await loadClientProperties(v); }}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Select client" /></SelectTrigger>
                 <SelectContent className="max-h-72">{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name} — {c.email}</SelectItem>)}</SelectContent>
               </Select>
@@ -347,6 +383,26 @@ const AdminClientAllocations: React.FC = () => {
                 <SelectContent className="max-h-72">{estates.map(e => <SelectItem key={e.id} value={e.id}>{e.name}{e.phase ? ` • Phase ${e.phase}` : ''}{e.scheme ? ` • Scheme ${e.scheme}` : ''}</SelectItem>)}</SelectContent>
               </Select>
             </div>
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium">Existing Client Property *</label>
+              <Select value={form.property_id || 'none'} onValueChange={v => {
+                const property = clientProperties.find(p => (p.item_property_id || p.plot_id) === v);
+                setField('property_id', v === 'none' ? '' : v);
+                if (property?.order_id) setField('order_id', property.order_id);
+                if (property?.plot_id) setField('plot_id', property.plot_id);
+              }}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Select an existing client property" /></SelectTrigger>
+                <SelectContent className="max-h-72">
+                  <SelectItem value="none">Select property</SelectItem>
+                  {clientProperties.map((p, index) => {
+                    const value = p.item_property_id || p.plot_id;
+                    if (!value) return null;
+                    return <SelectItem key={value + index} value={value}>{p.property_name || p.property_type || 'Client property'}{p.plot_id ? ` • Plot ${p.plot_id}` : ''}{p.order_id ? ` • Order ${p.order_id.slice(0, 8)}` : ''}</SelectItem>;
+                  })}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">This must come from the client's existing property record; the allocation workflow should not create a property from scratch.</p>
+            </div>
             <div>
               <label className="text-sm font-medium">Client Order</label>
               <Select value={form.order_id || 'none'} onValueChange={v => setField('order_id', v === 'none' ? '' : v)}>
@@ -354,9 +410,9 @@ const AdminClientAllocations: React.FC = () => {
                 <SelectContent className="max-h-72"><SelectItem value="none">No linked order</SelectItem>{orders.map(o => <SelectItem key={o.id} value={o.id}>{o.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><label className="text-sm font-medium">Plot ID *</label><Input className="mt-1" value={form.plot_id} onChange={e => setField('plot_id', e.target.value)} placeholder="e.g. PGE-S1-038" /></div>
+            <div><label className="text-sm font-medium">Allocated Plot ID *</label><Input className="mt-1" value={form.plot_id} onChange={e => setField('plot_id', e.target.value)} placeholder="Verified allocated plot" /></div>
             <div><label className="text-sm font-medium">Plot label / description</label><Input className="mt-1" value={form.plot_label} onChange={e => setField('plot_label', e.target.value)} placeholder="e.g. 500sqm corner plot" /></div>
-            <div><label className="text-sm font-medium">Property ID</label><Input className="mt-1" value={form.property_id} onChange={e => setField('property_id', e.target.value)} placeholder="Optional property/listing ID" /></div>
+            <div><label className="text-sm font-medium">Property ID</label><Input className="mt-1" value={form.property_id} readOnly placeholder="Selected from client property" /></div>
             <div>
               <label className="text-sm font-medium">Allocation status *</label>
               <Select value={form.allocation_status} onValueChange={v => setField('allocation_status', v as AllocationStatus)}>
