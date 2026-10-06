@@ -6,8 +6,8 @@ import { motion } from 'framer-motion';
 const AgrovestFeature = () => {
   const bullets = [
     { icon: ShieldCheck, text: 'Government-allocated farmland, professionally managed' },
-    { icon: TrendingUp, text: 'Quarterly profit shares from Year 2, up to 40% – 50%' },
-    { icon: Sprout, text: 'Choose Cash Crops, Food Crops or Livestock Farming' },
+    { icon: TrendingUp, text: 'Projected share of net profits: 10%–20% Year 1, 30%–40% Years 2–3, 40%–50% Years 4–5' },
+    { icon: Sprout, text: 'Food crops, cash crops, aquaculture and livestock operations' },
     { icon: Calendar, text: '5-year investment term, renewable thereafter' },
   ];
 
@@ -43,8 +43,7 @@ const AgrovestFeature = () => {
               Grow wealth with <span className="text-green-700">Bridgefort Agrovest</span>
             </h2>
             <p className="text-muted-foreground mb-6">
-              Own a farm plot at our government-allocated agricultural estate in Ijebu-Ife, Ogun
-              State. We farm it, you earn — from ₦800,000 per plot.
+              Join established agricultural operations at Bridgefort Farm Estate in Ijebu-Ife, Ogun State. Choose plots, ponds or livestock pairs and participate in professionally managed production.
             </p>
             <ul className="space-y-3 mb-8">
               {bullets.map((b) => (
