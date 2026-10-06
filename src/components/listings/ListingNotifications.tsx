@@ -44,7 +44,10 @@ const ListingNotifications = () => {
         (payload) => {
           const n = payload.new as Notif;
           setItems(prev => [n, ...prev]);
-          const toastType = n.type === 'success' ? 'success' : n.type === 'error' ? 'error' : 'message';\n          if (toastType === 'success') toast.success(n.title, { description: n.message });\n          else if (toastType === 'error') toast.error(n.title, { description: n.message });\n          else toast(n.title, { description: n.message });
+          const toastType = n.type === 'success' ? 'success' : n.type === 'error' ? 'error' : 'message';
+          if (toastType === 'success') toast.success(n.title, { description: n.message });
+          else if (toastType === 'error') toast.error(n.title, { description: n.message });
+          else toast(n.title, { description: n.message });
         }
       )
       .subscribe();
