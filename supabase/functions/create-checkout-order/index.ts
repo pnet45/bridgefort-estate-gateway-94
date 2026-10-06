@@ -52,6 +52,10 @@ serve(async (req) => {
       let label = "";
 
       if (propertyType === "Agrovest") {
+        const rawQuantity = Number(raw?.quantity ?? 1);
+        if (!Number.isFinite(rawQuantity) || !Number.isInteger(rawQuantity) || rawQuantity < 1 || rawQuantity > 50) {
+          return json({ error: "Agrovest quantity must be a whole number between 1 and 50" }, 400);
+        }
         const agroKey = String(raw?.item_id ?? '').replace(/^agrovest-/, '').toLowerCase();
         const agro = AGROVEST_PRICING[agroKey];
         if (!agro) return json({ error: "Invalid Agrovest operation selected" }, 400);
