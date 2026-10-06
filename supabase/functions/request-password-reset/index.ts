@@ -1,3 +1,4 @@
+import { bridgefortEmail } from "../_shared/email-template.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "https://esm.sh/resend@2.0.0";
@@ -109,7 +110,7 @@ serve(async (req: Request) => {
       from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
       to: [email],
       subject: "Your Password Reset Code - Bridgefort Homes Development Ltd",
-      html: `
+      html: bridgefortEmail(`
         <!DOCTYPE html>
         <html>
           <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -137,7 +138,7 @@ serve(async (req: Request) => {
             </div>
           </body>
         </html>
-      `,
+      `),
     });
 
     // Always return same response to prevent email enumeration
