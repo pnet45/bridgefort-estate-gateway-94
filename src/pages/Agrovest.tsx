@@ -288,8 +288,7 @@ const Agrovest: React.FC = () => {
               Growing Wealth <span className="text-green-400">Through Agriculture</span>
             </h1>
             <p className="text-lg md:text-xl text-green-100 mb-6 max-w-2xl">
-              You Invest. We Farm. You Earn. Own productive farmland at Nigeria's leading
-              integrated agricultural investment estate — no farming experience required.
+              Join a professionally managed agricultural operation. Select your plot, pond or livestock pair, and Bridgefort Agrovest handles the farming, production, harvesting, processing and market coordination.
             </p>
 
             <div className="flex flex-wrap gap-4 mb-8">
@@ -378,6 +377,29 @@ const Agrovest: React.FC = () => {
             <div className="rounded-2xl border border-white/10 bg-white/5 p-5"><p className="text-xs uppercase tracking-wide text-green-300">Years 4–5 projected share</p><p className="mt-2 font-bold">40% – 50%</p><p className="mt-1 text-sm text-green-200">₦{yearFourFiveMin.toLocaleString()} – ₦{yearFourFiveMax.toLocaleString()} per year</p></div>
           </div>
           <p className="mt-5 text-center text-xs text-green-200/80">Projected profit-share ranges shown for planning purposes. Actual returns depend on agricultural production, harvest and market performance and are not guaranteed.</p>
+        </div>
+      </section>
+
+      {/* Agricultural operations */}
+      <section className="section-padding bg-white">
+        <div className="container-custom">
+          <div className="mx-auto mb-10 max-w-3xl text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-green-700">Choose your participation</p>
+            <h2 className="mt-2 text-3xl font-extrabold text-green-950 md:text-4xl">Join the Agricultural Operations</h2>
+            <p className="mt-3 text-muted-foreground">Select one or more plots, ponds or livestock pairs. Bridgefort Agrovest manages cultivation, production, harvesting, processing and market coordination for participating clients.</p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {(Object.entries(AGROVEST_OPTIONS) as [AgrovestOptionKey, typeof AGROVEST_OPTIONS[AgrovestOptionKey]][]).map(([key, option]) => (
+              <Card key={key} className={`overflow-hidden border-green-100 transition-all hover:-translate-y-1 hover:shadow-xl ${sector === key ? 'ring-2 ring-amber-400' : ''}`}>
+                <div className="relative h-40 overflow-hidden"><img src={option.image} alt={option.label} className="h-full w-full object-cover" loading="lazy" /><div className="absolute inset-0 bg-gradient-to-t from-green-950/70 to-transparent" /><span className="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-green-950">{option.unit}</span></div>
+                <CardContent className="p-5">
+                  <h3 className="font-extrabold text-green-950">{option.label}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{option.description}</p>
+                  <div className="mt-4 flex items-end justify-between gap-3"><div><p className="text-xs text-muted-foreground">Subscription price</p><p className="text-xl font-black text-green-800">₦{option.price.toLocaleString()}</p><p className="text-xs text-muted-foreground">per {option.unit}</p></div><Button size="sm" onClick={() => { setSector(key); setQuantity(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>{sector === key ? 'Selected' : 'Choose'}</Button></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
