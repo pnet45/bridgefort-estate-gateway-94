@@ -1,3 +1,4 @@
+import { bridgefortEmail } from "../_shared/email-template.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "npm:resend@2.0.0";
@@ -239,7 +240,7 @@ serve(async (req: Request) => {
       from: "PWAN Training <noreply@bridgeforthomes.com>",
       to: [registration.email],
       subject: `Your Certificate of Completion - ${event.title}`,
-      html: `
+      html: bridgefortEmail(`
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #1e3a8a;">Congratulations ${registration.name}!</h2>
           <p>We are pleased to inform you that you have successfully completed the <strong>${event.title}</strong> training program.</p>
@@ -265,7 +266,7 @@ serve(async (req: Request) => {
         <div style="margin-top: 40px;">
           ${certificateHtml}
         </div>
-      `,
+      `),
     });
 
     console.log("Email sent successfully:", emailResponse);
