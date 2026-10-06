@@ -12,7 +12,7 @@ export const escapeHtml = (value: string) => String(value ?? "")
   .replace(/'/g, "&#039;");
 
 const extractBody = (html: string) => {
-  const match = html.match(/<body[^>]*>([\\s\\S]*?)<\\/body>/i);
+  const match = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
   return match?.[1]?.trim() || html;
 };
 
