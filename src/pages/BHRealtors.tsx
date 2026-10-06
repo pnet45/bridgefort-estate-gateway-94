@@ -132,9 +132,9 @@ const BHRealtors: React.FC = () => {
     }
 
     setBusy(false);
-  };
+  }, [user]);
 
-  useEffect(() => { if (user) void load(); }, [user]);
+  useEffect(() => { if (user) void load(); }, [user, load]);
 
   const currentPackage = useMemo(
     () => packages.find((item) => item.package_code === currentCode) || packages.find((item) => item.package_code === 'associate') || packages[0],
