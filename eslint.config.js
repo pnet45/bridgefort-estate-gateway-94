@@ -23,7 +23,13 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      "@typescript-eslint/no-unused-vars": "off",\n      // Existing Supabase/SDK response objects are intentionally dynamic. Keep `any` non-blocking while the codebase is progressively typed.\n      "@typescript-eslint/no-explicit-any": "off",\n      "@typescript-eslint/ban-ts-comment": ["error", { "ts-ignore": "allow-with-description", "ts-expect-error": "allow-with-description", "ts-nocheck": "allow-with-description" }],\n      "no-var": "warn",\n      "@typescript-eslint/no-require-imports": "off",\n      "no-empty": ["error", { "allowEmptyCatch": true }],
+      "@typescript-eslint/no-unused-vars": "off",
+      // Existing Supabase/SDK response objects are intentionally dynamic. Keep `any` non-blocking while the codebase is progressively typed.
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/ban-ts-comment": ["error", { "ts-ignore": "allow-with-description", "ts-expect-error": "allow-with-description", "ts-nocheck": "allow-with-description" }],
+      "no-var": "warn",
+      "@typescript-eslint/no-require-imports": "off",
+      "no-empty": ["error", { "allowEmptyCatch": true }],
     },
   }
 );
