@@ -12,6 +12,7 @@ interface OrderItem {
   property_name: string;
   quantity: number;
   price: number;
+  unit?: string;
 }
 
 interface OrderRow {
@@ -85,6 +86,7 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
           propertyName: item.property_name,
           quantity: item.quantity,
           amount: item.price * item.quantity,
+          unit: item.property_name?.toLowerCase().includes('aquaculture') || item.plot_id?.toLowerCase().includes('aquaculture') ? 'pond' : item.property_name?.toLowerCase().includes('livestock') ? 'pair' : 'plot',
           purchaseDate,
           progress: computeProgress(purchaseDate, now),
         });
@@ -112,8 +114,7 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
           <Sprout className="h-10 w-10 text-green-600 mx-auto mb-3" />
           <h3 className="text-lg font-semibold mb-1">No Agrovest investments yet</h3>
           <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
-            Own a farm plot at Bridgefort Agrovest Estate and earn quarterly profit shares over a
-            5-year term.
+            Join one or more Bridgefort Agrovest agricultural operation units and participate in the 5-year profit-share programme.
           </p>
           <Button asChild className="bg-green-700 hover:bg-green-800">
             <Link to="/agrovest">Explore Agrovest</Link>
@@ -132,7 +133,7 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
               <Wallet className="h-4 w-4" /> Total Invested
             </div>
             <p className="text-2xl font-bold text-green-800">₦{totalInvested.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-1">{totalPlots} plot{totalPlots === 1 ? '' : 's'}</p>
+            <p className="text-xs text-muted-foreground mt-1">{totalPlots} subscribed unit{totalPlots === 1 ? '' : 's'}</p>
           </CardContent>
         </Card>
         <Card className="border-green-100">
@@ -169,7 +170,7 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                {h.quantity} plot{h.quantity === 1 ? '' : 's'} · ₦{h.amount.toLocaleString()} · purchased{' '}
+                {h.quantity} {h.unit}{h.quantity === 1 ? '' : h.unit === 'pond' ? 's' : h.unit === 'pair' ? 's' : 's'} · ₦{h.amount.toLocaleString()} · purchased{' '}
                 {h.purchaseDate.toLocaleDateString()}
               </p>
             </CardHeader>
@@ -194,9 +195,7 @@ const AgrovestProgressTab: React.FC<{ orders: OrderRow[] }> = ({ orders }) => {
                 />
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Projected figures based on Bridgefort Agrovest's published annual profit-share ranges
-                (10–20% Year 1, 30–40% Years 2–3, 40–50% Years 4–5). Actual returns depend on harvest
-                and market outcomes and are not guaranteed.
+                Projected figures use the current Bridgefort Agrovest ranges: 10–20% Year 1, 30–40% Years 2–3 and 40–50% Years 4–5. Actual returns depend on agricultural operations, harvest and market outcomes and are not guaranteed.
               </p>
             </CardContent>
           </Card>
