@@ -119,6 +119,7 @@ const NewProfileForm = () => {
       if (form.referrerCode && !referralId) { setSaving(false); return; }
       const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }, { onConflict: 'id' });
       if (error) throw error;
+      if (form.referrerCode) setExistingReferralId(referralId); else if (activeStep === 'referrer') setExistingReferralId(null);
       setSavedStep(activeStep); notifyProfileUpdated(); toast({ title: 'Saved successfully', description: `${steps[index].label} information has been saved.` });
       if (!isLast) setActiveStep(steps[index + 1].key);
     } catch (error: any) { console.error('Profile save error:', error); toast({ title: 'Save failed', description: error?.message || 'Your information was not saved. Please try again.', variant: 'destructive' }); }
