@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import { Loader2, UserCheck, UserX, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -81,7 +82,16 @@ const AdminApprovalTab = ({ onCountChange }: AdminApprovalTabProps) => {
       fetchRequests();
     } catch (error: any) {
       console.error('Error approving request:', error);
-      toast.error(error.message || 'Failed to approve request');
+      let message = error?.message || 'Failed to approve request';
+      if (error instanceof FunctionsHttpError) {
+        try {
+          const payload = await error.context.json();
+          message = payload?.error || message;
+        } catch {
+          // Keep the SDK error message when the function response is not JSON.
+        }
+      }
+      toast.error(message);
     } finally {
       setProcessing(null);
     }
