@@ -1,3 +1,4 @@
+import { bridgefortEmail } from "../_shared/email-template.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -70,7 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
       from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
       to: [email],
       subject: `Registration Confirmed: ${eventTitle}`,
-      html: `
+      html: bridgefortEmail(`
         <!DOCTYPE html>
         <html>
           <head>
@@ -178,7 +179,7 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
           </body>
         </html>
-      `,
+      `),
     });
 
     console.log("Email sent successfully:", emailResponse);
