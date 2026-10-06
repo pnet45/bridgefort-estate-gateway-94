@@ -92,7 +92,7 @@ async function resolveFont(font: string, fontUrl?: string): Promise<string> {
       try {
         await document.fonts.load(font);
         await document.fonts.ready;
-      } catch {}
+      } catch {\n        // Font loading is optional; fall back to the requested font.\n      }
     }
     return font;
   }
@@ -104,7 +104,7 @@ async function resolveFont(font: string, fontUrl?: string): Promise<string> {
     if (document.fonts && document.fonts.load) {
       try {
         await document.fonts.load(resolved);
-      } catch {}
+      } catch {\n        // Font loading is optional; fall back to the resolved font.\n      }
     }
     return resolved;
   } catch (error) {
