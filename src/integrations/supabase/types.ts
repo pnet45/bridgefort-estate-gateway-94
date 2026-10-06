@@ -743,6 +743,30 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_secrets: {
+        Row: {
+          created_at: string
+          is_active: boolean
+          secret_hash: string
+          secret_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          is_active?: boolean
+          secret_hash: string
+          secret_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          is_active?: boolean
+          secret_hash?: string
+          secret_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bh_property_sales: {
         Row: {
           buyer_id: string
@@ -1016,6 +1040,100 @@ export type Database = {
         }
         Relationships: []
       }
+      client_allocations: {
+        Row: {
+          allocation_date: string | null
+          allocation_letter_url: string | null
+          allocation_status: string
+          created_at: string
+          created_by: string | null
+          estate_id: string | null
+          estate_name_snapshot: string
+          id: string
+          last_notified_at: string | null
+          last_notified_status: string | null
+          location_snapshot: string | null
+          notes: string | null
+          order_id: string | null
+          plot_id: string | null
+          plot_label: string | null
+          possession_date: string | null
+          property_id: string | null
+          source_reference: string | null
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          allocation_date?: string | null
+          allocation_letter_url?: string | null
+          allocation_status?: string
+          created_at?: string
+          created_by?: string | null
+          estate_id?: string | null
+          estate_name_snapshot: string
+          id?: string
+          last_notified_at?: string | null
+          last_notified_status?: string | null
+          location_snapshot?: string | null
+          notes?: string | null
+          order_id?: string | null
+          plot_id?: string | null
+          plot_label?: string | null
+          possession_date?: string | null
+          property_id?: string | null
+          source_reference?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          allocation_date?: string | null
+          allocation_letter_url?: string | null
+          allocation_status?: string
+          created_at?: string
+          created_by?: string | null
+          estate_id?: string | null
+          estate_name_snapshot?: string
+          id?: string
+          last_notified_at?: string | null
+          last_notified_status?: string | null
+          location_snapshot?: string | null
+          notes?: string | null
+          order_id?: string | null
+          plot_id?: string | null
+          plot_label?: string | null
+          possession_date?: string | null
+          property_id?: string | null
+          source_reference?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_allocations_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estate"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_allocations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "my_properties"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "client_allocations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string | null
@@ -1213,6 +1331,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      crm_automation_campaigns: {
+        Row: {
+          audience_rules: Json
+          body: string
+          campaign_key: string
+          category: string
+          cooldown_days: number
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          last_run_at: string | null
+          last_run_count: number
+          last_run_status: string | null
+          name: string
+          schedule_time: string
+          subject: string
+          threshold_value: number | null
+          timezone: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          audience_rules?: Json
+          body: string
+          campaign_key: string
+          category?: string
+          cooldown_days?: number
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          last_run_count?: number
+          last_run_status?: string | null
+          name: string
+          schedule_time?: string
+          subject: string
+          threshold_value?: number | null
+          timezone?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          audience_rules?: Json
+          body?: string
+          campaign_key?: string
+          category?: string
+          cooldown_days?: number
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          last_run_count?: number
+          last_run_status?: string | null
+          name?: string
+          schedule_time?: string
+          subject?: string
+          threshold_value?: number | null
+          timezone?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       crm_follow_ups: {
         Row: {
@@ -1655,12 +1839,6 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
-      }
-      crm_automation_campaigns: {
-        Row: { id:string; campaign_key:string; name:string; description:string|null; category:string; enabled:boolean; schedule_time:string; timezone:string; cooldown_days:number; threshold_value:number|null; subject:string; body:string; audience_rules:Json; last_run_at:string|null; last_run_status:string|null; last_run_count:number; updated_by:string|null; created_at:string; updated_at:string }
-        Insert: { id?:string; campaign_key:string; name:string; description?:string|null; category?:string; enabled?:boolean; schedule_time?:string; timezone?:string; cooldown_days?:number; threshold_value?:number|null; subject:string; body:string; audience_rules?:Json; last_run_at?:string|null; last_run_status?:string|null; last_run_count?:number; updated_by?:string|null; created_at?:string; updated_at?:string }
-        Update: { id?:string; campaign_key?:string; name?:string; description?:string|null; category?:string; enabled?:boolean; schedule_time?:string; timezone?:string; cooldown_days?:number; threshold_value?:number|null; subject?:string; body?:string; audience_rules?:Json; last_run_at?:string|null; last_run_status?:string|null; last_run_count?:number; updated_by?:string|null; created_at?:string; updated_at?:string }
         Relationships: []
       }
       email_templates: {
@@ -2231,6 +2409,42 @@ export type Database = {
           id?: string
           property_ids?: string[]
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      inactive_account_reminders: {
+        Row: {
+          created_at: string
+          email: string
+          error_message: string | null
+          last_login_at: string | null
+          last_sent_at: string | null
+          resend_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          error_message?: string | null
+          last_login_at?: string | null
+          last_sent_at?: string | null
+          resend_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          last_login_at?: string | null
+          last_sent_at?: string | null
+          resend_id?: string | null
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -4370,6 +4584,7 @@ export type Database = {
       welcome_email_deliveries: {
         Row: {
           created_at: string
+          dispatch_token: string | null
           email: string
           error_message: string | null
           id: string
@@ -4381,6 +4596,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          dispatch_token?: string | null
           email: string
           error_message?: string | null
           id?: string
@@ -4392,6 +4608,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          dispatch_token?: string | null
           email?: string
           error_message?: string | null
           id?: string
@@ -4808,6 +5025,20 @@ export type Database = {
         Args: { _limit?: number }
         Returns: Json
       }
+      get_my_bhrealtor_sales: {
+        Args: never
+        Returns: {
+          amount_paid: number
+          balance: number
+          client_first_name: string
+          estate_name: string
+          payment_status: string
+          plot_id: string
+          plots_bought: number
+          sale_date: string
+          sale_id: string
+        }[]
+      }
       get_my_bhrealtor_withdrawals: { Args: { _limit?: number }; Returns: Json }
       get_my_property_installments: {
         Args: { _order_id: string }
@@ -4910,6 +5141,15 @@ export type Database = {
           id: string
           legacy_role: string
           rbac_roles: string[]
+        }[]
+      }
+      lookup_bhrealtor_referral: {
+        Args: { _code: string }
+        Returns: {
+          first_name: string
+          last_initial: string
+          package: string
+          realtor_id: string
         }[]
       }
       next_estate_subscription_number: {
