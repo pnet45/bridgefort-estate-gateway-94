@@ -86,11 +86,32 @@ const NewProfileForm = () => {
     return true;
   };
 
+  const resolveReferralBeforeSave = useCallback(async () => {
+    const code = String(form.referrerCode || '').trim().toUpperCase();
+    if (!code) { setReferralLookup(null); return null; }
+    if (referralLookup && referralLookup.realtor_id && String(form.referrerCode || '').trim().toUpperCase() === code) return referralLookup.realtor_id;
+    setReferralLookupLoading(true);
+    try {
+      const { data, error } = await supabase.rpc('lookup_bhrealtor_referral' as any, { _code: code });
+      if (error) throw error;
+      const match = Array.isArray(data) ? data[0] : data;
+      if (!match) throw new Error('That referral code does not belong to an active BHRealtor.');
+      setReferralLookup(match);
+      return match.realtor_id as string;
+    } catch (error: any) {
+      toast({ title: 'Invalid Realtor referral code', description: error?.message || 'Verify the code before saving.', variant: 'destructive' });
+      return null;
+    } finally {
+      setReferralLookupLoading(false);
+    }
+  }, [form.referrerCode, referralLookup]);
   const saveCurrentStep = async () => {
     if (!user || saving || !validateStep(activeStep)) return;
     setSaving(true); setSavedStep(null);
     try {
-      const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id }, { onConflict: 'id' });
+      const referralId = activeStep === 'referrer' || form.referrerCode ? await resolveReferralBeforeSave() : referralLookup?.realtor_id || null;
+      if (form.referrerCode && !referralId) { setSaving(false); return; }
+      const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }, { onConflict: 'id' });
       if (error) throw error;
       setSavedStep(activeStep); notifyProfileUpdated(); toast({ title: 'Saved successfully', description: `${steps[index].label} information has been saved.` });
       if (!isLast) setActiveStep(steps[index + 1].key);
@@ -101,7 +122,7 @@ const NewProfileForm = () => {
   const submitProfile = async () => {
     if (!termsAccepted || !user || saving || !validateStep('review')) return;
     setSaving(true);
-    try { const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); }
+    try { const referralId = form.referrerCode ? await resolveReferralBeforeSave() : referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); }
     catch (error: any) { console.error('Profile submission error:', error); toast({ title: 'Submission failed', description: error?.message || 'Please try again.', variant: 'destructive' }); }
     finally { setSaving(false); }
   };
