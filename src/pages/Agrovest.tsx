@@ -962,16 +962,18 @@ const Agrovest: React.FC = () => {
         </div>
       </section>
 
-      {/* What investors are buying + Investment scheme */}
+      {/* What participants are joining + Investment scheme */}
       <section className="section-padding bg-green-50">
         <div className="container-custom grid lg:grid-cols-2 gap-10 items-start">
           <div>
-            <h2 className="text-3xl font-bold text-green-900 mb-4">What Investors Are Buying</h2>
+            <h2 className="text-3xl font-bold text-green-900 mb-4">What Participants Are Joining</h2>
             <ul className="space-y-3">
               {[
-                'Each investor purchases an allocated farm plot within the Agrovest Estate.',
-                'Each plot is professionally managed throughout the contract period.',
-                'The investor owns the agricultural produce generated from that allocated plot during the agreed contractual period.',
+                'Food Crops Farming — ₦800,000 per plot.',
+                'Cash Crops Farming — ₦1,000,000 per plot.',
+                'Aquaculture (Fish Farming) — ₦1,000,000 per pond.',
+                'Livestock (Animal Rearing) — ₦1,000,000 per pair.',
+                'Subscribe for one or more plots, ponds or livestock pairs.',
               ].map((t) => (
                 <li key={t} className="flex gap-3 items-start">
                   <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
@@ -982,20 +984,20 @@ const Agrovest: React.FC = () => {
           </div>
           <Card className="border-green-200">
             <CardContent className="p-8">
-              <h3 className="text-xl font-bold text-green-900 mb-1">Investment Scheme</h3>
-              <p className="text-sm text-muted-foreground mb-4">Buy a Farm Plot</p>
+              <h3 className="text-xl font-bold text-green-900 mb-1">Current Participation Option</h3>
+              <p className="text-sm text-muted-foreground mb-4">{selected.label}</p>
               <p className="text-4xl font-extrabold text-green-800">
-                ₦{PLOT_PRICE.toLocaleString()} <span className="text-base font-medium text-muted-foreground">per plot</span>
+                ₦{selected.price.toLocaleString()} <span className="text-base font-medium text-muted-foreground">per {selected.unit}</span>
               </p>
-              <p className="text-sm text-muted-foreground line-through mb-4">
-                Actual Value: ₦{ACTUAL_VALUE.toLocaleString()}
+              <p className="text-sm text-muted-foreground mb-4">
+                {quantity} {selected.unit}{quantity === 1 ? '' : 's'} selected • Total ₦{totalInvestment.toLocaleString()}
               </p>
               <p className="text-sm text-muted-foreground mb-6">
-                The current selling price has been discounted for investors, to cater for bulk buyers.
+                Choose the agricultural operation that suits your participation plan and subscribe for one or more units.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Button className="bg-green-700 hover:bg-green-800" onClick={handleAddToCart}>
-                  <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                  <ShoppingCart className="mr-2 h-4 w-4" /> Add {quantity} {selected.unit}{quantity === 1 ? '' : 's'} to Cart
                 </Button>
                 <Button variant="outline" className="border-green-300 text-green-800" onClick={handleDownloadForm}>
                   <Download className="mr-2 h-4 w-4" /> Download Form
