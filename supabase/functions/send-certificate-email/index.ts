@@ -237,7 +237,7 @@ serve(async (req: Request) => {
 
     // Send email with certificate
     const emailResponse = await resend.emails.send({
-      from: "PWAN Training <noreply@bridgeforthomes.com>",
+      from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
       to: [registration.email],
       subject: `Your Certificate of Completion - ${event.title}`,
       html: bridgefortEmail(`
