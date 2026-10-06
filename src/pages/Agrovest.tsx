@@ -49,8 +49,14 @@ import {
   XCircle,
 } from 'lucide-react';
 
-const PLOT_PRICE = 800000;
-const ACTUAL_VALUE = 1000000;
+const AGROVEST_OPTIONS = {
+  food: { label: 'Food Crops Farming', unit: 'plot', unitPlural: 'plots', price: 800000, image: '/lovable-uploads/agrovest-cassava-farm.jpg', description: 'Food crops grown and professionally managed for commercial production.' },
+  cash: { label: 'Cash Crops Farming', unit: 'plot', unitPlural: 'plots', price: 1000000, image: '/lovable-uploads/agrovest-oil-palm-plantation.jpg', description: 'Commercial cash crops including oil palm, cocoa, rubber, ginger and citrus.' },
+  aquaculture: { label: 'Aquaculture (Fish Farming)', unit: 'pond', unitPlural: 'ponds', price: 1000000, image: '/lovable-uploads/agrovest-fish-farm.jpg', description: 'Professionally managed fish ponds with stocking, feeding, harvesting and marketing.' },
+  livestock: { label: 'Livestock (Animal Rearing)', unit: 'pair', unitPlural: 'pairs', price: 1000000, image: '/lovable-uploads/agrovest-ruminants-farm.jpg', description: 'Managed livestock operations across poultry and ruminants.' },
+} as const;
+
+type AgrovestOptionKey = keyof typeof AGROVEST_OPTIONS;
 
 const plantationGallery = [
   { slug: 'oil-palm', name: 'Oil Palm Plantation', img: '/lovable-uploads/agrovest-oil-palm-plantation.jpg' },
@@ -205,28 +211,31 @@ const OptimizedImg: React.FC<{ src: string; alt: string; className?: string }> =
 const Agrovest: React.FC = () => {
   const { addToCart } = useEcommerce();
   const [quantity, setQuantity] = useState(1);
-  const [sector, setSector] = useState<'cash' | 'food' | 'livestock'>('cash');
+  const [sector, setSector] = useState<AgrovestOptionKey>('food');
 
   useEffect(() => {
     document.title = 'Bridgefort Agrovest Estate | Bridgefort Homes Development Ltd';
   }, []);
 
-  const sectorLabels: Record<string, string> = {
-    cash: 'Cash Crops Farming',
-    food: 'Food Crops Farming',
-    livestock: 'Livestock Farming',
-  };
+  const selected = AGROVEST_OPTIONS[sector];
+  const totalInvestment = selected.price * quantity;
+  const yearOneMin = Math.round(totalInvestment * 0.10);
+  const yearOneMax = Math.round(totalInvestment * 0.20);
+  const yearTwoThreeMin = Math.round(totalInvestment * 0.30);
+  const yearTwoThreeMax = Math.round(totalInvestment * 0.40);
+  const yearFourFiveMin = Math.round(totalInvestment * 0.40);
+  const yearFourFiveMax = Math.round(totalInvestment * 0.50);
 
   const handleAddToCart = () => {
     addToCart(
       {
         id: `agrovest-${sector}`,
         propertyId: 'agrovest-estate',
-        propertyName: `Bridgefort Agrovest Estate — ${sectorLabels[sector]}`,
+        propertyName: `Bridgefort Agrovest Estate — ${selected.label}`,
         location: 'Ijebu-Ife, Off Ijebu-Ode, Ogun State',
-        pricePerPlot: PLOT_PRICE,
+        pricePerPlot: selected.price,
         plotNumber: 1,
-        imageUrl: '/lovable-uploads/agrovest-oil-palm-plantation.jpg',
+        imageUrl: selected.image,
         size: 1,
         propertyType: 'Agrovest',
       },
@@ -302,9 +311,9 @@ const Agrovest: React.FC = () => {
           <Glass className="mt-10 lg:mt-0 lg:absolute lg:top-14 lg:right-8 max-w-sm p-6 shadow-2xl">
             <p className="text-xs uppercase tracking-wide text-amber-300 mb-1">Invest From</p>
             <p className="text-4xl font-extrabold text-white">
-              ₦800K <span className="text-base font-medium text-green-200">per plot</span>
+              ₦{selected.price.toLocaleString()} <span className="text-base font-medium text-green-200">per {selected.unit}</span>
             </p>
-            <p className="text-sm text-green-300 line-through">Actual value ₦1,000,000</p>
+            <p className="text-sm text-green-200">5-year agricultural operations • {selected.unit} subscription</p>
             <div className="mt-3 inline-flex items-center gap-2 bg-amber-400 text-green-950 font-semibold text-sm px-3 py-1.5 rounded-full">
               <Calendar className="h-4 w-4" /> 5 Years Investment Duration
             </div>
@@ -317,14 +326,15 @@ const Agrovest: React.FC = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cash">Cash Crops Farming</SelectItem>
-                    <SelectItem value="food">Food Crops Farming</SelectItem>
-                    <SelectItem value="livestock">Livestock Farming</SelectItem>
+                    <SelectItem value="food">Food Crops Farming — ₦800,000 / plot</SelectItem>
+                    <SelectItem value="cash">Cash Crops Farming — ₦1,000,000 / plot</SelectItem>
+                    <SelectItem value="aquaculture">Aquaculture (Fish Farming) — ₦1,000,000 / pond</SelectItem>
+                    <SelectItem value="livestock">Livestock (Animal Rearing) — ₦1,000,000 / pair</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex items-center justify-between">
-                <Label className="text-green-100 text-xs">Number of Plots</Label>
+                <Label className="text-green-100 text-xs">Number of {selected.unitPlural}</Label>
                 <div className="flex items-center gap-2 bg-white/90 rounded-lg px-2 py-1">
                   <button
                     className="p-1 text-green-800 hover:text-green-950 disabled:opacity-40"
@@ -345,16 +355,29 @@ const Agrovest: React.FC = () => {
                 </div>
               </div>
               <p className="text-sm text-green-100">
-                Total: <span className="font-bold text-white">₦{(PLOT_PRICE * quantity).toLocaleString()}</span>
+                Total: <span className="font-bold text-white">₦{totalInvestment.toLocaleString()}</span>
               </p>
               <Button className="w-full bg-amber-500 hover:bg-amber-600 text-green-950 font-bold" onClick={handleAddToCart}>
-                <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                <ShoppingCart className="mr-2 h-4 w-4" /> Add {quantity} {selected.unit}{quantity === 1 ? '' : 's'} to Cart
               </Button>
               <p className="text-[11px] text-green-200/80 text-center">
-                Checkout online via Paystack/Card, or download the form to subscribe offline.
+                {selected.description} Choose one or more {selected.unitPlural} and continue to secure your agricultural participation.
               </p>
             </div>
           </Glass>
+        </div>
+      </section>
+
+      {/* Live investment summary */}
+      <section className="bg-green-950 text-white">
+        <div className="container-custom py-8">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5"><p className="text-xs uppercase tracking-wide text-green-300">Selected operation</p><p className="mt-2 font-bold">{selected.label}</p><p className="mt-1 text-sm text-green-200">{quantity} {selected.unit}{quantity === 1 ? '' : 's'} • ₦{totalInvestment.toLocaleString()}</p></div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5"><p className="text-xs uppercase tracking-wide text-green-300">Year 1 projected share</p><p className="mt-2 font-bold">10% – 20%</p><p className="mt-1 text-sm text-green-200">₦{yearOneMin.toLocaleString()} – ₦{yearOneMax.toLocaleString()}</p></div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5"><p className="text-xs uppercase tracking-wide text-green-300">Years 2–3 projected share</p><p className="mt-2 font-bold">30% – 40%</p><p className="mt-1 text-sm text-green-200">₦{yearTwoThreeMin.toLocaleString()} – ₦{yearTwoThreeMax.toLocaleString()} per year</p></div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5"><p className="text-xs uppercase tracking-wide text-green-300">Years 4–5 projected share</p><p className="mt-2 font-bold">40% – 50%</p><p className="mt-1 text-sm text-green-200">₦{yearFourFiveMin.toLocaleString()} – ₦{yearFourFiveMax.toLocaleString()} per year</p></div>
+          </div>
+          <p className="mt-5 text-center text-xs text-green-200/80">Projected profit-share ranges shown for planning purposes. Actual returns depend on agricultural production, harvest and market performance and are not guaranteed.</p>
         </div>
       </section>
 
