@@ -22,6 +22,10 @@ const AnalysisSchema = z.object({
     due_in_hours: z.number(),
   })),
 });
+const RequestSchema = z.object({
+  inquiry: z.string().trim().min(5, "Please provide the inquiry text").max(8000, "Inquiry text is too long (max 8000 characters)"),
+  context: z.string().max(500).optional().default(""),
+});
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -38,11 +42,9 @@ Deno.serve(async (req) => {
     const { data: allowed } = await userClient.rpc("is_crm_operator", { _user_id: u.user.id });
     if (!allowed) return json({ error: "Only admin staff can use this tool" }, 403);
 
-    const body = await req.json().catch(() => ({}));
-    const inquiry = typeof body.inquiry === "string" ? body.inquiry.trim() : "";
-    const context = typeof body.context === "string" ? body.context.slice(0, 500) : "";
-    if (inquiry.length < 5) return json({ error: "Please provide the inquiry text" }, 400);
-    if (inquiry.length > 8000) return json({ error: "Inquiry text is too long (max 8000 characters)" }, 400);
+    const parsedBody = RequestSchema.safeParse(await req.json().catch(() => null));
+    if (!parsedBody.success) return json({ error: parsedBody.error.issues[0]?.message || "Invalid request" }, 400);
+    const { inquiry, context } = parsedBody.data;
 
     const key = Deno.env.get("LOVABLE_API_KEY");
     if (!key) return json({ error: "AI is not configured" }, 500);
