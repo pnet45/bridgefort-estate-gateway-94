@@ -49,6 +49,8 @@ import {
   XCircle,
 } from 'lucide-react';
 
+const MAX_AGROVEST_UNITS = 50;
+
 const AGROVEST_OPTIONS = {
   food: { label: 'Food Crops Farming', unit: 'plot', unitPlural: 'plots', price: 800000, image: '/lovable-uploads/agrovest-cassava-farm.jpg', description: 'Food crops grown and professionally managed for commercial production.' },
   cash: { label: 'Cash Crops Farming', unit: 'plot', unitPlural: 'plots', price: 1000000, image: '/lovable-uploads/agrovest-oil-palm-plantation.jpg', description: 'Commercial cash crops including oil palm, cocoa, rubber, ginger and citrus.' },
@@ -85,10 +87,10 @@ const profitPlan = [
 ];
 
 const trustBadges = [
-  { label: 'Govt Allocated Farmland', icon: Landmark },
+  { label: 'Agricultural Operations', icon: Sprout },
   { label: 'Professional Management', icon: ShieldCheck },
-  { label: 'High Return Potential', icon: TrendingUp },
-  { label: 'Secure Investment', icon: ShieldCheck },
+  { label: 'Net-Profit Share Programme', icon: TrendingUp },
+  { label: 'Structured 5-Year Term', icon: Calendar },
   { label: 'Sustainable & Green', icon: Leaf },
 ];
 
@@ -103,13 +105,12 @@ const howItWorks = [
 ];
 
 const whyInvestWithUs = [
-  'Government-approved agricultural location',
-  'Professionally managed farms',
+  'Strategic agricultural location in Ijebu-Ife, Ogun State',
+  'Professionally managed agricultural operations',
   'Multiple agricultural sectors',
-  'Cash crops, food crops & livestock farming',
+  'Food crops, cash crops, aquaculture & livestock',
   'Sustainable farming methods',
-  'Quarterly profit opportunities (from Year 2)',
-  'Discounted investment price',
+  'Profit-share opportunities according to the programme schedule',
   'Long-term wealth creation',
   'Opportunity for contract renewal',
   'Experienced management team',
@@ -151,7 +152,7 @@ const investmentAssetTypes = [
 
 const financialIndicators = [
   { icon: LineChart, title: 'Cash Flow', text: 'The ability to cover operating expenses, debt service, and reinvestment needs while generating owner returns. Positive cash flow is the bedrock of resilience.' },
-  { icon: TrendingUp, title: 'Return on Investment (ROI)', text: 'Calculated using conservative production assumptions to ensure realistic expectations.' },
+  { icon: TrendingUp, title: 'Profit-Share Potential', text: 'Evaluated against production assumptions and the applicable net-profit-sharing terms.' }
   { icon: BarChart3, title: 'Operating Margin', text: 'A measure of production efficiency, indicating how well management controls costs relative to revenue.' },
   { icon: Landmark, title: 'Asset Appreciation Potential', text: 'While land values may rise due to infrastructure development and population growth, we view this as a component of total return, not the sole strategy.' },
 ];
@@ -342,7 +343,8 @@ const Agrovest: React.FC = () => {
                   <span className="w-6 text-center font-semibold text-green-950">{quantity}</span>
                   <button
                     className="p-1 text-green-800 hover:text-green-950"
-                    onClick={() => setQuantity((q) => q + 1)}
+                    onClick={() => setQuantity((q) => Math.min(MAX_AGROVEST_UNITS, q + 1))}
+                    disabled={quantity >= MAX_AGROVEST_UNITS}
                     aria-label={`Increase ${selected.unitPlural}`}
                   >
                     <Plus className="h-4 w-4" />
@@ -356,7 +358,7 @@ const Agrovest: React.FC = () => {
                 <ShoppingCart className="mr-2 h-4 w-4" /> Add {quantity} {selected.unit}{quantity === 1 ? '' : 's'} to Cart
               </Button>
               <p className="text-[11px] text-green-200/80 text-center">
-                {selected.description} Choose one or more {selected.unitPlural} and continue to secure your agricultural participation.
+                {selected.description} Choose one or more {selected.unitPlural} and continue to secure your agricultural participation. Maximum {MAX_AGROVEST_UNITS} units per cart line.
               </p>
             </div>
           </Glass>
@@ -429,8 +431,8 @@ const Agrovest: React.FC = () => {
                 <h3 className="font-bold text-green-900 mb-2">Our Vision</h3>
                 <p className="text-sm text-muted-foreground">
                   To build one of Nigeria's leading integrated agricultural investment estates,
-                  where investors earn consistent returns while creating lasting wealth through
-                  agriculture.
+                  where participants share in net profits generated through professionally managed
+                  agricultural operations.
                 </p>
               </CardContent>
             </Card>
@@ -438,8 +440,8 @@ const Agrovest: React.FC = () => {
               <CardContent className="p-6">
                 <h3 className="font-bold text-green-900 mb-2">Our Mission</h3>
                 <p className="text-sm text-muted-foreground">
-                  To transform agriculture into a secure, profitable and professionally managed
-                  investment opportunity for everyone.
+                  To make commercial agriculture more accessible through professionally managed
+                  operations, structured participation and sustainable value creation.
                 </p>
               </CardContent>
             </Card>
@@ -1012,8 +1014,9 @@ const Agrovest: React.FC = () => {
               Bridgefort Agrovest Profit Shares
             </h2>
             <p className="text-muted-foreground">
-              Earn quarterly cash proceeds from your farm from Year 2 onward. Terms and
-              conditions apply.
+              Projected participant shares are calculated from net profits generated by the
+              relevant agricultural operation. Year 1 is paid annually; Years 2–5 are paid
+              according to the published programme schedule. Terms and conditions apply.
             </p>
           </div>
 
@@ -1026,7 +1029,7 @@ const Agrovest: React.FC = () => {
                   <p className="text-2xl font-extrabold text-green-700 transition-transform duration-300">
                     {p.range}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">Expected Annual Profit</p>
+                  <p className="text-xs text-muted-foreground mt-1">Share of Net Profits</p>
                 </CardContent>
               </Card>
             ))}
@@ -1035,9 +1038,9 @@ const Agrovest: React.FC = () => {
           <div className="bg-green-50 border border-green-100 rounded-2xl p-8">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
-                <h3 className="text-lg font-bold text-green-900 mb-1">Quarterly Payout Schedule</h3>
+                <h3 className="text-lg font-bold text-green-900 mb-1">Profit-Share Payment Schedule</h3>
                 <p className="text-sm text-muted-foreground">
-                  Beginning from the second year, profits are paid quarterly.
+                  Year 1 is paid annually. Beginning from Year 2, profit shares are paid quarterly.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
@@ -1167,10 +1170,10 @@ const Agrovest: React.FC = () => {
                 <h3 className="font-bold text-amber-900 mb-1">Risks &amp; Important Disclosures</h3>
                 <p className="text-sm text-amber-900/80">
                   Agriculture is a productive business but, like all investments, it carries
-                  risks. Actual returns can vary depending on factors such as weather conditions,
+                  risks. Actual profit distributions can vary depending on factors such as weather conditions,
                   pests and diseases, market prices, production costs, government policies, and
                   other operational circumstances. The profit percentages stated are projected
-                  ranges rather than guaranteed returns, and all investments remain subject to the
+                  ranges of net-profit sharing rather than guaranteed returns, and all participation remains subject to the
                   terms and conditions of the investment agreement.
                 </p>
               </div>
