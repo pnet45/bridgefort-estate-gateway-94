@@ -15,7 +15,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ cart, getTotalAmount }) => 
         {cart.map((item) => (
           <div key={item.plot.id} className="bg-white p-3 rounded-lg shadow-sm break-words">
             <div className="text-sm font-medium text-estate-blue whitespace-normal break-words">{item.plot.propertyName}</div>
-            <div className="text-xs text-gray-600">Quantity: {item.quantity}</div>
+            <div className="text-xs text-gray-600">Quantity: {item.quantity} {item.plot.unit || (item.plot.propertyName?.toLowerCase().includes("aquaculture") ? "pond" : item.plot.propertyName?.toLowerCase().includes("livestock") ? "pair" : "plot")}{item.quantity === 1 ? "" : "s"}</div>
             <div className="text-sm font-semibold">₦{(item.plot.pricePerPlot * item.quantity).toLocaleString()}</div>
           </div>
         ))}
