@@ -13,12 +13,24 @@ import {
 import { agrovestCategories, getAgrovestCategory } from '@/data/agrovestCategories';
 import { useEcommerce } from '@/contexts/ecommerce';
 
-const PLOT_PRICE = 800000;
+const AGROVEST_CATEGORY_PRICING: Record<string, { price: number; unit: string; unitPlural: string; operation: string }> = {
+  'oil-palm': { price: 1000000, unit: 'plot', unitPlural: 'plots', operation: 'Cash Crops Farming' },
+  cocoa: { price: 1000000, unit: 'plot', unitPlural: 'plots', operation: 'Cash Crops Farming' },
+  rubber: { price: 1000000, unit: 'plot', unitPlural: 'plots', operation: 'Cash Crops Farming' },
+  ginger: { price: 1000000, unit: 'plot', unitPlural: 'plots', operation: 'Cash Crops Farming' },
+  lemon: { price: 1000000, unit: 'plot', unitPlural: 'plots', operation: 'Cash Crops Farming' },
+  cassava: { price: 800000, unit: 'plot', unitPlural: 'plots', operation: 'Food Crops Farming' },
+  maize: { price: 800000, unit: 'plot', unitPlural: 'plots', operation: 'Food Crops Farming' },
+  fish: { price: 1000000, unit: 'pond', unitPlural: 'ponds', operation: 'Aquaculture (Fish Farming)' },
+  poultry: { price: 1000000, unit: 'pair', unitPlural: 'pairs', operation: 'Livestock (Animal Rearing)' },
+  ruminants: { price: 1000000, unit: 'pair', unitPlural: 'pairs', operation: 'Livestock (Animal Rearing)' },
+};
 
 const AgrovestCategoryDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const category = getAgrovestCategory(slug || '');
   const { addToCart } = useEcommerce();
+  const pricing = AGROVEST_CATEGORY_PRICING[category?.slug || ''];
 
   useEffect(() => {
     if (category) {
@@ -32,13 +44,14 @@ const AgrovestCategoryDetail: React.FC = () => {
   }
 
   const handleAddToCart = () => {
+    if (!pricing) return;
     addToCart(
       {
         id: `agrovest-${category.slug}`,
         propertyId: 'agrovest-estate',
         propertyName: `Bridgefort Agrovest Estate — ${category.name}`,
         location: 'Ijebu-Ife, Off Ijebu-Ode, Ogun State',
-        pricePerPlot: PLOT_PRICE,
+        pricePerPlot: pricing.price,
         plotNumber: 1,
         imageUrl: category.image,
         size: 1,
@@ -74,7 +87,7 @@ const AgrovestCategoryDetail: React.FC = () => {
           <Link to="/agrovest" className="inline-flex items-center gap-2 text-green-200 hover:text-white text-sm mb-6">
             <ArrowLeft className="h-4 w-4" /> Back to Agrovest
           </Link>
-          <Badge className="bg-amber-400 text-green-950 mb-4">{category.tag}</Badge>
+          <Badge className="bg-amber-400 text-green-950 mb-4">{pricing?.operation || category.tag}</Badge>
           <h1 className="text-3xl md:text-5xl font-extrabold mb-3 max-w-3xl">{category.name}</h1>
           <p className="text-green-200 text-lg max-w-2xl">{category.tagline}</p>
           <div className="flex items-center gap-2 text-green-300 text-sm mt-6">
@@ -95,9 +108,9 @@ const AgrovestCategoryDetail: React.FC = () => {
           <div>
             <h2 className="text-2xl font-bold text-green-900 mb-4">About This {category.tag}</h2>
             <p className="text-muted-foreground leading-relaxed mb-6">{category.description}</p>
-            <Button className="bg-green-700 hover:bg-green-800" onClick={handleAddToCart}>
-              <ShoppingCart className="mr-2 h-4 w-4" /> Invest in a Plot — ₦{PLOT_PRICE.toLocaleString()}
-            </Button>
+            {pricing ? <Button className="bg-green-700 hover:bg-green-800" onClick={handleAddToCart}>
+              <ShoppingCart className="mr-2 h-4 w-4" /> Join {pricing.operation} — ₦{pricing.price.toLocaleString()} / {pricing.unit}
+            </Button> : <p className="rounded-xl border border-green-100 bg-green-50 p-4 text-sm text-green-900">This facility supports the Agrovest operation and is not a separate participant subscription unit.</p>}
           </div>
         </div>
       </section>
