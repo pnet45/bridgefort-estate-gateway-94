@@ -146,7 +146,7 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
           </body>
         </html>
-      `),,
+      `), }
     });
 
     console.log("OTP email sent successfully:", emailResponse);
