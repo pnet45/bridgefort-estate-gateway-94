@@ -306,7 +306,7 @@ const AdminClientAllocations: React.FC = () => {
     }
 
     const estate = estates.find(e => e.id === form.estate_id);
-    const clientProperty = clientProperties.find(p => p.key === form.property_id);
+    const clientProperty = clientProperties.find(p => p.key === selectedPropertyKey);
     if (!estate || !clientProperty) {
       toast({ title: 'Property verification required', description: 'The selected property could not be verified against the client property records.', variant: 'destructive' });
       return;
