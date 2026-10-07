@@ -120,6 +120,7 @@ serve(async (req: Request) => {
       sourceFunction: "request-password-reset",
       sourceReference: otpRow.id,
       metadata: { otp_id: otpRow.id, expires_at: expiresAt },
+      retryable: false,
       payload: {
         from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
         to: [email],
