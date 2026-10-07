@@ -69,7 +69,7 @@ async function paymentReminder(c:any){const excluded=await excludedIds(),users=a
 async function renewal(c:any){const excluded=await excludedIds(),users=await emails(),days=Number(c.threshold_value)||30;const limit=new Date(Date.now()+days*86400000).toISOString();const{data:p,error}=await supabase.from("profiles").select("id,first_name,registration_expires_at,renewal_reminder_sent_at,is_active").not("registration_expires_at","is",null).eq("is_active",true).lte("registration_expires_at",limit).gte("registration_expires_at",new Date().toISOString());if(error)throw error;let sent=0,failed=0;for(const x of p||[]){if(excluded.has(x.id))continue;const u=users.get(x.id);if(!u?.email||!u.email_confirmed_at||u.deleted_at)continue;if(x.renewal_reminder_sent_at&&new Date(x.renewal_reminder_sent_at)>new Date(Date.now()-Math.max(1,Number(c.cooldown_days)||7)*86400000))continue;const r=await send(c,u,x.first_name||"Valued Client",{name:x.first_name||"Valued Client",email:u.email,date:today(),login_url:LOGIN,website:WEBSITE,expiry_date:formatDate(x.registration_expires_at)});if(r.ok){sent++;await supabase.from("profiles").update({renewal_reminder_sent_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",x.id)}else failed++}await record(c,sent,failed?"completed_with_errors":"completed");return{campaign:c.campaign_key,sent,failed,days}}
 async function allocationUpdate(c:any){
   const excluded=await excludedIds(),users=await emails();
-  const{data:p,error:pe}=await supabase.from("profiles").select("id,first_name,is_active").eq("is_active",true);
+  const{data:p,error:pe}=await supabase.from("profiles").select("id,first_name,is_active");
   if(pe)throw pe;
   const{data:a,error:ae}=await supabase.from("client_allocations").select("id,user_id,estate_name_snapshot,location_snapshot,plot_id,plot_label,allocation_status,allocation_date,possession_date,allocation_letter_url,notes,last_notified_status,last_notified_at").in("allocation_status",["allocated","possession_ready","possessed","cancelled"]).order("updated_at",{ascending:true});
   if(ae)throw ae;
@@ -79,7 +79,7 @@ async function allocationUpdate(c:any){
     const u=users.get(x.user_id);
     if(!u?.email||!u.email_confirmed_at||u.deleted_at){skipped++;continue}
     const profile=p?.find((z:any)=>z.id===x.user_id);
-    if(!profile||profile.is_active===false){skipped++;continue}
+    if(!profile){skipped++;continue}
     const name=profile.first_name||u.user_metadata?.first_name||"Valued Client";
     const statusLabel=String(x.allocation_status||"").replace(/_/g," ").replace(/\b\w/g,(m:string)=>m.toUpperCase());
     const r=await send(c,u,name,{name,email:u.email,date:today(),login_url:LOGIN,website:WEBSITE,estate_name:x.estate_name_snapshot||"Your Bridgefort property",plot_id:x.plot_id||x.plot_label||"Not specified",status:statusLabel,allocation_date:x.allocation_date?formatDate(x.allocation_date):"Not recorded",possession_date:x.possession_date?formatDate(x.possession_date):"Not yet scheduled",notes:x.notes||"Please contact our Client Service Team.",allocation_letter_url:x.allocation_letter_url||""});
