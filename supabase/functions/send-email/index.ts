@@ -35,7 +35,7 @@ serve(async (req: Request) => {
     const { data: isAdmin } = await serviceClient.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
     if (!isAdmin) throw Object.assign(new Error("Forbidden: admin access required"), { status: 403 });
 
-    const { to, subject, html, text, fromMailbox, fromName, cc, bcc }: EmailRequest = await req.json();
+    const { to, subject, html, text, fromMailbox, fromName, cc, bcc, eventKey }: EmailRequest = await req.json();
     if (!to?.trim() || !subject?.trim() || !html?.trim()) throw new Error("Missing required fields: to, subject, html");
 
     const toRecipients = parseRecipients(to);
@@ -45,7 +45,7 @@ serve(async (req: Request) => {
     if (!validRecipients(ccRecipients)) throw new Error("Invalid Cc recipient email address");
     if (!validRecipients(bccRecipients)) throw new Error("Invalid Bcc recipient email address");
 
-    const targetMailbox = (fromMailbox || "admin@pwanbridgefort.ng").trim().toLowerCase();
+    const targetMailbox = (fromMailbox || "info@bridgeforthomes.com").trim().toLowerCase();
     if (!emailRegex.test(targetMailbox)) throw new Error("Invalid from mailbox address");
     const { data: authorized, error: mailboxError } = await serviceClient.rpc("user_mailbox_access", {
       _user_id: userData.user.id, _mailbox_email: targetMailbox, _provider: "resend"
@@ -54,7 +54,6 @@ serve(async (req: Request) => {
 
     const senderDisplayName = fromName || "Bridgefort Homes Development Ltd";
     const plainText = text?.trim() || htmlToText(html) || " ";
-    const { eventKey } = await req.clone().json().catch(() => ({ eventKey: undefined }));
     const digest = await crypto.subtle.digest(
       "SHA-256",
       new TextEncoder().encode(`${toRecipients.join(",")}|${subject.trim()}|${html}|${Math.floor(Date.now() / 600000)}`),
