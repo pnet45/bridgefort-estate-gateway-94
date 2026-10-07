@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import * as Speech from 'expo-speech';
+import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   ActivityIndicator,
@@ -54,6 +56,8 @@ export default function LeoChatScreen() {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [recognizing, setRecognizing] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -91,6 +95,81 @@ export default function LeoChatScreen() {
     return () => { cancelled = true; };
   }, [user]);
 
+
+  useSpeechRecognitionEvent('start', () => {
+    setRecognizing(true);
+    setError('');
+  });
+
+  useSpeechRecognitionEvent('end', () => {
+    setRecognizing(false);
+  });
+
+  useSpeechRecognitionEvent('result', (event) => {
+    const transcript = event.results?.[0]?.transcript?.trim() ?? '';
+    if (!transcript) return;
+    setVoiceTranscript(transcript);
+    setInput(transcript);
+  });
+
+  useSpeechRecognitionEvent('error', (event) => {
+    setRecognizing(false);
+    if (event.error === 'aborted') return;
+    setError(event.message || 'Leo could not hear that. Please try again.');
+  });
+
+  useEffect(() => {
+    return () => {
+      ExpoSpeechRecognitionModule.abort();
+      void Speech.stop();
+    };
+  }, []);
+
+  const speakText = useCallback((text: string) => {
+    void Speech.stop();
+    Speech.speak(text, {
+      language: 'en-NG',
+      rate: 0.95,
+      pitch: 1,
+    });
+  }, []);
+
+  const toggleVoiceInput = useCallback(async () => {
+    if (sending) return;
+    if (recognizing) {
+      ExpoSpeechRecognitionModule.stop();
+      return;
+    }
+
+    setError('');
+    setVoiceTranscript('');
+    try {
+      const permission = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!permission.granted) {
+        setError('Microphone and speech recognition permission are required for Leo voice messages.');
+        return;
+      }
+      ExpoSpeechRecognitionModule.start({
+        lang: 'en-NG',
+        interimResults: true,
+        continuous: false,
+        maxAlternatives: 1,
+        contextualStrings: [
+          'Leo',
+          'Bridgefort Homes',
+          'Agrovest',
+          'Hampton Court',
+          'Greenfield County',
+          'Precious Gardens',
+          'Ambassadors Parks and Gardens',
+        ],
+        addsPunctuation: true,
+      });
+    } catch {
+      setError('Voice input is not available on this device. You can continue using text.');
+    }
+  }, [recognizing, sending]);
+
   const sendMessage = useCallback(async () => {
     const content = input.trim();
     if (!content || sending || !user) return;
@@ -110,6 +189,7 @@ export default function LeoChatScreen() {
       if (invokeError) throw invokeError;
       if (typeof data?.reply !== 'string') throw new Error('Leo returned no response.');
       setMessages((current) => [...current, { role: 'assistant', content: data.reply }]);
+      speakText(data.reply);
       if (data.emailStatus === 'sent') {
         setMessages((current) => [...current, {
           role: 'assistant',
@@ -158,7 +238,7 @@ export default function LeoChatScreen() {
     } finally {
       setSending(false);
     }
-  }, [conversationId, input, messages.length, sending, user]);
+  }, [conversationId, input, messages.length, sending, speakText, user]);
 
   const confirmAndSend = (draft: EmailDraft) => {
     if (!draft.to) {
@@ -209,7 +289,9 @@ export default function LeoChatScreen() {
     setTrackingNumber('');
     setMessages([INITIAL]);
     setDrafts({});
+    setVoiceTranscript('');
     setError('');
+    void Speech.stop();
   };
 
   return (
@@ -246,6 +328,11 @@ export default function LeoChatScreen() {
                 <Text style={[styles.messageText, message.role === 'user' && styles.userText]}>
                   {message.content}
                 </Text>
+                {message.role === 'assistant' ? (
+                  <View style={styles.speakRow}>
+                    <Button title="🔊 Hear Leo" onPress={() => speakText(message.content)} disabled={sending} />
+                  </View>
+                ) : null}
               </View>
               {drafts[index] ? (
                 <View style={styles.draft}>
@@ -265,7 +352,16 @@ export default function LeoChatScreen() {
           {sending ? <ActivityIndicator accessibilityLabel="Leo is responding" color="#1d4ed8" /> : null}
           {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
         </ScrollView>
+        {voiceTranscript ? (
+          <Text style={styles.voiceTranscript}>Voice transcript: {voiceTranscript}</Text>
+        ) : null}
         <View style={styles.composer}>
+          <Button
+            title={recognizing ? 'Stop' : '🎙️'}
+            onPress={() => void toggleVoiceInput()}
+            disabled={sending}
+            accessibilityLabel={recognizing ? 'Stop voice input' : 'Start voice input'}
+          />
           <TextInput
             style={styles.input}
             value={input}
@@ -301,6 +397,8 @@ const styles = StyleSheet.create({
   userText: { color: '#ffffff' },
   draft: { alignSelf: 'stretch', gap: 8, backgroundColor: '#fffbeb', borderColor: '#fcd34d', borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 8 },
   draftTitle: { color: '#78350f', fontWeight: '700' },
+  speakRow: { marginTop: 6, alignSelf: 'flex-start' },
+  voiceTranscript: { color: '#1e3a8a', backgroundColor: '#eff6ff', padding: 8, borderRadius: 8, marginTop: 8, fontSize: 13 },
   error: { color: '#b91c1c', fontSize: 14, padding: 8 },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingTop: 8 },
   input: { flex: 1, minHeight: 48, maxHeight: 120, borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, color: '#0f172a', backgroundColor: '#ffffff', fontSize: 16 },
