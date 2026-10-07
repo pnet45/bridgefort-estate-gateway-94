@@ -84,7 +84,7 @@ const InspectionBookingForm = ({ onBookingCreated, initialEstateName }: Inspecti
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      const { data: booking, error } = await supabase
         .from('inspection_bookings')
         .insert({
           user_id: user.id,
@@ -94,7 +94,9 @@ const InspectionBookingForm = ({ onBookingCreated, initialEstateName }: Inspecti
           inspection_time: formData.inspection_time,
           message: formData.message,
           status: 'pending'
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) {
         throw error;
@@ -102,7 +104,7 @@ const InspectionBookingForm = ({ onBookingCreated, initialEstateName }: Inspecti
 
       const { data: emailResult, error: emailError } = await supabase.functions.invoke(
         'send-inspection-booking-email',
-        { body: { bookingId: data?.id ?? null } },
+        { body: { bookingId: booking?.id ?? null } },
       );
 
       if (emailError) {
