@@ -1,4 +1,5 @@
 import { bridgefortEmail } from "../_shared/email-template.ts";
+import { sendTrackedEmail } from "../_shared/email-delivery.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "https://esm.sh/resend@2.0.0";
@@ -132,12 +133,23 @@ serve(async (req) => {
 
     if (resend) {
       const customerHtml = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111"><h2 style="color:#4f46e5">Travel enquiry received ✈️</h2><p>Hi ${escapeHtml(name.split(" ")[0])},</p><p>We have received your Bridgefort Travels booking enquiry and our travel team will review it.</p><p><strong>Package:</strong> ${escapeHtml(packageName)}<br/><strong>Destination:</strong> ${escapeHtml(destination || "—")}<br/><strong>Departure:</strong> ${escapeHtml(departureDate)}<br/><strong>Return:</strong> ${escapeHtml(returnDate)}<br/><strong>Travellers:</strong> ${travelers}</p><p><a href="${escapeHtml(statusUrl)}" style="display:inline-block;background:#4f46e5;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none">Track your booking</a></p></div>`;
-      await resend.emails.send({
-        from,
-        to: [email],
-        subject: "Bridgefort Travels — enquiry received",
-        html: bridgefortEmail(customerHtml),
-      }).catch((e) => console.error("customer confirmation:", e));
+      try {
+        await sendTrackedEmail({
+          supabase,
+          resend,
+          eventKey: `travel_booking_received:${booking.id}`,
+          recipientEmail: email,
+          recipientUserId: null,
+          recipientName: name,
+          templateKey: "travel_booking_received",
+          sourceFunction: "submit-travel-booking",
+          sourceReference: booking.id,
+          metadata: { booking_id: booking.id, package: packageName, destination, departure_date: departureDate, return_date: returnDate },
+          payload: { from, to: [email], subject: "Bridgefort Travels — enquiry received", html: bridgefortEmail(customerHtml) },
+        });
+      } catch (e) {
+        console.error("customer confirmation:", e);
+      }
     }
 
     return json({
