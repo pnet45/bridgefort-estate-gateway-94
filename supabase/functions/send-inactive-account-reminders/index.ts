@@ -20,7 +20,34 @@ function ranToday(c:any){return !!c.last_run_at&&new Intl.DateTimeFormat("en-CA"
 async function excludedIds(){const{data,error}=await supabase.from("user_roles").select("user_id").in("role",["admin","super_admin","team_leader"]);if(error)throw error;return new Set((data||[]).map((x:any)=>x.user_id))}
 async function emails(){const{data,error}=await supabase.auth.admin.listUsers({page:1,perPage:1000});if(error)throw error;return new Map((data?.users||[]).map((u:any)=>[u.id,u]))}
 async function record(c:any,count:number,status:string){await supabase.from("crm_automation_campaigns").update({last_run_at:new Date().toISOString(),last_run_status:status,last_run_count:count,updated_at:new Date().toISOString()}).eq("id",c.id)}
-async function send(c:any,u:any,name:string,vars:Record<string,string>){const subject=replace(c.subject,vars);const body=replace(c.body,vars);const html=branded(`<p>Dear <strong>${esc(name)}</strong>,</p><p>${body}</p><p>Warm regards,<br><strong>Bridgefort Homes Family</strong></p>`,subject);const text=(c.body||"").replace(/\\n/g,"\n").replace(/\{\{name\}\}/g,name);const r=await resend.emails.send({from:FROM,to:[u.email],subject,html,text});const ok=!r.error;const now=new Date().toISOString();await supabase.from("email_logs").insert({recipient_email:u.email,recipient_name:name,subject,body:text,status:ok?"sent":"failed",sent_at:ok?now:null,created_at:now});return{ok,error:r.error?.message,id:(r.data as any)?.id}}
+async function send(c:any,u:any,name:string,vars:Record<string,string>){
+  const subject=replace(c.subject,vars);
+  const body=replace(c.body,vars);
+  const html=branded(`<p>Dear <strong>${esc(name)}</strong>,</p><p>${body}</p><p>Warm regards,<br><strong>Bridgefort Homes Family</strong></p>`,subject);
+  const text=(c.body||"").replace(/\\\\n/g,"\\n").replace(/\\{\\{name\\}\\}/g,name);
+  const eventKey=[c.campaign_key,u.id,today(),vars.status||vars.property_name||""].join(":");
+  const now=new Date().toISOString();
+  const {data:existing,error:existingError}=await supabase.from("email_delivery_events").select("id,status,attempt_count").eq("event_key",eventKey).maybeSingle();
+  if(existingError) throw existingError;
+  if(existing?.status==="sent") return {ok:true,duplicate:true,id:null};
+  const attempt=(existing?.attempt_count||0)+1;
+  const {error:queueError}=await supabase.from("email_delivery_events").upsert({
+    event_key:eventKey,recipient_email:u.email,recipient_user_id:u.id,recipient_name:name,subject,
+    provider:"resend",sender_email:"info@bridgeforthomes.com",sender_name:"Bridgefort Homes Development Ltd.",
+    template_key:c.campaign_key,source_function:"send-inactive-account-reminders",source_reference:eventKey,
+    status:"queued",attempt_count:attempt,metadata:vars,queued_at:now,updated_at:now
+  },{onConflict:"event_key"});
+  if(queueError) throw queueError;
+  const r=await resend.emails.send({from:FROM,to:[u.email],subject,html,text});
+  const ok=!r.error;
+  const providerId=(r.data as any)?.id||null;
+  await supabase.from("email_delivery_events").update({
+    status:ok?"sent":"failed",provider_message_id:providerId,error_message:r.error?.message||null,
+    sent_at:ok?now:null,updated_at:new Date().toISOString()
+  }).eq("event_key",eventKey);
+  await supabase.from("email_logs").insert({recipient_email:u.email,recipient_name:name,subject,body:text,status:ok?"sent":"failed",sent_at:ok?now:null,created_at:now});
+  return{ok,error:r.error?.message,id:providerId};
+}
 async function birthday(c:any){const n=lagos(),excluded=await excludedIds(),users=await emails();const{data:p,error}=await supabase.from("profiles").select("id,first_name,date_of_birth,is_active,birthday_reminder_sent_year").not("date_of_birth","is",null);if(error)throw error;let sent=0,failed=0;for(const x of p||[]){if(!x.id||excluded.has(x.id)||x.is_active===false||Number(x.birthday_reminder_sent_year)===n.year)continue;const d=String(x.date_of_birth).slice(5,10);if(d!==`${String(n.month).padStart(2,"0")}-${String(n.day).padStart(2,"0")}`)continue;const u=users.get(x.id);if(!u?.email||!u.email_confirmed_at||u.deleted_at)continue;const name=x.first_name||"Valued Client";const r=await send(c,u,name,{name,email:u.email,date:today(),login_url:LOGIN,website:WEBSITE});if(r.ok){sent++;await supabase.from("profiles").update({birthday_reminder_sent_year:n.year,updated_at:new Date().toISOString()}).eq("id",x.id)}else failed++}await record(c,sent,failed?"completed_with_errors":"completed");return{campaign:c.campaign_key,sent,failed}}
 async function profileCompletion(c:any){const excluded=await excludedIds(),users=await emails();const threshold=Number(c.threshold_value)||80;const{data:p,error}=await supabase.from("profiles").select("id,first_name,profile_completion_percentage,is_active").lt("profile_completion_percentage",threshold).eq("is_active",true);if(error)throw error;let sent=0,failed=0;for(const x of p||[]){if(excluded.has(x.id))continue;const u=users.get(x.id);if(!u?.email||!u.email_confirmed_at||u.deleted_at)continue;const r=await send(c,u,x.first_name||"Valued Client",{name:x.first_name||"Valued Client",email:u.email,date:today(),login_url:LOGIN,website:WEBSITE,completion_percentage:String(x.profile_completion_percentage??0)});if(r.ok)sent++;else failed++}await record(c,sent,failed?"completed_with_errors":"completed");return{campaign:c.campaign_key,sent,failed,threshold}}
 async function paymentReminder(c:any){const excluded=await excludedIds(),users=await emails();const cooldown=Number(c.cooldown_days)||7;const since=new Date(Date.now()-cooldown*86400000).toISOString();const{data:logs,error:le}=await supabase.from("email_logs").select("recipient_email,created_at,subject").gte("created_at",since).ilike("subject","%payment%");if(le)throw le;const recent=new Set((logs||[]).map((x:any)=>x.recipient_email));const{data:p,error}=await supabase.from("payments").select("user_id,property_id,total_amount,amount_paid,balance,status,reference").gt("balance",0);if(error)throw error;const{data:mp,error:me}=await supabase.from("my_properties").select("user_id,property_name,plot_id,balance").gt("balance",0);if(me)throw me;const prop=new Map((mp||[]).map((x:any)=>[x.user_id,x]));let sent=0,failed=0;for(const x of p||[]){if(!x.user_id||excluded.has(x.user_id)||Number(x.balance)<=0)continue;const u=users.get(x.user_id);if(!u?.email||!u.email_confirmed_at||u.deleted_at||recent.has(u.email))continue;const q=prop.get(x.user_id);const r=await send(c,u,u.user_metadata?.first_name||"Valued Client",{name:u.user_metadata?.first_name||"Valued Client",email:u.email,date:today(),login_url:LOGIN,website:WEBSITE,balance:`₦${Number(x.balance).toLocaleString("en-NG")}`,amount_due:`₦${Number(x.balance).toLocaleString("en-NG")}`,property_name:q?.property_name||"Your Bridgefort property",plot_id:q?.plot_id||x.property_id||""});if(r.ok)sent++;else failed++}await record(c,sent,failed?"completed_with_errors":"completed");return{campaign:c.campaign_key,sent,failed}}
