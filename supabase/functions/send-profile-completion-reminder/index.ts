@@ -1,4 +1,5 @@
-import { bridgefortEmail } from "../_shared/email-template.ts";
+import { bridgefortEmail, escapeHtml } from "../_shared/email-template.ts";
+import { sendTrackedEmail } from "../_shared/email-delivery.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -70,79 +71,38 @@ const handler = async (req: Request): Promise<Response> => {
       const firstName = profile.first_name || "Valued User";
 
       try {
-        const emailResponse = await resend.emails.send({
-          from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
-          to: [profile.email],
-          subject: "Complete Your Profile - Unlock Full Access to Bridgefort Homes Development Ltd",
-          html: bridgefortEmail(`
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <style>
-                  body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-                  .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
-                  .progress-bar { background: #e5e7eb; height: 30px; border-radius: 15px; overflow: hidden; margin: 20px 0; }
-                  .progress-fill { background: linear-gradient(90deg, #3b82f6, #1e40af); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
-                  .benefits { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
-                  .benefit-item { padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
-                  .benefit-item:last-child { border-bottom: none; }
-                  .cta-button { display: inline-block; background: #1e40af; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: bold; }
-                  .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; }
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <div class="header">
-                    <h1>🏡 Complete Your Bridgefort Homes Development Ltd Profile</h1>
-                  </div>
-                  <div class="content">
-                    <p>Dear ${firstName},</p>
-                    
-                    <p>We noticed that your profile is currently <strong>${percentage}% complete</strong>. You're so close to unlocking the full benefits of your Bridgefort Homes Development Ltd account!</p>
-                    
-                    <div class="progress-bar">
-                      <div class="progress-fill" style="width: ${percentage}%">
-                        ${percentage}%
-                      </div>
-                    </div>
-                    
-                    <div class="benefits">
-                      <h3 style="margin-top: 0;">🎁 Benefits of Completing Your Profile (70%+):</h3>
-                      <div class="benefit-item">✅ <strong>Purchase Properties</strong> - Buy your dream home or investment property</div>
-                      <div class="benefit-item">✅ <strong>Access Documentation Services</strong> - Process all property paperwork seamlessly</div>
-                      <div class="benefit-item">✅ <strong>Exclusive Deals</strong> - Get notified about special property offers</div>
-                      <div class="benefit-item">✅ <strong>Priority Support</strong> - Receive dedicated assistance from our team</div>
-                      <div class="benefit-item">✅ <strong>Training Certificates</strong> - Download your certificates after attending events</div>
-                    </div>
-                    
-                    <p><strong>Complete your profile today and start enjoying these amazing benefits!</strong></p>
-                    
-                    <center>
-                      <a href="https://pwanbridgefort.ng/profile" class="cta-button">
-                        Complete My Profile Now
-                      </a>
-                    </center>
-                    
-                    <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
-                      Need help? Our support team is here to assist you at any time.
-                    </p>
-                    
-                    <p style="margin-top: 20px;">
-                      Best regards,<br>
-                      <strong>The Bridgefort Homes Development Ltd Team</strong><br>
-                      <em>Rebuilding the future, one property at a time</em>
-                    </p>
-                  </div>
-                  <div class="footer">
-                    <p>© 2025 Bridgefort Homes Development Ltd. All rights reserved.</p>
-                    <p>You received this email because you have an account with Bridgefort Homes Development Ltd.</p>
-                  </div>
-                </div>
-              </body>
-            </html>
-          `),
+        const safeFirstName = escapeHtml(firstName);
+        const safeEmail = profile.email.trim().toLowerCase();
+        const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(safeEmail));
+        const emailKey = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+
+        const emailResponse = await sendTrackedEmail({
+          supabase: service,
+          resend,
+          eventKey: `profile_completion_manual:${emailKey}:${new Date().toISOString().slice(0, 10)}`,
+          recipientEmail: safeEmail,
+          recipientName: firstName,
+          templateKey: "profile_completion_reminder",
+          sourceFunction: "send-profile-completion-reminder",
+          sourceReference: safeEmail,
+          metadata: { completion_percentage: percentage, manual: true },
+          payload: {
+            from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
+            to: [safeEmail],
+            subject: "Complete Your Profile - Unlock Full Access to Bridgefort Homes Development Ltd",
+            html: bridgefortEmail(`
+            <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
+              <h2>🏡 Complete Your Bridgefort Homes Profile</h2>
+              <p>Dear ${safeFirstName},</p>
+              <p>Your profile is currently <strong>${percentage}% complete</strong>. Completing it helps us serve you better and gives you access to more account features.</p>
+              <div style="margin:20px 0;padding:16px;background:#f3eef8;border-radius:10px;text-align:center">
+                <strong>${percentage}% complete</strong>
+              </div>
+              <p>Complete your profile today and continue your Bridgefort Homes journey.</p>
+              <p><a href="https://www.bridgeforthomes.com/profile" style="display:inline-block;background:#5b2a86;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:700">Complete My Profile</a></p>
+              <p style="margin-top:28px">Best regards,<br><strong>The Bridgefort Homes Development Ltd Team</strong><br><em>Bringing your dream home!</em></p>
+            `)
+          },
         });
 
         console.log(`Email sent successfully to ${profile.email}:`, emailResponse);
