@@ -1,4 +1,5 @@
 import { bridgefortEmail } from "../_shared/email-template.ts";
+import { sendTrackedEmail } from "../_shared/email-delivery.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "npm:resend@2.0.0";
@@ -186,7 +187,7 @@ serve(async (req: Request) => {
         <body>
           <div class="certificate">
             <div class="header">
-              <div class="seal">PWAN</div>
+              <div class="seal">BRIDGEFORT</div>
               <div class="title">Certificate of Completion</div>
               <div class="subtitle">This is to certify that</div>
             </div>
@@ -236,8 +237,18 @@ serve(async (req: Request) => {
     console.log(`Sending certificate email to ${registration.email}`);
 
     // Send email with certificate
-    const emailResponse = await resend.emails.send({
-      from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
+    const emailResponse = await sendTrackedEmail({
+      supabase,
+      resend,
+      eventKey: `certificate_email:${attendanceId}:${event.title}`,
+      recipientEmail: registration.email,
+      recipientUserId: user.id,
+      recipientName: registration.name,
+      templateKey: "certificate_completion",
+      sourceFunction: "send-certificate-email",
+      sourceReference: attendanceId,
+      metadata: { attendance_id: attendanceId, event_title: event.title, event_date: event.date },
+      payload: from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
       to: [registration.email],
       subject: `Your Certificate of Completion - ${event.title}`,
       html: bridgefortEmail(`
@@ -260,13 +271,13 @@ serve(async (req: Request) => {
           <p>Thank you for your participation and dedication!</p>
           <p style="color: #666; font-size: 14px; margin-top: 30px;">
             Best regards,<br>
-            PWAN Training Team
+            Bridgefort Homes Training Team
           </p>
         </div>
         <div style="margin-top: 40px;">
           ${certificateHtml}
         </div>
-      `),
+      `),,
     });
 
     console.log("Email sent successfully:", emailResponse);
