@@ -34,6 +34,17 @@ serve(async (req) => {
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
 
+    let customerId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      try {
+        const { data: authData } = await supabase.auth.getUser(authHeader.slice(7));
+        customerId = authData.user?.id ?? null;
+      } catch (authError) {
+        console.warn("travel booking: optional auth lookup failed", authError);
+      }
+    }
+
     const body = await req.json();
     const name = String(body?.name ?? "").trim();
     const email = String(body?.email ?? "").trim().toLowerCase();
@@ -85,12 +96,111 @@ serve(async (req) => {
         destination,
         notes,
         status: "received",
+        customer_id: customerId,
         confirmation_token: crypto.randomUUID(),
       })
       .select("*")
       .single();
 
     if (insertError) throw insertError;
+
+    // Link every travel booking into the existing CRM. This is deliberately
+    // non-blocking: a CRM failure must never lose a valid booking.
+    let crmLeadId: string | null = null;
+    let serviceJourneyId: string | null = null;
+    try {
+      if (customerId) {
+        const { data: existingLead, error: existingLeadError } = await supabase
+          .from("crm_leads")
+          .select("id")
+          .eq("customer_id", customerId)
+          .eq("source", "travel_booking")
+          .eq("source_record_type", "travel_booking")
+          .eq("source_record_id", booking.id)
+          .maybeSingle();
+        if (existingLeadError) throw existingLeadError;
+        crmLeadId = existingLead?.id ?? null;
+      }
+
+      const leadPayload = {
+        name,
+        email,
+        phone,
+        customer_id: customerId,
+        source: "travel_booking",
+        source_record_type: "travel_booking",
+        source_record_id: booking.id,
+        estate_interest: destination || packageName,
+        notes: notes || `Travel enquiry for ${packageName}${destination ? ` to ${destination}` : ""}.`,
+        priority: "medium",
+        updated_at: new Date().toISOString(),
+      };
+
+      if (crmLeadId) {
+        const { error } = await supabase.from("crm_leads").update(leadPayload).eq("id", crmLeadId);
+        if (error) throw error;
+      } else {
+        const { data: createdLead, error } = await supabase
+          .from("crm_leads")
+          .insert({ ...leadPayload, status: "new" })
+          .select("id")
+          .single();
+        if (error) throw error;
+        crmLeadId = createdLead.id;
+        const { error: activityError } = await supabase.from("crm_lead_activities").insert({
+          lead_id: crmLeadId,
+          activity_type: "travel_booking_created",
+          description: `Travel booking received: ${packageName}${destination ? ` — ${destination}` : ""}.`,
+          created_by: null,
+        });
+        if (activityError) console.error("travel booking CRM activity:", activityError);
+      }
+
+      const { data: existingJourney, error: journeyLookupError } = await supabase
+        .from("service_journeys")
+        .select("id")
+        .eq("source", "travel_booking")
+        .eq("source_record_type", "travel_booking")
+        .eq("source_record_id", booking.id)
+        .maybeSingle();
+      if (journeyLookupError) throw journeyLookupError;
+      serviceJourneyId = existingJourney?.id ?? null;
+
+      const journeyPayload = {
+        customer_id: customerId,
+        lead_id: crmLeadId,
+        service_type: "TRAVEL",
+        status: "NEW",
+        priority: "NORMAL",
+        source: "travel_booking",
+        source_record_type: "travel_booking",
+        source_record_id: booking.id,
+        travel_booking_id: booking.id,
+        notes: `Package: ${packageName}; Destination: ${destination || "not specified"}; ${departureDate} to ${returnDate}; Travelers: ${travelers}.`,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (serviceJourneyId) {
+        const { error } = await supabase.from("service_journeys").update(journeyPayload).eq("id", serviceJourneyId);
+        if (error) throw error;
+      } else {
+        const { data: createdJourney, error } = await supabase
+          .from("service_journeys")
+          .insert(journeyPayload)
+          .select("id")
+          .single();
+        if (error) throw error;
+        serviceJourneyId = createdJourney.id;
+      }
+
+      const { error: bookingLinkError } = await supabase
+        .from("travel_bookings")
+        .update({ customer_id: customerId, crm_lead_id: crmLeadId, service_journey_id: serviceJourneyId })
+        .eq("id", booking.id);
+      if (bookingLinkError) throw bookingLinkError;
+    } catch (crmError) {
+      console.error("travel booking CRM sync failed; booking remains valid", crmError);
+    }
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resend = resendKey ? new Resend(resendKey) : null;
@@ -157,6 +267,8 @@ serve(async (req) => {
       token: booking.confirmation_token,
       bookingId: booking.id,
       status: booking.status,
+      crmLeadId: crmLeadId,
+      serviceJourneyId: serviceJourneyId,
     });
   } catch (error: any) {
     console.error("submit-travel-booking error:", error);
