@@ -84,6 +84,12 @@ serve(async (req: Request) => {
       throw new Error(emailResponse.error.message || "Email could not be sent");
     }
 
+    if (emailResponse.duplicate) {
+      return new Response(JSON.stringify({ success: true, duplicate: true, data: emailResponse }), {
+        status: 200, headers: { "Content-Type": "application/json", ...corsHeaders }
+      });
+    }
+
     const { error: sentInsertError } = await serviceClient.from("admin_emails").insert({
       sender_id: userData.user.id, from_email: targetMailbox, from_name: senderDisplayName,
       to_email: toRecipients.join(", "), cc_email: ccRecipients.join(", ") || null, bcc_email: bccRecipients.join(", ") || null,
