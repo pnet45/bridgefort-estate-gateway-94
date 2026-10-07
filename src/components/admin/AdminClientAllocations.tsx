@@ -52,7 +52,8 @@ type Estate = {
 };
 
 type ClientProperty = {
-  order_id: string | null;
+  key: string;
+  order_id: string;
   item_property_id: string | null;
   plot_id: string | null;
   property_name: string | null;
@@ -223,18 +224,48 @@ const AdminClientAllocations: React.FC = () => {
       setClientProperties([]);
       return;
     }
+
+    // my_properties is a client-scoped view (auth.uid()), so an admin session
+    // cannot use it to load another client's properties. Build the same
+    // verified property records directly from that client's real orders/items.
     const { data, error } = await supabase
-      .from('my_properties')
-      .select('order_id,item_property_id,plot_id,property_name,property_type,payment_status,balance')
+      .from('orders')
+      .select('id,amount_paid,balance,payment_status,items,created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(100);
+
     if (error) {
       toast({ title: 'Could not load client properties', description: error.message, variant: 'destructive' });
       setClientProperties([]);
       return;
     }
-    setClientProperties((data || []) as ClientProperty[]);
+
+    const properties: ClientProperty[] = [];
+    (data || []).forEach((order: any) => {
+      const status = String(order.payment_status || '').toLowerCase();
+      const qualifies = Number(order.amount_paid || 0) > 0 || ['paid', 'completed', 'awaiting_approval'].includes(status);
+      if (!qualifies || !Array.isArray(order.items)) return;
+
+      order.items.forEach((item: any, index: number) => {
+        const propertyId = item?.property_id ? String(item.property_id) : null;
+        const plotId = item?.plot_id ? String(item.plot_id) : null;
+        if (!propertyId && !plotId) return;
+
+        properties.push({
+          key: order.id + ':' + index,
+          order_id: order.id,
+          item_property_id: propertyId,
+          plot_id: plotId,
+          property_name: item?.property_name ? String(item.property_name) : null,
+          property_type: item?.property_type ? String(item.property_type) : null,
+          payment_status: order.payment_status || null,
+          balance: Number(order.balance || 0),
+        });
+      });
+    });
+
+    setClientProperties(properties);
   };
 
   const loadOrders = async (userId: string) => {
@@ -270,7 +301,7 @@ const AdminClientAllocations: React.FC = () => {
     }
 
     const estate = estates.find(e => e.id === form.estate_id);
-    const clientProperty = clientProperties.find(p => (p.item_property_id || p.plot_id) === form.property_id);
+    const clientProperty = clientProperties.find(p => p.key === form.property_id);
     if (!estate || !clientProperty) {
       toast({ title: 'Property verification required', description: 'The selected property could not be verified against the client property records.', variant: 'destructive' });
       return;
@@ -282,7 +313,7 @@ const AdminClientAllocations: React.FC = () => {
         user_id: form.user_id,
         estate_id: form.estate_id,
         order_id: clientProperty.order_id || form.order_id || null,
-        property_id: form.property_id || null,
+        property_id: clientProperty.item_property_id || null,
         plot_id: form.plot_id.trim(),
         plot_label: form.plot_label.trim() || null,
         estate_name_snapshot: estate.name,
@@ -386,7 +417,7 @@ const AdminClientAllocations: React.FC = () => {
             <div className="md:col-span-2">
               <label className="text-sm font-medium">Existing Client Property *</label>
               <Select value={form.property_id || 'none'} onValueChange={v => {
-                const property = clientProperties.find(p => (p.item_property_id || p.plot_id) === v);
+                const property = clientProperties.find(p => p.key === v);
                 setField('property_id', v === 'none' ? '' : v);
                 if (property?.order_id) setField('order_id', property.order_id);
                 if (property?.plot_id) setField('plot_id', property.plot_id);
@@ -395,7 +426,7 @@ const AdminClientAllocations: React.FC = () => {
                 <SelectContent className="max-h-72">
                   <SelectItem value="none">Select property</SelectItem>
                   {clientProperties.map((p, index) => {
-                    const value = p.item_property_id || p.plot_id;
+                    const value = p.key;
                     if (!value) return null;
                     return <SelectItem key={value + index} value={value}>{p.property_name || p.property_type || 'Client property'}{p.plot_id ? ` • Plot ${p.plot_id}` : ''}{p.order_id ? ` • Order ${p.order_id.slice(0, 8)}` : ''}</SelectItem>;
                   })}
