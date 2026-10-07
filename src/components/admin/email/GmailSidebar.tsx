@@ -1,9 +1,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Inbox, Send, FileText, Star, Archive, Trash2, PenSquare, Users, LayoutTemplate, Megaphone, ShieldAlert, Workflow, type LucideIcon } from 'lucide-react';
+import { Inbox, Send, FileText, Star, Archive, Trash2, PenSquare, Users, LayoutTemplate, Megaphone, ShieldAlert, Workflow, Activity, type LucideIcon } from 'lucide-react';
 
-export type EmailFolder = 'inbox'|'starred'|'sent'|'drafts'|'spam'|'archive'|'trash'|'contacts'|'templates'|'bulk'|'automations';
+export type EmailFolder = 'inbox'|'starred'|'sent'|'drafts'|'spam'|'archive'|'trash'|'contacts'|'templates'|'bulk'|'automations'|'monitoring';
 
 interface GmailSidebarProps {
   activeFolder: EmailFolder;
@@ -59,7 +59,8 @@ export default function GmailSidebar({
     ['contacts', 'Contacts', Users, counts.contacts],
     ['templates', 'Templates', LayoutTemplate, 0],
     ['bulk', 'Bulk Email', Megaphone, 0],
-    ['automations', 'Client Automations', Workflow, 0]
+    ['automations', 'Client Automations', Workflow, 0],
+    ['monitoring', 'Delivery Monitoring', Activity, 0]
   ] as const;
 
   type NavItem = readonly [EmailFolder, string, LucideIcon, number, number?];
