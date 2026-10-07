@@ -68,6 +68,29 @@ const handler = async (req: Request): Promise<Response> => {
     const safeName = registration.name || name || "there";
     const safePhone = registration.phone || phone || "";
 
+    const confirmationHtml = bridgefortEmail(`
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
+          <h2 style="color:#5b2a86">Registration Confirmed! ✓</h2>
+          <p style="font-size:18px;color:#3b2057">Hi ${safeName},</p>
+          <p>Thank you for registering for our training event! We're excited to have you join us.</p>
+          <div style="background:#fff;padding:20px;border-radius:8px;margin:20px 0;border-left:4px solid #5b2a86">
+            <h3 style="margin-top:0;color:#3b2057">Event Details</h3>
+            <p><strong>Event:</strong> ${eventTitle}</p>
+            <p><strong>Date:</strong> ${eventDate}</p>
+            <p><strong>Your Name:</strong> ${safeName}</p>
+            <p><strong>Phone:</strong> ${safePhone}</p>
+          </div>
+          <p><strong>What's Next?</strong></p>
+          <ul>
+            <li>Save this email for your records</li>
+            <li>Mark your calendar for ${eventDate}</li>
+            <li>You'll receive a reminder 24 hours before the event</li>
+            <li>Bring a valid ID and be ready to learn!</li>
+          </ul>
+          <p>If you have any questions or need to make changes to your registration, please contact us.</p>
+          <p style="margin-top:28px">Best regards,<br><strong>Bridgefort Homes Training Team</strong><br>Bringing your dream home!</p>
+        </div>
+      `);
     const eventKey = `training_registration_confirmation:${registration.id}:${eventTitle}:${eventDate}`;
     const { data: existingEvent } = await svc.from("email_delivery_events").select("status, provider_message_id, attempt_count").eq("event_key", eventKey).maybeSingle();
     if (existingEvent?.status === "sent") {
