@@ -113,6 +113,7 @@ Deno.serve(async (req) => {
     }
 
     let data: any;
+    let gmailDeliveryEventId: string | null = null;
     switch (action) {
       case "list-labels":
         data = (await gmailFetch(svc, mailboxEmail, "/users/me/labels", {}, googleAccountEmail)).labels || [];
@@ -173,8 +174,63 @@ Deno.serve(async (req) => {
           html: body.html,
         });
         const raw = b64UrlEncode(new TextEncoder().encode(mime));
-        data = await gmailFetch(svc, mailboxEmail, "/users/me/messages/send",
-          { method: "POST", body: JSON.stringify({ raw }) }, googleAccountEmail);
+        const deliveryEventKey = `gmail_manual:${ud.user.id}:${crypto.randomUUID()}`;
+        const { data: queuedDelivery, error: queueError } = await svc
+          .from("email_delivery_events")
+          .insert({
+            event_key: deliveryEventKey,
+            recipient_email: assigned(body.to)[0] || body.to,
+            recipient_user_id: null,
+            recipient_name: null,
+            subject: body.subject,
+            provider: "gmail",
+            sender_email: mailboxEmail,
+            sender_name: mailboxEmail,
+            template_key: "manual_email",
+            source_function: "gmail-sync",
+            source_reference: ud.user.id,
+            status: "queued",
+            attempt_count: 1,
+            retryable: false,
+            metadata: {
+              sender_id: ud.user.id,
+              mailbox: mailboxEmail,
+              google_account_email: googleAccountEmail,
+              to: body.to,
+              cc: body.cc || null,
+              bcc: body.bcc || null,
+            },
+            payload: {},
+          })
+          .select("id")
+          .single();
+        if (queueError || !queuedDelivery) throw queueError ?? new Error("Failed to queue Gmail delivery");
+        gmailDeliveryEventId = queuedDelivery.id;
+
+        try {
+          data = await gmailFetch(svc, mailboxEmail, "/users/me/messages/send",
+            { method: "POST", body: JSON.stringify({ raw }) }, googleAccountEmail);
+
+          if (!data?.id) throw new Error("Gmail accepted the request without returning a message ID");
+
+          await svc.from("email_delivery_events").update({
+            status: "sent",
+            provider_message_id: data.id,
+            sent_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            last_provider_event_type: "gmail.sent",
+          }).eq("id", gmailDeliveryEventId);
+          gmailDeliveryEventId = null;
+        } catch (sendError) {
+          const message = sendError instanceof Error ? sendError.message : "Gmail delivery failed";
+          await svc.from("email_delivery_events").update({
+            status: "failed",
+            error_message: message.slice(0, 2000),
+            updated_at: new Date().toISOString(),
+          }).eq("id", gmailDeliveryEventId);
+          gmailDeliveryEventId = null;
+          throw sendError;
+        }
 
         if (data?.id) {
           await svc.from("admin_emails").upsert({
@@ -197,6 +253,14 @@ Deno.serve(async (req) => {
       status: 200, headers: { ...cors, "Content-Type": "application/json" }
     });
   } catch (e: any) {
+    if (gmailDeliveryEventId) {
+      const msg = e?.message || String(e);
+      await svc.from("email_delivery_events").update({
+        status: "failed",
+        error_message: String(msg).slice(0, 2000),
+        updated_at: new Date().toISOString(),
+      }).eq("id", gmailDeliveryEventId);
+    }
     const msg = e?.message || String(e);
     return new Response(JSON.stringify({ success: false, error: msg }), {
       status: e?.status || (/Gmail API \[(401|403)\]/.test(msg) ? 403 : 500),
