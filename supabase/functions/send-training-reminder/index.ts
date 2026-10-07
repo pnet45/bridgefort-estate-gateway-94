@@ -27,17 +27,24 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // This function is an internal scheduler endpoint. It deliberately keeps
-  // verify_jwt disabled for the existing cron integration, but requires either
-  // the service-role bearer token or the configured CRON_SECRET.
-  const authHeader = req.headers.get("Authorization") ?? "";
-  const bearer = authHeader.replace(/^Bearer\s+/i, "").trim();
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const cronSecret = Deno.env.get("CRON_SECRET") ?? "";
-  const providedCron = req.headers.get("x-cron-secret") ?? "";
-  const authorized =
-    (serviceKey && bearer === serviceKey) ||
-    (cronSecret && providedCron === cronSecret);
+  // Internal scheduler authentication uses the existing hashed cron-token
+  // record. The raw token is never stored in the database.
+  const providedCron = req.headers.get("x-bridgefort-cron-token")?.trim() ?? "";
+  const authorized = await (async () => {
+    if (!providedCron) return false;
+    const { data, error } = await createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    ).from("automation_secrets")
+      .select("secret_hash")
+      .eq("secret_name", "inactive_account_reminders")
+      .eq("is_active", true)
+      .maybeSingle();
+    if (error || !data?.secret_hash) return false;
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(providedCron));
+    const hex = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    return hex === data.secret_hash;
+  })();
 
   if (!authorized) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
