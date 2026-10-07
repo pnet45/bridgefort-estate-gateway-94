@@ -3,6 +3,10 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const FROM_EMAIL = "noreply@bridgeforthomes.com";
+
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
@@ -64,11 +68,18 @@ const handler = async (req: Request): Promise<Response> => {
     const safeName = registration.name || name || "there";
     const safePhone = registration.phone || phone || "";
 
+    const eventKey = `training_registration_confirmation:${registration.id}:${eventTitle}:${eventDate}`;
+    const { data: existingEvent } = await svc.from("email_delivery_events").select("status, provider_message_id, attempt_count").eq("event_key", eventKey).maybeSingle();
+    if (existingEvent?.status === "sent") {
+      return new Response(JSON.stringify({ success: true, duplicate: true, resend_id: existingEvent.provider_message_id }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+    }
+    await svc.from("email_delivery_events").upsert({ event_key: eventKey, recipient_email: email, recipient_name: safeName, subject: `Registration Confirmed: ${eventTitle}`, provider: "resend", sender_email: FROM_EMAIL, sender_name: "Bridgefort Homes Development Ltd.", template_key: "training_registration_confirmation", source_function: "send-training-registration-confirmation", source_reference: registration.id, status: "queued", attempt_count: (existingEvent?.attempt_count || 0) + 1, metadata: { eventTitle, eventDate, registration_id: registration.id }, updated_at: new Date().toISOString() }, { onConflict: "event_key" });
+
     console.log("Sending training registration confirmation to:", email);
 
 
     const emailResponse = await resend.emails.send({
-      from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
+      from: `Bridgefort Homes Development Ltd <${FROM_EMAIL}>`,
       to: [email],
       subject: `Registration Confirmed: ${eventTitle}`,
       html: bridgefortEmail(`
@@ -182,6 +193,8 @@ const handler = async (req: Request): Promise<Response> => {
       `),
     });
 
+    const resendId = emailResponse?.data?.id || null;
+    await svc.from("email_delivery_events").update({ status: "sent", provider_message_id: resendId, sent_at: new Date().toISOString(), updated_at: new Date().toISOString(), error_message: null }).eq("event_key", eventKey);
     console.log("Email sent successfully:", emailResponse);
 
     return new Response(JSON.stringify(emailResponse), {
@@ -192,6 +205,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
   } catch (error: any) {
+    console.error("Training registration confirmation failed:", error);
     console.error("Error in send-training-registration-confirmation function:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
