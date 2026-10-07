@@ -119,6 +119,7 @@ const AdminClientAllocations: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [estates, setEstates] = useState<Estate[]>([]);
   const [clientProperties, setClientProperties] = useState<ClientProperty[]>([]);
+  const [selectedPropertyKey, setSelectedPropertyKey] = useState('');
   const [orders, setOrders] = useState<Array<{ id: string; label: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -195,6 +196,7 @@ const AdminClientAllocations: React.FC = () => {
     setForm(emptyForm);
     setOrders([]);
     setClientProperties([]);
+    setSelectedPropertyKey('');
     setDialogOpen(true);
   };
 
@@ -216,6 +218,8 @@ const AdminClientAllocations: React.FC = () => {
     });
     await loadOrders(allocation.user_id);
     await loadClientProperties(allocation.user_id);
+    const matchedProperty = clientProperties.find(p => p.item_property_id === allocation.property_id || p.plot_id === allocation.plot_id);
+    setSelectedPropertyKey(matchedProperty?.key || '');
     setDialogOpen(true);
   };
 
@@ -402,7 +406,7 @@ const AdminClientAllocations: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
             <div className="md:col-span-2">
               <label className="text-sm font-medium">Client *</label>
-              <Select value={form.user_id} onValueChange={async v => { setField('user_id', v); setField('order_id', ''); setField('property_id', ''); setField('plot_id', ''); await loadOrders(v); await loadClientProperties(v); }}>
+              <Select value={form.user_id} onValueChange={async v => { setField('user_id', v); setField('order_id', ''); setField('property_id', ''); setField('plot_id', ''); setSelectedPropertyKey(''); await loadOrders(v); await loadClientProperties(v); }}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Select client" /></SelectTrigger>
                 <SelectContent className="max-h-72">{clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name} — {c.email}</SelectItem>)}</SelectContent>
               </Select>
@@ -416,9 +420,10 @@ const AdminClientAllocations: React.FC = () => {
             </div>
             <div className="md:col-span-2">
               <label className="text-sm font-medium">Existing Client Property *</label>
-              <Select value={form.property_id || 'none'} onValueChange={v => {
+              <Select value={selectedPropertyKey || 'none'} onValueChange={v => {
                 const property = clientProperties.find(p => p.key === v);
-                setField('property_id', v === 'none' ? '' : v);
+                setSelectedPropertyKey(v === 'none' ? '' : v);
+                setField('property_id', property?.item_property_id || '');
                 if (property?.order_id) setField('order_id', property.order_id);
                 if (property?.plot_id) setField('plot_id', property.plot_id);
               }}>
