@@ -35,7 +35,7 @@ async function send(c:any,u:any,name:string,vars:Record<string,string>){
     event_key:eventKey,recipient_email:u.email,recipient_user_id:u.id,recipient_name:name,subject,
     provider:"resend",sender_email:"info@bridgeforthomes.com",sender_name:"Bridgefort Homes Development Ltd.",
     template_key:c.campaign_key,source_function:"send-inactive-account-reminders",source_reference:eventKey,
-    status:"queued",attempt_count:attempt,metadata:vars,queued_at:now,updated_at:now
+    status:"queued",attempt_count:attempt,metadata:vars,retryable:true,payload:{from:FROM,to:[u.email],subject,html,text},queued_at:now,updated_at:now
   },{onConflict:"event_key"});
   if(queueError) throw queueError;
   const r=await resend.emails.send({from:FROM,to:[u.email],subject,html,text});
