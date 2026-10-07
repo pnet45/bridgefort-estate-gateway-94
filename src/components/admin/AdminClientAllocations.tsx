@@ -300,8 +300,8 @@ const AdminClientAllocations: React.FC = () => {
 
   const save = async () => {
     if (!canManage) return;
-    if (!form.user_id || !form.estate_id || !form.property_id || !form.plot_id) {
-      toast({ title: 'Missing verified property details', description: 'Select the client, estate and an existing client property before saving the allocation.', variant: 'destructive' });
+    if (!form.user_id || !form.estate_id || !selectedPropertyKey || !form.plot_id.trim()) {
+      toast({ title: 'Complete the allocation details', description: 'Select the client, a purchased property, the estate for allocation, and enter the allocated plot details.', variant: 'destructive' });
       return;
     }
 
@@ -420,25 +420,31 @@ const AdminClientAllocations: React.FC = () => {
               </Select>
             </div>
             <div className="md:col-span-2">
-              <label className="text-sm font-medium">Existing Client Property *</label>
-              <Select value={selectedPropertyKey || 'none'} onValueChange={v => {
+              <label className="text-sm font-medium">Purchased Property *</label>
+              <Select disabled={!form.user_id} value={selectedPropertyKey || 'none'} onValueChange={v => {
                 const property = clientProperties.find(p => p.key === v);
                 setSelectedPropertyKey(v === 'none' ? '' : v);
                 setField('property_id', property?.item_property_id || '');
+                setField('plot_id', '');
                 if (property?.order_id) setField('order_id', property.order_id);
-                if (property?.plot_id) setField('plot_id', property.plot_id);
               }}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Select an existing client property" /></SelectTrigger>
+                <SelectTrigger className="mt-1"><SelectValue placeholder={form.user_id ? 'Select a property purchased by this client' : 'Select a client first'} /></SelectTrigger>
                 <SelectContent className="max-h-72">
-                  <SelectItem value="none">Select property</SelectItem>
-                  {clientProperties.map((p, index) => {
-                    const value = p.key;
-                    if (!value) return null;
-                    return <SelectItem key={value + index} value={value}>{p.property_name || p.property_type || 'Client property'}{p.plot_id ? ` • Plot ${p.plot_id}` : ''}{p.order_id ? ` • Order ${p.order_id.slice(0, 8)}` : ''}</SelectItem>;
-                  })}
+                  <SelectItem value="none">Select purchased property</SelectItem>
+                  {clientProperties.map(p => (
+                    <SelectItem key={p.key} value={p.key}>
+                      {p.property_name || p.property_type || 'Purchased property'}
+                      {p.plot_id ? ` • Purchased plot ${p.plot_id}` : ''}
+                      {p.order_id ? ` • Order ${p.order_id.slice(0, 8)}` : ''}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground mt-1">This must come from the client's existing property record; the allocation workflow should not create a property from scratch.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {form.user_id && clientProperties.length === 0
+                  ? 'No paid property was found for this client. Check the client order/payment record before creating an allocation.'
+                  : 'This list comes from the client’s real paid order records.'}
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium">Client Order</label>
@@ -447,8 +453,12 @@ const AdminClientAllocations: React.FC = () => {
                 <SelectContent className="max-h-72"><SelectItem value="none">No linked order</SelectItem>{orders.map(o => <SelectItem key={o.id} value={o.id}>{o.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><label className="text-sm font-medium">Allocated Plot ID *</label><Input className="mt-1" value={form.plot_id} onChange={e => setField('plot_id', e.target.value)} placeholder="Verified allocated plot" /></div>
-            <div><label className="text-sm font-medium">Plot label / description</label><Input className="mt-1" value={form.plot_label} onChange={e => setField('plot_label', e.target.value)} placeholder="e.g. 500sqm corner plot" /></div>
+            <div>
+              <label className="text-sm font-medium">Allocated Plot *</label>
+              <Input className="mt-1" disabled={!form.user_id || !form.estate_id || !selectedPropertyKey} value={form.plot_id} onChange={e => setField('plot_id', e.target.value)} placeholder={selectedPropertyKey && form.estate_id ? 'Enter allocated plot number/details' : 'Select client, purchased property and estate first'} />
+              <p className="text-xs text-muted-foreground mt-1">Enter the plot actually allocated in the selected estate. This is separate from the property the client originally purchased.</p>
+            </div>
+            <div><label className="text-sm font-medium">Plot label / description</label><Input className="mt-1" disabled={!form.user_id || !form.estate_id || !selectedPropertyKey} value={form.plot_label} onChange={e => setField('plot_label', e.target.value)} placeholder="e.g. 500sqm corner plot" /></div>
             <div><label className="text-sm font-medium">Property ID</label><Input className="mt-1" value={form.property_id} readOnly placeholder="Selected from client property" /></div>
             <div>
               <label className="text-sm font-medium">Allocation status *</label>
