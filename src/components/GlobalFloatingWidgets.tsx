@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import FloatingMessageButton from '@/components/FloatingMessageButton';
+import PropertyAssistant from '@/components/PropertyAssistant';
 import WhatsAppChat from '@/components/WhatsAppChat';
 
 // The "Send Message" floating button and WhatsApp chat bubble are mounted
@@ -16,6 +17,7 @@ const GlobalFloatingWidgets = () => {
   return (
     <>
       <FloatingMessageButton />
+      <PropertyAssistant />
       <WhatsAppChat />
     </>
   );
