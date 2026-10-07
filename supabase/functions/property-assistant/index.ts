@@ -415,6 +415,7 @@ Deno.serve(async (req) => {
     const modelOutput = responseParsed.data;
 
     let crmSyncStatus: "not_needed" | "linked" | "failed" = "not_needed";
+    let nextAction: { label: string; href: string } | null = null;
     if (actorType !== "admin" && isLeadWorthyLeoMessage(parsed.data.message)) {
       try {
         const serviceType = inferCrmServiceType(parsed.data.message);
@@ -535,6 +536,17 @@ Deno.serve(async (req) => {
         if (linkError) throw linkError;
 
         crmSyncStatus = "linked";
+        nextAction = serviceType === "TRAVEL"
+          ? { label: "Open Travel Booking", href: "/travels" }
+          : serviceType === "INSPECTION"
+          ? { label: "Open Dashboard to Book Inspection", href: "/dashboard" }
+          : serviceType === "AGROVEST"
+          ? { label: "View Agrovest", href: "/agrovest" }
+          : serviceType === "TRAINING"
+          ? { label: "View Training", href: "/training" }
+          : serviceType === "PROPERTY"
+          ? { label: "View Properties", href: "/properties" }
+          : null;
       } catch (crmError) {
         console.error("property-assistant: CRM sync failed; chat will continue", crmError);
         crmSyncStatus = "failed";
@@ -644,6 +656,7 @@ Deno.serve(async (req) => {
         ? adminNavigation.filter(({ permission }) => permissionKeys.includes(permission))
         : [],
       crmSyncStatus,
+      nextAction,
     });
   } catch (error) {
     console.error("property-assistant", error);
