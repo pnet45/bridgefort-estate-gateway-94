@@ -1,4 +1,5 @@
 import { bridgefortEmail } from "../_shared/email-template.ts";
+import { sendTrackedEmail } from "../_shared/email-delivery.ts";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Sends the client an email when an admin approves or rejects their payment
 // request. Admin-only: the caller's JWT must carry the `admin` role.
@@ -83,11 +84,23 @@ serve(async (req) => {
       </div>`;
 
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-    const sent = await resend.emails.send({
-      from: "Bridgefort Homes <noreply@bridgeforthomes.com>",
-      to: [email],
-      subject: `Payment ${approved ? "approved" : "rejected"} — ${amount}`,
-      html: bridgefortEmail(html),
+    const sent = await sendTrackedEmail({
+      supabase: admin,
+      resend,
+      eventKey: `payment_decision:${payment_request_id}:${status}`,
+      recipientEmail: email,
+      recipientUserId: reqRow.user_id,
+      recipientName: profile?.first_name ?? null,
+      templateKey: "payment_decision",
+      sourceFunction: "send-payment-decision-email",
+      sourceReference: payment_request_id,
+      metadata: { payment_request_id, status, amount: reqRow.amount, type: reqRow.type },
+      payload: {
+        from: "Bridgefort Homes <noreply@bridgeforthomes.com>",
+        to: [email],
+        subject: `Payment ${approved ? "approved" : "rejected"} — ${amount}`,
+        html: bridgefortEmail(html),
+      },
     });
 
     if ((sent as any)?.error) {
