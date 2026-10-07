@@ -100,6 +100,9 @@ export default function AuthScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.header}>Bridgefort Realtors</Text>
         <Text style={styles.subtitle}>{isLogin ? 'Sign in to access your BHRealtors dashboard.' : 'Register for a Bridgefort Realtors account.'}</Text>
+        <Text style={styles.assistantNotice}>
+          Sign in with your email and password to chat with Leo and track your Bridgefort Homes enquiries.
+        </Text>
 
         <View style={styles.toggleRow}>
           <TouchableOpacity
@@ -183,6 +186,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#475569',
     marginBottom: 24,
+  },
+  assistantNotice: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#1e3a8a',
+    backgroundColor: '#dbeafe',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 20,
   },
   toggleRow: {
     flexDirection: 'row',

@@ -3,4 +3,5 @@ export type RootStackParamList = {
   Home: undefined;
   Dashboard: undefined;
   ReferralHistory: undefined;
+  LeoChat: undefined;
 };

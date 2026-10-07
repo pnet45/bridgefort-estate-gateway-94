@@ -87,7 +87,6 @@ const queryClient = new QueryClient();
 
 function AppLayout() {
   const location = useLocation();
-  const isAdminRoute = location.pathname === '/admin-console' || location.pathname.startsWith('/admin-console?');
 
   // Google Analytics — fire a page_view on every client-side route change (SPA)
   useEffect(() => {
@@ -197,7 +196,7 @@ function AppLayout() {
                 </Suspense>
               </ErrorBoundary>
               
-              {!isAdminRoute && <GlobalFloatingWidgets />}
+              <GlobalFloatingWidgets />
               <CartSidebar />
               <ScrollToTopButton />
 

@@ -39,6 +39,9 @@ export default function HomeScreen() {
           <View style={styles.buttonWrapper}>
             <Button title="Referral History" onPress={() => navigation.navigate('ReferralHistory')} />
           </View>
+          <View style={styles.buttonWrapper}>
+            <Button title="Chat with Leo" onPress={() => navigation.navigate('LeoChat')} />
+          </View>
         </View>
 
         <View style={styles.infoBox}>

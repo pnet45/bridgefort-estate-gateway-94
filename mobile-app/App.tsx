@@ -5,6 +5,7 @@ import AuthScreen from './screens/AuthScreen';
 import HomeScreen from './screens/HomeScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import ReferralHistoryScreen from './screens/ReferralHistoryScreen';
+import LeoChatScreen from './screens/LeoChatScreen';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import type { RootStackParamList } from './types';
 
@@ -29,6 +30,7 @@ function RootNavigator() {
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Dashboard" component={DashboardScreen} />
             <Stack.Screen name="ReferralHistory" component={ReferralHistoryScreen} />
+            <Stack.Screen name="LeoChat" component={LeoChatScreen} />
           </>
         ) : (
           <Stack.Screen name="Auth" component={AuthScreen} />
