@@ -102,10 +102,6 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
-    const payload = (await req.json()) as Payload;
-    const userId = payload.record?.id;
-    if (!userId) throw new Error("Missing profile user id");
-
     const { data: userData, error: userError } = await admin.auth.admin.getUserById(userId);
     if (userError || !userData.user?.email) throw new Error(userError?.message || "User email not found");
 
