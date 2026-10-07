@@ -21,6 +21,21 @@ async function excludedIds(){const{data,error}=await supabase.from("user_roles")
 async function emails(){const{data,error}=await supabase.auth.admin.listUsers({page:1,perPage:1000});if(error)throw error;return new Map((data?.users||[]).map((u:any)=>[u.id,u]))}
 async function record(c:any,count:number,status:string){await supabase.from("crm_automation_campaigns").update({last_run_at:new Date().toISOString(),last_run_status:status,last_run_count:count,updated_at:new Date().toISOString()}).eq("id",c.id)}
 async function send(c:any,u:any,name:string,vars:Record<string,string>){
+  const preferenceCategory = c.campaign_key === "birthday"
+    ? "marketing"
+    : c.campaign_key === "allocation_update"
+      ? "property_updates"
+      : c.campaign_key === "payment_reminder"
+        ? null
+        : "account_updates";
+  if (preferenceCategory) {
+    const { data: allowed, error: preferenceError } = await supabase.rpc("email_preference_enabled", {
+      p_user_id: u.id,
+      p_category: preferenceCategory,
+    });
+    if (preferenceError) throw preferenceError;
+    if (allowed === false) return { ok: true, skipped: true, preferenceCategory };
+  }
   const subject=replace(c.subject,vars);
   const body=replace(c.body,vars);
   const html=branded(`<p>Dear <strong>${esc(name)}</strong>,</p><p>${body}</p><p>Warm regards,<br><strong>Bridgefort Homes Family</strong></p>`,subject);
