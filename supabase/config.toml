@@ -73,3 +73,6 @@ verify_jwt = false
 
 [functions.send-inspection-booking-email]
 verify_jwt = false
+
+[functions.leo-knowledge-admin]
+verify_jwt = false
