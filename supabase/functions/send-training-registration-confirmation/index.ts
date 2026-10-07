@@ -73,7 +73,9 @@ const handler = async (req: Request): Promise<Response> => {
     if (existingEvent?.status === "sent") {
       return new Response(JSON.stringify({ success: true, duplicate: true, resend_id: existingEvent.provider_message_id }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
-    await svc.from("email_delivery_events").upsert({ event_key: eventKey, recipient_email: email, recipient_name: safeName, subject: `Registration Confirmed: ${eventTitle}`, provider: "resend", sender_email: FROM_EMAIL, sender_name: "Bridgefort Homes Development Ltd.", template_key: "training_registration_confirmation", source_function: "send-training-registration-confirmation", source_reference: registration.id, status: "queued", attempt_count: (existingEvent?.attempt_count || 0) + 1, metadata: { eventTitle, eventDate, registration_id: registration.id }, updated_at: new Date().toISOString() }, { onConflict: "event_key" });
+    await svc.from("email_delivery_events").upsert({ event_key: eventKey, recipient_email: email, recipient_name: safeName, subject: `Registration Confirmed: ${eventTitle}`, provider: "resend", sender_email: FROM_EMAIL, sender_name: "Bridgefort Homes Development Ltd.", template_key: "training_registration_confirmation", source_function: "send-training-registration-confirmation", source_reference: registration.id, status: "queued", attempt_count: (existingEvent?.attempt_count || 0) + 1, metadata: { eventTitle, eventDate, registration_id: registration.id },
+    retryable: true,
+    payload: { from: `Bridgefort Homes Development Ltd <${FROM_EMAIL}>`, to: [email], subject: `Registration Confirmed: ${eventTitle}`, html: bridgefortEmail(`__TRAINING_CONFIRMATION_BODY__`) }, updated_at: new Date().toISOString() }, { onConflict: "event_key" });
 
     console.log("Sending training registration confirmation to:", email);
 
