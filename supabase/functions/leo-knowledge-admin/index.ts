@@ -5,6 +5,7 @@ import { z } from "npm:zod@3.25.76";
 const Schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("list") }),
   z.object({ action: z.literal("get"), id: z.string().uuid() }),
+  z.object({ action: z.literal("history"), id: z.string().uuid() }),
   z.object({ action: z.literal("source_sync_list") }),
   z.object({ action: z.literal("source_sync_get"), id: z.string().uuid() }),
   z.object({ action: z.literal("source_sync_approve"), id: z.string().uuid() }),
@@ -66,6 +67,16 @@ Deno.serve(async(req)=>{
       const {data,error}=await service.from("leo_knowledge_documents").select("*").eq("id",body.data.id).single();
       if(error) throw error;
       return json({document:data});
+    }
+
+    if(body.data.action==="history"){
+      const {data,error}=await service.from("leo_knowledge_versions")
+        .select("id,document_id,version,title,content,audience,allowed_roles,topics,status,change_type,change_summary,changed_by,created_at")
+        .eq("document_id",body.data.id)
+        .order("version",{ascending:false})
+        .limit(100);
+      if(error) throw error;
+      return json({versions:data??[]});
     }
 
     if(body.data.action==="source_sync_list"){
