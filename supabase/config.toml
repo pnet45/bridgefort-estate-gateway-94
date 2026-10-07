@@ -70,3 +70,6 @@ verify_jwt = false
 
 [functions.property-assistant]
 verify_jwt = false
+
+[functions.send-inspection-booking-email]
+verify_jwt = false
