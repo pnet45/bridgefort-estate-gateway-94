@@ -218,7 +218,7 @@ const AdminClientAllocations: React.FC = () => {
     });
     await loadOrders(allocation.user_id);
     const properties = await loadClientProperties(allocation.user_id);
-    const matchedProperty = properties.find(p => p.item_property_id === allocation.property_id || p.plot_id === allocation.plot_id);
+    const matchedProperty = properties.find(p => (allocation.property_id && p.item_property_id === allocation.property_id) || (allocation.order_id && p.order_id === allocation.order_id) || (allocation.plot_id && p.plot_id === allocation.plot_id));
     setSelectedPropertyKey(matchedProperty?.key || '');
     setDialogOpen(true);
   };
