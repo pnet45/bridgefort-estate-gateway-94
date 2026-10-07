@@ -38,6 +38,35 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
+const CRM_SERVICE_TYPES = ["PROPERTY","INSPECTION","TRAVEL","AGROVEST","TRAINING","WEALTH_CONSULTATION","GENERAL_ENQUIRY"] as const;
+type CrmServiceType = typeof CRM_SERVICE_TYPES[number];
+
+const inferCrmServiceType = (message: string): CrmServiceType => {
+  const value = message.toLowerCase();
+  if (/\b(inspect|inspection|site visit|site viewing|view the land|visit the estate)\b/.test(value)) return "INSPECTION";
+  if (/\b(travel|visa|flight|holiday|tour|work abroad|europe|destination)\b/.test(value)) return "TRAVEL";
+  if (/\b(agrovest|farm|farmland|agriculture|cassava|palm|crop|agro investment)\b/.test(value)) return "AGROVEST";
+  if (/\b(training|seminar|wealth summit|course|learn|masterclass)\b/.test(value)) return "TRAINING";
+  if (/\b(wealth|consultation|consult|financial planning|investment advice)\b/.test(value)) return "WEALTH_CONSULTATION";
+  if (/\b(property|land|estate|plot|house|home|buy|purchase|price|payment|allocation)\b/.test(value)) return "PROPERTY";
+  return "GENERAL_ENQUIRY";
+};
+
+const isLeadWorthyLeoMessage = (message: string): boolean =>
+  /\b(buy|purchase|invest|investment|book|booking|reserve|inspection|inspect|site visit|quote|quotation|price|cost|subscribe|register|apply|enquire|enquiry|interested|want to|looking for|need help with|consultation)\b/i.test(message);
+
+const safeCrmIntent = (message: string): string =>
+  message.replace(/(?:password|passcode|otp|one[- ]time code|api key|secret)\s*[:=]\s*\S+/gi, "[redacted]").replace(/\s+/g, " ").trim().slice(0, 700);
+
+const findMatchingListing = (message: string, listings: Array<Record<string, unknown>>): Record<string, unknown> | null => {
+  const value = message.toLowerCase();
+  return listings.find((listing) => {
+    const title = typeof listing.title === "string" ? listing.title.toLowerCase() : "";
+    const estate = typeof listing.estate === "string" ? listing.estate.toLowerCase() : "";
+    return (title && value.includes(title)) || (estate && value.includes(estate));
+  }) ?? null;
+};
+
 const adminNavigation = [
   { permission: "admin:view_dashboard", label: "Overview", href: "/admin-console?tab=overview" },
   { permission: "admin:view_properties", label: "Properties", href: "/admin-console?tab=properties" },
@@ -129,7 +158,7 @@ Deno.serve(async (req) => {
     if (parsed.data.action === "load") {
       const { data: conversation, error: conversationError } = await service
         .from("leo_conversations")
-        .select("id,tracking_number")
+        .select("id,tracking_number,crm_lead_id,service_journey_id,service_type,last_intent")
         .eq("id", parsed.data.conversationId)
         .eq("owner_id", user.id)
         .maybeSingle();
@@ -384,6 +413,133 @@ Deno.serve(async (req) => {
       return trackedFailure("Leo could not prepare a safe response", 502);
     }
     const modelOutput = responseParsed.data;
+
+    let crmSyncStatus: "not_needed" | "linked" | "failed" = "not_needed";
+    if (actorType !== "admin" && isLeadWorthyLeoMessage(parsed.data.message)) {
+      try {
+        const serviceType = inferCrmServiceType(parsed.data.message);
+        const intent = safeCrmIntent(parsed.data.message);
+        const matchedListing = findMatchingListing(parsed.data.message, (listings ?? []) as Array<Record<string, unknown>>);
+        const { data: conversationRecord, error: conversationRecordError } = await service
+          .from("leo_conversations")
+          .select("crm_lead_id,service_journey_id,service_type,last_intent")
+          .eq("id", conversationId)
+          .eq("owner_id", user.id)
+          .single();
+        if (conversationRecordError) throw conversationRecordError;
+
+        let leadId = conversationRecord.crm_lead_id;
+        let journeyId = conversationRecord.service_journey_id;
+        const priority = /\b(urgent|asap|immediately|today|tomorrow)\b/i.test(parsed.data.message) ? "high" : "medium";
+        const customerName = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ").trim() || firstName || user.email;
+
+        if (!leadId) {
+          const { data: existingLead, error: existingLeadError } = await service
+            .from("crm_leads")
+            .select("id")
+            .eq("source", "leo")
+            .eq("source_record_type", "leo_conversation")
+            .eq("source_record_id", conversationId)
+            .maybeSingle();
+          if (existingLeadError) throw existingLeadError;
+          leadId = existingLead?.id ?? null;
+        }
+
+        const leadPayload = {
+          name: customerName,
+          email: user.email,
+          phone: user.phone || null,
+          customer_id: user.id,
+          source: "leo",
+          source_record_type: "leo_conversation",
+          source_record_id: conversationId,
+          estate_interest: matchedListing?.estate || matchedListing?.title || null,
+          notes: intent,
+          priority,
+          updated_at: new Date().toISOString(),
+        };
+
+        if (leadId) {
+          const { error: updateLeadError } = await service.from("crm_leads").update(leadPayload).eq("id", leadId);
+          if (updateLeadError) throw updateLeadError;
+        } else {
+          const { data: createdLead, error: createLeadError } = await service
+            .from("crm_leads")
+            .insert({ ...leadPayload, status: "new" })
+            .select("id")
+            .single();
+          if (createLeadError) throw createLeadError;
+          leadId = createdLead.id;
+          const { error: activityError } = await service.from("crm_lead_activities").insert({
+            lead_id: leadId,
+            activity_type: "leo_lead_created",
+            description: `Leo created a lead from enquiry ${trackingNumber}: ${intent}`,
+            created_by: null,
+          });
+          if (activityError) console.error("property-assistant: CRM lead activity insert failed", activityError);
+        }
+
+        if (!journeyId) {
+          const { data: existingJourney, error: existingJourneyError } = await service
+            .from("service_journeys")
+            .select("id")
+            .eq("source", "leo")
+            .eq("source_record_type", "leo_conversation")
+            .eq("source_record_id", conversationId)
+            .maybeSingle();
+          if (existingJourneyError) throw existingJourneyError;
+          journeyId = existingJourney?.id ?? null;
+        }
+
+        const journeyPayload = {
+          customer_id: user.id,
+          lead_id: leadId,
+          service_type: serviceType,
+          source: "leo",
+          source_record_type: "leo_conversation",
+          source_record_id: conversationId,
+          notes: intent,
+          updated_at: new Date().toISOString(),
+        };
+
+        if (journeyId) {
+          const { error: updateJourneyError } = await service.from("service_journeys").update(journeyPayload).eq("id", journeyId);
+          if (updateJourneyError) throw updateJourneyError;
+        } else {
+          const { data: createdJourney, error: createJourneyError } = await service
+            .from("service_journeys")
+            .insert({ ...journeyPayload, status: "NEW", priority: priority === "high" ? "HIGH" : "NORMAL" })
+            .select("id")
+            .single();
+          if (createJourneyError) throw createJourneyError;
+          journeyId = createdJourney.id;
+        }
+
+        if (conversationRecord.service_type !== serviceType || conversationRecord.last_intent !== intent) {
+          const { error: activityError } = await service.from("crm_lead_activities").insert({
+            lead_id: leadId,
+            activity_type: "leo_intent_update",
+            description: `Leo intent update (${serviceType}): ${intent}`,
+            created_by: null,
+          });
+          if (activityError) console.error("property-assistant: CRM intent activity insert failed", activityError);
+        }
+
+        const { error: linkError } = await service.from("leo_conversations").update({
+          crm_lead_id: leadId,
+          service_journey_id: journeyId,
+          service_type: serviceType,
+          last_intent: intent,
+          updated_at: new Date().toISOString(),
+        }).eq("id", conversationId).eq("owner_id", user.id);
+        if (linkError) throw linkError;
+
+        crmSyncStatus = "linked";
+      } catch (crmError) {
+        console.error("property-assistant: CRM sync failed; chat will continue", crmError);
+        crmSyncStatus = "failed";
+      }
+    }
     const explicitlyRequestedEmail = /(?:email|e-mail).{0,40}(?:me|send|share|forward)|(?:send|share|forward).{0,40}(?:email|e-mail)/i
       .test(parsed.data.message);
     const requestedAdminDraft = actorType === "admin" &&
@@ -487,6 +643,7 @@ Deno.serve(async (req) => {
       adminLinks: actorType === "admin"
         ? adminNavigation.filter(({ permission }) => permissionKeys.includes(permission))
         : [],
+      crmSyncStatus,
     });
   } catch (error) {
     console.error("property-assistant", error);
