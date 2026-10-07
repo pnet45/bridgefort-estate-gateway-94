@@ -71,22 +71,129 @@ serve(async (req) => {
     const svixTimestamp = req.headers.get('svix-timestamp') || '';
     const svixSignature = req.headers.get('svix-signature') || '';
 
-    if (webhookSecret) {
-      const valid = svixId && svixTimestamp && svixSignature
-        ? await verifySvixSignature(rawBody, svixId, svixTimestamp, svixSignature, webhookSecret)
-        : false;
-      if (!valid) {
-        console.error('Resend webhook signature verification failed');
-        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    } else {
-      console.warn('RESEND_WEBHOOK_SECRET is not set — accepting webhook without signature verification.');
+    if (!webhookSecret) {
+      console.error('RESEND_WEBHOOK_SECRET is not configured');
+      return new Response(JSON.stringify({ error: 'Webhook authentication is not configured' }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      return new Response(JSON.stringify({ error: 'Missing Svix signature headers' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const timestampSeconds = Number(svixTimestamp);
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    if (!Number.isFinite(timestampSeconds) || Math.abs(nowSeconds - timestampSeconds) > 300) {
+      return new Response(JSON.stringify({ error: 'Stale webhook timestamp' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const valid = await verifySvixSignature(rawBody, svixId, svixTimestamp, svixSignature, webhookSecret);
+    if (!valid) {
+      console.error('Resend webhook signature verification failed');
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const event = JSON.parse(rawBody);
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, serviceKey);
+
+    const deliveryTypes = new Set([
+      'email.sent', 'email.delivered', 'email.delivery_delayed',
+      'email.bounced', 'email.complained', 'email.opened',
+      'email.clicked', 'email.failed', 'email.suppressed'
+    ]);
+
+    if (deliveryTypes.has(event?.type)) {
+      const providerEventId = svixId;
+      const providerMessageId = event?.data?.email_id || event?.data?.id || null;
+
+      const { error: insertError } = await supabase.from('email_delivery_webhook_events').insert({
+        provider: 'resend',
+        provider_event_id: providerEventId,
+        event_type: event.type,
+        provider_message_id: providerMessageId,
+        payload: event,
+        received_at: new Date().toISOString(),
+      });
+
+      if (insertError && insertError.code !== '23505') {
+        console.error('Failed to record Resend delivery webhook:', insertError);
+        return new Response(JSON.stringify({ error: 'Failed to record webhook event' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (!providerMessageId) {
+        return new Response(JSON.stringify({ received: true, recorded: true, matched: false }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const statusMap: Record<string, string> = {
+        'email.sent': 'sent',
+        'email.delivered': 'delivered',
+        'email.delivery_delayed': 'delayed',
+        'email.bounced': 'bounced',
+        'email.complained': 'complained',
+        'email.opened': 'delivered',
+        'email.clicked': 'delivered',
+        'email.failed': 'failed',
+        'email.suppressed': 'suppressed',
+      };
+      const nextStatus = statusMap[event.type];
+
+      const patch: Record<string, unknown> = {
+        last_provider_event_type: event.type,
+        updated_at: new Date().toISOString(),
+      };
+      if (nextStatus) patch.status = nextStatus;
+      if (event.type === 'email.delivered') patch.delivered_at = new Date().toISOString();
+      if (event.type === 'email.delivery_delayed') patch.delayed_at = new Date().toISOString();
+      if (event.type === 'email.bounced') { patch.bounced_at = new Date().toISOString(); patch.retryable = false; }
+      if (event.type === 'email.complained') { patch.complained_at = new Date().toISOString(); patch.retryable = false; }
+      if (event.type === 'email.opened') patch.opened_at = new Date().toISOString();
+      if (event.type === 'email.clicked') patch.clicked_at = new Date().toISOString();
+      if (event.type === 'email.failed') { patch.error_message = event?.data?.failure_reason || event?.data?.reason || 'Resend reported email.failed'; patch.retryable = true; }
+      if (event.type === 'email.suppressed') { patch.retryable = false; }
+
+      const { error: updateError } = await supabase
+        .from('email_delivery_events')
+        .update(patch)
+        .eq('provider', 'resend')
+        .eq('provider_message_id', providerMessageId);
+
+      if (updateError) {
+        console.error('Failed to update email delivery ledger:', updateError);
+        return new Response(JSON.stringify({ error: 'Failed to update delivery ledger' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      await supabase.from('email_delivery_webhook_events')
+        .update({ processed_at: new Date().toISOString(), processing_error: null })
+        .eq('provider', 'resend')
+        .eq('provider_event_id', providerEventId);
+
+      return new Response(JSON.stringify({ received: true, recorded: true, matched: true }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     if (event?.type !== 'email.received') {
       return new Response(JSON.stringify({ received: true, ignored: event?.type }), {
@@ -102,10 +209,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, serviceKey);
 
     const { data: existing } = await supabase
       .from('admin_emails')
