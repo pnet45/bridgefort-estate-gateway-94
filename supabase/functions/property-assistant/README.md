@@ -10,8 +10,9 @@ Configure these Edge Function secrets in the Supabase Dashboard under
 - `GROQ_API_KEY`: required. Create a key in the [Groq Console](https://console.groq.com/keys)
   and set it privately with
   `supabase secrets set --project-ref xyvspvtdaacqfmfocvhw GROQ_API_KEY=your-key`.
-- `GROQ_MODEL`: optional; defaults to `llama-3.3-70b-versatile`. Choose a
-  currently available Groq production model that supports JSON mode.
+- `GROQ_MODEL`: optional; defaults to `openai/gpt-oss-120b`. Choose a
+  currently available Groq production model that supports JSON mode. Avoid
+  deprecated model IDs such as `llama-3.3-70b-versatile`.
 - `RESEND_API_KEY`: required only for requested customer follow-up emails.
 - `LEO_FROM_EMAIL`: optional verified Resend sender; defaults to
   `Bridgefort Homes <info@bridgeforthomes.com>`.

@@ -27,6 +27,24 @@ const escapeHtml = (value: string) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 
+const getAssistantErrorMessage = async (error: unknown) => {
+  if (typeof error !== 'object' || error === null || !('context' in error)) return null;
+  const context = error.context;
+  if (!(context instanceof Response)) return null;
+  try {
+    const body: unknown = await context.clone().json();
+    if (
+      typeof body === 'object' &&
+      body !== null &&
+      'error' in body &&
+      typeof body.error === 'string'
+    ) return body.error;
+  } catch {
+    return null;
+  }
+  return null;
+};
+
 export default function LeoChatScreen() {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([INITIAL]);
@@ -131,9 +149,12 @@ export default function LeoChatScreen() {
           }));
         }
       }
-    } catch {
+    } catch (sendError) {
       setInput(content);
-      setError('Leo is temporarily unavailable. Your saved conversation can be retried.');
+      setError(
+        await getAssistantErrorMessage(sendError) ??
+          'Leo is temporarily unavailable. Your saved conversation can be retried.',
+      );
     } finally {
       setSending(false);
     }

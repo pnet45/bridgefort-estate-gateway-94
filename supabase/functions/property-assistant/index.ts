@@ -279,7 +279,7 @@ Deno.serve(async (req) => {
     }
 
     const groqApiKey = Deno.env.get("GROQ_API_KEY")?.trim();
-    const model = Deno.env.get("GROQ_MODEL")?.trim() || "llama-3.3-70b-versatile";
+    const model = Deno.env.get("GROQ_MODEL")?.trim() || "openai/gpt-oss-120b";
     if (!groqApiKey) return trackedFailure("Leo is not configured", 503);
 
     const firstName = profile?.first_name?.trim();
@@ -329,14 +329,27 @@ Deno.serve(async (req) => {
       if (error instanceof DOMException && error.name === "AbortError") {
         return trackedFailure("Leo's response timed out. Please try again.", 504);
       }
-      throw error;
+      console.error("property-assistant: could not connect to Groq", error);
+      return trackedFailure("Leo could not connect to its AI provider. Please try again shortly.", 502);
     } finally {
       clearTimeout(timeout);
     }
 
     if (!modelResponse.ok) {
       console.error("property-assistant: Groq request failed", modelResponse.status);
-      return trackedFailure("Leo is temporarily unavailable", 502);
+      if (modelResponse.status === 401 || modelResponse.status === 403) {
+        return trackedFailure("Leo's AI provider rejected its API key. Check the GROQ_API_KEY secret.", 502);
+      }
+      if (modelResponse.status === 404) {
+        return trackedFailure("Leo's configured Groq model was not found. Check the GROQ_MODEL secret.", 502);
+      }
+      if (modelResponse.status === 429) {
+        return trackedFailure("Leo's AI provider is rate-limited. Please try again shortly.", 503);
+      }
+      if (modelResponse.status === 400) {
+        return trackedFailure("Leo's Groq model rejected the request. Check that GROQ_MODEL supports JSON mode.", 502);
+      }
+      return trackedFailure("Leo's AI provider is temporarily unavailable. Please try again.", 502);
     }
 
     let groqResult: unknown;

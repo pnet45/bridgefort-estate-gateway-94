@@ -37,6 +37,24 @@ const INITIAL_MESSAGE: ChatMessage = {
     "Hello, I'm Leo, the Bridgefort Homes assistant. I can help with your service journey, property questions, and follow-up. I only use information you are authorized to see.",
 };
 
+const getAssistantErrorMessage = async (error: unknown) => {
+  if (typeof error !== 'object' || error === null || !('context' in error)) return null;
+  const context = error.context;
+  if (!(context instanceof Response)) return null;
+  try {
+    const body: unknown = await context.clone().json();
+    if (
+      typeof body === 'object' &&
+      body !== null &&
+      'error' in body &&
+      typeof body.error === 'string'
+    ) return body.error;
+  } catch {
+    return null;
+  }
+  return null;
+};
+
 const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => {
   const { user, loading: authLoading, userRole, permissions } = useAuth();
   const location = useLocation();
@@ -190,9 +208,12 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
           content: 'I reached the daily limit for automatic email follow-ups. Your enquiry remains saved under the tracking reference shown above.',
         }]);
       }
-    } catch {
+    } catch (sendError) {
       setInput(content);
-      setError("Leo is temporarily unavailable. Your tracking reference and saved messages are kept; please try again.");
+      setError(
+        await getAssistantErrorMessage(sendError) ??
+          "Leo is temporarily unavailable. Your tracking reference and saved messages are kept; please try again.",
+      );
     } finally {
       setIsSending(false);
     }
