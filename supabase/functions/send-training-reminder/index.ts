@@ -124,6 +124,20 @@ Deno.serve(async (req) => {
         const subject = `Reminder: ${event.title} Tomorrow!`;
         const sourceReference = `${event.id}:${registration.id}`;
         const templateKey = "training_reminder";
+        const { data: trainingAllowed, error: preferenceError } = await supabase.rpc("email_preference_enabled", {
+          p_user_id: null,
+          p_category: "training",
+        });
+        if (preferenceError) {
+          console.error("Failed to evaluate training email preference:", preferenceError);
+          failures++;
+          continue;
+        }
+        // Registration records currently do not carry a linked auth user ID.
+        // Preference enforcement for anonymous registration emails is therefore
+        // deferred to the registration/user-linking flow; do not suppress a
+        // required reminder based on a null user ID.
+        void trainingAllowed;
         const metadata = {
           event_id: event.id,
           event_title: event.title,
