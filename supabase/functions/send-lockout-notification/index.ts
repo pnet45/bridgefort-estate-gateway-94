@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
       sourceFunction: "send-lockout-notification",
       sourceReference: lockedEmail.toLowerCase(),
       metadata: { locked_email: lockedEmail.toLowerCase(), attempt_count: safeAttempt },
-      payload: from: "Bridgefort Homes Development Ltd Security <noreply@bridgeforthomes.com>",
+      payload: { from: "Bridgefort Homes Development Ltd Security <noreply@bridgeforthomes.com>",
       to: [adminEmail],
       subject: `🔒 Account Locked: ${lockedEmail}`,
       html: bridgefortEmail(`
