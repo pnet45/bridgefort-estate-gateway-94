@@ -1,4 +1,5 @@
 import { bridgefortEmail } from "../_shared/email-template.ts";
+import { sendTrackedEmail } from "../_shared/email-delivery.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "https://esm.sh/resend@2.0.0";
@@ -88,11 +89,18 @@ serve(async (req) => {
 
       if (resend) {
         const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111"><h2 style="color:${colour}">Booking ${label}</h2><p>Hi ${escapeHtml(booking.name.split(" ")[0])}, your Bridgefort Travels booking has been updated.</p><p><strong>Status:</strong> ${escapeHtml(label)}</p>${statusNote ? `<p><strong>Note:</strong> ${escapeHtml(statusNote)}</p>` : ""}<p><a href="${escapeHtml(statusUrl)}" style="display:inline-block;background:${colour};color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none">View booking</a></p></div>`;
-        const sent = await resend.emails.send({
-          from: FROM_EMAIL,
-          to: [booking.email],
-          subject: `Bridgefort Travels — booking ${label}`,
-          html: bridgefortEmail(html),
+        const sent = await sendTrackedEmail({
+          supabase,
+          resend,
+          eventKey: `travel_booking_status:${booking.id}:${status}`,
+          recipientEmail: booking.email,
+          recipientUserId: booking.user_id ?? null,
+          recipientName: booking.name,
+          templateKey: "travel_booking_status",
+          sourceFunction: "manage-travel-booking",
+          sourceReference: booking.id,
+          metadata: { booking_id: booking.id, status, status_note: statusNote },
+          payload: { from: FROM_EMAIL, to: [booking.email], subject: `Bridgefort Travels — booking ${label}`, html: bridgefortEmail(html) },
         });
         if (sent.error) console.error("status email:", sent.error);
       }
@@ -107,7 +115,19 @@ serve(async (req) => {
       if (!resend) return response({ error: "Email is not configured" }, 500);
 
       const html = `<div style="font-family:Arial,sans-serif;max-width:650px;margin:0 auto;padding:24px;color:#111"><p>Dear ${escapeHtml(booking.name)},</p><div>${escapeHtml(message).replace(/\n/g, "<br/>")}</div><hr style="margin:24px 0;border:0;border-top:1px solid #ddd"><p style="font-size:12px;color:#666">Bridgefort Travels<br/>travels@bridgeforthomes.com</p></div>`;
-      const sent = await resend.emails.send({ from: FROM_EMAIL, to: [booking.email], subject, html: bridgefortEmail(html) });
+      const sent = await sendTrackedEmail({
+        supabase,
+        resend,
+        eventKey: `travel_booking_message:${booking.id}:${userId}:${Date.now()}`,
+        recipientEmail: booking.email,
+        recipientUserId: booking.user_id ?? null,
+        recipientName: booking.name,
+        templateKey: "travel_booking_message",
+        sourceFunction: "manage-travel-booking",
+        sourceReference: booking.id,
+        metadata: { booking_id: booking.id, manual: true },
+        payload: { from: FROM_EMAIL, to: [booking.email], subject, html: bridgefortEmail(html) },
+      });
       if (sent.error) throw new Error(sent.error.message || "Email could not be sent");
 
       const { error: logErr } = await supabase.from("admin_emails").insert({
@@ -143,7 +163,19 @@ serve(async (req) => {
     if (action === "resend_confirmation") {
       if (!resend) return response({ error: "Email not configured" }, 500);
       const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111"><h2 style="color:#4f46e5">Your Bridgefort Travels booking</h2><p>Hi ${escapeHtml(booking.name.split(" ")[0])}, here is your booking summary (current status: <strong>${escapeHtml(booking.status)}</strong>).</p><ul><li><strong>Package:</strong> ${escapeHtml(booking.package)}</li><li><strong>Destination:</strong> ${escapeHtml(booking.destination || "—")}</li><li><strong>Departure:</strong> ${escapeHtml(booking.departure_date)}</li><li><strong>Return:</strong> ${escapeHtml(booking.return_date)}</li><li><strong>Travelers:</strong> ${booking.travelers}</li></ul><p><a href="${escapeHtml(statusUrl)}" style="display:inline-block;background:#4f46e5;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none">Track your booking</a></p></div>`;
-      const sent = await resend.emails.send({ from: FROM_EMAIL, to: [booking.email], subject: "Bridgefort Travels — booking confirmation (resent)", html: bridgefortEmail(html) });
+      const sent = await sendTrackedEmail({
+        supabase,
+        resend,
+        eventKey: `travel_booking_confirmation_resend:${booking.id}:${new Date().toISOString().slice(0, 10)}`,
+        recipientEmail: booking.email,
+        recipientUserId: booking.user_id ?? null,
+        recipientName: booking.name,
+        templateKey: "travel_booking_confirmation_resend",
+        sourceFunction: "manage-travel-booking",
+        sourceReference: booking.id,
+        metadata: { booking_id: booking.id, manual: true },
+        payload: { from: FROM_EMAIL, to: [booking.email], subject: "Bridgefort Travels — booking confirmation (resent)", html: bridgefortEmail(html) },
+      });
       if (sent.error) throw new Error(sent.error.message || "Email could not be sent");
       return response({ success: true });
     }
