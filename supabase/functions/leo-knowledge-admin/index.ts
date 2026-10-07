@@ -5,6 +5,11 @@ import { z } from "npm:zod@3.25.76";
 const Schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("list") }),
   z.object({ action: z.literal("get"), id: z.string().uuid() }),
+  z.object({ action: z.literal("source_sync_list") }),
+  z.object({ action: z.literal("source_sync_get"), id: z.string().uuid() }),
+  z.object({ action: z.literal("source_sync_approve"), id: z.string().uuid() }),
+  z.object({ action: z.literal("source_sync_reject"), id: z.string().uuid() }),
+  z.object({ action: z.literal("source_sync_mark_reviewed"), id: z.string().uuid() }),
   z.object({
     action: z.literal("upsert"),
     id: z.string().uuid().optional(),
@@ -20,10 +25,11 @@ const Schema = z.discriminatedUnion("action", [
 ]);
 
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...corsHeaders,"Content-Type":"application/json"}});
+
 const chunkText=(value:string,size=2200)=>{
   const out:{heading:string;content:string}[]=[]; let buffer=""; let heading="";
-  for(const line of value.replace(/\r/g,"").split("\n")){
-    const match=line.match(/^#{1,4}\s+(.+)/); if(match) heading=match[1].trim();
+  for(const line of value.replace(/\\r/g,"").split("\n")){
+    const match=line.match(/^#{1,4}\\s+(.+)/); if(match) heading=match[1].trim();
     const candidate=buffer?buffer+"\n"+line:line;
     if(candidate.length>size&&buffer){out.push({heading,content:buffer.trim()});buffer=line;} else buffer=candidate;
   }
@@ -51,15 +57,105 @@ Deno.serve(async(req)=>{
     if(!canView) return json({error:"Content-management permission is required"},403);
 
     if(body.data.action==="list"){
-      const {data,error}=await service.from("leo_knowledge_documents").select("id,title,source_url,audience,allowed_roles,topics,status,updated_at,created_at").order("updated_at",{ascending:false}).limit(200);
+      const {data,error}=await service.from("leo_knowledge_documents").select("id,title,source_url,audience,allowed_roles,topics,status,version,updated_at,created_at").order("updated_at",{ascending:false}).limit(200);
       if(error) throw error;
       return json({documents:data??[]});
     }
+
     if(body.data.action==="get"){
       const {data,error}=await service.from("leo_knowledge_documents").select("*").eq("id",body.data.id).single();
       if(error) throw error;
       return json({document:data});
     }
+
+    if(body.data.action==="source_sync_list"){
+      const {data,error}=await service.from("leo_knowledge_source_sync")
+        .select("*,document:leo_knowledge_documents(id,title,version,status,audience,updated_at)")
+        .order("updated_at",{ascending:false});
+      if(error) throw error;
+      return json({sources:data??[]});
+    }
+
+    if(body.data.action==="source_sync_get"){
+      const {data,error}=await service.from("leo_knowledge_source_sync")
+        .select("*,document:leo_knowledge_documents(*)")
+        .eq("id",body.data.id).single();
+      if(error) throw error;
+      return json({source:data});
+    }
+
+    if(body.data.action==="source_sync_mark_reviewed"){
+      const {data:sync,error:syncError}=await service.from("leo_knowledge_source_sync").select("*").eq("id",body.data.id).single();
+      if(syncError) throw syncError;
+      if(!sync.pending_hash) return json({error:"There is no pending source change to mark as reviewed"},409);
+      const {data:source,error:sourceError}=await service.from("leo_knowledge_source_sync")
+        .update({
+          source_hash:sync.pending_hash,
+          pending_hash:null,
+          pending_content:null,
+          pending_title:null,
+          pending_detected_at:null,
+          status:"clean",
+          last_error:null,
+          updated_at:new Date().toISOString(),
+        })
+        .eq("id",sync.id)
+        .select("id,source_url,status,source_hash,last_checked_at").single();
+      if(sourceError) throw sourceError;
+      return json({reviewed:true,source});
+    }
+
+    if(body.data.action==="source_sync_reject"){
+      const {data,error}=await service.from("leo_knowledge_source_sync")
+        .update({pending_hash:null,pending_content:null,pending_title:null,pending_detected_at:null,status:"clean",last_error:null,updated_at:new Date().toISOString()})
+        .eq("id",body.data.id)
+        .select("id,source_url,status,last_checked_at").single();
+      if(error) throw error;
+      return json({rejected:true,source:data});
+    }
+
+    if(body.data.action==="source_sync_approve"){
+      const {data:sync,error:syncError}=await service.from("leo_knowledge_source_sync").select("*").eq("id",body.data.id).single();
+      if(syncError) throw syncError;
+      if(!sync.pending_hash||!sync.pending_content) return json({error:"There is no pending source version to approve"},409);
+
+      const {data:doc,error:docError}=await service.from("leo_knowledge_documents").select("*").eq("id",sync.document_id).single();
+      if(docError) throw docError;
+
+      const {error:updateError}=await service.from("leo_knowledge_documents").update({
+        content:sync.pending_content,
+        updated_by:user.id,
+        updated_at:new Date().toISOString(),
+        status:doc.status==="archived"?"archived":"published",
+      }).eq("id",doc.id);
+      if(updateError) throw updateError;
+
+      const chunks=chunkText(sync.pending_content);
+      await service.from("leo_knowledge_chunks").delete().eq("document_id",doc.id);
+      if(chunks.length){
+        const {error:chunkError}=await service.from("leo_knowledge_chunks").insert(chunks.map((c,i)=>({document_id:doc.id,chunk_index:i,heading:c.heading||doc.title,content:c.content})));
+        if(chunkError) throw chunkError;
+      }
+
+      const {data:source,error:sourceError}=await service.from("leo_knowledge_source_sync")
+        .update({
+          source_hash:sync.pending_hash,
+          pending_hash:null,
+          pending_content:null,
+          pending_title:null,
+          pending_detected_at:null,
+          status:"clean",
+          last_error:null,
+          updated_at:new Date().toISOString(),
+        })
+        .eq("id",sync.id)
+        .select("id,source_url,status,source_hash,last_checked_at").single();
+      if(sourceError) throw sourceError;
+
+      const {data:updatedDoc}=await service.from("leo_knowledge_documents").select("id,title,version,status,updated_at").eq("id",doc.id).single();
+      return json({approved:true,source,document:updatedDoc,chunkCount:chunks.length});
+    }
+
     if(body.data.action==="delete"){
       const {error}=await service.from("leo_knowledge_documents").delete().eq("id",body.data.id);
       if(error) throw error;
