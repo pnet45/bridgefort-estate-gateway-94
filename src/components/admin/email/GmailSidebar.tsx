@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Inbox, Send, FileText, Star, Archive, Trash2, PenSquare, Users, LayoutTemplate, Megaphone, ShieldAlert, Workflow } from 'lucide-react';
+import { Inbox, Send, FileText, Star, Archive, Trash2, PenSquare, Users, LayoutTemplate, Megaphone, ShieldAlert, Workflow, type LucideIcon } from 'lucide-react';
 
 export type EmailFolder = 'inbox'|'starred'|'sent'|'drafts'|'spam'|'archive'|'trash'|'contacts'|'templates'|'bulk'|'automations';
 
@@ -62,7 +62,11 @@ export default function GmailSidebar({
     ['automations', 'Client Automations', Workflow, 0]
   ] as const;
 
-  const row = (f: any, tool = false) => (
+  type NavItem = readonly [EmailFolder, string, LucideIcon, number, number?];
+
+  const row = (f: NavItem, tool = false) => {
+    const Icon = f[2];
+    return (
     <button
       key={f[0]}
       onClick={() => onFolderChange(f[0])}
@@ -70,12 +74,13 @@ export default function GmailSidebar({
         activeFolder === f[0] ? 'bg-slate-200 text-slate-900' : 'hover:bg-slate-100'
       }`}
     >
-      <f[2] className={`w-5 h-5 ${tool ? TC[f[0]] : FC[f[0]]}`} />
+      <Icon className={`w-5 h-5 ${tool ? TC[f[0]] : FC[f[0]]}`} />
       <span className="flex-1 text-left">{f[1]}</span>
       {f[3] > 0 && <Badge variant="secondary">{f[3]}</Badge>}
       {f[4] > 0 && <Badge variant="default">{f[4]}</Badge>}
     </button>
-  );
+    );
+  };
 
   return (
     <div className="w-56 shrink-0 flex flex-col gap-1">
