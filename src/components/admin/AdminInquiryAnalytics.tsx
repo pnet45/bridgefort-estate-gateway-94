@@ -142,7 +142,10 @@ const AdminInquiryAnalytics: React.FC = () => {
 
   const exportCSV = () => {
     const headers = ['Lead ID', 'Name', 'Email', 'Phone', 'Lead Notes', 'Source', 'Property', 'Assigned Agent', 'Priority', 'Status', 'Created', 'Status History', 'Follow-ups', 'Outcome Value (NGN)', 'Closed At', 'Outcome Reason', 'Closing Notes', 'Order ID', 'Payment ID'];
-    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const esc = (v: unknown) => {
+      const value = String(v ?? '').replace(/^[\s\u0000-\u001f]*([=+@-])/, "'$1");
+      return `"${value.replace(/"/g, '""')}"`;
+    };
     const rows = filtered.map(l => [l.id, l.name, l.email, l.phone, strip(l.notes), l.source, propertyOf(l), agentName(l.assigned_to), l.priority, l.status,
       format(new Date(l.created_at), 'yyyy-MM-dd HH:mm'), historyOf(l.id), followOf(l.id), l.conversion_value ?? '', l.closed_at ? format(new Date(l.closed_at), 'yyyy-MM-dd') : '',
       l.outcome_reason, strip(l.closing_notes), l.order_id, l.payment_id].map(esc).join(','));

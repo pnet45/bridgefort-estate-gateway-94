@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { Sparkles, Loader2, CalendarPlus, Flag, FileText } from 'lucide-react';
+import { sanitizeRichText } from '@/components/editor/richTextSanitize';
 
 type NextStep = { action: string; action_type: string; due_in_hours: number };
 type Analysis = {
@@ -63,7 +64,7 @@ const AdminLeadAIAssistant: React.FC = () => {
 
   const saveSummary = async () => {
     if (!lead || !analysis) return;
-    const note = `<p><strong>AI summary:</strong> ${analysis.intent_summary.replace(/</g, '&lt;')}</p>`;
+    const note = sanitizeRichText(`<p><strong>AI summary:</strong> ${analysis.intent_summary.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`);
     const { error: e } = await supabase.from('crm_leads').update({ notes: `${lead.notes || ''}${note}`, updated_at: new Date().toISOString() }).eq('id', lead.id);
     if (e) return toast({ title: 'Could not save', description: e.message, variant: 'destructive' });
     await supabase.from('crm_lead_activities').insert({ lead_id: lead.id, activity_type: 'ai_summary', description: analysis.intent_summary, created_by: user?.id });

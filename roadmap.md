@@ -9,4 +9,5 @@
 - [x] Add admin AI lead-analysis assistant with priority and follow-up suggestions
 - [x] Add inquiry analytics by property, agent, and date range
 - [x] Add filtered CSV and PDF exports with status history, follow-ups, and outcomes
-- [ ] Verify preview build and authenticated inquiry workflows
+- [x] Verify preview build
+- [ ] Verify authenticated inquiry workflows (blocked: external Supabase provides no test session)
