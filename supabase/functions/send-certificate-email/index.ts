@@ -248,7 +248,7 @@ serve(async (req: Request) => {
       sourceFunction: "send-certificate-email",
       sourceReference: attendanceId,
       metadata: { attendance_id: attendanceId, event_title: event.title, event_date: event.date },
-      payload: from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
+      payload: { from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
       to: [registration.email],
       subject: `Your Certificate of Completion - ${event.title}`,
       html: bridgefortEmail(`
@@ -277,7 +277,7 @@ serve(async (req: Request) => {
         <div style="margin-top: 40px;">
           ${certificateHtml}
         </div>
-      `),,
+      `), }
     });
 
     console.log("Email sent successfully:", emailResponse);
