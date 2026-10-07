@@ -1,0 +1,1 @@
+-- Historical migration preserved for repository/remote migration-history parity.
