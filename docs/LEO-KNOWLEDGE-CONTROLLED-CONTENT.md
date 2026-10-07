@@ -107,3 +107,25 @@ The server:
 6. allows GPT-OSS-120B to generate the response from the permitted context.
 
 If no reliable approved knowledge is found, Leo should say that it cannot verify the information and escalate instead of inventing an answer.
+
+
+## Official policy source monitoring
+
+Leo's official policy references are monitored from these Bridgefort Homes URLs:
+
+- Privacy Policy — https://www.bridgeforthomes.com/privacy-policy
+- Data Protection Policy Statement — https://www.bridgeforthomes.com/NDPP
+- Terms of Service — https://www.bridgeforthomes.com/terms-of-service
+- Sitemap & Navigation — https://www.bridgeforthomes.com/sitemap
+
+The monitor checks the published web source and records a SHA-256 source fingerprint. A detected change is placed in **pending_review** and does not automatically replace Leo's published knowledge.
+
+Authorized content administrators can:
+1. review the detected source change;
+2. update the corresponding Leo knowledge document with the approved content;
+3. mark the source change as reviewed;
+4. allow the normal knowledge version trigger to preserve the previous version and activate the approved version.
+
+This prevents a website edit, accidental page change or unverified policy change from silently changing Leo's behaviour.
+
+The source monitor runs on a scheduled Supabase Cron job. If a source cannot be checked, Leo's currently published knowledge remains in use and the monitor records the error for administrator attention.
