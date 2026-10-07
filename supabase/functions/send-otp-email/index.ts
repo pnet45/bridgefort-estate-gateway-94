@@ -1,4 +1,5 @@
 import { bridgefortEmail } from "../_shared/email-template.ts";
+import { sendTrackedEmail } from "../_shared/email-delivery.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -39,8 +40,18 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const emailResponse = await resend.emails.send({
-      from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${email.toLowerCase()}:${otp}`));
+    const otpKey = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+
+    const emailResponse = await sendTrackedEmail({
+      supabase,
+      resend,
+      eventKey: `password_reset_otp_legacy:${otpKey}`,
+      recipientEmail: email.toLowerCase(),
+      templateKey: "password_reset_otp",
+      sourceFunction: "send-otp-email",
+      metadata: { legacy_endpoint: true },
+      payload: from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
       to: [email],
       subject: "Your Password Reset Code - Bridgefort Homes Development Ltd",
       html: bridgefortEmail(`
@@ -126,15 +137,15 @@ const handler = async (req: Request): Promise<Response> => {
               
               <div class="footer">
                 <p><strong>Bridgefort Homes Development Ltd</strong></p>
-                <p>...Rebuilding the Future</p>
+                <p>Bringing your dream home!</p>
                 <p style="margin-top: 10px;">
-                  Need help? Contact us at <a href="mailto:support@pwanbridgefort.ng" style="color: #1e40af;">support@pwanbridgefort.ng</a>
+                  Need help? Contact us at <a href="mailto:support@bridgeforthomes.com" style="color: #1e40af;">support@pwanbridgefort.ng</a>
                 </p>
               </div>
             </div>
           </body>
         </html>
-      `),
+      `),,
     });
 
     console.log("OTP email sent successfully:", emailResponse);
