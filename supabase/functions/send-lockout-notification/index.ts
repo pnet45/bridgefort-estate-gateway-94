@@ -147,7 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </body>
         </html>
-      `),,
+      `), }
     });
 
     console.log("Lockout notification email sent successfully:", emailResponse);
