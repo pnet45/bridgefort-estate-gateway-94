@@ -110,6 +110,19 @@ const handler = async (req: Request): Promise<Response> => {
       html: confirmationHtml,
     });
 
+    if (emailResponse?.error) {
+      const message = emailResponse.error.message || "Training confirmation email failed";
+      await svc.from("email_delivery_events").update({
+        status: "failed",
+        error_message: message,
+        updated_at: new Date().toISOString(),
+      }).eq("event_key", eventKey);
+      return new Response(JSON.stringify({ success: false, error: message }), {
+        status: 502,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
     const resendId = emailResponse?.data?.id || null;
     await svc.from("email_delivery_events").update({ status: "sent", provider_message_id: resendId, sent_at: new Date().toISOString(), updated_at: new Date().toISOString(), error_message: null }).eq("event_key", eventKey);
     console.log("Email sent successfully:", emailResponse);
