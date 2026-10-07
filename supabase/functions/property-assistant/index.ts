@@ -330,12 +330,12 @@ Deno.serve(async (req) => {
       : "";
     if (knowledgeQuery) {
       const { data: knowledgeRows, error: knowledgeError } = await service.rpc(
-        "search_leo_knowledge_v2",
+        "search_leo_knowledge",
         {
-          p_query: knowledgeQuery,
-          p_allowed_audiences: actorType === "admin" ? ["public","staff","restricted"] : ["public"],
-          p_roles: verifiedRoles,
-          p_limit: 8,
+          _query: knowledgeQuery,
+          _audience: actorType === "admin" ? "admin" : "public",
+          _roles: verifiedRoles,
+          _limit: 8,
         },
       );
       if (knowledgeError) {
