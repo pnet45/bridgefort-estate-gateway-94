@@ -1,4 +1,5 @@
 import { bridgefortEmail } from "../_shared/email-template.ts";
+import { sendTrackedEmail } from "../_shared/email-delivery.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
@@ -6,7 +7,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const corsHeaders = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" };
 
-interface EmailRequest { to: string; subject: string; html: string; text?: string; fromMailbox?: string; fromName?: string; cc?: string; bcc?: string; }
+interface EmailRequest { to: string; subject: string; html: string; text?: string; fromMailbox?: string; fromName?: string; cc?: string; bcc?: string; eventKey?: string; }
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const parseRecipients = (value?: string) => (value || "").split(/[,\n;]+/).map(v => v.trim()).filter(Boolean);
 const validRecipients = (items: string[]) => items.every(email => emailRegex.test(email));
@@ -53,15 +54,36 @@ serve(async (req: Request) => {
 
     const senderDisplayName = fromName || "Bridgefort Homes Development Ltd";
     const plainText = text?.trim() || htmlToText(html) || " ";
-    const emailResponse = await resend.emails.send({
-      from: `${senderDisplayName} <${targetMailbox}>`,
-      to: toRecipients,
-      ...(ccRecipients.length ? { cc: ccRecipients } : {}),
-      ...(bccRecipients.length ? { bcc: bccRecipients } : {}),
-      subject: subject.trim(),
-      html: bridgefortEmail(html),
-      text: plainText,
+    const { eventKey } = await req.clone().json().catch(() => ({ eventKey: undefined }));
+    const digest = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(`${toRecipients.join(",")}|${subject.trim()}|${html}|${Math.floor(Date.now() / 600000)}`),
+    );
+    const contentKey = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    const emailResponse = await sendTrackedEmail({
+      supabase: serviceClient,
+      resend,
+      eventKey: eventKey || `manual_email:${userData.user.id}:${contentKey}`,
+      recipientEmail: toRecipients[0],
+      recipientUserId: null,
+      recipientName: null,
+      templateKey: "manual_email",
+      sourceFunction: "send-email",
+      sourceReference: userData.user.id,
+      metadata: { sender_id: userData.user.id, to: toRecipients, cc: ccRecipients, bcc: bccRecipients, mailbox: targetMailbox },
+      payload: {
+        from: `${senderDisplayName} <${targetMailbox}>`,
+        to: toRecipients,
+        ...(ccRecipients.length ? { cc: ccRecipients } : {}),
+        ...(bccRecipients.length ? { bcc: bccRecipients } : {}),
+        subject: subject.trim(),
+        html: bridgefortEmail(html),
+        text: plainText,
+      },
     });
+    if (emailResponse.error) {
+      throw new Error(emailResponse.error.message || "Email could not be sent");
+    }
 
     const { error: sentInsertError } = await serviceClient.from("admin_emails").insert({
       sender_id: userData.user.id, from_email: targetMailbox, from_name: senderDisplayName,
