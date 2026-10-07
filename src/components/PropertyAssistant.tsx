@@ -20,11 +20,25 @@ const PropertyAssistant = () => {
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [isOpen, messages, error]);
+
+  useEffect(() => {
+    if (isOpen) inputRef.current?.focus();
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [isOpen]);
 
   const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -61,8 +75,9 @@ const PropertyAssistant = () => {
     <div className="fixed bottom-6 right-4 z-[60] sm:right-6">
       {isOpen && (
         <section
+          role="dialog"
           aria-label="Bridgefort Homes AI assistant"
-          className="absolute bottom-16 right-0 flex h-[min(32rem,calc(100dvh-7rem))] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+          className="absolute bottom-16 right-0 flex h-[min(32rem,calc(100dvh_-_7rem))] w-[min(22rem,calc(100vw_-_2rem))] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
         >
           <header className="flex items-center justify-between bg-estate-blue px-4 py-3 text-white">
             <div className="flex items-center gap-3">
@@ -78,7 +93,7 @@ const PropertyAssistant = () => {
               type="button"
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-white hover:bg-white/15 hover:text-white"
+              className="h-11 w-11 text-white hover:bg-white/15 hover:text-white"
               onClick={() => setIsOpen(false)}
               aria-label="Close assistant"
             >
@@ -94,7 +109,7 @@ const PropertyAssistant = () => {
             {messages.map((message, index) => (
               <div
                 key={`${index}-${message.role}`}
-                className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm ${
+                className={`max-w-[88%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-base leading-6 ${
                   message.role === 'user'
                     ? 'ml-auto rounded-br-sm bg-estate-blue text-white'
                     : 'rounded-bl-sm border border-slate-200 bg-white text-slate-800'
@@ -119,17 +134,18 @@ const PropertyAssistant = () => {
             </label>
             <input
               id="property-assistant-message"
+              ref={inputRef}
               value={input}
               onChange={(event) => setInput(event.target.value)}
               maxLength={1500}
               placeholder="Ask about properties or services…"
               disabled={isSending}
-              className="h-10 min-w-0 flex-1 rounded-full border border-slate-300 px-4 text-sm outline-none focus:border-estate-blue focus:ring-2 focus:ring-estate-blue/20 disabled:bg-slate-100"
+              className="h-11 min-w-0 flex-1 rounded-full border border-slate-300 px-4 text-base outline-none focus:border-estate-blue focus:ring-2 focus:ring-estate-blue/20 disabled:bg-slate-100"
             />
             <Button
               type="submit"
               size="icon"
-              className="h-10 w-10 shrink-0 rounded-full"
+              className="h-11 w-11 shrink-0 rounded-full"
               disabled={!input.trim() || isSending}
               aria-label="Send message"
             >
@@ -146,6 +162,7 @@ const PropertyAssistant = () => {
         onClick={() => setIsOpen((open) => !open)}
         aria-label={isOpen ? 'Close AI assistant' : 'Open AI assistant'}
         aria-expanded={isOpen}
+        aria-haspopup="dialog"
       >
         {isOpen ? <X size={22} /> : <MessageCircle size={22} />}
       </Button>
