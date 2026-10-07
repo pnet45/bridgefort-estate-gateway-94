@@ -16,6 +16,7 @@ import AttendanceTab from './AttendanceTab';
 import ProfilesManagementTab from './tabs/ProfilesManagementTab';
 import { ProfileLeaderboardTab } from './tabs/ProfileLeaderboardTab';
 import UserManagementTab from './tabs/UserManagementTab';
+import EmailPreferencesTab from './EmailPreferencesTab';
 import { useAuth } from '@/contexts/auth';
 import { isAdminRole } from '@/lib/rbac';
 import { supabase } from '@/integrations/supabase/client';
@@ -102,6 +103,7 @@ const ClientDashboard = () => {
           <TabsTrigger value="orders" className="text-xs md:text-sm">Orders</TabsTrigger>
           <TabsTrigger value="inspections" className="text-xs md:text-sm">Inspections</TabsTrigger>
           <TabsTrigger value="payments" className="text-xs md:text-sm">Payments</TabsTrigger>
+          <TabsTrigger value="email-preferences" className="text-xs md:text-sm">Email Preferences</TabsTrigger>
           {canCreatePosts && <TabsTrigger value="blog" className="text-xs md:text-sm">Blog Posts</TabsTrigger>}
           {isAdmin && (
             <>
@@ -142,6 +144,10 @@ const ClientDashboard = () => {
 
         <TabsContent value="payments" className="space-y-6">
           <MyPaymentsSection />
+        </TabsContent>
+
+        <TabsContent value="email-preferences" className="space-y-6">
+          <EmailPreferencesTab />
         </TabsContent>
 
         {canCreatePosts && (
