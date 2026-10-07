@@ -1,9 +1,9 @@
-import { bridgefortEmail } from "../_shared/email-template.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
+import { bridgefortEmail, escapeHtml } from "../_shared/email-template.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
 
 interface TrainingEvent {
@@ -15,6 +15,7 @@ interface TrainingEvent {
 }
 
 interface Registration {
+  id: string;
   name: string;
   email: string;
   event_title: string;
@@ -22,195 +23,298 @@ interface Registration {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Restrict to internal cron/service-role callers only.
-  const authHeader = req.headers.get('Authorization') ?? '';
-  const bearer = authHeader.replace('Bearer ', '').trim();
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-  const cronSecret = Deno.env.get('CRON_SECRET') ?? '';
-  const providedCron = req.headers.get('x-cron-secret') ?? '';
-  const authorized = (bearer && bearer === serviceKey) || (cronSecret && providedCron === cronSecret);
+  // This function is an internal scheduler endpoint. It deliberately keeps
+  // verify_jwt disabled for the existing cron integration, but requires either
+  // the service-role bearer token or the configured CRON_SECRET.
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const bearer = authHeader.replace(/^Bearer\s+/i, "").trim();
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const cronSecret = Deno.env.get("CRON_SECRET") ?? "";
+  const providedCron = req.headers.get("x-cron-secret") ?? "";
+  const authorized =
+    (serviceKey && bearer === serviceKey) ||
+    (cronSecret && providedCron === cronSecret);
+
   if (!authorized) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
-    // Calculate date 24 hours from now
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0]; // YYYY-MM-DD format
-
-    console.log('Checking for events on:', tomorrowStr);
-
-    // Fetch events happening tomorrow
-    const { data: events, error: eventsError } = await supabase
-      .from('training_events')
-      .select('*')
-      .eq('date', tomorrowStr);
-
-    if (eventsError) {
-      throw eventsError;
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error("Supabase service configuration is missing");
+    }
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY is not configured");
     }
 
-    if (!events || events.length === 0) {
-      console.log('No events found for tomorrow');
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Training dates are stored as YYYY-MM-DD. Use the project/server date
+    // calculation already used by this function so the existing schedule
+    // semantics remain unchanged.
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+    const { data: events, error: eventsError } = await supabase
+      .from("training_events")
+      .select("id, title, date, time, location")
+      .eq("date", tomorrowStr);
+
+    if (eventsError) throw eventsError;
+
+    if (!events?.length) {
       return new Response(
-        JSON.stringify({ message: 'No events scheduled for tomorrow', count: 0 }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        JSON.stringify({
+          success: true,
+          message: "No events scheduled for tomorrow",
+          eventsFound: 0,
+          remindersSent: 0,
+          duplicatesSkipped: 0,
+          failures: 0,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        },
       );
     }
 
-    console.log(`Found ${events.length} event(s) for tomorrow`);
+    let remindersSent = 0;
+    let duplicatesSkipped = 0;
+    let failures = 0;
 
-    let totalRemindersSent = 0;
+    for (const event of events as TrainingEvent[]) {
+      const { data: registrations, error: registrationError } = await supabase
+        .from("training_registrations")
+        .select("id, name, email, event_title, event_date")
+        .eq("event_title", event.title)
+        .eq("event_date", event.date)
+        .eq("need_reminder", true);
 
-    // For each event, fetch registrations and send reminders
-    for (const event of events) {
-      const { data: registrations, error: regError } = await supabase
-        .from('training_registrations')
-        .select('name, email, event_title, event_date')
-        .eq('event_title', event.title)
-        .eq('need_reminder', true);
-
-      if (regError) {
-        console.error('Error fetching registrations:', regError);
+      if (registrationError) {
+        console.error("Error fetching registrations:", registrationError);
+        failures++;
         continue;
       }
 
-      if (!registrations || registrations.length === 0) {
-        console.log(`No registrations found for event: ${event.title}`);
-        continue;
-      }
+      for (const registration of (registrations ?? []) as Registration[]) {
+        const email = registration.email?.trim().toLowerCase();
+        if (!email) continue;
 
-      console.log(`Found ${registrations.length} registration(s) for ${event.title}`);
+        const eventKey = `training_reminder:${event.id}:${registration.id}:${event.date}`;
+        const subject = `Reminder: ${event.title} Tomorrow!`;
+        const sourceReference = `${event.id}:${registration.id}`;
+        const templateKey = "training_reminder";
+        const metadata = {
+          event_id: event.id,
+          event_title: event.title,
+          event_date: event.date,
+          event_time: event.time,
+          event_location: event.location,
+          registration_id: registration.id,
+          reminder_date: tomorrowStr,
+        };
 
-      // Send email reminders using Resend
-      const resendApiKey = Deno.env.get('RESEND_API_KEY');
-      
-      for (const registration of registrations) {
-        console.log(`Sending reminder to: ${registration.email} for event: ${event.title}`);
-        
-        if (!resendApiKey) {
-          console.error('RESEND_API_KEY not configured');
+        const { data: existing, error: existingError } = await supabase
+          .from("email_delivery_events")
+          .select("id, status, attempt_count")
+          .eq("event_key", eventKey)
+          .maybeSingle();
+
+        if (existingError) {
+          console.error("Failed to check delivery ledger:", existingError);
+          failures++;
+          continue;
+        }
+
+        if (existing?.status === "sent") {
+          duplicatesSkipped++;
+          continue;
+        }
+
+        const nextAttempt = (existing?.attempt_count ?? 0) + 1;
+
+        const { data: queuedEvent, error: queueError } = await supabase
+          .from("email_delivery_events")
+          .upsert(
+            {
+              event_key: eventKey,
+              recipient_email: email,
+              recipient_name: registration.name,
+              subject,
+              provider: "resend",
+              sender_email: "noreply@bridgeforthomes.com",
+              sender_name: "Bridgefort Homes Development Ltd",
+              template_key: templateKey,
+              source_function: "send-training-reminder",
+              source_reference: sourceReference,
+              status: "queued",
+              attempt_count: nextAttempt,
+              error_message: null,
+              metadata,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "event_key" },
+          )
+          .select("id")
+          .single();
+
+        if (queueError || !queuedEvent) {
+          console.error("Failed to queue reminder:", queueError);
+          failures++;
           continue;
         }
 
         try {
-          const emailResponse = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
+          const safeName = escapeHtml(registration.name);
+          const safeTitle = escapeHtml(event.title);
+          const safeDate = escapeHtml(
+            new Date(`${event.date}T12:00:00`).toLocaleDateString("en-NG", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            }),
+          );
+          const safeTime = escapeHtml(event.time);
+          const safeLocation = escapeHtml(event.location);
+
+          const html = bridgefortEmail(
+            `
+              <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.65;color:#25212b;">
+                <h1 style="margin:0 0 16px;font-size:28px;color:#5b2a86;">Training Event Reminder</h1>
+                <p>Hi ${safeName},</p>
+                <p>This is a friendly reminder that you're registered for <strong>${safeTitle}</strong>, happening tomorrow.</p>
+                <div style="margin:24px 0;padding:20px;background:#f7f3fa;border-left:4px solid #5b2a86;border-radius:8px;">
+                  <p style="margin:0 0 10px;"><strong>Date:</strong> ${safeDate}</p>
+                  <p style="margin:0 0 10px;"><strong>Time:</strong> ${safeTime}</p>
+                  <p style="margin:0;"><strong>Location:</strong> ${safeLocation}</p>
+                </div>
+                <p><strong>What to bring:</strong></p>
+                <ul>
+                  <li>Notepad and pen</li>
+                  <li>Your registration confirmation</li>
+                  <li>An open mind ready to learn</li>
+                </ul>
+                <p>We're looking forward to seeing you there.</p>
+                <p style="margin-top:28px;">
+                  <strong>Questions?</strong><br>
+                  Call +234 803 062 4059 or +234 807 071 0688<br>
+                  Email <a href="mailto:info@bridgeforthomes.com">info@bridgeforthomes.com</a>
+                </p>
+              </div>
+            `,
+            {
+              preheader: `Reminder: ${event.title} is tomorrow`,
+              ctaLabel: "Visit Bridgefort Homes",
+              ctaUrl: "https://www.bridgeforthomes.com",
+            },
+          );
+
+          const emailResponse = await fetch("https://api.resend.com/emails", {
+            method: "POST",
             headers: {
-              'Authorization': `Bearer ${resendApiKey}`,
-              'Content-Type': 'application/json',
+              Authorization: `Bearer ${resendApiKey}`,
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              from: 'Bridgefort Homes Development Ltd Training <training@pwanbridgefort.ng>',
-              to: [registration.email],
-              subject: `Reminder: ${event.title} Tomorrow!`,
-              html: bridgefortEmail(`
-                <!DOCTYPE html>
-                <html>
-                  <head>
-                    <style>
-                      body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                      .header { background: linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                      .content { background: #fff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
-                      .event-details { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; }
-                      .detail-row { display: flex; margin: 10px 0; }
-                      .detail-label { font-weight: bold; min-width: 100px; color: #1e3a8a; }
-                      .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
-                      .button { display: inline-block; background: #dc2626; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-                    </style>
-                  </head>
-                  <body>
-                    <div class="container">
-                      <div class="header">
-                        <h1>🎯 Training Event Reminder</h1>
-                      </div>
-                      <div class="content">
-                        <p>Hi ${registration.name},</p>
-                        <p>This is a friendly reminder that you're registered for an exciting training event tomorrow!</p>
-                        
-                        <div class="event-details">
-                          <h2 style="color: #1e3a8a; margin-top: 0;">${event.title}</h2>
-                          <div class="detail-row">
-                            <span class="detail-label">📅 Date:</span>
-                            <span>${new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="detail-label">🕐 Time:</span>
-                            <span>${event.time}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="detail-label">📍 Location:</span>
-                            <span>${event.location}</span>
-                          </div>
-                        </div>
-
-                        <p><strong>What to bring:</strong></p>
-                        <ul>
-                          <li>Notepad and pen for taking notes</li>
-                          <li>Your registration confirmation (this email)</li>
-                          <li>An open mind ready to learn!</li>
-                        </ul>
-
-                        <p>We're looking forward to seeing you there!</p>
-                        
-                        <p style="margin-top: 30px;">
-                          <strong>Questions?</strong><br>
-                          Contact us at: <a href="tel:+2348030624059">+234 803 062 4059</a><br>
-                          Email: <a href="mailto:training@pwanbridgefort.ng">training@pwanbridgefort.ng</a>
-                        </p>
-                      </div>
-                      <div class="footer">
-                        <p><strong>Bridgefort Homes Development Ltd</strong><br>
-                        ...Rebuilding the Future<br>
-                        <a href="https://www.pwanbridgefort.ng">www.pwanbridgefort.ng</a></p>
-                      </div>
-                    </div>
-                  </body>
-                </html>
-              `),
+              from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
+              to: [email],
+              subject,
+              html,
             }),
           });
 
           if (!emailResponse.ok) {
             const errorText = await emailResponse.text();
-            console.error(`Failed to send email to ${registration.email}:`, errorText);
-          } else {
-            console.log(`Successfully sent reminder to ${registration.email}`);
-            totalRemindersSent++;
+            const errorMessage = errorText.slice(0, 2000);
+
+            await supabase
+              .from("email_delivery_events")
+              .update({
+                status: "failed",
+                error_message: errorMessage,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", queuedEvent.id);
+
+            failures++;
+            console.error(`Failed to send reminder to ${email}:`, errorText);
+            continue;
           }
+
+          const resendResult = await emailResponse.json().catch(() => ({}));
+          const providerMessageId =
+            typeof resendResult?.id === "string" ? resendResult.id : null;
+
+          await supabase
+            .from("email_delivery_events")
+            .update({
+              status: "sent",
+              provider_message_id: providerMessageId,
+              sent_at: new Date().toISOString(),
+              error_message: null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", queuedEvent.id);
+
+          remindersSent++;
         } catch (emailError) {
-          console.error(`Error sending email to ${registration.email}:`, emailError);
+          const errorMessage =
+            emailError instanceof Error ? emailError.message : "Unknown email error";
+
+          await supabase
+            .from("email_delivery_events")
+            .update({
+              status: "failed",
+              error_message: errorMessage.slice(0, 2000),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", queuedEvent.id);
+
+          failures++;
+          console.error(`Error sending reminder to ${email}:`, emailError);
         }
       }
     }
 
     return new Response(
       JSON.stringify({
-        success: true,
-        message: 'Reminder check completed',
+        success: failures === 0,
+        message: "Reminder check completed",
         eventsFound: events.length,
-        remindersSent: totalRemindersSent,
+        remindersSent,
+        duplicatesSkipped,
+        failures,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: failures === 0 ? 200 : 207,
+      },
     );
   } catch (error) {
-    console.error('Error in send-training-reminder:', error);
+    console.error("Error in send-training-reminder:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      },
     );
   }
 });
