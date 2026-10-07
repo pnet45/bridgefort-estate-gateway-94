@@ -41,7 +41,16 @@ const PropertiesTab = () => {
     setInstallments(Object.fromEntries(entries.map(([id, v]) => [id, v.schedule])));
     setLoading(false);
   };
-  useEffect(() => { loadProperties(); }, []);
+  useEffect(() => {
+    loadProperties();
+    const interval = window.setInterval(loadProperties, 30000);
+    const handleFocus = () => { loadProperties(); };
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
 
   const grouped = useMemo(() => properties.map((p) => {
     const total = asNumber(p.total_amount), paid = asNumber(p.amount_paid);
