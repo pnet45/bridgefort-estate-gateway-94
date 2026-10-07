@@ -199,7 +199,8 @@ Deno.serve(async(req)=>{
       const {error}=await service.from("leo_knowledge_chunks").insert(chunks.map((c,i)=>({document_id:documentId,chunk_index:i,heading:c.heading||body.data.title,content:c.content})));
       if(error) throw error;
     }
-    return json({saved:true,id:documentId,chunkCount:chunks.length});
+    const {data:savedDoc}=await service.from("leo_knowledge_documents").select("version").eq("id",documentId).single();
+    return json({saved:true,id:documentId,chunkCount:chunks.length,version:savedDoc?.version??null});
   }catch(error){
     console.error("leo-knowledge-admin",error);
     return json({error:"Leo knowledge-base operation failed"},500);
