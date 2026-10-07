@@ -51,6 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
       templateKey: "password_reset_otp",
       sourceFunction: "send-otp-email",
       metadata: { legacy_endpoint: true },
+      retryable: false,
       payload: { from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
       to: [email],
       subject: "Your Password Reset Code - Bridgefort Homes Development Ltd",
