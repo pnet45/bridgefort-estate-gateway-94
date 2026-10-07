@@ -1,4 +1,5 @@
 import { bridgefortEmail } from "../_shared/email-template.ts";
+import { sendTrackedEmail } from "../_shared/email-delivery.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -49,7 +50,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending lockout notification for email: ${lockedEmail}`);
 
     // Admin email that can unlock accounts
-    const adminEmail = "admin@pwanbridgefort.ng";
+    const adminEmail = "info@bridgeforthomes.com";
 
     // Create Supabase client to get more details
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -69,8 +70,17 @@ const handler = async (req: Request): Promise<Response> => {
     ).join('\n') || 'No details available';
 
     // Send notification to admin
-    const emailResponse = await resend.emails.send({
-      from: "Bridgefort Homes Development Ltd Security <noreply@bridgeforthomes.com>",
+    const emailResponse = await sendTrackedEmail({
+      supabase,
+      resend,
+      eventKey: `admin_lockout:${lockedEmail.toLowerCase()}:${new Date().toISOString().slice(0, 16)}`,
+      recipientEmail: adminEmail,
+      recipientName: "Bridgefort Homes Administration",
+      templateKey: "admin_lockout_notification",
+      sourceFunction: "send-lockout-notification",
+      sourceReference: lockedEmail.toLowerCase(),
+      metadata: { locked_email: lockedEmail.toLowerCase(), attempt_count: safeAttempt },
+      payload: from: "Bridgefort Homes Development Ltd Security <noreply@bridgeforthomes.com>",
       to: [adminEmail],
       subject: `🔒 Account Locked: ${lockedEmail}`,
       html: bridgefortEmail(`
@@ -137,7 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </body>
         </html>
-      `),
+      `),,
     });
 
     console.log("Lockout notification email sent successfully:", emailResponse);
