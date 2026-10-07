@@ -107,7 +107,7 @@ Deno.serve(async(req)=>{
 
     if(body.data.action==="source_sync_reject"){
       const {data,error}=await service.from("leo_knowledge_source_sync")
-        .update({pending_hash:null,pending_content:null,pending_title:null,pending_detected_at:null,status:"clean",last_error:null,updated_at:new Date().toISOString()})
+        .update({source_hash:sync.pending_hash,pending_hash:null,pending_content:null,pending_title:null,pending_detected_at:null,status:"clean",last_error:null,updated_at:new Date().toISOString()})
         .eq("id",body.data.id)
         .select("id,source_url,status,last_checked_at").single();
       if(error) throw error;
