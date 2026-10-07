@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { Bot, ClipboardList, LoaderCircle, MessageCircle, Send, X, Mail } from 'lucide-react';
+import { Bot, ClipboardList, LoaderCircle, MessageCircle, Send, X, Mail, Mic, MicOff, Volume2 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,6 +26,30 @@ type TrackedInquiry = {
   status: string;
   updated_at: string;
 };
+
+type BrowserSpeechRecognitionEvent = Event & {
+  results: {
+    length: number;
+    [index: number]: {
+      isFinal: boolean;
+      [index: number]: { transcript: string };
+    };
+  };
+};
+
+type BrowserSpeechRecognition = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
+  start: () => void;
+  stop: () => void;
+  abort: () => void;
+};
+
+type BrowserSpeechRecognitionConstructor = new () => BrowserSpeechRecognition;
 
 type ChatMessage = {
   role: 'user' | 'assistant';
@@ -75,6 +99,9 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
   const [trackedInquiries, setTrackedInquiries] = useState<TrackedInquiry[]>([]);
   const [selectedInquiry, setSelectedInquiry] = useState('');
   const [selectedInquiryMessages, setSelectedInquiryMessages] = useState<ChatMessage[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -141,6 +168,76 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [isOpen]);
+
+  useEffect(() => {
+    const recognitionConstructor =
+      (window as Window & {
+        SpeechRecognition?: BrowserSpeechRecognitionConstructor;
+        webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor;
+      }).SpeechRecognition ??
+      (window as Window & {
+        webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor;
+      }).webkitSpeechRecognition;
+
+    setVoiceSupported(Boolean(recognitionConstructor));
+    if (!recognitionConstructor) return;
+
+    const recognition = new recognitionConstructor();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-NG';
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let index = 0; index < event.results.length; index += 1) {
+        transcript += event.results[index]?.[0]?.transcript ?? '';
+      }
+      if (transcript.trim()) setInput(transcript.trim());
+    };
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = (event) => {
+      setIsListening(false);
+      if (event.error !== 'aborted' && event.error !== 'no-speech') {
+        setError('Leo could not hear that. You can continue with text.');
+      }
+    };
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.abort();
+      recognitionRef.current = null;
+    };
+  }, []);
+
+  const speakText = (text: string) => {
+    if (!('speechSynthesis' in window)) {
+      setError('Spoken replies are not supported by this browser.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-NG';
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const toggleVoiceInput = () => {
+    if (!voiceSupported || isSending) return;
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+    setError('');
+    if (isListening) {
+      recognition.stop();
+      return;
+    }
+    try {
+      recognition.start();
+      setIsListening(true);
+    } catch {
+      setIsListening(false);
+      setError('Voice input could not start. Please try again or use text.');
+    }
+  };
 
   if (adminRoute && !isAdmin) return null;
 
@@ -418,6 +515,19 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
                 >
                   {message.content}
                 </div>
+                {message.role === 'assistant' && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="mt-1 h-8 px-2 text-slate-600"
+                    onClick={() => speakText(message.content)}
+                    aria-label="Hear Leo's reply"
+                  >
+                    <Volume2 size={15} />
+                    Hear Leo
+                  </Button>
+                )}
                 {message.nextAction && !isAdmin && (
                   <div className="mt-2">
                     <Link
@@ -472,6 +582,20 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
           </div>
 
           <form onSubmit={sendMessage} className="flex items-center gap-2 border-t bg-white p-3">
+            {voiceSupported && (
+              <Button
+                type="button"
+                variant={isListening ? "default" : "outline"}
+                size="icon"
+                className="h-11 w-11 shrink-0 rounded-full"
+                onClick={toggleVoiceInput}
+                disabled={isSending}
+                aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+                title={isListening ? 'Stop voice input' : 'Speak to Leo'}
+              >
+                {isListening ? <MicOff size={17} /> : <Mic size={17} />}
+              </Button>
+            )}
             <label className="sr-only" htmlFor="property-assistant-message">
               Ask a question
             </label>
