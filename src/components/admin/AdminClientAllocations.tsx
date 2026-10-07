@@ -217,16 +217,16 @@ const AdminClientAllocations: React.FC = () => {
       notes: allocation.notes || '',
     });
     await loadOrders(allocation.user_id);
-    await loadClientProperties(allocation.user_id);
-    const matchedProperty = clientProperties.find(p => p.item_property_id === allocation.property_id || p.plot_id === allocation.plot_id);
+    const properties = await loadClientProperties(allocation.user_id);
+    const matchedProperty = properties.find(p => p.item_property_id === allocation.property_id || p.plot_id === allocation.plot_id);
     setSelectedPropertyKey(matchedProperty?.key || '');
     setDialogOpen(true);
   };
 
-  const loadClientProperties = async (userId: string) => {
+  const loadClientProperties = async (userId: string): Promise<ClientProperty[]> => {
     if (!userId) {
       setClientProperties([]);
-      return;
+      return [];
     }
 
     // my_properties is a client-scoped view (auth.uid()), so an admin session
@@ -242,7 +242,7 @@ const AdminClientAllocations: React.FC = () => {
     if (error) {
       toast({ title: 'Could not load client properties', description: error.message, variant: 'destructive' });
       setClientProperties([]);
-      return;
+      return [];
     }
 
     const properties: ClientProperty[] = [];
@@ -270,6 +270,7 @@ const AdminClientAllocations: React.FC = () => {
     });
 
     setClientProperties(properties);
+    return properties;
   };
 
   const loadOrders = async (userId: string) => {
