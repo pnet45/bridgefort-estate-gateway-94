@@ -333,7 +333,7 @@ Deno.serve(async (req) => {
         "search_leo_knowledge",
         {
           _query: knowledgeQuery,
-          _audience: actorType === "admin" ? "admin" : actorType === "realtor" ? "staff" : "public",
+          _audience: actorType === "admin" ? "admin" : "public",
           _roles: verifiedRoles,
           _limit: 8,
         },
