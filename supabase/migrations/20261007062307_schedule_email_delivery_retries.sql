@@ -1,6 +1,3 @@
--- Historical duplicate of the retry scheduler migration.
--- The job is created idempotently so this migration is safe on fresh databases
--- and preserves the production migration history.
 do $$
 begin
   if not exists (select 1 from cron.job where jobname = 'bridgefort-email-delivery-retries') then
