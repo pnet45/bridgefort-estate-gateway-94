@@ -1,24 +1,27 @@
 # Leo — Bridgefort Homes assistant
 
 The website and signed-in mobile app send authenticated messages to this
-Supabase Edge Function. Leo uses a separately hosted Ollama-compatible model;
-do not put its URL or API key in browser/Vite environment variables.
+Supabase Edge Function. Leo uses GroqCloud for hosted inference; do not put the
+Groq API key in browser/Vite or mobile-app configuration.
 
-Configure these Edge Function secrets before deployment:
+Configure these Edge Function secrets in the Supabase Dashboard under
+**Project Settings → Edge Functions → Secrets**, or with the Supabase CLI:
 
-- `OLLAMA_BASE_URL`: HTTPS base URL reachable from Supabase, such as
-  `https://ollama.example.com`. The function appends `/api/chat`.
-- `OLLAMA_MODEL`: optional model name; defaults to `qwen2.5:7b`. Set this to an
-  installed model, for example `llama3.3:70b` if that model is available.
-- `OLLAMA_API_KEY`: optional bearer token for an authenticated Ollama gateway.
+- `GROQ_API_KEY`: required. Create a key in the [Groq Console](https://console.groq.com/keys)
+  and set it privately with
+  `supabase secrets set --project-ref xyvspvtdaacqfmfocvhw GROQ_API_KEY=your-key`.
+- `GROQ_MODEL`: optional; defaults to `llama-3.3-70b-versatile`. Choose a
+  currently available Groq production model that supports JSON mode.
 - `RESEND_API_KEY`: required only for requested customer follow-up emails.
 - `LEO_FROM_EMAIL`: optional verified Resend sender; defaults to
   `Bridgefort Homes <info@bridgeforthomes.com>`.
 
-Apply the `20261007130000_add_leo_assistant_conversations.sql` migration before
-deploying. It stores chat history and tracking references until the user account
-is deleted; foreign-key cascades remove the records with the account. The
-conversation tables are not directly readable or writable by browser roles.
+Deploy the function after configuring `GROQ_API_KEY`. The
+`20261007130000_add_leo_assistant_conversations.sql` migration stores chat
+history and tracking references until the user account is deleted; foreign-key
+cascades remove the records with the account. The migration is already applied
+to the linked Bridgefort Supabase project. The conversation tables are not
+directly readable or writable by browser roles.
 
 Leo's server-side boundary is intentionally limited:
 

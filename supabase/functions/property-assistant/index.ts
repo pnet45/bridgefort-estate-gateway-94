@@ -278,22 +278,9 @@ Deno.serve(async (req) => {
       return trackedFailure("Leo could not load the conversation context", 500);
     }
 
-    const ollamaBaseUrl = Deno.env.get("OLLAMA_BASE_URL")?.trim();
-    const model = Deno.env.get("OLLAMA_MODEL")?.trim() || "qwen2.5:7b";
-    if (!ollamaBaseUrl) return trackedFailure("Leo is not configured", 503);
-
-    let endpoint: URL;
-    try {
-      endpoint = new URL(ollamaBaseUrl);
-      if (endpoint.protocol !== "https:" || endpoint.username || endpoint.password) {
-        return trackedFailure("Invalid AI service configuration", 500);
-      }
-      endpoint.pathname = `${endpoint.pathname.replace(/\/+$/, "")}/api/chat`;
-      endpoint.search = "";
-      endpoint.hash = "";
-    } catch {
-      return trackedFailure("Invalid AI service configuration", 500);
-    }
+    const groqApiKey = Deno.env.get("GROQ_API_KEY")?.trim();
+    const model = Deno.env.get("GROQ_MODEL")?.trim() || "llama-3.3-70b-versatile";
+    if (!groqApiKey) return trackedFailure("Leo is not configured", 503);
 
     const firstName = profile?.first_name?.trim();
     const safeRole = actorType === "admin" ? "admin" : actorType;
@@ -321,22 +308,21 @@ Deno.serve(async (req) => {
     const timeout = setTimeout(() => controller.abort(), 30_000);
     let modelResponse: Response;
     try {
-      const headers = new Headers({ "Content-Type": "application/json" });
-      const apiKey = Deno.env.get("OLLAMA_API_KEY")?.trim();
-      if (apiKey) headers.set("Authorization", `Bearer ${apiKey}`);
-      modelResponse = await fetch(endpoint, {
+      modelResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
-        headers,
+        headers: {
+          "Authorization": `Bearer ${groqApiKey}`,
+          "Content-Type": "application/json",
+        },
         signal: controller.signal,
         body: JSON.stringify({
           model,
-          stream: false,
-          format: "json",
+          max_tokens: 900,
+          response_format: { type: "json_object" },
           messages: [
             { role: "system", content: systemMessage },
             ...(transcript ?? []).reverse(),
           ],
-          options: { num_predict: 900 },
         }),
       });
     } catch (error) {
@@ -349,20 +335,29 @@ Deno.serve(async (req) => {
     }
 
     if (!modelResponse.ok) {
-      console.error("property-assistant: Ollama request failed", modelResponse.status);
+      console.error("property-assistant: Groq request failed", modelResponse.status);
       return trackedFailure("Leo is temporarily unavailable", 502);
     }
 
-    const ollamaResult: unknown = await modelResponse.json();
+    let groqResult: unknown;
+    try {
+      groqResult = await modelResponse.json();
+    } catch {
+      return trackedFailure("Leo could not prepare a safe response", 502);
+    }
     const modelContent =
-      typeof ollamaResult === "object" &&
-        ollamaResult !== null &&
-        "message" in ollamaResult &&
-        typeof ollamaResult.message === "object" &&
-        ollamaResult.message !== null &&
-        "content" in ollamaResult.message &&
-        typeof ollamaResult.message.content === "string"
-        ? ollamaResult.message.content
+      typeof groqResult === "object" &&
+        groqResult !== null &&
+        "choices" in groqResult &&
+        Array.isArray(groqResult.choices) &&
+        typeof groqResult.choices[0] === "object" &&
+        groqResult.choices[0] !== null &&
+        "message" in groqResult.choices[0] &&
+        typeof groqResult.choices[0].message === "object" &&
+        groqResult.choices[0].message !== null &&
+        "content" in groqResult.choices[0].message &&
+        typeof groqResult.choices[0].message.content === "string"
+        ? groqResult.choices[0].message.content
         : "";
     let decodedModelContent: unknown;
     try {
