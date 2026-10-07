@@ -87,18 +87,38 @@ serve(async (req: Request) => {
   try {
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
 
-    // This function is called by the database trigger with the project secret
-    // in the apikey header. The key never enters the browser or source code.
-    const callerKey = req.headers.get("apikey") || "";
-    const configuredKeysRaw = Deno.env.get("SUPABASE_SECRET_KEYS") || "";
-    let expectedKey = "";
-    try {
-      const keys = JSON.parse(configuredKeysRaw);
-      expectedKey = String(keys.default || Object.values(keys)[0] || "");
-    } catch {
-      expectedKey = SERVICE_ROLE_KEY;
+    // The profile trigger supplies a one-time dispatch token in the request body.
+    // A project secret is still accepted for trusted internal callers.
+    const payload = (await req.json()) as Payload;
+    const userId = payload.record?.id;
+    const dispatchToken = payload.record?.dispatch_token || "";
+    if (!userId) throw new Error("Missing profile user id");
+
+    let authorized = false;
+    if (dispatchToken) {
+      const { data: delivery } = await admin
+        .from("welcome_email_deliveries")
+        .select("user_id, dispatch_token")
+        .eq("user_id", userId)
+        .eq("dispatch_token", dispatchToken)
+        .maybeSingle();
+      authorized = Boolean(delivery?.user_id);
     }
-    if (!callerKey || !expectedKey || callerKey !== expectedKey) {
+
+    if (!authorized) {
+      const callerKey = req.headers.get("apikey") || "";
+      const configuredKeysRaw = Deno.env.get("SUPABASE_SECRET_KEYS") || "";
+      let expectedKey = "";
+      try {
+        const keys = JSON.parse(configuredKeysRaw);
+        expectedKey = String(keys.default || Object.values(keys)[0] || "");
+      } catch {
+        expectedKey = SERVICE_ROLE_KEY;
+      }
+      authorized = Boolean(callerKey && expectedKey && callerKey === expectedKey);
+    }
+
+    if (!authorized) {
       return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
@@ -110,6 +130,35 @@ serve(async (req: Request) => {
 
     const name = `${profile?.first_name || userData.user.user_metadata?.first_name || ""} ${profile?.last_name || userData.user.user_metadata?.last_name || ""}`.trim() || "Bridgefort Family Member";
     const email = userData.user.email;
+
+    const eventKey = `welcome_email:${userId}`;
+    const { data: existingEvent } = await admin
+      .from("email_delivery_events")
+      .select("status, provider_message_id, attempt_count")
+      .eq("event_key", eventKey)
+      .maybeSingle();
+
+    if (existingEvent?.status === "sent") {
+      return new Response(JSON.stringify({ success: true, duplicate: true, resend_id: existingEvent.provider_message_id }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
+    }
+
+    await admin.from("email_delivery_events").upsert({
+      event_key: eventKey,
+      recipient_email: email,
+      recipient_user_id: userId,
+      recipient_name: name,
+      subject: "Welcome to the Bridgefort Homes Family",
+      provider: "resend",
+      sender_email: FROM_EMAIL,
+      sender_name: "Bridgefort Homes Development Ltd.",
+      template_key: "welcome_email",
+      source_function: "send-welcome-email",
+      source_reference: userId,
+      status: "queued",
+      attempt_count: (existingEvent?.attempt_count || 0) + 1,
+      metadata: { event: "welcome", profile_id: userId },
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "event_key" });
 
     const { error: claimError } = await admin.from("welcome_email_deliveries").insert({ user_id: userId, email, status: "sending" });
     if (claimError) {
@@ -129,6 +178,7 @@ serve(async (req: Request) => {
     if (!response.ok) {
       const message = result?.message || result?.error || `Resend returned HTTP ${response.status}`;
       await admin.from("welcome_email_deliveries").update({ status: "failed", error_message: message, updated_at: new Date().toISOString() }).eq("user_id", userId);
+      await admin.from("email_delivery_events").update({ status: "failed", error_message: message, updated_at: new Date().toISOString() }).eq("event_key", eventKey);
       console.error("Welcome email Resend error:", message);
       // Email delivery failure must never roll back or falsely fail account creation.
       return new Response(JSON.stringify({ success: false, error: message }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
@@ -136,6 +186,7 @@ serve(async (req: Request) => {
 
     const resendId = result?.id || null;
     await admin.from("welcome_email_deliveries").update({ status: "sent", resend_id: resendId, sent_at: new Date().toISOString(), updated_at: new Date().toISOString(), error_message: null }).eq("user_id", userId);
+    await admin.from("email_delivery_events").update({ status: "sent", provider_message_id: resendId, sent_at: new Date().toISOString(), updated_at: new Date().toISOString(), error_message: null }).eq("event_key", eventKey);
     return new Response(JSON.stringify({ success: true, resend_id: resendId }), { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } });
   } catch (error) {
     console.error("Welcome email function error:", error);
