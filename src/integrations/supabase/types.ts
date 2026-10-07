@@ -1799,6 +1799,36 @@ export type Database = {
         }
         Relationships: []
       }
+      email_preferences: {
+        Row: {
+          account_updates_enabled: boolean
+          marketing_enabled: boolean
+          property_updates_enabled: boolean
+          training_enabled: boolean
+          travel_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_updates_enabled?: boolean
+          marketing_enabled?: boolean
+          property_updates_enabled?: boolean
+          training_enabled?: boolean
+          travel_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_updates_enabled?: boolean
+          marketing_enabled?: boolean
+          property_updates_enabled?: boolean
+          training_enabled?: boolean
+          travel_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_sessions: {
         Row: {
           access_token_encrypted: string | null
