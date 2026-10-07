@@ -100,6 +100,17 @@ const InspectionBookingForm = ({ onBookingCreated, initialEstateName }: Inspecti
         throw error;
       }
 
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke(
+        'send-inspection-booking-email',
+        { body: { bookingId: data?.id ?? null } },
+      );
+
+      if (emailError) {
+        console.warn('Inspection booking email could not be sent:', emailError);
+      } else if (emailResult?.emailStatus === 'send_failed') {
+        console.warn('Inspection booking email provider rejected the message.');
+      }
+
       captureEvent('inspection_booked', {
         estate_name: formData.estate_name,
         days_until_inspection: Math.ceil((new Date(formData.inspection_date).getTime() - Date.now()) / 86400000),
