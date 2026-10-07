@@ -167,6 +167,8 @@ serve(async (req: Request) => {
       status: "queued",
       attempt_count: (existingEvent?.attempt_count || 0) + 1,
       metadata: { event: "welcome", profile_id: userId },
+      retryable: true,
+      payload: { from: FROM_EMAIL, to: [email], subject: "Welcome to the Bridgefort Homes Family", html: htmlVersion(name), text: textVersion(name) },
       updated_at: new Date().toISOString(),
     }, { onConflict: "event_key" });
 
