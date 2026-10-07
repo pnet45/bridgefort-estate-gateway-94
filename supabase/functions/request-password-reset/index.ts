@@ -1,4 +1,5 @@
 import { bridgefortEmail } from "../_shared/email-template.ts";
+import { sendTrackedEmail } from "../_shared/email-delivery.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { Resend } from "https://esm.sh/resend@2.0.0";
@@ -92,37 +93,50 @@ serve(async (req: Request) => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     // Store OTP with service role (bypasses RLS)
-    const { error: insertError } = await supabase
+    const { data: otpRow, error: insertError } = await supabase
       .from("password_reset_otps")
       .insert({
         email: email.toLowerCase(),
         otp_code: otpCode,
         expires_at: expiresAt,
-      });
+      })
+      .select("id")
+      .single();
 
     if (insertError) {
       console.error("Failed to store OTP:", insertError);
       throw new Error("Failed to generate reset code");
     }
 
-    // Send OTP email
-    await resend.emails.send({
-      from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
-      to: [email],
-      subject: "Your Password Reset Code - Bridgefort Homes Development Ltd",
-      html: bridgefortEmail(`
+    // Send OTP email through the central delivery ledger.
+    const emailResponse = await sendTrackedEmail({
+      supabase,
+      resend,
+      eventKey: `password_reset_otp:${otpRow.id}`,
+      recipientEmail: email.toLowerCase(),
+      recipientUserId: existingUser.id,
+      recipientName: existingUser.user_metadata?.full_name ?? null,
+      templateKey: "password_reset_otp",
+      sourceFunction: "request-password-reset",
+      sourceReference: otpRow.id,
+      metadata: { otp_id: otpRow.id, expires_at: expiresAt },
+      payload: {
+        from: "Bridgefort Homes Development Ltd <noreply@bridgeforthomes.com>",
+        to: [email],
+        subject: "Your Password Reset Code - Bridgefort Homes Development Ltd",
+        html: bridgefortEmail(`
         <!DOCTYPE html>
         <html>
           <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+            <div style="background: #5b2a86; color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
               <h1 style="margin: 0; font-size: 24px;">🔐 Password Reset Request</h1>
             </div>
             <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
               <p>Hello,</p>
               <p>We received a request to reset your Bridgefort Homes Development Ltd account password. Use the code below:</p>
-              <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; border: 2px dashed #1e40af;">
+              <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; border: 2px dashed #5b2a86;">
                 <p style="margin: 0 0 10px 0; color: #6b7280;">Your verification code is:</p>
-                <div style="font-size: 36px; font-weight: bold; color: #1e40af; letter-spacing: 8px;">${otpCode}</div>
+                <div style="font-size: 36px; font-weight: bold; color: #5b2a86; letter-spacing: 8px;">${otpCode}</div>
               </div>
               <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
                 <strong>⚠️ Important:</strong>
@@ -132,13 +146,11 @@ serve(async (req: Request) => {
                 </ul>
               </div>
               <p>If you didn't request this, please ignore this email.</p>
-              <div style="text-align: center; padding: 20px; color: #a0aec0; font-size: 12px; border-top: 1px solid #e5e7eb; margin-top: 30px;">
-                <p><strong>Bridgefort Homes Development Ltd</strong></p>
-              </div>
             </div>
           </body>
         </html>
-      `),
+      `)
+      },
     });
 
     // Always return same response to prevent email enumeration
