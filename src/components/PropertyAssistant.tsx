@@ -12,6 +12,8 @@ type EmailDraft = {
   body: string;
 };
 
+type NextAction = { label: string; href: string };
+
 type AdminLink = {
   label: string;
   href: string;
@@ -29,6 +31,7 @@ type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
   emailDraft?: EmailDraft | null;
+  nextAction?: NextAction | null;
 };
 
 const INITIAL_MESSAGE: ChatMessage = {
@@ -181,6 +184,7 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
         role: 'assistant',
         content: data.reply,
         emailDraft: data.emailDraft ?? null,
+        nextAction: data.nextAction ?? null,
       }]);
       if (data.emailStatus === 'sent') {
         setMessages((current) => [...current, {
@@ -414,6 +418,16 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
                 >
                   {message.content}
                 </div>
+                {message.nextAction && !isAdmin && (
+                  <div className="mt-2">
+                    <Link
+                      to={message.nextAction.href}
+                      className="inline-flex items-center rounded-lg bg-estate-blue px-3 py-2 text-sm font-semibold text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-blue"
+                    >
+                      {message.nextAction.label}
+                    </Link>
+                  </div>
+                )}
                 {message.emailDraft && isAdmin && (
                   <div className="mt-2 space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm">
                     <div className="flex items-center gap-2 font-semibold text-amber-950">
