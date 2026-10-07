@@ -32,5 +32,7 @@ create index if not exists idx_email_delivery_events_event_key
   on public.email_delivery_events(event_key);
 create index if not exists idx_email_delivery_events_status
   on public.email_delivery_events(status);
+create unique index if not exists uq_email_delivery_events_event_key
+  on public.email_delivery_events(event_key);
 
 alter table public.email_delivery_events enable row level security;
