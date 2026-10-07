@@ -11,3 +11,7 @@
 - [x] Add filtered CSV and PDF exports with status history, follow-ups, and outcomes
 - [x] Verify preview build
 - [ ] Verify authenticated inquiry workflows (blocked: external Supabase provides no test session)
+- [ ] Automatically analyze real property-listing inquiries and save the summary, priority, and suggested follow-ups into CRM
+- [ ] Add live admin dashboard widgets for inquiry volume, open leads, follow-ups, and conversions
+- [ ] Verify inquiry-to-agent-assignment and follow-up workflow end to end
+- [ ] Determine whether a safe test admin account/session can be provisioned for this external Supabase project
