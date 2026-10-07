@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
         <body>
           <div class="certificate">
             <div class="date">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-            <div class="logo">PWAN BRIDGEFORT</div>
+            <div class="logo">BRIDGEFORT HOMES</div>
             <h1>Certificate of Completion</h1>
             <h2>This is to certify that</h2>
             <div class="recipient">${attendance.training_registrations.name}</div>
