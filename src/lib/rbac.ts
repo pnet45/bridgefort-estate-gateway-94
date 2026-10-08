@@ -11,6 +11,7 @@ export const ADMIN_TAB_PERMISSION_MAP: Record<string, string> = {
   'mlm-funnel': 'admin:view_mlm_funnel',
   activity: 'admin:view_activity',
   content: 'admin:view_content',
+  promotions: 'admin:view_content',
   'leo-knowledge': 'admin:view_content',
   training: 'admin:view_dashboard',
   cms: 'admin:view_cms',

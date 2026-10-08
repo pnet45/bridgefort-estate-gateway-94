@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, FileText, BookOpen, Mail, LayoutDashboard, LogOut, Bell, Home, UserCheck, CheckSquare, Building, Activity, TrendingUp, DollarSign, Settings, Plane, Network, Images, Building2, Sprout, MapPinned } from 'lucide-react';
+import { Shield, Users, FileText, BookOpen, Mail, LayoutDashboard, LogOut, Bell, Home, UserCheck, CheckSquare, Building, Activity, TrendingUp, DollarSign, Settings, Plane, Network, Images, Building2, Sprout, MapPinned, Megaphone } from 'lucide-react';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import { getAllowedAdminTabs, isAdminRole } from '@/lib/rbac';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
@@ -39,6 +39,7 @@ import AdminDepartmentManagement from '@/components/admin/AdminDepartmentManagem
 import AdminTrainingRegistrations from '@/components/admin/AdminTrainingRegistrations';
 import AdminEstateSubscribers from '@/components/admin/AdminEstateSubscribers';
 import AdminLeoKnowledgeManagement from '@/components/admin/AdminLeoKnowledgeManagement';
+import AdminPromotions from '@/components/admin/AdminPromotions';
 import { toast } from '@/hooks/use-toast';
 
 type TawkWindow = Window & { Tawk_API?: { hideWidget?: () => void; showWidget?: () => void; onLoad?: () => void } };
@@ -79,6 +80,7 @@ const AdminConsole = () => {
         {hasPermission('admin:view_mlm_funnel') && <TabsTrigger value="mlm-funnel" className={ADMIN_TAB_CLASS}><Network className="h-4 w-4 shrink-0"/><span>BHRealtors Funnel</span></TabsTrigger>}
         {hasPermission('admin:view_activity') && <TabsTrigger value="activity" className={ADMIN_TAB_CLASS}><Activity className="h-4 w-4 shrink-0"/><span>Activity</span></TabsTrigger>}
         {hasPermission('admin:view_content') && <TabsTrigger value="content" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4 shrink-0"/><span>Content</span></TabsTrigger>}
+        {hasPermission('admin:view_content') && <TabsTrigger value="promotions" className={ADMIN_TAB_CLASS}><Megaphone className="h-4 w-4 shrink-0"/><span>Promotions</span></TabsTrigger>}
         {hasPermission('admin:view_content') && <TabsTrigger value="leo-knowledge" className={ADMIN_TAB_CLASS}><BookOpen className="h-4 w-4 shrink-0"/><span>Leo Knowledge</span></TabsTrigger>}
         {hasPermission('admin:view_dashboard') && <TabsTrigger value="training" className={ADMIN_TAB_CLASS}><Sprout className="h-4 w-4 shrink-0"/><span>Training</span></TabsTrigger>}
         {hasPermission('admin:view_cms') && <TabsTrigger value="cms" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4 shrink-0"/><span>CMS Hub</span></TabsTrigger>}
@@ -100,6 +102,7 @@ const AdminConsole = () => {
       <TabsContent value="mlm-funnel"><AdminMlmFunnelDashboard/></TabsContent>
       <TabsContent value="activity"><AdminActivityLogs/></TabsContent>
       <TabsContent value="content"><AdminContentManagement/></TabsContent>
+      <TabsContent value="promotions"><AdminPromotions/></TabsContent>
       <TabsContent value="leo-knowledge"><AdminLeoKnowledgeManagement/></TabsContent>
       <TabsContent value="training"><AdminTrainingRegistrations/></TabsContent>
       <TabsContent value="cms"><AdminContentHub/></TabsContent>
