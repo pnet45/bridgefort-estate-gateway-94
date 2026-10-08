@@ -1697,6 +1697,8 @@ export type Database = {
       email_campaigns: {
         Row: {
           body: string
+          body_html: string | null
+          attachments: Json
           created_at: string
           created_by: string | null
           failed_count: number | null
@@ -1733,6 +1735,8 @@ export type Database = {
         }
         Update: {
           body?: string
+          body_html?: string | null
+          attachments?: Json
           created_at?: string
           created_by?: string | null
           failed_count?: number | null
