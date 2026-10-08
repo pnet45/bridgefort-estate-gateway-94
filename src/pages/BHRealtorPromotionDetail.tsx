@@ -13,7 +13,8 @@ type Promotion = {
   terms_and_conditions: string;
   image_url: string | null;
   starts_at: string;
-  ends_at: string;
+  ends_at: string | null;
+  campaign_period_label: string | null;
   status: string;
 };
 
@@ -30,7 +31,7 @@ const BHRealtorPromotionDetail: React.FC = () => {
       if (!slug) { setLoading(false); return; }
       const { data, error } = await supabase
         .from('bh_realtor_promotions')
-        .select('title,slug,summary,content,terms_and_conditions,image_url,starts_at,ends_at,status')
+        .select('title,slug,summary,content,terms_and_conditions,image_url,starts_at,ends_at,campaign_period_label,status')
         .eq('slug', slug)
         .eq('status', 'published')
         .maybeSingle();
@@ -61,11 +62,11 @@ const BHRealtorPromotionDetail: React.FC = () => {
       <main className="container-custom py-24">
         <Link to="/bh-realtors" className="inline-flex items-center gap-2 text-sm font-semibold text-estate-purple"><ArrowLeft className="h-4 w-4" /> Back to BHRealtors</Link>
         <article className="mt-6 overflow-hidden rounded-[2rem] border border-white/20 bg-white/65 shadow-2xl backdrop-blur-2xl dark:bg-slate-950/70">
-          {promotion.image_url && <img src={promotion.image_url} alt="" className="h-64 w-full object-cover md:h-80" />}
+          {promotion.image_url && <img src={promotion.image_url} alt={promotion.title} className="max-h-[720px] w-full object-contain bg-slate-950/5 md:max-h-[820px]" />}
           <div className="p-6 sm:p-10">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200">Published</Badge>
-              <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300"><CalendarDays className="h-3.5 w-3.5" />{formatDate(promotion.starts_at)} – {formatDate(promotion.ends_at)}</span>
+              <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300"><CalendarDays className="h-3.5 w-3.5" />{promotion.campaign_period_label || (promotion.ends_at ? `${formatDate(promotion.starts_at)} – ${formatDate(promotion.ends_at)}` : formatDate(promotion.starts_at))}</span>
             </div>
             <h1 className="mt-4 text-3xl font-black text-estate-blue dark:text-white md:text-5xl">{promotion.title}</h1>
             <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600 dark:text-slate-200">{promotion.summary}</p>
