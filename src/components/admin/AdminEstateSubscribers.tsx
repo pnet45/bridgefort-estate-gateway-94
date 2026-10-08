@@ -78,7 +78,7 @@ const AdminEstateSubscribers: React.FC = () => {
   };
 
   const openSubscriber = async (row: Subscriber) => {
-    setSelected(row); setHistory([]); setQrReady(false); setReferralCopied(false);
+    setSelected(row); setHistory([]);
     if (!row.order_id) return;
     setHistoryLoading(true);
     try {
@@ -134,7 +134,6 @@ const AdminEstateSubscribers: React.FC = () => {
 
 const Metric: React.FC<{ label: string; value: string; mono?: boolean; good?: boolean; warn?: boolean }> = ({ label, value, mono, good, warn }) => <div className="min-w-0 rounded-lg border border-slate-800 bg-slate-950/70 px-2.5 py-2"><div className="text-[10px] uppercase tracking-wide text-slate-500">{label}</div><div className={`mt-0.5 truncate font-medium ${mono ? 'font-mono text-[11px]' : 'text-xs'} ${good ? 'text-emerald-400' : warn ? 'text-amber-400' : 'text-slate-200'}`}>{value}</div></div>;
 const Detail: React.FC<{ label: string; value: string; mono?: boolean; good?: boolean; warn?: boolean }> = ({ label, value, mono, good, warn }) => <div className="min-w-0 rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-2.5"><div className="text-[10px] uppercase tracking-wide text-slate-500">{label}</div><div className={`mt-0.5 break-words font-medium ${mono ? 'font-mono text-xs' : 'text-sm'} ${good ? 'text-emerald-400' : warn ? 'text-amber-400' : 'text-white'}`}>{value}</div></div>;
-const Social: React.FC<{ label: string; icon: React.ReactNode; onClick: () => void }> = ({ label, icon, onClick }) => <Button type="button" variant="outline" size="sm" onClick={onClick} className="border-slate-700 bg-slate-950 text-slate-200 hover:bg-white/10 hover:text-white">{icon}<span className="ml-1.5">{label}</span></Button>;
 const LoadingRow = () => <tr><td colSpan={9} className="px-3 py-10 text-center text-slate-400"><Loader2 className="mx-auto h-5 w-5 animate-spin"/><span className="mt-2 block text-xs">Loading subscribers…</span></td></tr>;
 const EmptyRow: React.FC<{ colSpan: number }> = ({ colSpan }) => <tr><td colSpan={colSpan} className="px-3 py-10 text-center text-slate-400"><Users className="mx-auto mb-2 h-6 w-6 opacity-60"/>No subscribers found.</td></tr>;
 
