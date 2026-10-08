@@ -307,16 +307,22 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           )}
           
           {/* Property Stats */}
-          <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-            <div className="flex items-center">
-              <Maximize size={16} className="mr-2 text-estate-blue" />
-              <span>{property.sqm} sqm{!isHome ? ' per plot' : ''}</span>
+          {(property.sqm > 0 || property.availablePlots > 0) && (
+            <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+              {property.sqm > 0 && (
+                <div className="flex items-center">
+                  <Maximize size={16} className="mr-2 text-estate-blue" />
+                  <span>{property.sqm} sqm{!isHome ? ' per plot' : ''}</span>
+                </div>
+              )}
+              {property.availablePlots > 0 && (
+                <div className="flex items-center">
+                  <Users size={16} className="mr-2 text-estate-blue" />
+                  <span>{property.availablePlots} {isHome ? 'Units' : 'Plots'} Available</span>
+                </div>
+              )}
             </div>
-            <div className="flex items-center">
-              <Users size={16} className="mr-2 text-estate-blue" />
-              <span>{property.availablePlots} {isHome ? 'Units' : 'Plots'} Available</span>
-            </div>
-          </div>
+          )}
           
           {/* Price */}
           <div className="mb-4">
@@ -335,18 +341,20 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           </div>
           
           {/* Progress Bar */}
-          <div className="mb-4">
-            <div className="flex justify-between text-xs text-gray-600 mb-1">
-              <span>Availability</span>
-              <span>{Math.round((property.availablePlots / property.totalPlots) * 100)}% available</span>
+          {property.totalPlots > 0 && (
+            <div className="mb-4">
+              <div className="flex justify-between text-xs text-gray-600 mb-1">
+                <span>Availability</span>
+                <span>{Math.round((property.availablePlots / property.totalPlots) * 100)}% available</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-estate-blue h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(property.availablePlots / property.totalPlots) * 100}%` }}
+                ></div>
+              </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-estate-blue h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(property.availablePlots / property.totalPlots) * 100}%` }}
-              ></div>
-            </div>
-          </div>
+          )}
           {/* Action Buttons */}
           <div className="flex gap-2">
             <Button
