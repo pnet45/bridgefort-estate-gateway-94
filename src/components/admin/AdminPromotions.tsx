@@ -22,6 +22,7 @@ type FormState = {
   image_url: string;
   starts_at: string;
   ends_at: string;
+  campaign_period_label: string;
   status: 'draft' | 'published' | 'archived';
   display_order: string;
 };
@@ -31,7 +32,7 @@ const blankForm = (): FormState => {
   const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
   return {
     id: null, title: '', slug: '', summary: '', content: '', terms_and_conditions: '',
-    image_url: '', starts_at: toLocalInput(start), ends_at: toLocalInput(end), status: 'draft', display_order: '0',
+    image_url: '', starts_at: toLocalInput(start), ends_at: toLocalInput(end), campaign_period_label: '', status: 'draft', display_order: '0',
   };
 };
 
@@ -94,7 +95,8 @@ const AdminPromotions: React.FC = () => {
     terms_and_conditions: row.terms_and_conditions,
     image_url: row.image_url || '',
     starts_at: toInputValue(row.starts_at),
-    ends_at: toInputValue(row.ends_at),
+    ends_at: row.ends_at ? toInputValue(row.ends_at) : '',
+    campaign_period_label: row.campaign_period_label || '',
     status: row.status === 'published' || row.status === 'archived' ? row.status : 'draft',
     display_order: String(row.display_order),
   });
@@ -109,8 +111,8 @@ const AdminPromotions: React.FC = () => {
       return;
     }
     const starts = new Date(form.starts_at);
-    const ends = new Date(form.ends_at);
-    if (Number.isNaN(starts.getTime()) || Number.isNaN(ends.getTime()) || ends <= starts) {
+    const ends = form.ends_at ? new Date(form.ends_at) : null;
+    if (Number.isNaN(starts.getTime()) || (ends && (Number.isNaN(ends.getTime()) || ends <= starts))) {
       toast({ title: 'Check promotion dates', description: 'The end date must be after the start date.', variant: 'destructive' });
       return;
     }
@@ -124,7 +126,8 @@ const AdminPromotions: React.FC = () => {
       terms_and_conditions: form.terms_and_conditions.trim(),
       image_url: form.image_url.trim() || null,
       starts_at: starts.toISOString(),
-      ends_at: ends.toISOString(),
+      ends_at: ends ? ends.toISOString() : null,
+      campaign_period_label: form.campaign_period_label.trim() || null,
       status,
       display_order: Number(form.display_order) || 0,
       updated_by: user.id,
@@ -190,7 +193,7 @@ const AdminPromotions: React.FC = () => {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2"><Badge className="capitalize">{row.status}</Badge>{isActive(row) && <Badge className="bg-emerald-500/15 text-emerald-300">Live now</Badge>}</div>
                       <h4 className="mt-2 truncate font-bold text-white">{row.title}</h4>
-                      <p className="mt-1 text-xs text-slate-400">/{row.slug} • {formatDate(row.starts_at)} – {formatDate(row.ends_at)}</p>
+                      <p className="mt-1 text-xs text-slate-400">/{row.slug} • {row.campaign_period_label || (row.ends_at ? `${formatDate(row.starts_at)} – ${formatDate(row.ends_at)}` : formatDate(row.starts_at))}</p>
                       <p className="mt-2 line-clamp-2 text-sm text-slate-300">{row.summary}</p>
                     </div>
                     <div className="flex shrink-0 flex-wrap gap-2">
@@ -219,8 +222,9 @@ const AdminPromotions: React.FC = () => {
             <Field label="Image URL (optional)"><Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." className="border-white/10 bg-white/[0.04] text-white" /></Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Starts"><Input type="datetime-local" value={form.starts_at} onChange={(e) => setForm({ ...form, starts_at: e.target.value })} className="border-white/10 bg-white/[0.04] text-white" /></Field>
-              <Field label="Ends"><Input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} className="border-white/10 bg-white/[0.04] text-white" /></Field>
+              <Field label="Ends (optional)"><Input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} className="border-white/10 bg-white/[0.04] text-white" /></Field>
             </div>
+            <Field label="Campaign Period Label (optional)"><Input value={form.campaign_period_label} onChange={(e) => setForm({ ...form, campaign_period_label: e.target.value })} placeholder="e.g. Independence Day Promo 2026" className="border-white/10 bg-white/[0.04] text-white" /></Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Display Order"><Input type="number" min="0" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: e.target.value })} className="border-white/10 bg-white/[0.04] text-white" /></Field>
               <Field label="Status"><select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as FormState['status'] })} className="h-10 w-full rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-white outline-none"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></Field>
