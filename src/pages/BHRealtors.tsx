@@ -8,9 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  Users, Wallet, RefreshCw, ArrowUpRight, Loader2, CheckCircle2, Network,
+  Users, Wallet, RefreshCw, Loader2, CheckCircle2, Network,
   Trophy, TrendingUp, Building2, Sprout, Target, Star, Crown,
-  BriefcaseBusiness, Copy, Check, ShoppingBag, LockKeyhole, ChevronRight,
+  BriefcaseBusiness, Copy, Check, ShoppingBag, LockKeyhole,
 } from 'lucide-react';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
 import RealtorsRegistrationForm from '@/components/bhRealtors/RealtorsRegistrationForm';
@@ -18,6 +18,7 @@ import ReferralLeaderboard from '@/components/bhRealtors/ReferralLeaderboard';
 import DownlineTree from '@/components/bhRealtors/DownlineTree';
 import CommissionHistory, { type CommissionRow } from '@/components/bhRealtors/CommissionHistory';
 import ReferralShareCard from '@/components/bhRealtors/ReferralShareCard';
+import BHRealtorPromotions from '@/components/bhRealtors/BHRealtorPromotions';
 
 const rank: Record<string, number> = { associate: 1, gold: 2, classic_gold: 3 };
 const naira = (n: number) => `₦${Number(n || 0).toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
@@ -203,7 +204,6 @@ const BHRealtors: React.FC = () => {
                 <p className="mt-5 max-w-3xl text-base leading-7 text-slate-100 md:text-lg">BHRealtors gives you more than a referral link. Build a genuine sales network, introduce people to quality real estate opportunities, earn according to your package, and grow through property.</p>
                 <div className="mt-7 flex flex-wrap gap-3">
                   <a href="#packages"><Button className="bg-white text-slate-950 hover:bg-slate-100">Explore Packages</Button></a>
-                  {isPbo && <Link to="/bh-realtors/withdraw"><Button className="border border-white/30 bg-white/10 text-white hover:bg-white/20" variant="outline"><Wallet className="mr-2 h-4 w-4" /> Withdraw</Button></Link>}
                 </div>
               </div>
             </div>
@@ -244,13 +244,15 @@ const BHRealtors: React.FC = () => {
                   <Badge className={currentRank >= 2 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200' : 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200'}>{currentRank >= 2 ? 'Withdrawable' : 'Locked'}</Badge>
                 </div>
               </div>
-              <Link to="/bh-realtors/withdraw" className="group rounded-3xl border border-white/15 bg-estate-blue p-6 text-white shadow-2xl transition hover:-translate-y-1 hover:shadow-estate-blue/20">
-                <div className="flex items-start justify-between"><Wallet className="h-7 w-7" /><ArrowUpRight className="h-5 w-5 opacity-70 transition group-hover:translate-x-1 group-hover:-translate-y-1" /></div>
-                <p className="mt-5 text-sm text-slate-200">Available commission</p>
+              <div className="group rounded-3xl border border-white/15 bg-estate-blue p-6 text-white shadow-2xl transition hover:-translate-y-1 hover:shadow-estate-blue/20">
+                <div className="flex items-start justify-between gap-3"><div><Wallet className="h-7 w-7" /><p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Wallet balance</p></div><Badge className="border border-white/20 bg-white/10 text-white">BHRealtors Wallet</Badge></div>
+                <p className="mt-4 text-sm text-slate-200">Available commission</p>
                 <p className="mt-1 text-3xl font-black">{naira(availableBalance)}</p>
-                <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">Withdraw <ChevronRight className="h-4 w-4" /></span>
                 {pendingWithdrawal > 0 && <p className="mt-2 text-xs text-white/70">{naira(pendingWithdrawal)} pending review</p>}
-              </Link>
+                <Link to="/bh-realtors/withdraw" className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-slate-100">
+                  Withdraw Funds
+                </Link>
+              </div>
             </section>
           )}
 
@@ -324,6 +326,8 @@ const BHRealtors: React.FC = () => {
               <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />
             </>
           )}
+
+          <BHRealtorPromotions />
 
           {isRealtor && <section className="grid gap-5 lg:grid-cols-2">
             <div className={`${glass} rounded-3xl p-6`}><div className="mb-4 flex items-center gap-2"><Trophy className="h-5 w-5 text-estate-purple" /><h2 className="font-bold text-slate-950 dark:text-white">Referral leaderboard</h2></div><ReferralLeaderboard /></div>
