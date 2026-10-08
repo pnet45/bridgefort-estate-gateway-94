@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, Edit3, Megaphone, Plus, Save, Archive, Eye, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
@@ -54,6 +54,8 @@ const AdminPromotions: React.FC = () => {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -102,6 +104,31 @@ const AdminPromotions: React.FC = () => {
   });
 
   const reset = () => setForm(blankForm());
+
+  const uploadPromotionImage = async (file: File) => {
+    if (!user) return;
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Select an image file', description: 'Promotion artwork must be an image.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: 'Image is too large', description: 'Please keep promotion artwork below 10MB.', variant: 'destructive' });
+      return;
+    }
+    setUploadingImage(true);
+    const extension = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+    const safeSlug = slugify(form.slug || form.title || 'promotion') || 'promotion';
+    const path = `promotions/${safeSlug}-${Date.now()}.${extension}`;
+    const { error } = await supabase.storage.from('media-files').upload(path, file, { cacheControl: '31536000', upsert: false, contentType: file.type });
+    if (error) {
+      toast({ title: 'Image upload failed', description: error.message, variant: 'destructive' });
+    } else {
+      const { data } = supabase.storage.from('media-files').getPublicUrl(path);
+      setForm((prev) => ({ ...prev, image_url: data.publicUrl }));
+      toast({ title: 'Promotion artwork uploaded' });
+    }
+    setUploadingImage(false);
+  };
 
   const save = async (nextStatus?: FormState['status']) => {
     if (!user) return;
@@ -219,7 +246,18 @@ const AdminPromotions: React.FC = () => {
             <Field label="Short Summary"><Textarea value={form.summary} onChange={(e) => setForm({ ...form, summary: e.target.value })} rows={3} className="border-white/10 bg-white/[0.04] text-white" /></Field>
             <Field label="Full Promotion Details"><Textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} rows={7} className="border-white/10 bg-white/[0.04] text-white" /></Field>
             <Field label="Terms & Conditions"><Textarea value={form.terms_and_conditions} onChange={(e) => setForm({ ...form, terms_and_conditions: e.target.value })} rows={7} className="border-white/10 bg-white/[0.04] text-white" /></Field>
-            <Field label="Image URL (optional)"><Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." className="border-white/10 bg-white/[0.04] text-white" /></Field>
+            <Field label="Promotion Artwork">
+  <div className="space-y-2">
+    <div className="flex flex-col gap-2 sm:flex-row">
+      <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="Public image URL (optional)" className="border-white/10 bg-white/[0.04] text-white" />
+      <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadPromotionImage(file); e.currentTarget.value = ''; }} />
+      <Button type="button" variant="outline" disabled={uploadingImage} onClick={() => imageInputRef.current?.click()} className="border-white/10 bg-white/[0.04] text-white">
+        {uploadingImage ? 'Uploading…' : 'Upload Artwork'}
+      </Button>
+    </div>
+    {form.image_url && <img src={form.image_url} alt="Promotion preview" className="max-h-48 w-full rounded-2xl border border-white/10 object-contain bg-black/20" />}
+  </div>
+</Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Starts"><Input type="datetime-local" value={form.starts_at} onChange={(e) => setForm({ ...form, starts_at: e.target.value })} className="border-white/10 bg-white/[0.04] text-white" /></Field>
               <Field label="Ends (optional)"><Input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} className="border-white/10 bg-white/[0.04] text-white" /></Field>
