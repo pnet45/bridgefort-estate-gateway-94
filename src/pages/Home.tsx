@@ -18,6 +18,7 @@ import FeaturedAnnouncementsCarousel from '../components/blog/FeaturedAnnounceme
 import FeaturedCenterSeminar from '../components/home/FeaturedCenterSeminar';
 import GoogleDataTransparency from '../components/home/GoogleDataTransparency';
 import AgriculturalTrainingProgramme from '../components/training/AgriculturalTrainingProgramme';
+import HomePromotions from '../components/home/HomePromotions';
 
 const Home = () => {
   // Wrap all property-dependent sections with the provider for shared data (for search, FeaturedProperties, etc)
@@ -46,6 +47,9 @@ const Home = () => {
 
         {/* Featured Properties uses context data */}
         <FeaturedProperties />
+
+        {/* Current campaigns and Realtor opportunities */}
+        <HomePromotions />
         
         {/* Luxury Homes & Apartments Marketing Section */}
         <section className="section-padding relative overflow-hidden">
