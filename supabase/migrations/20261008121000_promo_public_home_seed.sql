@@ -54,6 +54,8 @@ Don''t miss this opportunity to own prime real estate at a promotional price.',
   'MBER MONTHS PROMO
 Invest More. Live Better.
 
+Same Homes. Bigger Blessings.
+
 Bring a client or make a complete payment deposit and get your package.
 
 Offer tiers shown in the approved campaign flyer:
@@ -68,7 +70,10 @@ Zenith Bank
 Account: 1312214947
 Account Name: Bridgefort Homes Development Ltd.
 
-The flyer also states: Terms and Conditions Apply.',
+The flyer presents Bridgefort Homes around Real Estate, Investment, Security, Stronger Families and Bigger Futures.
+
+Quality Goods. Happier Families.
+Terms and Conditions Apply.',
   'The MBER Months offer tiers and payment information above are reproduced from the approved campaign flyer. The flyer states that terms and conditions apply but does not provide a full legal terms text or exact campaign start/end dates. Do not invent missing campaign dates or additional legal conditions. Current campaign status and availability must be confirmed from the live promotion record and authorised Bridgefort information.',
   '/promo/mber-months-promo-2026.webp',
   '2026-10-01T00:00:00+01:00',
