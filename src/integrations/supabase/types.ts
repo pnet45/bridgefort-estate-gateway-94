@@ -822,7 +822,10 @@ export type Database = {
           },
         ]
       }
-      bh_realtor_promotions: {\n        Row: {\n          content: string\n          created_at: string\n          created_by: string | null\n          display_order: number\n          ends_at: string\n          id: string\n          image_url: string | null\n          slug: string\n          starts_at: string\n          status: string\n          summary: string\n          terms_and_conditions: string\n          title: string\n          updated_at: string\n          updated_by: string | null\n        }\n        Insert: {\n          content?: string\n          created_at?: string\n          created_by?: string | null\n          display_order?: number\n          ends_at: string\n          id?: string\n          image_url?: string | null\n          slug: string\n          starts_at: string\n          status?: string\n          summary?: string\n          terms_and_conditions?: string\n          title: string\n          updated_at?: string\n          updated_by?: string | null\n        }\n        Update: {\n          content?: string\n          created_at?: string\n          created_by?: string | null\n          display_order?: number\n          ends_at?: string\n          id?: string\n          image_url?: string | null\n          slug?: string\n          starts_at?: string\n          status?: string\n          summary?: string\n          terms_and_conditions?: string\n          title?: string\n          updated_at?: string\n          updated_by?: string | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"bh_realtor_promotions_created_by_fkey\"\n            columns: [\"created_by\"]\n            isOneToOne: false\n            referencedRelation: \"profiles\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"bh_realtor_promotions_updated_by_fkey\"\n            columns: [\"updated_by\"]\n            isOneToOne: false\n            referencedRelation: \"profiles\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      bh_subscription_payments: {
+      bh_realtor_promotions: {\n        Row: {\n          content: string\n          created_at: string\n          created_by: string | null\n          campaign_period_label: string | null
+          display_order: number\n          ends_at: string | null\n          id: string\n          image_url: string | null\n          slug: string\n          starts_at: string\n          status: string\n          summary: string\n          terms_and_conditions: string\n          title: string\n          updated_at: string\n          updated_by: string | null\n        }\n        Insert: {\n          content?: string\n          created_at?: string\n          created_by?: string | null\n          campaign_period_label?: string | null
+          display_order?: number\n          ends_at: string | null\n          id?: string\n          image_url?: string | null\n          slug: string\n          starts_at: string\n          status?: string\n          summary?: string\n          terms_and_conditions?: string\n          title: string\n          updated_at?: string\n          updated_by?: string | null\n        }\n        Update: {\n          content?: string\n          created_at?: string\n          created_by?: string | null\n          campaign_period_label?: string | null
+          display_order?: number\n          ends_at?: string\n          id?: string\n          image_url?: string | null\n          slug?: string\n          starts_at?: string\n          status?: string\n          summary?: string\n          terms_and_conditions?: string\n          title?: string\n          updated_at?: string\n          updated_by?: string | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"bh_realtor_promotions_created_by_fkey\"\n            columns: [\"created_by\"]\n            isOneToOne: false\n            referencedRelation: \"profiles\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"bh_realtor_promotions_updated_by_fkey\"\n            columns: [\"updated_by\"]\n            isOneToOne: false\n            referencedRelation: \"profiles\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      bh_subscription_payments: {
         Row: {
           amount: number
           created_at: string
@@ -1694,6 +1697,8 @@ export type Database = {
       email_campaigns: {
         Row: {
           body: string
+          body_html: string | null
+          attachments: Json
           created_at: string
           created_by: string | null
           failed_count: number | null
@@ -1712,6 +1717,8 @@ export type Database = {
         }
         Insert: {
           body: string
+          body_html?: string | null
+          attachments?: Json
           created_at?: string
           created_by?: string | null
           failed_count?: number | null
@@ -1730,6 +1737,8 @@ export type Database = {
         }
         Update: {
           body?: string
+          body_html?: string | null
+          attachments?: Json
           created_at?: string
           created_by?: string | null
           failed_count?: number | null

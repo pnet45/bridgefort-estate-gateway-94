@@ -14,7 +14,8 @@ type Promotion = {
   terms_and_conditions: string;
   image_url: string | null;
   starts_at: string;
-  ends_at: string;
+  ends_at: string | null;
+  campaign_period_label: string | null;
   status: string;
   display_order: number;
 };
@@ -54,11 +55,11 @@ const BHRealtorPromotions: React.FC = () => {
 
   const now = Date.now();
   const active = useMemo(
-    () => promotions.filter((promo) => new Date(promo.starts_at).getTime() <= now && new Date(promo.ends_at).getTime() >= now),
+    () => promotions.filter((promo) => new Date(promo.starts_at).getTime() <= now && (!promo.ends_at || new Date(promo.ends_at).getTime() >= now)),
     [promotions, now]
   );
   const past = useMemo(
-    () => promotions.filter((promo) => new Date(promo.ends_at).getTime() < now),
+    () => promotions.filter((promo) => Boolean(promo.ends_at) && new Date(promo.ends_at as string).getTime() < now),
     [promotions, now]
   );
   const visible = tab === 'active' ? active : past;
@@ -69,11 +70,11 @@ const BHRealtorPromotions: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <Megaphone className="h-5 w-5 text-estate-purple" />
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Realtor benefits</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Featured campaigns</p>
           </div>
           <h2 className="mt-1 text-2xl font-black text-estate-blue dark:text-white sm:text-3xl">Promotions & opportunities</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-200">
-            Stay up to date with Bridgefort promotions available to BHRealtors. Read the full promotion and terms before participating.
+            Stay up to date with Bridgefort campaigns. Open any promotion to see the full marketing content and Terms & Conditions.
           </p>
         </div>
         <Button type="button" variant="outline" onClick={() => void load()} disabled={loading} className="w-fit border-white/20 bg-white/40 dark:bg-white/5">
@@ -122,7 +123,7 @@ const BHRealtorPromotions: React.FC = () => {
                   <Badge className={tab === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200' : 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-200'}>
                     {tab === 'active' ? 'Active' : 'Past'}
                   </Badge>
-                  <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300"><CalendarDays className="h-3.5 w-3.5" />{formatDate(promo.starts_at)} – {formatDate(promo.ends_at)}</span>
+                  <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300"><CalendarDays className="h-3.5 w-3.5" />{promo.campaign_period_label || (promo.ends_at ? `${formatDate(promo.starts_at)} – ${formatDate(promo.ends_at)}` : formatDate(promo.starts_at))}</span>
                 </div>
                 <h3 className="mt-4 text-xl font-black text-slate-950 dark:text-white">{promo.title}</h3>
                 <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-200">{promo.summary}</p>

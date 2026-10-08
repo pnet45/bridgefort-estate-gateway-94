@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import DOMPurify from 'dompurify';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,17 +13,27 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { toast } from 'sonner';
-import { 
-  Send, Users, Mail, RefreshCw, Search, Plus, 
-  Trash2, Eye, Clock, CheckCircle, XCircle, AlertCircle,
-  LayoutTemplate
+import RichTextEditor from '@/components/editor/RichTextEditor';
+import {
+  Send, Users, Mail, RefreshCw, Search, Plus, Trash2, Eye, Clock,
+  CheckCircle, XCircle, Paperclip, FileText, Image as ImageIcon,
+  Save, X, Sparkles, ShieldCheck, Upload, CalendarDays
 } from 'lucide-react';
+
+interface CampaignAttachment {
+  url: string;
+  name: string;
+  type?: string;
+  size?: number;
+}
 
 interface EmailCampaign {
   id: string;
   name: string;
   subject: string;
   body: string;
+  body_html: string | null;
+  attachments: CampaignAttachment[];
   recipient_filter: string;
   recipient_emails: string[];
   total_recipients: number;
@@ -32,13 +42,13 @@ interface EmailCampaign {
   status: string;
   sent_at: string | null;
   created_at: string;
+  updated_at?: string;
 }
 
 interface Recipient {
   id: string;
   email: string;
   name: string;
-  selected: boolean;
 }
 
 interface EmailTemplate {
@@ -48,6 +58,47 @@ interface EmailTemplate {
   body: string;
 }
 
+const EDITOR_SANITIZE_CONFIG = {
+  ALLOWED_TAGS: [
+    'p', 'br', 'strong', 'em', 'u', 's', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol',
+    'li', 'a', 'img', 'span', 'div', 'table', 'thead', 'tbody', 'tr', 'td',
+    'th', 'blockquote', 'hr', 'sup', 'sub'
+  ],
+  ALLOWED_ATTR: [
+    'href', 'src', 'alt', 'title', 'class', 'style', 'target', 'rel', 'width',
+    'height', 'align', 'colspan', 'rowspan'
+  ],
+  FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'video', 'audio'],
+};
+
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+const MAX_TOTAL_ATTACHMENT_BYTES = 20 * 1024 * 1024;
+const BLOCKED_ATTACHMENT_EXTENSIONS = new Set([
+  'exe', 'bat', 'cmd', 'com', 'msi', 'scr', 'js', 'jar', 'vbs', 'ps1', 'sh', 'php'
+]);
+
+const toEditorHtml = (value: string) => {
+  if (!value?.trim()) return '<p></p>';
+  if (/<[a-z][\s\S]*>/i.test(value)) return value;
+  return value
+    .split(/\r?\n/)
+    .map(line => `<p>${line.trim() || '<br>'}</p>`)
+    .join('');
+};
+
+const htmlToPlainText = (html: string) => {
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  return (doc.body.textContent || '').replace(/\u00a0/g, ' ').replace(/[ \t]+/g, ' ').trim();
+};
+
+const formatBytes = (bytes = 0) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const safeHtml = (html: string) => DOMPurify.sanitize(html || '<p>No content yet.</p>', EDITOR_SANITIZE_CONFIG);
+
 export default function AdminBulkEmail() {
   const { user } = useAuth();
   const [campaigns, setCampaigns] = useState<EmailCampaign[]>([]);
@@ -56,68 +107,72 @@ export default function AdminBulkEmail() {
   const [sending, setSending] = useState(false);
   const [sendProgress, setSendProgress] = useState(0);
   const [dialogOpen, setDialogOpen] = useState(false);
-  
-  // Form state
+  const [previewOpen, setPreviewOpen] = useState(false);
+
   const [name, setName] = useState('');
   const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('');
+  const [bodyHtml, setBodyHtml] = useState('<p></p>');
   const [recipientFilter, setRecipientFilter] = useState('all');
   const [customEmails, setCustomEmails] = useState('');
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
-  const [isScheduled, setIsScheduled] = useState(false);
-  const [scheduledAt, setScheduledAt] = useState('');
+  const [attachments, setAttachments] = useState<CampaignAttachment[]>([]);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('email_campaigns')
         .select('*')
         .order('created_at', { ascending: false });
-
       if (error) throw error;
-      setCampaigns(data || []);
+      setCampaigns((data || []) as unknown as EmailCampaign[]);
     } catch (error) {
       console.error('Error fetching campaigns:', error);
+      toast.error('Failed to load email campaigns');
     }
-  };
+  }, []);
 
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('email_templates')
         .select('id, name, subject, body')
         .order('is_default', { ascending: false });
-
       if (error) throw error;
       setTemplates(data || []);
     } catch (error) {
       console.error('Error fetching templates:', error);
     }
-  };
+  }, []);
 
   const fetchRecipients = useCallback(async () => {
+    if (recipientFilter === 'custom') {
+      setRecipients([]);
+      setSelectedRecipients(new Set());
+      return;
+    }
+
     setLoading(true);
     try {
       let emails: Recipient[] = [];
 
       if (recipientFilter === 'all' || recipientFilter === 'clients') {
-        // Get profiles with email from users table
         const { data: profiles } = await supabase
           .from('profiles')
           .select('id, first_name, last_name');
 
-        // We'll need to get emails through edge function or join
         const { data: usersData } = await supabase.functions.invoke('get-user-emails');
-        
         if (profiles && usersData?.users) {
-          emails = profiles.map(p => ({
-            id: p.id,
-            email: usersData.users.find((u: any) => u.id === p.id)?.email || '',
-            name: `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'User',
-            selected: false,
-          })).filter(r => r.email);
+          emails = profiles
+            .map((p: any) => ({
+              id: p.id,
+              email: usersData.users.find((u: any) => u.id === p.id)?.email || '',
+              name: `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Valued Client',
+            }))
+            .filter((r: Recipient) => r.email);
         }
       }
 
@@ -127,21 +182,11 @@ export default function AdminBulkEmail() {
           .select('id, email')
           .eq('is_active', true);
 
-        if (subscribers) {
-          const subscriberEmails = subscribers.map(s => ({
-            id: s.id,
-            email: s.email,
-            name: 'Subscriber',
-            selected: false,
-          }));
-          
-          // Merge without duplicates
-          const existingEmails = new Set(emails.map(e => e.email));
-          subscriberEmails.forEach(s => {
-            if (!existingEmails.has(s.email)) {
-              emails.push(s);
-            }
-          });
+        const existingEmails = new Set(emails.map(e => e.email.toLowerCase()));
+        for (const subscriber of subscribers || []) {
+          if (!existingEmails.has(subscriber.email.toLowerCase())) {
+            emails.push({ id: subscriber.id, email: subscriber.email, name: 'Subscriber' });
+          }
         }
       }
 
@@ -158,125 +203,209 @@ export default function AdminBulkEmail() {
   useEffect(() => {
     fetchCampaigns();
     fetchTemplates();
-  }, []);
+  }, [fetchCampaigns, fetchTemplates]);
 
   useEffect(() => {
-    if (dialogOpen) {
-      fetchRecipients();
-    }
-  }, [dialogOpen, recipientFilter, fetchRecipients]);
+    if (dialogOpen) fetchRecipients();
+  }, [dialogOpen, fetchRecipients]);
 
   const resetForm = () => {
     setName('');
     setSubject('');
-    setBody('');
+    setBodyHtml('<p></p>');
     setRecipientFilter('all');
     setCustomEmails('');
     setSelectedRecipients(new Set());
+    setAttachments([]);
     setSendProgress(0);
-    setIsScheduled(false);
-    setScheduledAt('');
+    setPreviewOpen(false);
+  };
+
+  const openCreate = () => {
+    resetForm();
+    setDialogOpen(true);
   };
 
   const applyTemplate = (templateId: string) => {
     const template = templates.find(t => t.id === templateId);
-    if (template) {
-      setSubject(template.subject);
-      setBody(template.body);
-      toast.success('Template applied');
-    }
+    if (!template) return;
+    setSubject(template.subject);
+    setBodyHtml(toEditorHtml(template.body));
+    toast.success('Template applied');
   };
 
-  const toggleRecipient = (id: string) => {
-    const newSelected = new Set(selectedRecipients);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    setSelectedRecipients(newSelected);
-  };
+  const filteredRecipients = useMemo(
+    () => recipients.filter(r =>
+      r.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ),
+    [recipients, searchTerm],
+  );
 
-  const toggleAllRecipients = () => {
-    if (selectedRecipients.size === filteredRecipients.length) {
-      setSelectedRecipients(new Set());
-    } else {
-      setSelectedRecipients(new Set(filteredRecipients.map(r => r.id)));
-    }
-  };
-
-  const handleSendBulkEmail = async () => {
-    const selectedEmails = recipients
+  const selectedEmailRecords = useMemo(() => {
+    const selected = recipients
       .filter(r => selectedRecipients.has(r.id))
       .map(r => ({ email: r.email, name: r.name }));
 
     if (recipientFilter === 'custom') {
-      const emails = customEmails.split(/[,\n]/).map(e => e.trim()).filter(e => e);
-      emails.forEach(email => {
-        selectedEmails.push({ email, name: '' });
+      const seen = new Set<string>();
+      customEmails.split(/[,\n;]+/).map(e => e.trim()).filter(Boolean).forEach(email => {
+        const key = email.toLowerCase();
+        if (!seen.has(key)) {
+          selected.push({ email, name: '' });
+          seen.add(key);
+        }
       });
     }
 
-    if (selectedEmails.length === 0) {
-      toast.error('Please select at least one recipient');
+    const deduped = new Map<string, { email: string; name: string }>();
+    selected.forEach(item => {
+      const key = item.email.toLowerCase();
+      if (!deduped.has(key)) deduped.set(key, item);
+    });
+    return Array.from(deduped.values());
+  }, [recipients, selectedRecipients, recipientFilter, customEmails]);
+
+  const uploadAttachments = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploadingAttachment(true);
+
+    try {
+      const currentBytes = attachments.reduce((sum, a) => sum + (a.size || 0), 0);
+      let addedBytes = 0;
+      const next: CampaignAttachment[] = [];
+
+      for (const file of Array.from(files)) {
+        const extension = file.name.split('.').pop()?.toLowerCase() || '';
+        if (BLOCKED_ATTACHMENT_EXTENSIONS.has(extension)) {
+          toast.error(`"${file.name}" is not an allowed email attachment.`);
+          continue;
+        }
+        if (file.size > MAX_ATTACHMENT_BYTES) {
+          toast.error(`"${file.name}" is larger than 10MB.`);
+          continue;
+        }
+        if (currentBytes + addedBytes + file.size > MAX_TOTAL_ATTACHMENT_BYTES) {
+          toast.error('Total attachments cannot exceed 20MB.');
+          break;
+        }
+
+        const safeName = file.name.replace(/[^a-zA-Z0-9._ -]/g, '_').slice(0, 160) || 'attachment';
+        const path = `email-attachments/${crypto.randomUUID()}-${safeName}`;
+        const { error } = await supabase.storage.from('public').upload(path, file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
+        if (error) throw error;
+
+        const { data } = supabase.storage.from('public').getPublicUrl(path);
+        next.push({ url: data.publicUrl, name: file.name, type: file.type, size: file.size });
+        addedBytes += file.size;
+      }
+
+      if (next.length) {
+        setAttachments(prev => [...prev, ...next]);
+        toast.success(`${next.length} attachment${next.length > 1 ? 's' : ''} uploaded`);
+      }
+    } catch (error: any) {
+      console.error('Attachment upload failed:', error);
+      toast.error(error?.message || 'Attachment upload failed');
+    } finally {
+      setUploadingAttachment(false);
+      if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (url: string) => {
+    setAttachments(prev => prev.filter(a => a.url !== url));
+  };
+
+  const toggleRecipient = (id: string) => {
+    setSelectedRecipients(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllRecipients = () => {
+    setSelectedRecipients(prev =>
+      prev.size === filteredRecipients.length
+        ? new Set()
+        : new Set(filteredRecipients.map(r => r.id))
+    );
+  };
+
+  const validateCampaign = () => {
+    if (!name.trim()) return 'Give the campaign a name.';
+    if (!subject.trim()) return 'Enter an email subject.';
+    if (!htmlToPlainText(bodyHtml)) return 'Write some email content.';
+    if (!selectedEmailRecords.length) return 'Select at least one recipient.';
+    const invalidEmail = selectedEmailRecords.find(r => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email));
+    if (invalidEmail) return `Invalid recipient email: ${invalidEmail.email}`;
+    return null;
+  };
+
+  const saveDraft = async () => {
+    const errorMessage = validateCampaign();
+    if (errorMessage) {
+      toast.error(errorMessage);
       return;
     }
 
-    if (!subject.trim() || !body.trim()) {
-      toast.error('Please fill in subject and body');
+    try {
+      const plainText = htmlToPlainText(bodyHtml);
+      const { error } = await supabase.from('email_campaigns').insert({
+        name: name.trim(),
+        subject: subject.trim(),
+        body: plainText,
+        body_html: safeHtml(bodyHtml),
+        attachments,
+        recipient_filter: recipientFilter,
+        recipient_emails: selectedEmailRecords.map(r => r.email),
+        total_recipients: selectedEmailRecords.length,
+        status: 'draft',
+        created_by: user?.id,
+      });
+
+      if (error) throw error;
+      toast.success('Campaign saved as draft');
+      setDialogOpen(false);
+      resetForm();
+      fetchCampaigns();
+    } catch (error: any) {
+      console.error('Error saving campaign:', error);
+      toast.error(error?.message || 'Failed to save campaign');
+    }
+  };
+
+  const sendCampaign = async () => {
+    const errorMessage = validateCampaign();
+    if (errorMessage) {
+      toast.error(errorMessage);
       return;
     }
 
-    // If scheduled, just save the campaign without sending
-    if (isScheduled && scheduledAt) {
-      const scheduledDate = new Date(scheduledAt);
-      if (scheduledDate <= new Date()) {
-        toast.error('Scheduled time must be in the future');
-        return;
-      }
-
-      try {
-        const { error: campaignError } = await supabase
-          .from('email_campaigns')
-          .insert({
-            name: name || `Campaign ${new Date().toLocaleDateString()}`,
-            subject,
-            body,
-            recipient_filter: recipientFilter,
-            recipient_emails: selectedEmails.map(e => e.email),
-            total_recipients: selectedEmails.length,
-            status: 'scheduled',
-            scheduled_at: scheduledDate.toISOString(),
-            created_by: user?.id,
-          });
-
-        if (campaignError) throw campaignError;
-
-        toast.success(`Campaign scheduled for ${scheduledDate.toLocaleString()}`);
-        resetForm();
-        setDialogOpen(false);
-        fetchCampaigns();
-        return;
-      } catch (error: any) {
-        toast.error(error.message || 'Failed to schedule campaign');
-        return;
-      }
-    }
+    if (!confirm(`Send "${name.trim()}" to ${selectedEmailRecords.length} recipient${selectedEmailRecords.length === 1 ? '' : 's'} now?`)) return;
 
     setSending(true);
     setSendProgress(0);
 
     try {
-      // Create campaign record
+      const plainText = htmlToPlainText(bodyHtml);
+      const sanitizedHtml = safeHtml(bodyHtml);
       const { data: campaign, error: campaignError } = await supabase
         .from('email_campaigns')
         .insert({
-          name: name || `Campaign ${new Date().toLocaleDateString()}`,
-          subject,
-          body,
+          name: name.trim(),
+          subject: subject.trim(),
+          body: plainText,
+          body_html: sanitizedHtml,
+          attachments,
           recipient_filter: recipientFilter,
-          recipient_emails: selectedEmails.map(e => e.email),
-          total_recipients: selectedEmails.length,
+          recipient_emails: selectedEmailRecords.map(r => r.email),
+          total_recipients: selectedEmailRecords.length,
           status: 'sending',
           created_by: user?.id,
         })
@@ -288,70 +417,56 @@ export default function AdminBulkEmail() {
       let sentCount = 0;
       let failedCount = 0;
 
-      // Send emails one by one with progress
-      for (let i = 0; i < selectedEmails.length; i++) {
-        const recipient = selectedEmails[i];
-        
+      for (let i = 0; i < selectedEmailRecords.length; i++) {
+        const recipient = selectedEmailRecords[i];
         try {
-          // Personalize body
-          const personalizedBody = body
-            .replace(/\{\{name\}\}/g, recipient.name || 'Valued Customer')
-            .replace(/\{\{email\}\}/g, recipient.email)
+          const personalizedHtml = sanitizedHtml
+            .replace(/\{\{name\}\}/g, DOMPurify.sanitize(recipient.name || 'Valued Customer'))
+            .replace(/\{\{email\}\}/g, DOMPurify.sanitize(recipient.email))
             .replace(/\{\{date\}\}/g, new Date().toLocaleDateString());
 
-          const { error } = await supabase.functions.invoke('send-email', {
+          const { data, error } = await supabase.functions.invoke('send-email', {
             body: {
               to: recipient.email,
-              subject,
-              html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                ${personalizedBody.replace(/\n/g, '<br/>')}
-                <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;"/>
-                <p style="color: #666; font-size: 12px;">
-                  This email was sent by Bridgefort Homes Development Ltd. 
-                  If you no longer wish to receive these emails, please contact us.
-                </p>
-              </div>`,
+              subject: subject.trim(),
+              html: personalizedHtml,
+              text: plainText
+                .replace(/\{\{name\}\}/g, recipient.name || 'Valued Customer')
+                .replace(/\{\{email\}\}/g, recipient.email)
+                .replace(/\{\{date\}\}/g, new Date().toLocaleDateString()),
+              attachments,
+              eventKey: `campaign:${campaign.id}:${recipient.email.toLowerCase()}`,
             },
           });
 
           if (error) throw error;
+          if (!data?.success) throw new Error(data?.error || 'Email could not be sent');
           sentCount++;
-
-          // Log email
-          await supabase.from('email_logs').insert({
-            recipient_email: recipient.email,
-            recipient_name: recipient.name,
-            subject,
-            body: personalizedBody,
-            sender_id: user?.id,
-            status: 'sent',
-          });
-        } catch (err) {
-          console.error(`Failed to send to ${recipient.email}:`, err);
+        } catch (error) {
+          console.error(`Failed to send to ${recipient.email}:`, error);
           failedCount++;
         }
 
-        setSendProgress(Math.round(((i + 1) / selectedEmails.length) * 100));
+        setSendProgress(Math.round(((i + 1) / selectedEmailRecords.length) * 100));
       }
 
-      // Update campaign status
-      await supabase
-        .from('email_campaigns')
-        .update({
-          status: failedCount === selectedEmails.length ? 'failed' : 'completed',
-          sent_count: sentCount,
-          failed_count: failedCount,
-          sent_at: new Date().toISOString(),
-        })
-        .eq('id', campaign.id);
+      await supabase.from('email_campaigns').update({
+        status: failedCount === selectedEmailRecords.length ? 'failed' : 'completed',
+        sent_count: sentCount,
+        failed_count: failedCount,
+        sent_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }).eq('id', campaign.id);
 
-      toast.success(`Bulk email sent! ${sentCount} delivered, ${failedCount} failed`);
-      resetForm();
+      if (failedCount === 0) toast.success(`Campaign sent successfully to ${sentCount} recipients`);
+      else toast.warning(`Campaign completed: ${sentCount} sent, ${failedCount} failed`);
+
       setDialogOpen(false);
+      resetForm();
       fetchCampaigns();
     } catch (error: any) {
-      console.error('Error sending bulk email:', error);
-      toast.error(error.message || 'Failed to send emails');
+      console.error('Error sending campaign:', error);
+      toast.error(error?.message || 'Failed to send campaign');
     } finally {
       setSending(false);
     }
@@ -359,13 +474,8 @@ export default function AdminBulkEmail() {
 
   const handleDeleteCampaign = async (id: string) => {
     if (!confirm('Delete this campaign?')) return;
-
     try {
-      const { error } = await supabase
-        .from('email_campaigns')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('email_campaigns').delete().eq('id', id);
       if (error) throw error;
       toast.success('Campaign deleted');
       fetchCampaigns();
@@ -374,320 +484,294 @@ export default function AdminBulkEmail() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <Badge className="bg-green-500/20 text-green-400"><CheckCircle className="h-3 w-3 mr-1" />Completed</Badge>;
-      case 'sending':
-        return <Badge className="bg-blue-500/20 text-blue-400"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Sending</Badge>;
-      case 'failed':
-        return <Badge className="bg-red-500/20 text-red-400"><XCircle className="h-3 w-3 mr-1" />Failed</Badge>;
-      default:
-        return <Badge className="bg-slate-500/20 text-slate-400"><Clock className="h-3 w-3 mr-1" />Draft</Badge>;
-    }
+  const statusBadge = (status: string) => {
+    if (status === 'completed') return <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-200"><CheckCircle className="mr-1 h-3 w-3" />Completed</Badge>;
+    if (status === 'sending') return <Badge className="bg-blue-500/10 text-blue-700 border-blue-200"><RefreshCw className="mr-1 h-3 w-3 animate-spin" />Sending</Badge>;
+    if (status === 'failed') return <Badge className="bg-red-500/10 text-red-700 border-red-200"><XCircle className="mr-1 h-3 w-3" />Failed</Badge>;
+    return <Badge className="bg-slate-100 text-slate-700 border-slate-200"><Clock className="mr-1 h-3 w-3" />Draft</Badge>;
   };
 
-  const filteredRecipients = recipients.filter(r =>
-    r.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <Card className="bg-slate-800 border-slate-700">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="flex items-center gap-2 text-white">
-          <Users className="h-5 w-5 text-blue-400" />
-          Bulk Email & Campaigns
-        </CardTitle>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={fetchCampaigns}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <Dialog open={dialogOpen} onOpenChange={(open) => {
-            setDialogOpen(open);
-            if (!open) resetForm();
-          }}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-2">
-                <Plus className="h-4 w-4" />
-                New Campaign
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-slate-800 border-slate-700 max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-white">Create Email Campaign</DialogTitle>
-              </DialogHeader>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
-                {/* Left side - Email Content */}
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-slate-300">Campaign Name</Label>
-                    <Input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g., January Newsletter"
-                      className="bg-slate-700 border-slate-600 text-white"
-                    />
-                  </div>
+    <Card className="overflow-hidden border border-slate-200/80 bg-white/90 shadow-[0_18px_60px_rgba(31,36,48,0.08)] backdrop-blur-xl">
+      <CardHeader className="border-b border-slate-200/70 bg-white/70 px-5 py-5 backdrop-blur-xl sm:px-7">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-slate-900">
+              <div className="rounded-xl border border-purple-200 bg-purple-50 p-2">
+                <Mail className="h-5 w-5 text-purple-700" />
+              </div>
+              Bulk Email & Campaigns
+            </CardTitle>
+            <CardDescription className="mt-2 max-w-2xl text-slate-500">
+              Create branded campaigns with rich content, inline images, attachments and controlled recipient lists.
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={fetchCampaigns} disabled={loading} className="border-slate-200 bg-white/80 text-slate-700">
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button onClick={openCreate} className="gap-2 bg-[#5b2a86] text-white shadow-lg shadow-purple-900/10 hover:bg-[#4b226f]">
+              <Plus className="h-4 w-4" /> New Campaign
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
 
-                  {templates.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="text-slate-300 flex items-center gap-2">
-                        <LayoutTemplate className="h-4 w-4" />
-                        Use Template
-                      </Label>
-                      <Select onValueChange={applyTemplate}>
-                        <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                          <SelectValue placeholder="Select a template..." />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-700 border-slate-600">
-                          {templates.map(t => (
-                            <SelectItem key={t.id} value={t.id} className="text-white">
-                              {t.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+      <CardContent className="p-5 sm:p-7">
+        {campaigns.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-6 py-14 text-center">
+            <Sparkles className="mx-auto h-10 w-10 text-purple-400" />
+            <h3 className="mt-4 text-lg font-semibold text-slate-900">No campaigns yet</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">Create a campaign and send a polished Bridgefort Homes email directly from the Admin Console.</p>
+            <Button onClick={openCreate} className="mt-5 bg-[#5b2a86] text-white">Create your first campaign</Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {campaigns.map(campaign => (
+              <div key={campaign.id} className="group rounded-2xl border border-slate-200/80 bg-white/70 p-4 shadow-sm backdrop-blur-md transition hover:-translate-y-0.5 hover:shadow-md sm:p-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="truncate font-semibold text-slate-900">{campaign.name}</h3>
+                      {statusBadge(campaign.status)}
+                      {campaign.attachments?.length > 0 && (
+                        <Badge variant="outline" className="border-slate-200 text-slate-600">
+                          <Paperclip className="mr-1 h-3 w-3" /> {campaign.attachments.length}
+                        </Badge>
+                      )}
                     </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <Label className="text-slate-300">Subject *</Label>
-                    <Input
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      placeholder="Email subject line"
-                      className="bg-slate-700 border-slate-600 text-white"
-                    />
+                    <p className="mt-1 truncate text-sm font-medium text-purple-800">{campaign.subject}</p>
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                      <span>{campaign.total_recipients || 0} recipients</span>
+                      <span>{campaign.sent_count || 0} sent</span>
+                      <span>{campaign.failed_count || 0} failed</span>
+                      <span>{new Date(campaign.created_at).toLocaleString()}</span>
+                    </div>
                   </div>
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteCampaign(campaign.id)} className="self-end text-slate-400 hover:bg-red-50 hover:text-red-600 lg:self-auto">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
 
-                  <div className="space-y-2">
-                    <Label className="text-slate-300">Email Body *</Label>
-                    <Textarea
-          maxLength={5000}
-                      value={body}
-                      onChange={(e) => setBody(e.target.value)}
-                      placeholder="Write your message... Use {{name}}, {{email}}, {{date}} for personalization"
-                      rows={10}
-                      className="bg-slate-700 border-slate-600 text-white"
-                    />
+      <Dialog open={dialogOpen} onOpenChange={open => { setDialogOpen(open); if (!open && !sending) resetForm(); }}>
+        <DialogTrigger asChild>
+          <span className="hidden" />
+        </DialogTrigger>
+        <DialogContent className="max-h-[94vh] max-w-[1400px] overflow-y-auto border-slate-200 bg-[#eef0f5]/95 p-0 text-slate-900 shadow-2xl backdrop-blur-2xl">
+          <DialogHeader className="sticky top-0 z-20 border-b border-white/70 bg-white/80 px-5 py-4 backdrop-blur-2xl sm:px-7">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <DialogTitle className="flex items-center gap-2 text-xl text-slate-900">
+                  <div className="rounded-xl border border-purple-200 bg-purple-50 p-2"><Sparkles className="h-5 w-5 text-purple-700" /></div>
+                  Create Email Campaign
+                </DialogTitle>
+                <p className="mt-1 text-sm text-slate-500">Compose on a clean white canvas with the Bridgefort liquid-glass visual language.</p>
+              </div>
+              <Badge className="hidden border-purple-200 bg-purple-50 text-purple-800 sm:flex"><ShieldCheck className="mr-1 h-3 w-3" /> Admin only</Badge>
+            </div>
+          </DialogHeader>
+
+          <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(330px,.75fr)] sm:p-7">
+            <section className="min-w-0 space-y-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-slate-700">Campaign name *</Label>
+                  <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. October Property Opportunities" className="border-slate-200 bg-white/80 text-slate-900 shadow-sm focus-visible:ring-purple-500" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-slate-700">Use email template</Label>
+                  <Select onValueChange={applyTemplate}>
+                    <SelectTrigger className="border-slate-200 bg-white/80 text-slate-900"><SelectValue placeholder="Choose a saved template..." /></SelectTrigger>
+                    <SelectContent>
+                      {templates.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-slate-700">Subject *</Label>
+                <Input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Email subject line" className="border-slate-200 bg-white/80 text-slate-900 shadow-sm focus-visible:ring-purple-500" />
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white/90 shadow-[0_14px_45px_rgba(31,36,48,0.06)] backdrop-blur-xl">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-white/70 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Email body</p>
+                    <p className="text-xs text-slate-500">Format text, add links, and upload images directly into the message.</p>
                   </div>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setPreviewOpen(true)} className="border-slate-200 bg-white">
+                    <Eye className="mr-2 h-4 w-4" /> Preview
+                  </Button>
+                </div>
+                <div className="p-3 sm:p-4">
+                  <RichTextEditor
+                    value={bodyHtml}
+                    onChange={setBodyHtml}
+                    placeholder="Write your campaign message..."
+                    maxLength={30000}
+                    minHeightClassName="min-h-[330px]"
+                    maxHeightClassName="max-h-[520px]"
+                  />
+                  <p className="mt-2 text-xs text-slate-400">Personalisation: <span className="font-medium text-slate-600">{'{{name}}'}</span>, <span className="font-medium text-slate-600">{'{{email}}'}</span>, <span className="font-medium text-slate-600">{'{{date}}'}</span></p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200/80 bg-white/75 p-4 shadow-sm backdrop-blur-xl sm:p-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Paperclip className="h-4 w-4 text-purple-700" /> Attachments</p>
+                    <p className="mt-1 text-xs text-slate-500">Up to 10MB per file and 20MB total. Images for the body can be inserted separately in the editor.</p>
+                  </div>
+                  <input ref={attachmentInputRef} type="file" multiple className="hidden" onChange={e => uploadAttachments(e.target.files)} />
+                  <Button type="button" variant="outline" onClick={() => attachmentInputRef.current?.click()} disabled={uploadingAttachment} className="border-slate-200 bg-white">
+                    {uploadingAttachment ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                    Add files
+                  </Button>
+                </div>
+                {attachments.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {attachments.map(file => (
+                      <div key={file.url} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2">
+                        {file.type?.startsWith('image/') ? <ImageIcon className="h-4 w-4 text-purple-700" /> : <FileText className="h-4 w-4 text-slate-500" />}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-slate-800">{file.name}</p>
+                          <p className="text-xs text-slate-400">{formatBytes(file.size)}</p>
+                        </div>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => removeAttachment(file.url)} className="text-slate-400 hover:text-red-600"><X className="h-4 w-4" /></Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <aside className="min-w-0 space-y-5">
+              <div className="rounded-2xl border border-white/80 bg-white/75 p-4 shadow-[0_18px_55px_rgba(31,36,48,0.08)] backdrop-blur-2xl sm:p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Users className="h-4 w-4 text-purple-700" /> Recipients</p>
+                    <p className="mt-1 text-xs text-slate-500">{selectedEmailRecords.length} selected</p>
+                  </div>
+                  <Badge variant="outline" className="border-slate-200 bg-white/70 text-slate-600"><CalendarDays className="mr-1 h-3 w-3" /> Send now</Badge>
                 </div>
 
-                {/* Right side - Recipients */}
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-slate-300">Recipient Group</Label>
-                    <Select value={recipientFilter} onValueChange={setRecipientFilter}>
-                      <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-700 border-slate-600">
-                        <SelectItem value="all" className="text-white">All Users & Subscribers</SelectItem>
-                        <SelectItem value="subscribers" className="text-white">Newsletter Subscribers Only</SelectItem>
-                        <SelectItem value="clients" className="text-white">Registered Users Only</SelectItem>
-                        <SelectItem value="custom" className="text-white">Custom List</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="mt-4 space-y-3">
+                  <Select value={recipientFilter} onValueChange={setRecipientFilter}>
+                    <SelectTrigger className="border-slate-200 bg-white/80 text-slate-900"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All users & subscribers</SelectItem>
+                      <SelectItem value="subscribers">Newsletter subscribers</SelectItem>
+                      <SelectItem value="clients">Registered users</SelectItem>
+                      <SelectItem value="custom">Custom email list</SelectItem>
+                    </SelectContent>
+                  </Select>
 
                   {recipientFilter === 'custom' ? (
-                    <div className="space-y-2">
-                      <Label className="text-slate-300">Email Addresses</Label>
-                      <Textarea
-          maxLength={3000}
-                        value={customEmails}
-                        onChange={(e) => setCustomEmails(e.target.value)}
-                        placeholder="Enter emails separated by commas or new lines"
-                        rows={8}
-                        className="bg-slate-700 border-slate-600 text-white"
-                      />
-                    </div>
+                    <textarea
+                      value={customEmails}
+                      onChange={e => setCustomEmails(e.target.value)}
+                      placeholder="name@example.com, another@example.com"
+                      className="min-h-[160px] w-full resize-y rounded-xl border border-slate-200 bg-white/80 p-3 text-sm text-slate-900 outline-none ring-offset-white placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500"
+                    />
                   ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-slate-300">
-                          Recipients ({selectedRecipients.size} selected)
-                        </Label>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={toggleAllRecipients}
-                          className="text-xs"
-                        >
-                          {selectedRecipients.size === filteredRecipients.length ? 'Deselect All' : 'Select All'}
+                    <>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search recipients..." className="border-slate-200 bg-white/80 pl-9 text-slate-900" />
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>{filteredRecipients.length} visible</span>
+                        <Button type="button" variant="ghost" size="sm" onClick={toggleAllRecipients} className="h-7 px-2 text-xs text-purple-800 hover:bg-purple-50">
+                          {selectedRecipients.size === filteredRecipients.length && filteredRecipients.length > 0 ? 'Deselect all' : 'Select all'}
                         </Button>
                       </div>
-                      
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                        <Input
-                          placeholder="Search recipients..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10 bg-slate-700 border-slate-600 text-white"
-                        />
-                      </div>
-
-                      <ScrollArea className="h-[250px] bg-slate-700/50 rounded-lg border border-slate-600">
+                      <ScrollArea className="h-[280px] rounded-xl border border-slate-200 bg-slate-50/70 p-2">
                         {loading ? (
-                          <div className="p-4 text-center text-slate-400">Loading recipients...</div>
+                          <div className="flex h-full items-center justify-center text-sm text-slate-400"><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Loading recipients...</div>
                         ) : filteredRecipients.length === 0 ? (
-                          <div className="p-4 text-center text-slate-400">No recipients found</div>
+                          <div className="flex h-full items-center justify-center text-sm text-slate-400">No recipients found</div>
                         ) : (
-                          <div className="p-2 space-y-1">
-                            {filteredRecipients.map((recipient) => (
-                              <div
-                                key={recipient.id}
-                                className="flex items-center gap-3 p-2 hover:bg-slate-600/50 rounded cursor-pointer"
-                                onClick={() => toggleRecipient(recipient.id)}
-                              >
-                                <Checkbox
-                                  checked={selectedRecipients.has(recipient.id)}
-                                  onCheckedChange={() => toggleRecipient(recipient.id)}
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm text-white truncate">{recipient.email}</p>
-                                  <p className="text-xs text-slate-400 truncate">{recipient.name}</p>
+                          <div className="space-y-1">
+                            {filteredRecipients.map(recipient => (
+                              <label key={recipient.id} className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 hover:bg-white">
+                                <Checkbox checked={selectedRecipients.has(recipient.id)} onCheckedChange={() => toggleRecipient(recipient.id)} />
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-medium text-slate-800">{recipient.name}</p>
+                                  <p className="truncate text-xs text-slate-500">{recipient.email}</p>
                                 </div>
-                              </div>
+                              </label>
                             ))}
                           </div>
                         )}
                       </ScrollArea>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Scheduling Options */}
-              <div className="mt-4 p-4 bg-slate-700/50 rounded-lg">
-                <div className="flex items-center gap-2 mb-3">
-                  <Checkbox
-                    id="schedule"
-                    checked={isScheduled}
-                    onCheckedChange={(checked) => setIsScheduled(checked === true)}
-                  />
-                  <Label htmlFor="schedule" className="text-slate-300 cursor-pointer flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Schedule for later
-                  </Label>
-                </div>
-                {isScheduled && (
-                  <Input
-                    type="datetime-local"
-                    value={scheduledAt}
-                    onChange={(e) => setScheduledAt(e.target.value)}
-                    className="bg-slate-600 border-slate-500 text-white"
-                    min={new Date().toISOString().slice(0, 16)}
-                  />
-                )}
-              </div>
-
-              {sending && (
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-400">Sending emails...</span>
-                    <span className="text-white">{sendProgress}%</span>
-                  </div>
-                  <Progress value={sendProgress} className="h-2" />
-                </div>
-              )}
-
-              <div className="flex justify-end gap-2 mt-4">
-                <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={sending}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSendBulkEmail} disabled={sending}>
-                  {sending ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : isScheduled ? (
-                    <>
-                      <Clock className="h-4 w-4 mr-2" />
-                      Schedule Campaign
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      Send Now ({recipientFilter === 'custom' 
-                        ? customEmails.split(/[,\n]/).filter(e => e.trim()).length 
-                        : selectedRecipients.size} recipients)
                     </>
                   )}
-                </Button>
+                </div>
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[400px]">
-          {campaigns.length === 0 ? (
-            <div className="text-center py-12">
-              <Mail className="h-12 w-12 mx-auto text-slate-500 mb-4" />
-              <p className="text-slate-400">No campaigns yet</p>
-              <p className="text-sm text-slate-500 mt-1">Create your first email campaign</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {campaigns.map((campaign) => (
-                <div
-                  key={campaign.id}
-                  className="p-4 bg-slate-700/50 rounded-lg border border-slate-600"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-white truncate">{campaign.name}</span>
-                        {getStatusBadge(campaign.status)}
+
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_55px_rgba(31,36,48,0.08)]">
+                <div className="border-b border-slate-200 bg-slate-50/80 px-4 py-3">
+                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Eye className="h-4 w-4 text-purple-700" /> Email theme</p>
+                </div>
+                <div className="p-3">
+                  <div className="rounded-xl border border-slate-200 bg-[#eef0f5] p-2">
+                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                      <div className="border-b border-slate-100 bg-white p-3 text-center">
+                        <img src="/lovable-uploads/BridgefortHomesLogo.png" alt="Bridgefort Homes" className="mx-auto h-12 w-auto object-contain" />
                       </div>
-                      <p className="text-sm text-primary truncate">{campaign.subject}</p>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
-                        <span className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {campaign.total_recipients} recipients
-                        </span>
-                        {campaign.status === 'completed' && (
-                          <>
-                            <span className="flex items-center gap-1 text-green-400">
-                              <CheckCircle className="h-3 w-3" />
-                              {campaign.sent_count} sent
-                            </span>
-                            {campaign.failed_count > 0 && (
-                              <span className="flex items-center gap-1 text-red-400">
-                                <XCircle className="h-3 w-3" />
-                                {campaign.failed_count} failed
-                              </span>
-                            )}
-                          </>
-                        )}
-                        {campaign.sent_at && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {new Date(campaign.sent_at).toLocaleDateString()}
-                          </span>
-                        )}
+                      <div className="p-4 text-xs leading-5 text-slate-700">
+                        {subject ? <p className="mb-2 font-bold text-slate-900">{subject}</p> : <p className="mb-2 font-bold text-slate-400">Your subject appears here</p>}
+                        <div dangerouslySetInnerHTML={{ __html: safeHtml(bodyHtml) }} />
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteCampaign(campaign.id)}
-                      className="text-red-400 hover:text-red-300"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
                   </div>
+                  <p className="mt-3 text-xs text-slate-500">Every outgoing email sent through the shared Bridgefort template uses the same company logo, white content surface and dark-text branding.</p>
                 </div>
-              ))}
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
+                <Button type="button" variant="outline" onClick={saveDraft} disabled={sending} className="border-slate-200 bg-white text-slate-800">
+                  <Save className="mr-2 h-4 w-4" /> Save Draft
+                </Button>
+                <Button type="button" onClick={sendCampaign} disabled={sending} className="bg-[#5b2a86] text-white shadow-lg shadow-purple-900/10 hover:bg-[#4b226f]">
+                  {sending ? <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Sending {sendProgress}%</> : <><Send className="mr-2 h-4 w-4" /> Send Campaign</>}
+                </Button>
+                {sending && <Progress value={sendProgress} className="h-2" />}
+              </div>
+            </aside>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-h-[92vh] max-w-3xl overflow-y-auto border-slate-200 bg-[#eef0f5] p-0 text-slate-900">
+          <DialogHeader className="border-b border-slate-200 bg-white/85 px-6 py-4 backdrop-blur-xl">
+            <DialogTitle className="text-slate-900">Campaign Preview</DialogTitle>
+          </DialogHeader>
+          <div className="p-5 sm:p-8">
+            <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_22px_70px_rgba(31,36,48,0.12)]">
+              <div className="border-b border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 text-center">
+                <div className="mx-auto inline-flex rounded-2xl border border-purple-100 bg-white/80 p-3 shadow-lg shadow-purple-900/5">
+                  <img src="/lovable-uploads/BridgefortHomesLogo.png" alt="Bridgefort Homes Development Ltd." className="h-20 w-auto max-w-full object-contain" />
+                </div>
+                <div className="mt-3 text-[10px] font-extrabold tracking-[0.18em] text-purple-800">BRINGING YOUR DREAM HOME</div>
+              </div>
+              <div className="prose prose-sm max-w-none px-6 py-7 text-slate-800 sm:px-9" dangerouslySetInnerHTML={{ __html: safeHtml(bodyHtml) }} />
+              <div className="bg-[#171923] px-6 py-6 text-center text-xs text-slate-300">
+                <div className="text-sm font-bold text-white">Bridgefort Homes Development Ltd.</div>
+                <div className="mt-1">Bringing your dream home!</div>
+                <div className="mt-2">www.bridgeforthomes.com · info@bridgeforthomes.com · sales@bridgeforthomes.com</div>
+              </div>
             </div>
-          )}
-        </ScrollArea>
-      </CardContent>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

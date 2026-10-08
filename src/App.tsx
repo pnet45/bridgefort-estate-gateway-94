@@ -171,11 +171,7 @@ function AppLayout() {
                         <BHRealtors />
                       </PrivateRoute>
                     } />
-                    <Route path="/bh-realtors/promotions/:slug" element={
-                      <PrivateRoute>
-                        <BHRealtorPromotionDetail />
-                      </PrivateRoute>
-                    } />
+                    <Route path="/bh-realtors/promotions/:slug" element={<BHRealtorPromotionDetail />} />
                     <Route path="/bh-realtors/withdraw" element={
                       <PrivateRoute>
                         <BHRealtorsWithdraw />
