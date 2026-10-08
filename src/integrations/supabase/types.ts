@@ -1763,6 +1763,144 @@ export type Database = {
           },
         ]
       }
+      email_delivery_events: {
+        Row: {
+          attempt_count: number
+          bounced_at: string | null
+          clicked_at: string | null
+          complained_at: string | null
+          created_at: string
+          delayed_at: string | null
+          delivered_at: string | null
+          error_message: string | null
+          event_key: string
+          id: string
+          last_provider_event_type: string | null
+          metadata: Json
+          opened_at: string | null
+          payload: Json
+          provider: string
+          provider_message_id: string | null
+          queued_at: string
+          recipient_email: string
+          recipient_name: string | null
+          recipient_user_id: string | null
+          retryable: boolean
+          sender_email: string | null
+          sender_name: string | null
+          sent_at: string | null
+          source_function: string | null
+          source_reference: string | null
+          status: string
+          subject: string | null
+          template_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          bounced_at?: string | null
+          clicked_at?: string | null
+          complained_at?: string | null
+          created_at?: string
+          delayed_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          event_key: string
+          id?: string
+          last_provider_event_type?: string | null
+          metadata?: Json
+          opened_at?: string | null
+          payload?: Json
+          provider?: string
+          provider_message_id?: string | null
+          queued_at?: string
+          recipient_email: string
+          recipient_name?: string | null
+          recipient_user_id?: string | null
+          retryable?: boolean
+          sender_email?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          source_function?: string | null
+          source_reference?: string | null
+          status?: string
+          subject?: string | null
+          template_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          bounced_at?: string | null
+          clicked_at?: string | null
+          complained_at?: string | null
+          created_at?: string
+          delayed_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          event_key?: string
+          id?: string
+          last_provider_event_type?: string | null
+          metadata?: Json
+          opened_at?: string | null
+          payload?: Json
+          provider?: string
+          provider_message_id?: string | null
+          queued_at?: string
+          recipient_email?: string
+          recipient_name?: string | null
+          recipient_user_id?: string | null
+          retryable?: boolean
+          sender_email?: string | null
+          sender_name?: string | null
+          sent_at?: string | null
+          source_function?: string | null
+          source_reference?: string | null
+          status?: string
+          subject?: string | null
+          template_key?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_delivery_webhook_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json
+          processed_at: string | null
+          processing_error: string | null
+          provider: string
+          provider_event_id: string
+          provider_message_id: string | null
+          received_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          provider?: string
+          provider_event_id: string
+          provider_message_id?: string | null
+          received_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          provider?: string
+          provider_event_id?: string
+          provider_message_id?: string | null
+          received_at?: string
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           body: string
@@ -1796,6 +1934,36 @@ export type Database = {
           sent_at?: string
           status?: string
           subject?: string
+        }
+        Relationships: []
+      }
+      email_preferences: {
+        Row: {
+          account_updates_enabled: boolean
+          marketing_enabled: boolean
+          property_updates_enabled: boolean
+          training_enabled: boolean
+          travel_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_updates_enabled?: boolean
+          marketing_enabled?: boolean
+          property_updates_enabled?: boolean
+          training_enabled?: boolean
+          travel_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_updates_enabled?: boolean
+          marketing_enabled?: boolean
+          property_updates_enabled?: boolean
+          training_enabled?: boolean
+          travel_enabled?: boolean
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2452,39 +2620,383 @@ export type Database = {
       inspection_bookings: {
         Row: {
           created_at: string
+          crm_lead_id: string | null
           email: string | null
           estate_name: string
           id: string
           inspection_date: string
           inspection_time: string
           message: string | null
+          service_journey_id: string | null
           status: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          crm_lead_id?: string | null
           email?: string | null
           estate_name: string
           id?: string
           inspection_date: string
           inspection_time: string
           message?: string | null
+          service_journey_id?: string | null
           status?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          crm_lead_id?: string | null
           email?: string | null
           estate_name?: string
           id?: string
           inspection_date?: string
           inspection_time?: string
           message?: string | null
+          service_journey_id?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_bookings_crm_lead_id_fkey"
+            columns: ["crm_lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_bookings_service_journey_id_fkey"
+            columns: ["service_journey_id"]
+            isOneToOne: false
+            referencedRelation: "service_journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leo_conversations: {
+        Row: {
+          actor_type: string
+          created_at: string
+          crm_lead_id: string | null
+          id: string
+          last_intent: string | null
+          owner_id: string | null
+          service_journey_id: string | null
+          service_type: string | null
+          status: string
+          tracking_number: string
+          updated_at: string
+          visitor_session_id: string | null
+        }
+        Insert: {
+          actor_type: string
+          created_at?: string
+          crm_lead_id?: string | null
+          id?: string
+          last_intent?: string | null
+          owner_id?: string | null
+          service_journey_id?: string | null
+          service_type?: string | null
+          status?: string
+          tracking_number: string
+          updated_at?: string
+          visitor_session_id?: string | null
+        }
+        Update: {
+          actor_type?: string
+          created_at?: string
+          crm_lead_id?: string | null
+          id?: string
+          last_intent?: string | null
+          owner_id?: string | null
+          service_journey_id?: string | null
+          service_type?: string | null
+          status?: string
+          tracking_number?: string
+          updated_at?: string
+          visitor_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leo_conversations_crm_lead_id_fkey"
+            columns: ["crm_lead_id"]
+            isOneToOne: false
+            referencedRelation: "crm_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leo_conversations_service_journey_id_fkey"
+            columns: ["service_journey_id"]
+            isOneToOne: false
+            referencedRelation: "service_journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leo_knowledge_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string
+          document_id: string
+          heading: string | null
+          id: string
+          search_vector: unknown
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          created_at?: string
+          document_id: string
+          heading?: string | null
+          id?: string
+          search_vector?: unknown
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          document_id?: string
+          heading?: string | null
+          id?: string
+          search_vector?: unknown
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leo_knowledge_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "leo_knowledge_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leo_knowledge_documents: {
+        Row: {
+          allowed_roles: string[]
+          audience: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          metadata: Json
+          source_url: string | null
+          status: string
+          title: string
+          topics: string[]
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          allowed_roles?: string[]
+          audience?: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          source_url?: string | null
+          status?: string
+          title: string
+          topics?: string[]
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          allowed_roles?: string[]
+          audience?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          source_url?: string | null
+          status?: string
+          title?: string
+          topics?: string[]
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
+      leo_knowledge_source_sync: {
+        Row: {
+          created_at: string
+          document_id: string
+          id: string
+          last_checked_at: string | null
+          last_error: string | null
+          pending_content: string | null
+          pending_detected_at: string | null
+          pending_hash: string | null
+          pending_title: string | null
+          source_hash: string | null
+          source_url: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          id?: string
+          last_checked_at?: string | null
+          last_error?: string | null
+          pending_content?: string | null
+          pending_detected_at?: string | null
+          pending_hash?: string | null
+          pending_title?: string | null
+          source_hash?: string | null
+          source_url: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          id?: string
+          last_checked_at?: string | null
+          last_error?: string | null
+          pending_content?: string | null
+          pending_detected_at?: string | null
+          pending_hash?: string | null
+          pending_title?: string | null
+          source_hash?: string | null
+          source_url?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leo_knowledge_source_sync_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: true
+            referencedRelation: "leo_knowledge_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leo_knowledge_versions: {
+        Row: {
+          allowed_roles: string[]
+          audience: string
+          change_summary: string | null
+          change_type: string
+          changed_by: string | null
+          content: string
+          created_at: string
+          document_id: string
+          id: string
+          source_url: string | null
+          status: string
+          title: string
+          topics: string[]
+          version: number
+        }
+        Insert: {
+          allowed_roles?: string[]
+          audience: string
+          change_summary?: string | null
+          change_type?: string
+          changed_by?: string | null
+          content: string
+          created_at?: string
+          document_id: string
+          id?: string
+          source_url?: string | null
+          status: string
+          title: string
+          topics?: string[]
+          version: number
+        }
+        Update: {
+          allowed_roles?: string[]
+          audience?: string
+          change_summary?: string | null
+          change_type?: string
+          changed_by?: string | null
+          content?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          source_url?: string | null
+          status?: string
+          title?: string
+          topics?: string[]
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leo_knowledge_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "leo_knowledge_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leo_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          owner_id: string | null
+          role: string
+          visitor_session_id: string | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          role: string
+          visitor_session_id?: string | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          role?: string
+          visitor_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leo_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "leo_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leo_public_rate_limits: {
+        Row: {
+          message_count: number
+          rate_key: string
+          updated_at: string
+          window_started_at: string
+        }
+        Insert: {
+          message_count?: number
+          rate_key: string
+          updated_at?: string
+          window_started_at: string
+        }
+        Update: {
+          message_count?: number
+          rate_key?: string
+          updated_at?: string
+          window_started_at?: string
         }
         Relationships: []
       }
@@ -4984,6 +5496,10 @@ export type Database = {
         }
       }
       delete_user_profile: { Args: { user_id: number }; Returns: undefined }
+      email_preference_enabled: {
+        Args: { p_category: string; p_user_id: string }
+        Returns: boolean
+      }
       estate_code_from_name: { Args: { _name: string }; Returns: string }
       generate_order_installment_schedule: {
         Args: { _order_id: string }
@@ -5249,6 +5765,46 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      search_leo_knowledge: {
+        Args: {
+          p_allowed_audiences?: string[]
+          p_limit?: number
+          p_query: string
+          p_role?: string
+        }
+        Returns: {
+          audience: string
+          content: string
+          document_id: string
+          heading: string
+          id: string
+          rank: number
+          source_url: string
+          title: string
+          topics: string[]
+        }[]
+      }
+      search_leo_knowledge_v2: {
+        Args: {
+          p_allowed_audiences?: string[]
+          p_limit?: number
+          p_query: string
+          p_roles?: string[]
+        }
+        Returns: {
+          audience: string
+          content: string
+          document_id: string
+          heading: string
+          id: string
+          rank: number
+          source_url: string
+          title: string
+          topics: string[]
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       submit_withdrawal_request: {
         Args: {
           p_account_name: string
