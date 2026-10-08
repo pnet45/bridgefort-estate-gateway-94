@@ -1717,6 +1717,8 @@ export type Database = {
         }
         Insert: {
           body: string
+          body_html?: string | null
+          attachments?: Json
           created_at?: string
           created_by?: string | null
           failed_count?: number | null
