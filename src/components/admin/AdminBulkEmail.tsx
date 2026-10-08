@@ -266,8 +266,6 @@ export default function AdminBulkEmail() {
     return Array.from(deduped.values());
   }, [recipients, selectedRecipients, recipientFilter, customEmails]);
 
-  const totalAttachmentBytes = attachments.reduce((sum, a) => sum + (a.size || 0), 0);
-
   const uploadAttachments = async (files: FileList | null) => {
     if (!files?.length) return;
     setUploadingAttachment(true);
@@ -344,6 +342,8 @@ export default function AdminBulkEmail() {
     if (!subject.trim()) return 'Enter an email subject.';
     if (!htmlToPlainText(bodyHtml)) return 'Write some email content.';
     if (!selectedEmailRecords.length) return 'Select at least one recipient.';
+    const invalidEmail = selectedEmailRecords.find(r => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email));
+    if (invalidEmail) return `Invalid recipient email: ${invalidEmail.email}`;
     return null;
   };
 
@@ -618,7 +618,7 @@ export default function AdminBulkEmail() {
                     minHeightClassName="min-h-[330px]"
                     maxHeightClassName="max-h-[520px]"
                   />
-                  <p className="mt-2 text-xs text-slate-400">Personalisation: <span className="font-medium text-slate-600">{{name}}</span>, <span className="font-medium text-slate-600">{{email}}</span>, <span className="font-medium text-slate-600">{{date}}</span></p>
+                  <p className="mt-2 text-xs text-slate-400">Personalisation: <span className="font-medium text-slate-600">{'{{name}}'}</span>, <span className="font-medium text-slate-600">{'{{email}}'}</span>, <span className="font-medium text-slate-600">{'{{date}}'}</span></p>
                 </div>
               </div>
 
