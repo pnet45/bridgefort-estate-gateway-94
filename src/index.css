@@ -780,3 +780,34 @@
 .ProseMirror.resize-cursor {
   cursor: col-resize;
 }
+
+
+/* Accessibility polish: visible keyboard focus and readable gold surfaces.
+   Gold is an accent, not a body-text color on pale backgrounds. */
+@layer base {
+  :focus-visible {
+    outline: 3px solid hsl(var(--estate-gold));
+    outline-offset: 3px;
+  }
+  ::selection {
+    background: hsl(var(--estate-gold) / 0.32);
+    color: hsl(var(--foreground));
+  }
+}
+@layer utilities {
+  .bg-estate-gold-readable {
+    background-color: hsl(var(--estate-gold));
+    color: hsl(240 15% 8%);
+  }
+  .text-gold-readable {
+    color: hsl(38 85% 30%);
+  }
+  .dark .text-gold-readable {
+    color: hsl(46 85% 68%);
+  }
+  .surface-readable {
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    border: 1px solid hsl(var(--border));
+  }
+}
