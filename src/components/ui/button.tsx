@@ -9,16 +9,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-estate-blue text-white hover:bg-estate-darkBlue shadow-sm hover:shadow-md hover:-translate-y-0.5",
-        cta: "bg-gradient-to-br from-estate-blue to-estate-red text-white hover:shadow-[0_10px_30px_-10px_hsl(var(--estate-blue)/0.6)] hover:-translate-y-0.5",
+        default: "bg-estate-gold text-slate-950 hover:bg-amber-400 shadow-sm hover:shadow-md hover:-translate-y-0.5",
+        cta: "bg-estate-gold text-slate-950 hover:bg-amber-400 shadow-md hover:shadow-lg hover:-translate-y-0.5",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border-2 border-estate-blue bg-transparent text-estate-blue hover:bg-estate-blue hover:text-white",
+          "border-2 border-estate-gold bg-transparent text-foreground hover:bg-estate-gold hover:text-slate-950",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-estate-blue underline-offset-4 hover:underline",
+        link: "text-estate-gold-readable underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",
