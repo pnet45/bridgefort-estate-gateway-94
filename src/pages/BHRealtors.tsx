@@ -228,6 +228,11 @@ const BHRealtors: React.FC = () => {
                 <Icon className="h-5 w-5 text-estate-purple" />
                 <p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">{label}</p>
                 <p className="mt-1 text-xl font-bold text-slate-950 dark:text-white">{value}</p>
+                {label === 'Available balance' && isRealtor && (
+                  <Link to="/bh-realtors/withdraw" className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-estate-blue px-3 py-2 text-xs font-bold text-white transition hover:bg-estate-blue/90">
+                    <Wallet className="h-3.5 w-3.5" /> Withdraw funds
+                  </Link>
+                )}
               </div>
             ))}
           </section>
