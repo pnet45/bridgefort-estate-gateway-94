@@ -203,7 +203,9 @@ const BHRealtors: React.FC = () => {
                 <h1 className="mt-3 text-4xl font-black leading-tight text-white md:text-6xl">Turn relationships into <span className="text-cyan-200">opportunity</span>.</h1>
                 <p className="mt-5 max-w-3xl text-base leading-7 text-slate-100 md:text-lg">BHRealtors gives you more than a referral link. Build a genuine sales network, introduce people to quality real estate opportunities, earn according to your package, and grow through property.</p>
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <a href="#packages"><Button className="bg-white text-slate-950 hover:bg-slate-100">Explore Packages</Button></a>
+                  <a href="#packages"><Button className="bg-estate-gold text-slate-950 hover:bg-amber-300">Explore Packages</Button></a>
+                  {isRealtor && referralCode && <a href="#bhrealtors-referral-share"><Button variant="outline" className="border-white/50 bg-white/10 text-white hover:bg-white/20 hover:text-white"><Network className="mr-2 h-4 w-4" /> Share referral QR</Button></a>}
+                  {isRealtor && <Link to="/bh-realtors/withdraw"><Button variant="outline" className="border-white/50 bg-white/10 text-white hover:bg-white/20 hover:text-white"><Wallet className="mr-2 h-4 w-4" /> Withdraw funds</Button></Link>}
                 </div>
               </div>
             </div>
@@ -328,7 +330,9 @@ const BHRealtors: React.FC = () => {
                   <div className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-2"><code className="min-w-0 flex-1 truncate px-3 text-base font-black tracking-wider text-estate-purple">{referralCode}</code><Button type="button" onClick={copyReferralCode} variant="outline" className="shrink-0">{copiedCode ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4" />}{copiedCode ? 'Copied' : 'Copy'}</Button></div>
                 </div>
               </section>
-              <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />
+              <div id="bhrealtors-referral-share" className="scroll-mt-28">
+                <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />
+              </div>
             </>
           )}
 
