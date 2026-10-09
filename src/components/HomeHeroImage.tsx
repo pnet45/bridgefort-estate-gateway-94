@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface HeroSlide {
@@ -28,21 +28,26 @@ const TEXT_EFFECTS = [
 const HomeHeroImage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slides, setSlides] = useState<HeroSlide[]>([]);
-  const [loading, setLoading] = useState(true);
   const [textEffect, setTextEffect] = useState(TEXT_EFFECTS[0]);
   const [textKey, setTextKey] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchSlides = async () => {
       const { data, error } = await supabase
         .from('hero_slides')
-        .select('*')
+        .select('id, image_url, title, subtitle, display_order')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
-      if (!error && data && data.length > 0) setSlides(data);
-      setLoading(false);
+
+      if (!cancelled && !error && data && data.length > 0) {
+        setSlides(data);
+      }
     };
-    fetchSlides();
+
+    void fetchSlides();
+    return () => { cancelled = true; };
   }, []);
 
   const sanitizeBrand = (s: string | null | undefined) =>
@@ -54,71 +59,84 @@ const HomeHeroImage = () => {
   const heroSubtitle = sanitizeBrand(currentSlideData?.subtitle) || FALLBACK_SUBTITLE;
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    if (heroImages.length < 2) return undefined;
+
+    const interval = window.setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % heroImages.length);
       setTextEffect(TEXT_EFFECTS[Math.floor(Math.random() * TEXT_EFFECTS.length)]);
       setTextKey(k => k + 1);
-    }, 5000);
-    return () => clearInterval(interval);
+    }, 6000);
+
+    return () => window.clearInterval(interval);
   }, [heroImages.length]);
 
+  const selectSlide = (index: number) => {
+    setCurrentSlide(index);
+    setTextEffect(TEXT_EFFECTS[Math.floor(Math.random() * TEXT_EFFECTS.length)]);
+    setTextKey(k => k + 1);
+  };
+
   return (
-    <section className="relative w-screen max-w-none h-[calc(100vh-88px)] lg:h-[calc(100vh-104px)] left-1/2 -translate-x-1/2">
-      <div className="h-full relative overflow-hidden w-full">
+    <section className="relative left-1/2 h-[calc(100svh-88px)] min-h-[520px] max-h-[900px] w-screen max-w-none -translate-x-1/2 lg:h-[calc(100svh-104px)]">
+      <div className="relative h-full w-full overflow-hidden">
         <img
           src={heroImages[currentSlide]}
-          srcSet={`${heroImages[currentSlide]} 1x, ${heroImages[currentSlide]} 2x`}
-          sizes="100vw"
-          alt={`Bridgefort Homes Development Ltd Hero Image ${currentSlide + 1}`}
-          className="w-full h-full object-cover object-center transition-all duration-1000 ease-in-out"
-          loading={currentSlide === 0 ? 'eager' : 'lazy'}
+          alt="Property and estate developments by Bridgefort Homes Development Ltd"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          loading="eager"
           decoding="async"
-          fetchPriority={currentSlide === 0 ? 'high' : 'low'}
-          onError={(e) => { (e.target as HTMLImageElement).src = '/lovable-uploads/PropertyHero.png'; }}
+          fetchPriority="high"
+          onError={(e) => {
+            const image = e.currentTarget;
+            if (!image.src.endsWith('/lovable-uploads/PropertyHero.png')) {
+              image.src = '/lovable-uploads/PropertyHero.png';
+            }
+          }}
         />
-        {/* Preload next slide via hidden img for smoother transitions */}
-        {heroImages[(currentSlide + 1) % heroImages.length] && (
-          <img
-            src={heroImages[(currentSlide + 1) % heroImages.length]}
-            alt=""
-            aria-hidden="true"
-            className="hidden"
-            loading="lazy"
-            decoding="async"
-          />
-        )}
 
-        <div className="absolute inset-0 hero-overlay-light flex items-end pb-16 md:items-center md:pb-0">
-          <div className="container-custom text-white px-4 pt-20 flex justify-start">
-            <div key={textKey} className={`max-w-3xl ${textEffect}`} style={{ animationDuration: '0.8s' }}>
-              <h1 className="text-lg md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-6 leading-snug md:leading-tight text-left text-gradient">
+        <div className="hero-overlay-light absolute inset-0 flex items-end pb-24 sm:pb-24 md:items-center md:pb-10">
+          <div className="container-custom w-full px-4 pb-safe pt-8 sm:px-6 md:pt-12">
+            <div key={textKey} className={"w-full max-w-3xl " + textEffect} style={{ animationDuration: '0.6s' }}>
+              <h1 className="mb-3 max-w-full break-words text-left text-2xl font-bold leading-tight text-gradient [overflow-wrap:anywhere] sm:text-3xl md:mb-5 md:text-4xl lg:text-5xl xl:text-6xl">
                 {heroTitle}
               </h1>
-              <p className="text-sm md:text-lg lg:text-xl xl:text-2xl mb-3 md:mb-8 max-w-2xl text-left hero-text" style={{ animationDelay: '200ms' }}>
+              <p className="hero-text mb-5 max-w-2xl break-words text-left text-base leading-relaxed sm:text-lg md:mb-7 md:text-xl xl:text-2xl">
                 {heroSubtitle}
               </p>
-              <div className="flex gap-4 text-center" style={{ animationDelay: '400ms' }}>
-                <a href="/properties" className="inline-flex items-center bg-primary text-primary-foreground font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg transition-all duration-300 ease-out hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1 active:scale-95 text-sm md:text-base group">
-                  <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary-foreground after:transition-all after:duration-300 group-hover:after:w-full">Browse Properties</span>
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:gap-4">
+                <a
+                  href="/properties"
+                  className="group inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-5 py-3 text-center text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto sm:min-w-44 sm:px-7 md:text-base"
+                >
+                  Browse Properties
                 </a>
-                <a href="/contact" className="inline-flex items-center border-2 border-white text-white font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg transition-all duration-300 ease-out hover:bg-white/20 hover:shadow-xl hover:shadow-white/30 hover:-translate-y-1 active:scale-95 text-sm md:text-base group">
-                  <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 group-hover:after:w-full">Contact Us</span>
+                <a
+                  href="/contact"
+                  className="group inline-flex min-h-12 w-full items-center justify-center rounded-lg border-2 border-white bg-black/20 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-white/20 active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto sm:min-w-36 sm:px-7 md:text-base"
+                >
+                  Contact Us
                 </a>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-        {heroImages.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => { setCurrentSlide(index); setTextEffect(TEXT_EFFECTS[Math.floor(Math.random() * TEXT_EFFECTS.length)]); setTextKey(k => k + 1); }}
-            className={`h-2 w-6 md:w-8 mx-1 rounded-full transition-colors duration-300 ${currentSlide === index ? 'bg-white' : 'bg-white/50'}`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
+
+        {heroImages.length > 1 && (
+          <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1 px-4 sm:bottom-2" role="group" aria-label="Choose hero image">
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => selectSlide(index)}
+                className="flex h-11 min-w-8 items-center justify-center rounded-full px-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                aria-label={"Go to slide " + (index + 1)}
+                aria-current={currentSlide === index ? 'true' : undefined}
+              >
+                <span className={"h-2 w-6 rounded-full transition-colors sm:w-8 " + (currentSlide === index ? 'bg-white' : 'bg-white/60')} />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
