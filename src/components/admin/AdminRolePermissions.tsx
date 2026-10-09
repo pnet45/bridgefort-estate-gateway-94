@@ -60,6 +60,69 @@ const AdminRolePermissions = () => {
     fetchPermissions();
   }, []);
 
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    let cancelled = false;
+    (async () => {
+      setMenuLoading(true);
+      const { data: roles, error: rolesError } = await supabase.from('admin_roles').select('user_id,role_name,expires_at').order('role_name');
+      if (rolesError) {
+        toast({ title: 'Unable to load admin accounts', description: rolesError.message, variant: 'destructive' });
+        setMenuLoading(false);
+        return;
+      }
+      const activeRoles = (roles || []).filter((row: any) => !row.expires_at || new Date(row.expires_at).getTime() > Date.now());
+      const ids = Array.from(new Set(activeRoles.map((row: any) => row.user_id as string)));
+      const { data: profiles, error: profileError } = ids.length
+        ? await supabase.from('profiles').select('id,first_name,last_name').in('id', ids)
+        : { data: [], error: null };
+      if (cancelled) return;
+      if (profileError) toast({ title: 'Unable to load admin profiles', description: profileError.message, variant: 'destructive' });
+      const names = new Map<string, string>((profiles || []).map((p: any) => [p.id, [p.first_name, p.last_name].filter(Boolean).join(' ').trim()]));
+      const accounts = ids.map((id) => ({
+        user_id: id,
+        role_name: activeRoles.find((row: any) => row.user_id === id)?.role_name || 'admin',
+        display_name: names.get(id) || id,
+      })).filter((account) => account.user_id !== user?.id && account.role_name !== 'super_admin');
+      setAdminAccounts(accounts);
+      if (accounts.length) setSelectedAdminId((current) => accounts.some((a) => a.user_id === current) ? current : accounts[0].user_id);
+      setMenuLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [isSuperAdmin, user?.id]);
+
+  useEffect(() => {
+    if (!isSuperAdmin || !selectedAdminId) { setHiddenTabs([]); return; }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase.from('admin_menu_visibility').select('tab_key,is_visible').eq('user_id', selectedAdminId);
+      if (cancelled) return;
+      if (error) {
+        toast({ title: 'Unable to load menu access', description: error.message, variant: 'destructive' });
+        return;
+      }
+      setHiddenTabs((data || []).filter((row: any) => row.is_visible === false).map((row: any) => row.tab_key));
+    })();
+    return () => { cancelled = true; };
+  }, [isSuperAdmin, selectedAdminId]);
+
+  const toggleAdminTab = async (tabKey: string) => {
+    if (!selectedAdminId || !isSuperAdmin) return;
+    const hide = !hiddenTabs.includes(tabKey);
+    setMenuUpdating(tabKey);
+    const { error } = await supabase.from('admin_menu_visibility').upsert({
+      user_id: selectedAdminId, tab_key: tabKey, is_visible: !hide,
+      updated_by: user?.id, updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id,tab_key' });
+    if (error) {
+      toast({ title: 'Could not update menu access', description: error.message, variant: 'destructive' });
+    } else {
+      setHiddenTabs((current) => hide ? [...current, tabKey] : current.filter((key) => key !== tabKey));
+      toast({ title: 'Admin menu updated', description: `${ADMIN_TAB_LABELS[tabKey] || tabKey} is now ${hide ? 'hidden from' : 'visible to'} the selected admin.` });
+    }
+    setMenuUpdating(null);
+  };
+
   const fetchPermissions = async () => {
     const { data, error } = await supabase
       .from('role_permissions')
