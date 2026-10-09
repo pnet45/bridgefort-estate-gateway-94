@@ -59,7 +59,7 @@ const Navbar = () => {
 
   return (
     <>
-        <nav className="glass-strong fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 h-[88px] lg:h-[104px] border-b border-estate-purple/10">
+        <nav className="glass-strong fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 h-[88px] lg:h-[104px] border-b border-estate-gold/20">
         <div className="container-custom flex flex-col flex-1 h-full">
           <div className="flex justify-between items-center py-3 flex-shrink-0 relative h-full">
             {/* Mobile: Empty spacer for left side to balance the menu icon */}
@@ -72,7 +72,7 @@ const Navbar = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-1 xl:space-x-2 2xl:space-x-4 flex-1 min-w-0 justify-center">
-              <AnimatedNavLinks className="hover:text-estate-blue transition whitespace-nowrap text-sm xl:text-base" />
+              <AnimatedNavLinks className="hover:text-estate-gold-readable focus-visible:text-estate-gold-readable transition whitespace-nowrap text-sm xl:text-base" />
             </div>
             
             {/* Desktop Auth Section — grouped tight by default (grid with a
@@ -95,8 +95,9 @@ const Navbar = () => {
               <DarkModeToggle />
               <button
                 onClick={toggleMenu}
-                aria-label="Toggle menu"
-                className="text-foreground"
+                aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={isMenuOpen}
+                className="text-foreground rounded-lg p-2 transition hover:bg-estate-gold/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-gold"
               >
                 {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
               </button>
