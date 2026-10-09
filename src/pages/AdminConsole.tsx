@@ -97,11 +97,11 @@ const AdminConsole = () => {
         {allowedTabs.includes('mlm-funnel') && <TabsTrigger value="mlm-funnel" className={ADMIN_TAB_CLASS}><Network className="h-4 w-4 shrink-0"/><span>BHRealtors Funnel</span></TabsTrigger>}
         {allowedTabs.includes('activity') && <TabsTrigger value="activity" className={ADMIN_TAB_CLASS}><Activity className="h-4 w-4 shrink-0"/><span>Activity</span></TabsTrigger>}
         {allowedTabs.includes('content') && <TabsTrigger value="content" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4 shrink-0"/><span>Content</span></TabsTrigger>}
-        {allowedTabs.includes('content') && <TabsTrigger value="promotions" className={ADMIN_TAB_CLASS}><Megaphone className="h-4 w-4 shrink-0"/><span>Promotions</span></TabsTrigger>}
-        {allowedTabs.includes('content') && <TabsTrigger value="leo-knowledge" className={ADMIN_TAB_CLASS}><BookOpen className="h-4 w-4 shrink-0"/><span>Leo Knowledge</span></TabsTrigger>}
-        {allowedTabs.includes('overview') && <TabsTrigger value="training" className={ADMIN_TAB_CLASS}><Sprout className="h-4 w-4 shrink-0"/><span>Training</span></TabsTrigger>}
+        {allowedTabs.includes('promotions') && <TabsTrigger value="promotions" className={ADMIN_TAB_CLASS}><Megaphone className="h-4 w-4 shrink-0"/><span>Promotions</span></TabsTrigger>}
+        {allowedTabs.includes('leo-knowledge') && <TabsTrigger value="leo-knowledge" className={ADMIN_TAB_CLASS}><BookOpen className="h-4 w-4 shrink-0"/><span>Leo Knowledge</span></TabsTrigger>}
+        {allowedTabs.includes('training') && <TabsTrigger value="training" className={ADMIN_TAB_CLASS}><Sprout className="h-4 w-4 shrink-0"/><span>Training</span></TabsTrigger>}
         {allowedTabs.includes('cms') && <TabsTrigger value="cms" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4 shrink-0"/><span>CMS Hub</span></TabsTrigger>}
-        {allowedTabs.includes('cms') && <TabsTrigger value="gallery" className={ADMIN_TAB_CLASS}><Images className="h-4 w-4 shrink-0"/><span>Circular Gallery</span></TabsTrigger>}
+        {allowedTabs.includes('gallery') && <TabsTrigger value="gallery" className={ADMIN_TAB_CLASS}><Images className="h-4 w-4 shrink-0"/><span>Circular Gallery</span></TabsTrigger>}
         {allowedTabs.includes('other-payments') && <TabsTrigger value="other-payments" className={ADMIN_TAB_CLASS}><DollarSign className="h-4 w-4 shrink-0"/><span>Other Payments</span></TabsTrigger>}
         {allowedTabs.includes('permissions') && <TabsTrigger value="permissions" className={ADMIN_TAB_CLASS}><Settings className="h-4 w-4 shrink-0"/><span>Permissions</span></TabsTrigger>}
         {allowedTabs.includes('departments') && <TabsTrigger value="departments" className={ADMIN_TAB_CLASS}><Building2 className="h-4 w-4 shrink-0"/><span>Departments</span></TabsTrigger>}
