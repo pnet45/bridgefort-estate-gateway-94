@@ -59,7 +59,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-full left-0 right-0 bg-white/95 dark:bg-[hsl(240_13%_5%)] backdrop-blur-xl dark:backdrop-blur-none shadow-2xl z-50 py-4 overflow-hidden animate-fade-in lg:hidden border-t border-gray-100 dark:border-white/10 max-h-[85vh] overflow-y-auto">
+    <div className="absolute top-full left-0 right-0 bg-background/98 text-foreground shadow-2xl z-50 py-3 overflow-x-hidden animate-fade-in lg:hidden border-t border-border max-h-[calc(100dvh-88px)] overflow-y-auto overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className="mb-4 px-4">
         <CartIcon />
       </div>
@@ -69,15 +69,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
           <Link
             key={item.name}
             to={item.path}
-            className="group flex items-center px-4 py-3 hover:bg-estate-blue/10 hover:pl-6 transition-all duration-300 border-l-2 border-transparent hover:border-estate-blue dark:text-gray-300"
+            className="group flex min-h-12 items-center px-4 py-3 hover:bg-estate-gold/10 active:bg-estate-gold/15 transition-colors duration-200 border-l-2 border-transparent hover:border-estate-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-estate-gold"
             onClick={toggleMenu}
             style={{
               opacity: 0,
               animation: `slideInRight 0.35s ease-out ${idx * 40}ms forwards`,
             }}
           >
-            <span className="mr-3 text-gray-500 dark:text-gray-400 group-hover:text-estate-blue transition-all duration-300">{item.icon}</span>
-            <span className="font-medium group-hover:text-estate-blue transition-colors">{item.name}</span>
+            <span className="mr-3 text-muted-foreground group-hover:text-estate-gold-readable transition-colors duration-200">{item.icon}</span>
+            <span className="font-medium group-hover:text-estate-gold-readable transition-colors">{item.name}</span>
           </Link>
         ))}
 
@@ -86,10 +86,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
             <>
               <Link
                 to="/dashboard"
-                className="flex items-center py-3 hover:text-estate-blue dark:text-gray-300"
+                className="flex min-h-12 items-center rounded-lg px-2 py-3 hover:bg-estate-gold/10 hover:text-estate-gold-readable focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-gold"
                 onClick={toggleMenu}
               >
-                <User size={20} className="mr-3 text-gray-500 dark:text-gray-400" />
+                <User size={20} className="mr-3 text-muted-foreground" />
                 <span className="font-medium">Dashboard</span>
               </Link>
               <Button
@@ -103,7 +103,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
             </>
           ) : shouldShowLogin ? (
             <Button
-              className="w-full bg-estate-blue hover:bg-estate-darkBlue"
+              className="w-full min-h-12"
               onClick={() => {
                 toggleMenu();
                 navigate('/auth');
