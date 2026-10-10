@@ -217,7 +217,7 @@ const BHRealtors: React.FC = () => {
             </section>
           )}
 
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+          <section className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 xl:grid-cols-6">
             {[
               [Users, 'Direct referrals', downlineCount],
               [CheckCircle2, 'Active direct', activeDownlineCount],
@@ -226,10 +226,10 @@ const BHRealtors: React.FC = () => {
               [Wallet, 'Available balance', naira(availableBalance)],
               [Wallet, 'Pending withdrawal', naira(pendingWithdrawal)],
             ].map(([Icon, label, value]) => (
-              <div key={label} className={`${glass} rounded-2xl p-4`}>
+              <div key={label} className={`${glass} min-w-0 rounded-2xl p-3 sm:p-4`}>
                 <Icon className="h-5 w-5 text-estate-purple" />
                 <p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">{label}</p>
-                <p className="mt-1 text-xl font-bold text-slate-950 dark:text-white">{value}</p>
+                <p className="mt-1 break-words text-lg font-bold text-slate-950 sm:text-xl dark:text-white">{value}</p>
                 {label === 'Available balance' && isRealtor && (
                   <Link to="/bh-realtors/withdraw" className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-estate-blue px-3 py-2 text-xs font-bold text-white transition hover:bg-estate-blue/90">
                     <Wallet className="h-3.5 w-3.5" /> Withdraw funds
@@ -291,7 +291,7 @@ const BHRealtors: React.FC = () => {
               <h2 className="mt-1 text-3xl font-black text-estate-blue dark:text-white">Choose your level. Build your future.</h2>
               <p className={`mt-2 max-w-3xl ${muted}`}>Associate can move directly to Gold or directly to Classic Gold. You are not required to upgrade one level at a time.</p>
             </div>
-            <div className="grid items-stretch gap-5 md:grid-cols-3">
+            <div className="grid items-stretch gap-3 md:grid-cols-3">
               {packages.map((pkg) => {
                 const active = pkg.package_code === currentCode && isPbo;
                 const higher = !isPbo || rank[pkg.package_code] > currentRank;
@@ -299,17 +299,17 @@ const BHRealtors: React.FC = () => {
                 const visual = packageVisuals[pkg.package_code] || packageVisuals.associate;
                 return (
                   <article key={pkg.package_code} className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl dark:bg-slate-950 ${active ? 'ring-2 ring-estate-purple ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-950' : 'border-slate-200 dark:border-white/10'}`}>
-                    <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${visual.accent}`}>
+                    <div className={`relative h-32 overflow-hidden bg-gradient-to-br sm:h-36 ${visual.accent}`}>
                       <img src={visual.image} alt={`${pkg.package_name} BHRealtors package`} className="h-full w-full object-cover opacity-55 mix-blend-overlay transition duration-500 group-hover:scale-105 group-hover:opacity-70" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                       <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">{visual.icon}{visual.label}</div>
                       <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-3"><div><p className="text-sm font-semibold text-white/80">{pkg.package_name}</p><p className="mt-1 text-3xl font-black text-white">{naira(pkg.price)}</p></div>{active && <Badge className="border border-white/20 bg-white/20 text-white">Current</Badge>}</div>
                     </div>
-                    <div className="flex flex-1 flex-col p-5 sm:p-6">
+                    <div className="flex flex-1 flex-col p-4">
                       <div className="flex flex-wrap gap-2"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>L1: {pkg.direct_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>L2: {pkg.indirect_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>Sales: {salesRate}%</span></div>
-                      <p className={`mt-5 min-h-[96px] text-sm leading-6 ${muted}`}>{pkg.description}</p>
-                      <div className="mt-5 grid grid-cols-2 gap-2"><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Membership</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{pkg.direct_commission_pct}% / {pkg.indirect_commission_pct}%</p></div><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Land sales</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{salesRate}%</p></div></div>
-                      <div className="mt-auto pt-5">
+                      <p className={`mt-3 min-h-[64px] text-sm leading-5 ${muted}`}>{pkg.description}</p>
+                      <div className="mt-3 grid grid-cols-2 gap-2"><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Membership</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{pkg.direct_commission_pct}% / {pkg.indirect_commission_pct}%</p></div><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Land sales</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{salesRate}%</p></div></div>
+                      <div className="mt-auto pt-4">
                         {higher && <Button className={`w-full bg-gradient-to-r ${visual.accent} text-white shadow-lg hover:opacity-95`} onClick={() => openRegistration(pkg)}>{isPbo ? `Upgrade to ${pkg.package_name}` : `Join ${pkg.package_name} — ${naira(pkg.price)}`}</Button>}
                         {active && <div className="mt-3 flex items-start gap-2 rounded-xl bg-emerald-500/10 px-3 py-2.5 text-xs leading-5 text-emerald-700 dark:text-emerald-200"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />You are currently on this package.</div>}
                       </div>
