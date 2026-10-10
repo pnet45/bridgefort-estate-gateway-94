@@ -45,8 +45,9 @@ const ADMIN_TAB_LABELS: Record<string, string> = {
 interface AdminAccount { user_id: string; role_name: string; display_name: string; }
 
 const AdminRolePermissions = () => {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const { isSuperAdmin } = useIsSuperAdmin();
+  const canManageAdminMenus = isSuperAdmin || userRole === 'manager';
   const [adminAccounts, setAdminAccounts] = useState<AdminAccount[]>([]);
   const [selectedAdminId, setSelectedAdminId] = useState('');
   const [hiddenTabs, setHiddenTabs] = useState<string[]>([]);
@@ -61,7 +62,7 @@ const AdminRolePermissions = () => {
   }, []);
 
   useEffect(() => {
-    if (!isSuperAdmin) return;
+    if (!canManageAdminMenus) return;
     let cancelled = false;
     (async () => {
       setMenuLoading(true);
@@ -89,10 +90,10 @@ const AdminRolePermissions = () => {
       setMenuLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [isSuperAdmin, user?.id]);
+  }, [canManageAdminMenus, user?.id]);
 
   useEffect(() => {
-    if (!isSuperAdmin || !selectedAdminId) { setHiddenTabs([]); return; }
+    if (!canManageAdminMenus || !selectedAdminId) { setHiddenTabs([]); return; }
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase.from('admin_menu_visibility').select('tab_key,is_visible').eq('user_id', selectedAdminId);
@@ -104,10 +105,10 @@ const AdminRolePermissions = () => {
       setHiddenTabs((data || []).filter((row: any) => row.is_visible === false).map((row: any) => row.tab_key));
     })();
     return () => { cancelled = true; };
-  }, [isSuperAdmin, selectedAdminId]);
+  }, [canManageAdminMenus, selectedAdminId]);
 
   const toggleAdminTab = async (tabKey: string) => {
-    if (!selectedAdminId || !isSuperAdmin) return;
+    if (!selectedAdminId || !canManageAdminMenus) return;
     const hide = !hiddenTabs.includes(tabKey);
     setMenuUpdating(tabKey);
     const { error } = await supabase.from('admin_menu_visibility').upsert({
@@ -155,32 +156,35 @@ const AdminRolePermissions = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {isSuperAdmin && (
+    <div className="space-y-6 min-w-0">
+      <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 sm:p-5">
+        <div className="flex items-start gap-3"><Shield className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" /><div className="min-w-0"><h2 className="font-semibold">Admin access control</h2><p className="mt-1 text-sm text-muted-foreground">Assign only the workspaces each admin needs. Menu visibility and action permissions are separate safeguards; sensitive actions remain subject to server-side authorization.</p></div></div>
+      </div>
+      {canManageAdminMenus && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Settings2 className="h-5 w-5 text-primary" />Admin Menu Access</CardTitle>
-            <p className="text-sm text-muted-foreground">Choose which Admin Console tabs each other admin can see. Hidden tabs are also blocked when a user opens a tab URL directly. Global Admin accounts are excluded from this editor.</p>
+            <p className="text-sm text-muted-foreground">Choose which Admin Console tabs each other admin can access. This also filters Leo’s admin navigation. Global Admin accounts and your own account are protected from changes. Hiding a tab does not grant permissions that the admin does not already have.</p>
           </CardHeader>
           <CardContent className="space-y-5">
             {menuLoading ? <div className="flex justify-center py-5"><Loader2 className="h-6 w-6 animate-spin" /></div> : adminAccounts.length === 0 ? (
               <p className="text-sm text-muted-foreground">No other admin accounts were found.</p>
             ) : (
               <>
-                <div className="max-w-xl space-y-2">
+                <div className="w-full max-w-xl space-y-2">
                   <Label>Select admin account</Label>
                   <Select value={selectedAdminId} onValueChange={setSelectedAdminId}>
-                    <SelectTrigger><SelectValue placeholder="Choose an admin" /></SelectTrigger>
+                    <SelectTrigger className="min-h-11 w-full"><SelectValue placeholder="Choose an admin" /></SelectTrigger>
                     <SelectContent>{adminAccounts.map((account) => <SelectItem key={account.user_id} value={account.user_id}>{account.display_name} — {account.role_name.replace(/_/g, ' ')}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <Separator />
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {Object.entries(ADMIN_TAB_PERMISSION_MAP).map(([tabKey, permissionKey]) => {
                     const visible = !hiddenTabs.includes(tabKey);
-                    return <div key={tabKey} className="flex items-center justify-between gap-3 rounded-xl border p-3">
-                      <div className="min-w-0"><Label>{ADMIN_TAB_LABELS[tabKey] || tabKey}</Label><p className="mt-1 text-xs text-muted-foreground">{permissionKey}</p></div>
-                      <Switch checked={visible} onCheckedChange={() => void toggleAdminTab(tabKey)} disabled={!selectedAdminId || menuUpdating === tabKey || tabKey === 'permissions'} aria-label={`Show ${ADMIN_TAB_LABELS[tabKey] || tabKey}`} />
+                    return <div key={tabKey} className="flex min-w-0 items-center justify-between gap-3 rounded-xl border p-3 sm:p-4">
+                      <div className="min-w-0 flex-1"><Label>{ADMIN_TAB_LABELS[tabKey] || tabKey}</Label><p className="mt-1 text-xs text-muted-foreground">{permissionKey}</p></div>
+                      <Switch checked={visible} onCheckedChange={() => void toggleAdminTab(tabKey)} disabled={!selectedAdminId || menuUpdating === tabKey || tabKey === 'permissions' || (tabKey === 'permissions' && !isSuperAdmin)} aria-label={`Show ${ADMIN_TAB_LABELS[tabKey] || tabKey}`} />
                     </div>;
                   })}
                 </div>
