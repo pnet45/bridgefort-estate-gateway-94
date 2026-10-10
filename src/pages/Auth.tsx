@@ -533,11 +533,11 @@ const Auth = ({
       : 'Create Account';
 
   return (
-    <div className="lg:h-screen lg:overflow-hidden flex flex-col lg:grid lg:grid-cols-2">
+    <div className="min-h-screen w-full overflow-x-hidden flex flex-col lg:h-screen lg:overflow-hidden lg:grid lg:grid-cols-2">
       {/* Form column — scrolls internally on short viewports so every field,
           the reCAPTCHA checkbox, and the submit button always stay reachable
           no matter how long the form or how short the screen. */}
-      <div className="relative flex flex-col lg:h-screen lg:overflow-y-auto">
+      <div className="relative flex min-h-0 flex-col lg:h-screen lg:overflow-y-auto">
         <div className="bg-estate-blue py-3 px-4 sm:px-6 flex items-center justify-between shrink-0 relative z-10">
           <h1 className="text-lg sm:text-xl font-bold text-white truncate">{resolvedTitle}</h1>
           <Button
@@ -551,7 +551,7 @@ const Auth = ({
           </Button>
         </div>
 
-        <div className="relative flex-1 flex flex-col">
+        <div className="relative flex min-h-0 flex-1 flex-col">
           {/* Mobile: full-bleed background image behind the glass form card */}
           <div
             className="absolute inset-0 lg:hidden bg-cover bg-center"
@@ -560,8 +560,8 @@ const Auth = ({
           />
           <div className="absolute inset-0 lg:hidden bg-black/55" aria-hidden="true" />
 
-          <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
-            <div className="w-full max-w-md mx-auto bg-white/75 backdrop-blur-xl lg:backdrop-blur-none lg:bg-transparent border border-white/40 lg:border-0 rounded-2xl lg:rounded-none shadow-[0_8px_40px_rgba(0,0,0,0.45)] lg:shadow-none p-6 sm:p-8 lg:p-0">
+          <div className="relative z-10 flex min-h-full flex-1 items-start justify-center overflow-y-visible px-3 py-4 sm:items-center sm:px-6 sm:py-8">
+            <div className="my-auto w-full max-w-md min-w-0 mx-auto border border-white/50 rounded-2xl bg-white/90 p-4 text-slate-950 shadow-[0_8px_40px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:p-6 lg:my-0 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:text-inherit lg:shadow-none lg:backdrop-blur-none">
           {isLogin && (
             <div className="mb-6 flex gap-2">
               <Button
@@ -582,7 +582,7 @@ const Auth = ({
               </Button>
             </div>
           )}
-          <form onSubmit={isLogin ? handleSignIn : handleSignUp} className="space-y-6">
+          <form onSubmit={isLogin ? handleSignIn : handleSignUp} className="space-y-4 sm:space-y-5">
             {!isLogin && (
               <>
                 <div>

@@ -104,7 +104,32 @@ const DownlineTree: React.FC<DownlineTreeProps> = ({ rootUserId }) => {
 
   if (loading) return <div className="flex items-center justify-center py-8 text-slate-400"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading your referral network</div>;
   if (error) return <p className="py-4 text-sm text-slate-500">Your referral network could not be loaded right now. Refresh the dashboard to try again.</p>;
-  if (!members.length) return <div className="py-8 text-center text-slate-400"><Users className="mx-auto h-8 w-8" /><p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">No direct referrals yet</p><p className="mt-1 text-xs">Use your referral link or QR code to start building your network.</p></div>;
+  if (!members.length) return (
+    <div className="rounded-2xl border border-dashed border-slate-300/80 bg-white/40 p-4 dark:border-white/15 dark:bg-white/[0.03]">
+      <div className="mx-auto flex max-w-[220px] flex-col items-center">
+        <div className="flex w-full items-center justify-center gap-2 rounded-xl border border-estate-blue/20 bg-estate-blue/5 px-3 py-3 text-center dark:border-white/15 dark:bg-white/[0.06]">
+          <Users className="h-5 w-5 shrink-0 text-estate-blue dark:text-sky-300" />
+          <div className="min-w-0 text-left"><p className="text-sm font-bold text-slate-900 dark:text-white">Your network</p><p className="text-[11px] text-slate-500 dark:text-slate-400">You · Network owner</p></div>
+        </div>
+        <div className="h-5 w-px bg-slate-300 dark:bg-slate-700" />
+        <div className="relative grid w-full grid-cols-3 gap-2">
+          <div className="absolute left-[16.5%] right-[16.5%] top-0 h-px bg-slate-300 dark:bg-slate-700" />
+          {[1, 2, 3].map((slot) => (
+            <div key={slot} className="flex min-w-0 flex-col items-center">
+              <div className="h-3 w-px bg-slate-300 dark:bg-slate-700" />
+              <div className="flex min-h-[78px] w-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white/60 px-1.5 py-2 text-center dark:border-slate-700 dark:bg-slate-900/60">
+                <Users className="h-4 w-4 text-slate-400" />
+                <span className="mt-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400">Open slot</span>
+                <span className="mt-0.5 text-[9px] leading-3 text-slate-400">Future referral</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <p className="mt-4 text-center text-sm font-semibold text-slate-700 dark:text-slate-200">No direct referrals yet</p>
+      <p className="mt-1 text-center text-xs leading-5 text-slate-500 dark:text-slate-400">Share your referral link or QR code to start building your network. Dashed slots are placeholders, not registered members.</p>
+    </div>
+  );
 
   const activeCount = members.filter(member => member.is_active).length;
 
