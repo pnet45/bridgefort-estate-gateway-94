@@ -45,10 +45,12 @@ const ADMIN_TAB_LABELS: Record<string, string> = {
 interface AdminAccount { user_id: string; role_name: string; display_name: string; }
 
 const AdminRolePermissions = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole, hasPermission } = useAuth();
   const { isSuperAdmin } = useIsSuperAdmin();
-  const canManageAdminMenus = isSuperAdmin || userRole === 'admin_dir' || userRole === 'manager';
-  const canManageRolePermissions = isSuperAdmin || userRole === 'admin_dir';
+  const normalizedRole = String(userRole || '').trim().toLowerCase();
+  const isDirectoryAdmin = normalizedRole === 'admin_dir' || normalizedRole === 'super_admin';
+  const canManageAdminMenus = isSuperAdmin || isDirectoryAdmin || normalizedRole === 'manager' || hasPermission('admin:manage_permissions') || hasPermission('admin:all');
+  const canManageRolePermissions = isSuperAdmin || isDirectoryAdmin || hasPermission('admin:manage_permissions') || hasPermission('admin:all');
   const [adminAccounts, setAdminAccounts] = useState<AdminAccount[]>([]);
   const [selectedAdminId, setSelectedAdminId] = useState('');
   const [hiddenTabs, setHiddenTabs] = useState<string[]>([]);
