@@ -58,8 +58,9 @@ const AdminRolePermissions = () => {
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchPermissions();
-  }, []);
+    if (isSuperAdmin) void fetchPermissions();
+    else setLoading(false);
+  }, [isSuperAdmin]);
 
   useEffect(() => {
     if (!canManageAdminMenus) return;
@@ -183,6 +184,7 @@ const AdminRolePermissions = () => {
           </CardContent>
         </Card>
       )}
+      {isSuperAdmin && <>
       <div className="flex items-center gap-2 mb-4">
         <Shield className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-bold">Role Permissions</h2>
@@ -216,6 +218,7 @@ const AdminRolePermissions = () => {
           );
         })}
       </div>
+      </>}
     </div>
   );
 };
