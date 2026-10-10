@@ -38,13 +38,21 @@ const FloatingLoginButton = () => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showPanel]);
 
-  // Prevent scroll background when panel open
+  // Lock background scrolling only while the quick-login panel is open.
+  // Always restore the previous inline value, including when navigation
+  // unmounts this component while the panel is open (a common mobile case).
   useEffect(() => {
-    if (showPanel) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (!showPanel) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
   }, [showPanel]);
 
   const verifyRecaptcha = async (token: string) => {
