@@ -208,7 +208,7 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
   };
 
   const content = (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex min-h-0 min-w-0 flex-col overflow-hidden">
       {/* Toolbar */}
       <div className="flex items-center gap-1 px-4 py-2.5 border-b border-black/5 shrink-0 flex-wrap bg-white/30">
         <Button variant="secondary" size="icon" className="rounded-full bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700" onClick={onBack} title="Back">
@@ -238,8 +238,8 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
       </div>
 
       {/* Subject */}
-      <div className="px-6 py-4 border-b border-border shrink-0">
-        <h2 className="text-xl font-semibold text-foreground">{email.subject || '(No Subject)'}</h2>
+      <div className="min-w-0 shrink-0 border-b border-border px-4 py-3 sm:px-6 sm:py-4">
+        <h2 className="break-words [overflow-wrap:anywhere] text-lg font-semibold text-foreground sm:text-xl">{email.subject || '(No Subject)'}</h2>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           <Badge variant="secondary" className="text-xs">{email.folder}</Badge>
           {email.source !== 'manual' && <Badge variant="outline" className="text-xs">{email.source}</Badge>}
@@ -248,15 +248,15 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
       </div>
 
       {/* Thread / Body */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="min-h-0 min-w-0 flex-1">
         <div className="divide-y divide-border">
           {allEmails.map((e) => (
-            <div key={e.id} className="px-6 py-4">
+            <div key={e.id} className="min-w-0 overflow-hidden px-4 py-4 sm:px-6">
               <div className="flex items-start gap-3 mb-3">
                 <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                   <User className="h-5 w-5 text-primary" />
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-foreground">{e.from_name || e.from_email}</span>
                     <span className="text-sm text-muted-foreground">&lt;{e.from_email}&gt;</span>
@@ -279,11 +279,11 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
               </div>
               {e.html ? (
                 <div
-                  className="prose prose-sm dark:prose-invert max-w-none ml-13"
+                  className="prose prose-sm dark:prose-invert max-w-full min-w-0 break-words [overflow-wrap:anywhere] [&_img]:h-auto [&_img]:max-w-full [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_pre]:max-w-full [&_pre]:whitespace-pre-wrap [&_a]:break-all"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(e.html) }}
                 />
               ) : (
-                <pre className="whitespace-pre-wrap text-sm text-foreground font-sans ml-13">
+                <pre className="ml-0 max-w-full whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-sm font-sans text-foreground sm:ml-13">
                   {e.body}
                 </pre>
               )}
@@ -297,7 +297,7 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
             <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <Paperclip className="h-4 w-4" /> {attachments.length} Attachment{attachments.length > 1 ? 's' : ''}
             </h4>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
               {attachments.map((att: any, i: number) => (
                 <div key={i} className="border border-border rounded-lg p-3 flex flex-col gap-2">
                   <div className="text-sm font-medium truncate">{att.filename || 'Attachment'}</div>
@@ -380,10 +380,10 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
 
       {/* Attachment preview dialog */}
       <Dialog open={!!previewAttachment} onOpenChange={() => setPreviewAttachment(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-4xl max-h-[calc(100dvh-1rem)] overflow-y-auto sm:w-full sm:max-h-[90vh]">
           {previewAttachment && (
             previewAttachment.endsWith('.pdf') ? (
-              <iframe src={previewAttachment} className="w-full h-[80vh]" />
+              <iframe src={previewAttachment} className="h-[70dvh] w-full max-w-full sm:h-[80vh]" />
             ) : (
               <img src={previewAttachment} alt="Attachment preview" className="max-w-full max-h-[80vh] object-contain mx-auto" loading="lazy" decoding="async" />
             )
