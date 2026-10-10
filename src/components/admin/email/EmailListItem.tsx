@@ -62,7 +62,7 @@ const EmailListItem: React.FC<EmailListItemProps> = ({
   return (
     <div
       onClick={onSelect}
-      className={`flex items-center gap-3 mx-2 my-1 px-3 py-2.5 rounded-2xl cursor-pointer transition-all group ${
+      className={`flex min-w-0 items-start gap-2 sm:items-center sm:gap-3 mx-1 sm:mx-2 my-1 px-2 sm:px-3 py-2.5 rounded-2xl cursor-pointer transition-all group ${
         isSelected
           ? 'bg-primary/15 shadow-md ring-1 ring-primary/30'
           : email.is_read ? 'hover:bg-white/70' : 'bg-white/60 hover:bg-white/80 shadow-sm'
@@ -78,21 +78,21 @@ const EmailListItem: React.FC<EmailListItemProps> = ({
         {initialsFor(email.from_name, email.from_email)}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <span className={`truncate text-sm ${!email.is_read ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
+          <span className={`min-w-0 max-w-full break-words [overflow-wrap:anywhere] text-sm ${!email.is_read ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
             {displayName}
           </span>
           <span className={`text-[11px] shrink-0 ${!email.is_read ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
             {formatEmailDate(email.created_at)}
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex min-w-0 items-center gap-1.5">
           <span className={`truncate text-sm ${!email.is_read ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
             {email.subject || '(No Subject)'}
           </span>
           {email.has_attachments && <Paperclip className="h-3 w-3 text-muted-foreground shrink-0" />}
         </div>
-        <p className="text-xs text-muted-foreground truncate">
+        <p className="break-words [overflow-wrap:anywhere] text-xs text-muted-foreground line-clamp-2">
           {email.body?.substring(0, 90)}
         </p>
       </div>
