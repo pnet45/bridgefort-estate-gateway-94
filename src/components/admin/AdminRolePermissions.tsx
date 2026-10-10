@@ -47,7 +47,7 @@ interface AdminAccount { user_id: string; role_name: string; display_name: strin
 const AdminRolePermissions = () => {
   const { user, userRole } = useAuth();
   const { isSuperAdmin } = useIsSuperAdmin();
-  const canManageAdminMenus = isSuperAdmin || userRole === 'manager';
+  const canManageAdminMenus = isSuperAdmin || userRole === 'admin_dir' || userRole === 'manager';
   const [adminAccounts, setAdminAccounts] = useState<AdminAccount[]>([]);
   const [selectedAdminId, setSelectedAdminId] = useState('');
   const [hiddenTabs, setHiddenTabs] = useState<string[]>([]);
