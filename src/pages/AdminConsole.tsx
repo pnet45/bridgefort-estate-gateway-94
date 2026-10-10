@@ -53,8 +53,10 @@ const AdminConsole = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [hiddenMenuTabs, setHiddenMenuTabs] = useState<string[]>([]);
-  const canManageAdminMenus = isSuperAdmin || userRole === 'admin_dir' || userRole === 'manager' || hasPermission('admin:manage_permissions') || hasPermission('admin:all');
-  const baseAllowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isSuperAdmin) tabs.add('travels'); if (canManageAdminMenus) tabs.add('permissions'); return Array.from(tabs); }, [permissions, isSuperAdmin, canManageAdminMenus]);
+  const normalizedRole = String(userRole || '').trim().toLowerCase();
+  const isDirectoryAdmin = normalizedRole === 'admin_dir' || normalizedRole === 'super_admin';
+  const canManageAdminMenus = isSuperAdmin || isDirectoryAdmin || normalizedRole === 'manager' || hasPermission('admin:manage_permissions') || hasPermission('admin:all');
+  const baseAllowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isSuperAdmin || isDirectoryAdmin) tabs.add('travels'); if (canManageAdminMenus) tabs.add('permissions'); return Array.from(tabs); }, [permissions, isSuperAdmin, isDirectoryAdmin, canManageAdminMenus]);
   const allowedTabs = useMemo(() => baseAllowedTabs.filter((tab) => tab === 'permissions' && canManageAdminMenus ? true : !hiddenMenuTabs.includes(tab)), [baseAllowedTabs, hiddenMenuTabs, canManageAdminMenus]);
   useEffect(() => {
     if (!user) { setHiddenMenuTabs([]); return; }
