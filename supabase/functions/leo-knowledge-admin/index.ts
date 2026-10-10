@@ -57,6 +57,22 @@ Deno.serve(async(req)=>{
     if(permissionError) throw permissionError;
     if(!canView) return json({error:"Content-management permission is required"},403);
 
+    // Viewing the knowledge base and changing published knowledge are separate privileges.
+    // Until a dedicated knowledge-editor permission is assigned, restrict every mutation
+    // to Global Admin or an administrator explicitly holding admin:manage_permissions.
+    const mutatingActions = new Set(["source_sync_approve","source_sync_reject","source_sync_mark_reviewed","upsert","delete"]);
+    if(mutatingActions.has(body.data.action)){
+      const [{data:isGlobalAdmin,error:globalError},{data:canManagePermissions,error:manageError}] = await Promise.all([
+        service.rpc("is_global_admin",{_user_id:user.id}),
+        service.rpc("user_has_permission",{_user_id:user.id,_permission_key:"admin:manage_permissions"}),
+      ]);
+      if(globalError || manageError) {
+        console.error("leo-knowledge-admin: mutation authorization lookup failed", {globalError,manageError});
+        return json({error:"Could not verify knowledge-base management access"},503);
+      }
+      if(!isGlobalAdmin && !canManagePermissions) return json({error:"Global Admin or explicit permission-management access is required to change Leo's knowledge base"},403);
+    }
+
     if(body.data.action==="list"){
       const {data,error}=await service.from("leo_knowledge_documents").select("id,title,source_url,audience,allowed_roles,topics,status,version,updated_at,created_at").order("updated_at",{ascending:false}).limit(200);
       if(error) throw error;
@@ -117,9 +133,13 @@ Deno.serve(async(req)=>{
     }
 
     if(body.data.action==="source_sync_reject"){
+      const {data:sync,error:syncError}=await service.from("leo_knowledge_source_sync")
+        .select("id,pending_hash").eq("id",body.data.id).single();
+      if(syncError) throw syncError;
+      if(!sync.pending_hash) return json({error:"There is no pending source change to reject"},409);
       const {data,error}=await service.from("leo_knowledge_source_sync")
-        .update({source_hash:sync.pending_hash,pending_hash:null,pending_content:null,pending_title:null,pending_detected_at:null,status:"clean",last_error:null,updated_at:new Date().toISOString()})
-        .eq("id",body.data.id)
+        .update({pending_hash:null,pending_content:null,pending_title:null,pending_detected_at:null,status:"clean",last_error:null,updated_at:new Date().toISOString()})
+        .eq("id",sync.id)
         .select("id,source_url,status,last_checked_at").single();
       if(error) throw error;
       return json({rejected:true,source:data});
