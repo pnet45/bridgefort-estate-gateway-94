@@ -53,8 +53,9 @@ const AdminConsole = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [hiddenMenuTabs, setHiddenMenuTabs] = useState<string[]>([]);
-  const baseAllowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isSuperAdmin) tabs.add('travels'); return Array.from(tabs); }, [permissions, isSuperAdmin]);
-  const allowedTabs = useMemo(() => baseAllowedTabs.filter((tab) => !hiddenMenuTabs.includes(tab)), [baseAllowedTabs, hiddenMenuTabs]);
+  const canManageAdminMenus = isSuperAdmin || userRole === 'manager';
+  const baseAllowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isSuperAdmin) tabs.add('travels'); if (canManageAdminMenus) tabs.add('permissions'); return Array.from(tabs); }, [permissions, isSuperAdmin, canManageAdminMenus]);
+  const allowedTabs = useMemo(() => baseAllowedTabs.filter((tab) => tab === 'permissions' && canManageAdminMenus ? true : !hiddenMenuTabs.includes(tab)), [baseAllowedTabs, hiddenMenuTabs, canManageAdminMenus]);
   useEffect(() => {
     if (!user) { setHiddenMenuTabs([]); return; }
     let cancelled = false;
@@ -103,7 +104,7 @@ const AdminConsole = () => {
         {allowedTabs.includes('cms') && <TabsTrigger value="cms" className={ADMIN_TAB_CLASS}><FileText className="h-4 w-4 shrink-0"/><span>CMS Hub</span></TabsTrigger>}
         {allowedTabs.includes('gallery') && <TabsTrigger value="gallery" className={ADMIN_TAB_CLASS}><Images className="h-4 w-4 shrink-0"/><span>Circular Gallery</span></TabsTrigger>}
         {allowedTabs.includes('other-payments') && <TabsTrigger value="other-payments" className={ADMIN_TAB_CLASS}><DollarSign className="h-4 w-4 shrink-0"/><span>Other Payments</span></TabsTrigger>}
-        {allowedTabs.includes('permissions') && <TabsTrigger value="permissions" className={ADMIN_TAB_CLASS}><Settings className="h-4 w-4 shrink-0"/><span>Permissions</span></TabsTrigger>}
+        {canManageAdminMenus && allowedTabs.includes('permissions') && <TabsTrigger value="permissions" className={ADMIN_TAB_CLASS}><Settings className="h-4 w-4 shrink-0"/><span>Permissions</span></TabsTrigger>}
         {allowedTabs.includes('departments') && <TabsTrigger value="departments" className={ADMIN_TAB_CLASS}><Building2 className="h-4 w-4 shrink-0"/><span>Departments</span></TabsTrigger>}
         {allowedTabs.includes('travels') && <TabsTrigger value="travels" className={ADMIN_TAB_CLASS}><Plane className="h-4 w-4 shrink-0"/><span>Travels</span>{isSuperAdmin&&<span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">Restricted</span>}</TabsTrigger>}
       </TabsList>
@@ -125,7 +126,7 @@ const AdminConsole = () => {
       <TabsContent value="cms"><AdminContentHub/></TabsContent>
       <TabsContent value="gallery"><AdminCircularGalleryContent/></TabsContent>
       <TabsContent value="other-payments"><AdminOtherPayments/></TabsContent>
-      <TabsContent value="permissions"><AdminRolePermissions/></TabsContent>
+      {canManageAdminMenus && <TabsContent value="permissions"><AdminRolePermissions/></TabsContent>}
       {hasPermission('admin:manage_departments')&&<TabsContent value="departments"><AdminDepartmentManagement/></TabsContent>}
       {hasPermission('admin:view_travels')&&<TabsContent value="travels"><AdminTravelDashboard/></TabsContent>}
     </Tabs></main>
