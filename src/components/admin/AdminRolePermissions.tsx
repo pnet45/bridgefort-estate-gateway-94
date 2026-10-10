@@ -66,25 +66,15 @@ const AdminRolePermissions = () => {
     let cancelled = false;
     (async () => {
       setMenuLoading(true);
-      const { data: roles, error: rolesError } = await supabase.from('admin_roles').select('user_id,role_name,expires_at').order('role_name');
-      if (rolesError) {
-        toast({ title: 'Unable to load admin accounts', description: rolesError.message, variant: 'destructive' });
+      const { data: accountsData, error: accountsError } = await supabase.rpc('get_manageable_admin_accounts');
+      if (accountsError) {
+        toast({ title: 'Unable to load admin accounts', description: accountsError.message, variant: 'destructive' });
         setMenuLoading(false);
         return;
       }
-      const activeRoles = (roles || []).filter((row: any) => !row.expires_at || new Date(row.expires_at).getTime() > Date.now());
-      const ids = Array.from(new Set(activeRoles.map((row: any) => row.user_id as string)));
-      const { data: profiles, error: profileError } = ids.length
-        ? await supabase.from('profiles').select('id,first_name,last_name').in('id', ids)
-        : { data: [], error: null };
       if (cancelled) return;
-      if (profileError) toast({ title: 'Unable to load admin profiles', description: profileError.message, variant: 'destructive' });
-      const names = new Map<string, string>((profiles || []).map((p: any) => [p.id, [p.first_name, p.last_name].filter(Boolean).join(' ').trim()]));
-      const accounts = ids.map((id) => ({
-        user_id: id,
-        role_name: activeRoles.find((row: any) => row.user_id === id)?.role_name || 'admin',
-        display_name: names.get(id) || id,
-      })).filter((account) => account.user_id !== user?.id && account.role_name !== 'super_admin');
+      const accounts = ((accountsData || []) as Array<{ user_id: string; role_name: string; display_name: string }>)
+        .filter((account) => account.user_id !== user?.id);
       setAdminAccounts(accounts);
       if (accounts.length) setSelectedAdminId((current) => accounts.some((a) => a.user_id === current) ? current : accounts[0].user_id);
       setMenuLoading(false);
