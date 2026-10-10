@@ -285,6 +285,20 @@ const BHRealtors: React.FC = () => {
             </div>
           </section>
 
+          {isRealtor && referralCode && (
+            <>
+              <section className={`${glass} overflow-hidden rounded-3xl p-5 sm:p-7`}>
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Your unique Realtor identity</p><h2 className="mt-1 text-2xl font-black text-estate-blue dark:text-white">Referral code & client linking</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-200">Give clients this code. When they enter it in the Referrer section of their profile, their profile is securely linked to your Realtor account.</p></div>
+                  <div className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-2"><code className="min-w-0 flex-1 truncate px-3 text-base font-black tracking-wider text-estate-purple">{referralCode}</code><Button type="button" onClick={copyReferralCode} variant="outline" className="shrink-0">{copiedCode ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4" />}{copiedCode ? 'Copied' : 'Copy'}</Button></div>
+                </div>
+              </section>
+              <div id="bhrealtors-referral-share" className="scroll-mt-28">
+                <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />
+              </div>
+            </>
+          )}
+
           <section id="packages">
             <div className="mb-6">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Membership & growth</p>
@@ -322,19 +336,7 @@ const BHRealtors: React.FC = () => {
 
           {!isPbo && <section className={`${glass} rounded-3xl p-7`}><div className="flex items-center gap-3"><Sprout className="h-6 w-6 text-emerald-500" /><h2 className="text-xl font-black text-estate-blue dark:text-white">Start with a real opportunity</h2></div><p className={`mt-3 max-w-3xl leading-7 ${muted}`}>Join a network where property sales, referrals and personal development work together. Start at the level that fits your plan and grow responsibly.</p></section>}
 
-          {isRealtor && referralCode && (
-            <>
-              <section className={`${glass} overflow-hidden rounded-3xl p-5 sm:p-7`}>
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Your unique Realtor identity</p><h2 className="mt-1 text-2xl font-black text-estate-blue dark:text-white">Referral code & client linking</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-200">Give clients this code. When they enter it in the Referrer section of their profile, their profile is securely linked to your Realtor account.</p></div>
-                  <div className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-2"><code className="min-w-0 flex-1 truncate px-3 text-base font-black tracking-wider text-estate-purple">{referralCode}</code><Button type="button" onClick={copyReferralCode} variant="outline" className="shrink-0">{copiedCode ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4" />}{copiedCode ? 'Copied' : 'Copy'}</Button></div>
-                </div>
-              </section>
-              <div id="bhrealtors-referral-share" className="scroll-mt-28">
-                <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />
-              </div>
-            </>
-          )}
+
 
           <BHRealtorPromotions />
 
