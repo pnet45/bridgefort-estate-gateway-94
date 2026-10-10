@@ -18,7 +18,21 @@ interface EmailRequest {
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev";
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[character] ?? character);
+}
+
 function buildHtml(name: string | undefined, body: string) {
+  // Admin-entered content is plain text. Escape it before inserting into HTML
+  // so recipient names and message bodies cannot inject scripts or hostile markup.
+  const safeName = name ? escapeHtml(name) : "";
+  const safeBody = escapeHtml(body);
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px;">
@@ -26,8 +40,8 @@ function buildHtml(name: string | undefined, body: string) {
     <h1 style="color:#fff;margin:0;font-size:24px;">Bridgefort</h1>
   </div>
   <div style="background:#fff;padding:30px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;">
-    ${name ? `<p style="font-size:16px;">Dear ${name},</p>` : ""}
-    <div style="white-space:pre-wrap;font-size:16px;">${body}</div>
+    ${safeName ? `<p style="font-size:16px;">Dear ${safeName},</p>` : ""}
+    <div style="white-space:pre-wrap;font-size:16px;">${safeBody}</div>
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:30px 0;">
     <p style="color:#718096;font-size:14px;margin:0;">Best regards,<br><strong>The Bridgefort Team</strong></p>
   </div>
@@ -106,6 +120,11 @@ async function sendViaGmail(opts: { from: string; to: string; subject: string; h
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405, headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
 
   try {
     const authHeader = req.headers.get("Authorization");
