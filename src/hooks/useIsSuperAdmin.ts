@@ -11,7 +11,7 @@ export const useIsSuperAdmin = () => {
     let active = true;
     if (!user) { setIsSuperAdmin(false); setLoading(false); return; }
     (async () => {
-      const { data } = await supabase.rpc('is_super_admin', { _user_id: user.id });
+      const { data } = await supabase.rpc('is_global_admin', { _user_id: user.id });
       if (active) { setIsSuperAdmin(!!data); setLoading(false); }
     })();
     return () => { active = false; };
