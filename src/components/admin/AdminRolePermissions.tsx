@@ -48,6 +48,7 @@ const AdminRolePermissions = () => {
   const { user, userRole } = useAuth();
   const { isSuperAdmin } = useIsSuperAdmin();
   const canManageAdminMenus = isSuperAdmin || userRole === 'admin_dir' || userRole === 'manager';
+  const canManageRolePermissions = isSuperAdmin || userRole === 'admin_dir';
   const [adminAccounts, setAdminAccounts] = useState<AdminAccount[]>([]);
   const [selectedAdminId, setSelectedAdminId] = useState('');
   const [hiddenTabs, setHiddenTabs] = useState<string[]>([]);
@@ -58,9 +59,9 @@ const AdminRolePermissions = () => {
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isSuperAdmin) void fetchPermissions();
+    if (canManageRolePermissions) void fetchPermissions();
     else setLoading(false);
-  }, [isSuperAdmin]);
+  }, [canManageRolePermissions]);
 
   useEffect(() => {
     if (!canManageAdminMenus) return;
@@ -184,7 +185,7 @@ const AdminRolePermissions = () => {
           </CardContent>
         </Card>
       )}
-      {isSuperAdmin && <>
+      {canManageRolePermissions && <>
       <div className="flex items-center gap-2 mb-4">
         <Shield className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-bold">Role Permissions</h2>
