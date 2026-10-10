@@ -220,6 +220,15 @@ Deno.serve(async (req) => {
       }))).filter((permission): permission is string => permission !== null)
       : [];
 
+    // Respect per-admin menu visibility overrides. Fail closed if visibility cannot be verified.
+    const { data: menuVisibilityRows, error: menuVisibilityError } = actorType === "admin"
+      ? await service.from("admin_menu_visibility").select("tab_key,is_visible").eq("user_id", user.id)
+      : { data: [], error: null };
+    const hiddenAdminTabs = menuVisibilityError
+      ? ["overview", "properties", "crm", "users", "emails", "approvals", "analytics"]
+      : (menuVisibilityRows ?? []).filter((row) => row.is_visible === false).map((row) => row.tab_key);
+    const menuTabFromHref = (href: string) => new URL(href, "https://bridgeforthomes.com").searchParams.get("tab");
+
     let ownServiceContext: Record<string, unknown> = {};
     const asksAboutOwnService = /\b(my|account|payment|paid|balance|installment|order|purchase|documentation|receipt|booking|inspection)\b/i
       .test(parsed.data.action === "chat" ? parsed.data.message : "");
@@ -418,7 +427,7 @@ Deno.serve(async (req) => {
         ? `The signed-in user's own account records, loaded only because they asked about their service/account: ${JSON.stringify(ownServiceContext)}`
         : "",
       actorType === "admin"
-        ? `Authorized admin navigation permissions: ${permissionKeys.join(", ") || "none"}.`
+        ? `Verified admin roles: ${verifiedRoles.join(", ") || "none"}. Effective navigation permissions: ${permissionKeys.join(", ") || "none"}. Hidden console tabs: ${hiddenAdminTabs.join(", ") || "none"}. Only suggest actions and console links supported by verified permissions; menu visibility alone never authorizes an action. Global Admin (admin_dir/super_admin) has global privileges. Manager Admin can manage other admins menu visibility only; do not assume manager status grants global or financial approval privileges. If a requested action exceeds verified permissions, refuse it and direct the admin to Global Admin.`
         : "",
     ].filter(Boolean).join("\n\n");
 
@@ -742,7 +751,7 @@ Deno.serve(async (req) => {
       emailStatus,
       emailDraft,
       adminLinks: actorType === "admin"
-        ? adminNavigation.filter(({ permission }) => permissionKeys.includes(permission))
+        ? adminNavigation.filter(({ permission, href }) => permissionKeys.includes(permission) && !hiddenAdminTabs.includes(menuTabFromHref(href) || ""))
         : [],
       crmSyncStatus,
       nextAction,
