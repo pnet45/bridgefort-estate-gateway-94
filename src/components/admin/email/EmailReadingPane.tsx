@@ -252,17 +252,17 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
         <div className="divide-y divide-border">
           {allEmails.map((e) => (
             <div key={e.id} className="min-w-0 overflow-hidden px-4 py-4 sm:px-6">
-              <div className="flex items-start gap-3 mb-3">
+              <div className="mb-3 flex flex-wrap items-start gap-2 sm:flex-nowrap sm:gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                   <User className="h-5 w-5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
                     <span className="font-semibold text-foreground">{e.from_name || e.from_email}</span>
-                    <span className="text-sm text-muted-foreground">&lt;{e.from_email}&gt;</span>
+                    <span className="break-all text-sm text-muted-foreground">&lt;{e.from_email}&gt;</span>
                   </div>
                   <div className="text-sm text-muted-foreground flex items-center gap-1 flex-wrap">
-                    <span>to {e.to_name || e.to_email}</span>
+                    <span className="break-all">to {e.to_name || e.to_email}</span>
                     <span className="mx-1">·</span>
                     <Clock className="h-3 w-3" />
                     <span>{format(new Date(e.created_at), 'MMM d, yyyy h:mm a')}</span>
@@ -293,7 +293,7 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
 
         {/* Attachments */}
         {attachments.length > 0 && (
-          <div className="px-6 py-4 border-t border-border">
+          <div className="border-t border-border px-4 py-4 sm:px-6">
             <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <Paperclip className="h-4 w-4" /> {attachments.length} Attachment{attachments.length > 1 ? 's' : ''}
             </h4>
@@ -320,7 +320,7 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
 
         {/* Reply / Forward area */}
         {mode === null ? (
-          <div className="px-6 py-4 flex gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-2 px-4 py-4 sm:px-6">
             <Button variant="default" size="sm" onClick={handleReply} className="gap-1 bg-slate-900 hover:bg-slate-800 text-white">
               <Reply className="h-4 w-4" /> Reply
             </Button>
@@ -332,7 +332,7 @@ const EmailReadingPane: React.FC<EmailReadingPaneProps> = ({
             </Button>
           </div>
         ) : (
-          <div className="px-6 py-4 border-t border-border space-y-3">
+          <div className="space-y-3 border-t border-border px-4 py-4 sm:px-6">
             <div className="flex items-center gap-2">
               {mode === 'forward' ? <Forward className="h-4 w-4 text-primary" /> : <Reply className="h-4 w-4 text-primary" />}
               <span className="font-medium text-foreground">
