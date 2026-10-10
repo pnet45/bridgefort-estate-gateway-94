@@ -819,11 +819,24 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     scroll-padding-top: 88px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   body {
     -webkit-tap-highlight-color: hsl(var(--estate-gold) / 0.18);
-    overscroll-behavior-y: contain;
+    /* Keep normal document scrolling available on iOS Safari and Android
+       browsers; contain can trap touch scroll at nested/short containers. */
+    overscroll-behavior-y: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+
+  #root,
+  .App {
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   /* Prevent iOS Safari from zooming the page when form fields receive focus. */
