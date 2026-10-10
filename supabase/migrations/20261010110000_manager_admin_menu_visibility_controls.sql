@@ -10,7 +10,7 @@ AS $function$
   SELECT DISTINCT ON (ar.user_id)
     ar.user_id,
     ar.role_name,
-    COALESCE(NULLIF(trim(concat_ws(' ', p.first_name, p.last_name)), ''), p.email, ar.user_id::text) AS display_name
+    COALESCE(NULLIF(trim(concat_ws(' ', p.first_name, p.last_name)), ''), ar.user_id::text) AS display_name
   FROM public.admin_roles ar
   LEFT JOIN public.profiles p ON p.id = ar.user_id
   WHERE (public.is_global_admin(auth.uid()) OR public.has_role(auth.uid(), 'manager'))
