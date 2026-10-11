@@ -86,9 +86,9 @@ export const announcementItems: AnnouncementItem[] = [
 
       <p>With a clear focus on service excellence and customer trust, analysts and clients alike believe that Bridgefort Homes Development Ltd is well positioned to remain a leader in customer-focused real estate solutions in Nigeria.</p>
 
-      <p><strong>📍 Bridgefort Homes Development Ltd</strong><br/>
+      <p><strong> Bridgefort Homes Development Ltd</strong><br/>
       117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, opposite VGC Estate, Lekki, Lagos State<br/>
-      📞 +234 803 062 4059 | 🌐 www.bridgeforthomes.com | ✉️ info@bridgeforthomes.com</p>
+       +234 803 062 4059 |  www.bridgeforthomes.com |  info@bridgeforthomes.com</p>
 
       <p><em>"…Bringing your dream home!."</em></p>
     `
@@ -130,9 +130,9 @@ export const announcementItems: AnnouncementItem[] = [
       </ul>
 
       <h3>For Enquiries:</h3>
-      <p><strong>📞 Phone:</strong> +234 803 062 4059<br/>
-      <strong>✉️ Email:</strong> info@bridgeforthomes.com<br/>
-      <strong>🌐 Website:</strong> www.bridgeforthomes.com</p>
+      <p><strong> Phone:</strong> +234 803 062 4059<br/>
+      <strong> Email:</strong> info@bridgeforthomes.com<br/>
+      <strong> Website:</strong> www.bridgeforthomes.com</p>
 
       <p><em>"…Bringing your dream home!."</em></p>
     `
@@ -160,9 +160,9 @@ export const announcementItems: AnnouncementItem[] = [
       <p>All allocation documents will be available for pickup on the same day. Please bring a valid means of identification and your payment receipts.</p>
 
       <p><strong>For more information, contact:</strong><br/>
-      📞 +234 803 062 4059<br/>
-      ✉️ info@bridgeforthomes.com
-      🌐 www.bridgeforthomes.com</p>
+       +234 803 062 4059<br/>
+       info@bridgeforthomes.com
+       www.bridgeforthomes.com</p>
     `
   },
   {

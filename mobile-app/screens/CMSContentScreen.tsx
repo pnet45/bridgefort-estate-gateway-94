@@ -68,8 +68,8 @@ export default function CMSContentScreen({ page, title }: Props) {
             <Text style={styles.title}>{item.title}</Text>
             {item.subtitle ? <Text style={styles.subtitle}>{item.subtitle}</Text> : null}
             {item.excerpt ? <Text style={styles.excerpt} numberOfLines={3}>{item.excerpt}</Text> : null}
-            {item.event_date ? <Text style={styles.meta}>📅 {new Date(item.event_date).toLocaleString()}</Text> : null}
-            {item.event_location ? <Text style={styles.meta}>📍 {item.event_location}</Text> : null}
+            {item.event_date ? <Text style={styles.meta}> {new Date(item.event_date).toLocaleString()}</Text> : null}
+            {item.event_location ? <Text style={styles.meta}> {item.event_location}</Text> : null}
             {item.link_url ? <Text style={styles.cta}>{item.cta_label || 'Learn more'} →</Text> : null}
           </View>
         </TouchableOpacity>

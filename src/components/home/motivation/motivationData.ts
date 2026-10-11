@@ -2,7 +2,7 @@
 export const motivationData = [
   {
     title: "Valentine 2026: Gift Love That Lasts — Choose Land Over Liabilities",
-    text: "This Valentine, express love the smartest way — gift real estate! Unlike chocolates and flowers that fade, land appreciates in value and secures your loved one's future. At Bridgefort Homes Development Ltd, we help you turn love into lasting wealth. Gift a plot, build a legacy. ❤️",
+    text: "This Valentine, express love the smartest way — gift real estate! Unlike chocolates and flowers that fade, land appreciates in value and secures your loved one's future. At Bridgefort Homes Development Ltd, we help you turn love into lasting wealth. Gift a plot, build a legacy. ",
     author: "Bridgefort Homes Development Ltd Team",
     image: "/lovable-uploads/valentine-2026.jpeg",
     link: "/blog/valentine-2026-gift-of-land"
