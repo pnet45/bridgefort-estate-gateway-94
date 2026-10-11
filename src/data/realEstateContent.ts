@@ -1,9 +1,9 @@
 export const realEstateArticles = [
   {
     id: 'precious-gardens-physical-allocation-2025',
-    title: '📍 Physical Allocation - Precious Gardens Estate Scheme 1',
+    title: ' Physical Allocation - Precious Gardens Estate Scheme 1',
     excerpt: 'We are excited to officially inform you that your plot has been successfully demarcated and ready for allocation at Precious Gardens Scheme 1, Ebute-Okun, Ode-Omi, Ogun Waterside LGA.',
-    content: `# 📍 Physical Allocation - Precious Gardens Estate Scheme 1
+    content: `#  Physical Allocation - Precious Gardens Estate Scheme 1
 
 *By Emmanuel Etokakpan | Admin Officer | Bridgefort Homes Development Ltd*
 
@@ -11,48 +11,48 @@ Dear Valued Investors,
 
 We sincerely appreciate your trust and confidence in us at Bridgefort Homes Development Ltd. Thank you for choosing us as your real estate investment partner. Your patronage means a lot to us, and we are committed to serving you in your best interest.
 
-## 🎉 Your Plot is Ready for Allocation!
+##  Your Plot is Ready for Allocation!
 
 We are excited to officially inform you that your plot has been successfully **demarcated and ready for allocation** at **Precious Gardens Scheme 1**, Ebute-Okun, Ode-Omi, Ogun Waterside LGA, Ogun State.
 
-### 📅 Allocation Details
+###  Allocation Details
 
 **Allocation Day:** Saturday, 20th September 2025  
 **Take-off Time:** 9:00 AM Prompt  
 **Take-off Location:** Plot 117, Wosilat Seriki Street Eleganza Gardens, Opp VGC Estate Lekki-Epe Express
 
-### 📋 Important Information
+###  Important Information
 
 - Your plot(s) documents will be handed over to you at the takeoff location by 9:00am
 - Please make yourself available on or before 9:00am
 - **Documentation Fee:** Kindly ensure you have paid your documentation fee (if you haven't done so) before the allocation date
 - Your documents will be ready for pickup on the same day
 
-### 👥 Sending a Representative?
+###  Sending a Representative?
 
 In the event that you will be sending a representative, we request that you notify us via **pwanbridgefortestates@gmail.com** with details of your representative before the allocation date.
 
-## 🏡 About Precious Gardens Estate Scheme 1
+##  About Precious Gardens Estate Scheme 1
 
 Located in the serene community of Ebute-Okun, Ode-Omi, in Ogun Waterside LGA, Ogun State, Precious Gardens Estate represents premium land ownership with excellent investment potential.
 
-### 🌟 Estate Features
+###  Estate Features
 - Strategic location with excellent accessibility
 - Proper survey and demarcation
 - Clean title documentation
 - Peaceful residential environment
 - Growth potential in emerging area
 
-## 🎊 Congratulations on Your New Land Ownership!
+##  Congratulations on Your New Land Ownership!
 
 Once again, we congratulate you on your new land ownership and we look forward to celebrating this milestone achievement with you. Thank you for being a valued member of the Bridgefort Homes Development Ltd family.
 
-### 📞 Contact Information
+###  Contact Information
 
 **Emmanuel Etokakpan**  
 Admin Officer  
 Bridgefort Homes Development Ltd  
-📱 07067318720 | 08083209655
+ 07067318720 | 08083209655
 
 ---
 
@@ -67,9 +67,9 @@ The Bridgefort Homes Development Ltd Team`,
   },
   {
     id: 'lagos-rising-smart-time-to-invest',
-    title: '🏙️ Lagos Rising: Why Now Is the Smartest Time to Own a Piece of the Future',
+    title: ' Lagos Rising: Why Now Is the Smartest Time to Own a Piece of the Future',
     excerpt: 'As inflation soars and rental prices skyrocket across Nigeria, owning real estate today is not just smart—it\'s a survival strategy for the future.',
-    content: `# 🏙️ Lagos Rising: Why Now Is the Smartest Time to Own a Piece of the Future
+    content: `#  Lagos Rising: Why Now Is the Smartest Time to Own a Piece of the Future
 
 *By Emmanuel Etokakpan | July 10, 2025*
 
@@ -79,7 +79,7 @@ The first half of 2025 has seen the real estate sector in Lagos dominate the nat
 
 But amid the pressure lies opportunity.
 
-## 🔺 The Rising Cost of Waiting
+##  The Rising Cost of Waiting
 
 Every month spent renting is a step further away from financial independence. With Nigeria's housing deficit climbing above 28 million units and inflation hovering around 23%, land and home prices continue to rise. Those who hesitate are not just delaying — they're losing value.
 
@@ -87,7 +87,7 @@ In places like Epe, Ibeju-Lekki, and Sangotedo, savvy investors are already secu
 
 These areas are not just "upcoming" — they are transforming before our eyes.
 
-## 💡 Why Buying Property Now Makes Sense
+##  Why Buying Property Now Makes Sense
 
 **Capital Appreciation:** Land values in Lagos fringe zones have doubled in less than 24 months. The trend is upward — and fast.
 
@@ -97,15 +97,15 @@ These areas are not just "upcoming" — they are transforming before our eyes.
 
 **Legacy & Security:** Beyond the financials, owning land in Lagos means peace of mind, generational wealth, and a stake in Nigeria's most promising city.
 
-## 💬 A Call to Aspiring Investors
+##  A Call to Aspiring Investors
 
 If you've ever dreamed of owning a property in Lagos — the time is now. Delaying could mean watching prices slip beyond your reach. At Bridgefort Homes Development Ltd, we are helping individuals and families break free from rent traps by offering flexible daily, weekly, and monthly savings plans tailored to make land ownership stress-free and achievable.
 
 Whether you're a first-time buyer or a seasoned investor, our mission is to make your journey smooth, transparent, and rewarding. Because in Lagos, owning property is not just a dream — it's a decision. One that pays for a lifetime.
 
-**📍 Ready to take the first step?** Visit us at 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, Opp VGC Estate, Lekki, Lagos.
+** Ready to take the first step?** Visit us at 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, Opp VGC Estate, Lekki, Lagos.
 
-**📞** +2348030624059 | **🌐** www.pwanbridgefort.ng | **📩** info@pwanbridgefort.ng`,
+**** +2348030624059 | **** www.pwanbridgefort.ng | **** info@pwanbridgefort.ng`,
     category: 'Investment',
     image: '/lovable-uploads/city-skyscrapers-.png',
     date: '2025-07-10',
@@ -113,9 +113,9 @@ Whether you're a first-time buyer or a seasoned investor, our mission is to make
   },
   {
     id: 'real-estate-new-oil-nigeria',
-    title: '🌆 Why Real Estate Is Now Nigeria\'s New Oil — And Why You Must Invest Now',
+    title: ' Why Real Estate Is Now Nigeria\'s New Oil — And Why You Must Invest Now',
     excerpt: 'Real estate has officially overtaken oil and gas to become Nigeria\'s third-largest economic sector. The era of land wealth has arrived.',
-    content: `# 🌆 Why Real Estate Is Now Nigeria's New Oil — And Why You Must Invest Now
+    content: `#  Why Real Estate Is Now Nigeria's New Oil — And Why You Must Invest Now
 
 *By: Olatunji Paul | 23rd July 2025*
 
@@ -123,25 +123,25 @@ In a groundbreaking shift that speaks volumes about Nigeria's economic transform
 
 If you've ever doubted the power of owning property, now is the time to open your eyes to what is happening in plain sight.
 
-## 📈 From Black Gold to Green Fields
+##  From Black Gold to Green Fields
 
 With the latest rebasing of Nigeria's GDP by the National Bureau of Statistics, real estate now trails only crop production and trade, firmly planting itself as a backbone of the economy. The numbers don't lie: the sector recorded an astonishing 46.52% growth in Q3 2024 alone, and projections from Statista suggest it could hit $2.61 trillion in value by 2025 — with Lagos and other urban centers leading the charge.
 
 This shift is not just economic — it's generational. It's a signal that the era of land wealth has arrived, and those who act now will reap the long-term rewards.
 
-## 🏡 Why the Smart Money Is Going Into Property
+##  Why the Smart Money Is Going Into Property
 
 Even with inflation, rising costs of living, and unstable interest rates, the demand for property continues to soar, especially in Lagos. Why? Because land doesn't depreciate. It doesn't disappear. It appreciates — consistently, silently, and significantly.
 
 Nigeria's housing deficit is estimated at over 28 million units. Every year, we fall short by hundreds of thousands of homes. And with over 80% of urban dwellers living in rented spaces, the pressure on real estate is mounting. For smart investors, this is the perfect window of opportunity.
 
-## 💡 Lagos: The Land of Limitless Potential
+##  Lagos: The Land of Limitless Potential
 
 In cities like Lagos — and specifically areas such as Epe, Ibeju-Lekki, Sangotedo, and the Lekki Free Trade Zone — development is moving faster than ever. From the Lekki Deep Sea Port and Dangote Refinery, to the upcoming Lagos International Airport, the transformation is already unfolding.
 
 Early investors are watching their plots double and triple in value. The future is here, and it's being built on land.
 
-## 🚀 10 Habits of Successful Real Estate Investors
+##  10 Habits of Successful Real Estate Investors
 
 1. They start early — even with little.
 2. They invest consistently, regardless of trends.
@@ -156,16 +156,16 @@ Early investors are watching their plots double and triple in value. The future 
 
 At Bridgefort Homes Development Ltd, we are helping hundreds of everyday Nigerians — salaried workers, small business owners, and young professionals — own land through our flexible Daily, Weekly, and Monthly Savings Plans. With just a 20% initial deposit, you can begin your journey toward true ownership and generational wealth.
 
-## 📣 Final Word: Land Is the New Legacy
+##  Final Word: Land Is the New Legacy
 
 The rebasing of Nigeria's economy is more than a statistical update — it is a call to action. A call to think beyond survival, beyond rent, beyond temporary gain. It's time to invest in what outlasts inflation, jobs, and even oil — land.
 
 If there's one thing the rich understand, it's this: **Buy land. Wait. Let time and development do the rest.**
 
-**📍** Visit us at: 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, Opp VGC Estate, Lekki, Lagos  
-**📞** Call/WhatsApp: +2348030624059  
-**🌐** Website: www.pwanbridgefort.ng  
-**📩** Email: info@pwanbridgefort.ng
+**** Visit us at: 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, Opp VGC Estate, Lekki, Lagos  
+**** Call/WhatsApp: +2348030624059  
+**** Website: www.pwanbridgefort.ng  
+**** Email: info@pwanbridgefort.ng
 
 *Bridgefort Homes Development Ltd — Rebuilding the Future, One Plot at a Time.*`,
     category: 'Market Analysis',
@@ -175,9 +175,9 @@ If there's one thing the rich understand, it's this: **Buy land. Wait. Let time 
   },
   {
     id: 'digital-real-estate-future-africa',
-    title: '🔗 The Future of Real Estate in Africa Is Digital — Lagos Is Leading the Charge',
+    title: ' The Future of Real Estate in Africa Is Digital — Lagos Is Leading the Charge',
     excerpt: 'Technology is no longer optional in real estate; it\'s the future. Lagos is showing remarkable leadership in pushing through digital transformation barriers.',
-    content: `# 🔗 The Future of Real Estate in Africa Is Digital — Lagos Is Leading the Charge
+    content: `#  The Future of Real Estate in Africa Is Digital — Lagos Is Leading the Charge
 
 *By Precious Silva | July 2025*
 
@@ -185,13 +185,13 @@ The real estate sector in Africa is standing at the edge of a digital revolution
 
 Their conclusion? Tech-enabled real estate is the only viable way forward.
 
-## 🌍 Why Technology Is Now a Game Changer
+##  Why Technology Is Now a Game Changer
 
 From online property listings and virtual tours to AI-powered valuation and blockchain-based title verification, technology is rapidly transforming how properties are bought, sold, and managed. As Chude Osiegbu, CEO of Venco Nigeria, pointed out, "Technology has the power to solve core real estate challenges in Africa — from transparency in transactions to infrastructure planning and affordability."
 
 But this transformation isn't without its hurdles. Issues such as connectivity gaps, digital illiteracy, and a lack of standardized data continue to slow progress across African cities. Yet, Lagos is showing remarkable leadership in pushing through these barriers — thanks to a growing tech ecosystem, massive infrastructure investments, and forward-looking developers.
 
-## 💡 Global Lessons, Local Innovation
+##  Global Lessons, Local Innovation
 
 Kevin Brown, President-elect of NAR, gave a powerful keynote at the summit, revealing that even developed countries like the United States face massive housing deficits — with over 3.8 million homes needed. According to Brown, closing the housing gap requires "innovation and capital," and that's where proptech (property technology) comes in.
 
@@ -199,7 +199,7 @@ NAR has already backed tech startups across North America, Israel, and the UK �
 
 Why? Because cities like Lagos, Nairobi, and Kampala are rapidly becoming the heartbeat of real estate innovation in the Global South.
 
-## 🏗️ Building Smart Cities: What It Means for You
+##  Building Smart Cities: What It Means for You
 
 At the heart of these discussions was one theme: urban resilience. Working groups at the summit explored how smart infrastructure, sustainable housing design, and digital land administration can drive inclusive growth and open real estate investment to more people.
 
@@ -210,7 +210,7 @@ Imagine a Lagos where:
 
 This isn't science fiction — this is the direction we are headed, and investors who take position early will be the true beneficiaries.
 
-## 💸 Why Investors Should Act Now
+##  Why Investors Should Act Now
 
 The fusion of technology and real estate is creating new windows of opportunity for local and international investors alike. From smart estates in Epe to digitally managed communities in Ibeju-Lekki, Lagos is becoming a hub for modern, high-yield real estate assets.
 
@@ -219,7 +219,7 @@ But to fully tap into these opportunities, we need collaboration:
 - Between African talent and international capital
 - Between investors like you and trusted real estate brands like Bridgefort Homes Development Ltd
 
-## 🚀 The Time to Own the Future Is Now
+##  The Time to Own the Future Is Now
 
 At Bridgefort Homes Development Ltd, we understand where the market is going. That's why we offer flexible subscription plans — daily, weekly, and monthly — to help everyday Nigerians and diaspora investors secure plots in fast-growing, infrastructure-rich locations.
 
