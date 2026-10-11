@@ -54,7 +54,7 @@ const AdminNotificationCenter: React.FC<AdminNotificationCenterProps> = ({
         setNotifications(prev => [newNotification, ...prev]);
         
         toast({
-          title: "📬 New Contact Message",
+          title: " New Contact Message",
           description: `From ${newMessage.name}: ${newMessage.subject}`,
         });
       })
@@ -77,7 +77,7 @@ const AdminNotificationCenter: React.FC<AdminNotificationCenterProps> = ({
         setNotifications(prev => [newNotification, ...prev]);
         
         toast({
-          title: "🔐 New Admin Request",
+          title: " New Admin Request",
           description: `${newRequest.email} is requesting admin access`,
         });
       })
