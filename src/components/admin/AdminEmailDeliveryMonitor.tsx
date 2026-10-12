@@ -121,7 +121,7 @@ export default function AdminEmailDeliveryMonitor() {
             <Card key={String(label)} className="rounded-2xl border-slate-200 shadow-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-500">{label}</span>
+                  <span className="text-xs font-medium text-slate-500">{String(label)}</span>
                   <Icon className={`h-4 w-4 ${tone}`} />
                 </div>
                 <div className="mt-2 text-2xl font-bold text-slate-900">{String(value)}</div>
