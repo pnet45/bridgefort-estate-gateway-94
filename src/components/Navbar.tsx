@@ -62,11 +62,8 @@ const Navbar = () => {
         <nav className="glass-strong fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 h-[88px] lg:h-[104px] border-b border-estate-purple/10">
         <div className="container-custom flex flex-col flex-1 h-full">
           <div className="flex justify-between items-center py-3 flex-shrink-0 relative h-full">
-            {/* Mobile: Empty spacer for left side to balance the menu icon */}
-            <div className="lg:hidden w-8" />
-            
-            {/* Logo - centered on mobile, left on desktop */}
-            <div className="lg:absolute lg:relative lg:left-0 flex-1 lg:flex-none flex justify-center lg:justify-start">
+            {/* Brand - logo left; label centered on mobile, beside logo on desktop */}
+            <div className="flex items-center shrink-0">
               <LogoSlideIn />
             </div>
 
