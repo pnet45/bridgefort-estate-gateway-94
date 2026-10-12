@@ -176,11 +176,11 @@ const AdminCRMWorkspace: React.FC = () => {
           </Card>
         </CardContent>
       </Card>
-      </div>
       <div id="crm-ai" className="min-w-0 scroll-mt-28"><AdminLeadAIAssistant /></div>
       <div id="crm-analytics" className="min-w-0 scroll-mt-28"><AdminInquiryAnalytics /></div>
       <div id="crm-leads" className="min-w-0 scroll-mt-28"><AdminCRMLeads /></div>
       <div id="crm-customer360" className="min-w-0 scroll-mt-28"><AdminCustomer360 /></div>
+      </div>
     </div>
   );
 };
