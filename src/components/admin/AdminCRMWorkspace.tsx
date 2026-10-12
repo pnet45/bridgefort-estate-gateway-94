@@ -127,11 +127,11 @@ const AdminCRMWorkspace: React.FC = () => {
 
 
 
-          <Card className="bg-slate-900/40 border-slate-700">
+          <Card id="crm-journeys" className="bg-white border-slate-200 shadow-sm scroll-mt-28">
             <CardHeader className="pb-2">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <CardTitle className="text-sm text-white flex items-center gap-2"><BriefcaseBusiness className="h-4 w-4 text-primary" />Service Journeys</CardTitle>
-                <span className="text-xs text-slate-500">{metrics.journeys} linked service records</span>
+                <CardTitle className="text-sm text-slate-900 flex items-center gap-2"><BriefcaseBusiness className="h-4 w-4 text-primary" />Service Journeys</CardTitle>
+                <span className="text-xs text-slate-600">{metrics.journeys} linked service records</span>
               </div>
             </CardHeader>
             <CardContent>
@@ -150,11 +150,11 @@ const AdminCRMWorkspace: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-900/40 border-slate-700">
+          <Card id="crm-followups" className="bg-white border-slate-200 shadow-sm scroll-mt-28">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm text-white flex items-center gap-2"><Clock3 className="h-4 w-4 text-amber-400" />Follow-ups requiring attention</CardTitle>
-                <span className="text-xs text-slate-500">Overdue + due today</span>
+                <CardTitle className="text-sm text-slate-900 flex items-center gap-2"><Clock3 className="h-4 w-4 text-amber-400" />Follow-ups requiring attention</CardTitle>
+                <span className="text-xs text-slate-600">Overdue + due today</span>
               </div>
             </CardHeader>
             <CardContent>
