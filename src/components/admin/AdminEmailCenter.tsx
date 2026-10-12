@@ -36,7 +36,8 @@ export default function AdminEmailCenter() {
   const [fullViewEmail, setFullViewEmail] = useState(false);
   const [listWidth, setListWidth] = useState(430);
   const [isResizing, setIsResizing] = useState(false);
-  const [adminEmails, setAdminEmails] = useState<unknown[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [adminEmails, setAdminEmails] = useState<any[]>([]);
   const [availableMailboxes, setAvailableMailboxes] = useState<AvailableMailbox[]>([]);
   const [mailboxesLoading, setMailboxesLoading] = useState(true);
   const [activeMailbox, setActiveMailbox] = useState<string | null>(null);

@@ -223,13 +223,13 @@ const BHRealtors: React.FC = () => {
               [LockKeyhole, 'Locked commission', naira(locked)],
               [Wallet, 'Available balance', naira(availableBalance)],
               [Wallet, 'Pending withdrawal', naira(pendingWithdrawal)],
-            ].map(([Icon, label, value]) => (
+            ].map(([IconRaw, labelRaw, value]) => { const Icon = IconRaw as typeof Users; const label = String(labelRaw); return (
               <div key={label} className={`${glass} rounded-2xl p-4`}>
                 <Icon className="h-5 w-5 text-estate-purple" />
                 <p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">{label}</p>
-                <p className="mt-1 text-xl font-bold text-slate-950 dark:text-white">{value}</p>
+                <p className="mt-1 text-xl font-bold text-slate-950 dark:text-white">{String(value)}</p>
               </div>
-            ))}
+            ); })}
           </section>
 
           {isRealtor && (
