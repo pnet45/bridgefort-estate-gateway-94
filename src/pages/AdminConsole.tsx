@@ -42,7 +42,7 @@ import AdminLeoKnowledgeManagement from '@/components/admin/AdminLeoKnowledgeMan
 import { toast } from '@/hooks/use-toast';
 
 type TawkWindow = Window & { Tawk_API?: { hideWidget?: () => void; showWidget?: () => void; onLoad?: () => void } };
-const ADMIN_TAB_CLASS = 'text-white data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5 text-xs sm:text-sm whitespace-nowrap';
+const ADMIN_TAB_CLASS = 'text-slate-700 hover:bg-slate-100 data-[state=active]:bg-[#241047] data-[state=active]:text-white gap-1.5 text-xs sm:text-sm whitespace-nowrap';
 const getAdminDisplayLabel = (role: string | null | undefined) => { if (!role) return 'Administrator'; return isAdminRole(role) ? 'Administrator' : 'Administrator'; };
 
 const AdminConsole = () => {
