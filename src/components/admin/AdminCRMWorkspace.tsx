@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Activity, AlertCircle, ArrowRight, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, Phone, RefreshCw, Target, TrendingUp, Users, BriefcaseBusiness } from 'lucide-react';
+import { Activity, AlertCircle, ArrowRight, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, Phone, RefreshCw, Target, TrendingUp, Users, BriefcaseBusiness, PanelLeftClose, PanelLeftOpen, ListChecks, BrainCircuit, BarChart3, UserRoundSearch } from 'lucide-react';
 import { format } from 'date-fns';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
 import AdminCustomer360 from '@/components/admin/AdminCustomer360';
@@ -23,6 +23,7 @@ const AdminCRMWorkspace: React.FC = () => {
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [journeys, setJourneys] = useState<Journey[]>([]);
   const [loading, setLoading] = useState(true);
+  const [crmNavCollapsed, setCrmNavCollapsed] = useState(false);
 
   const loadWorkspace = useCallback(async () => {
     setLoading(true);
@@ -71,13 +72,18 @@ const AdminCRMWorkspace: React.FC = () => {
   }, [leads, followUps]);
 
   return (
-    <div className="space-y-5">
-      <Card className="bg-slate-800 border-slate-700">
+    <div className={`grid grid-cols-1 gap-5 lg:items-start ${crmNavCollapsed ? "lg:grid-cols-[4.25rem_minmax(0,1fr)]" : "lg:grid-cols-[14rem_minmax(0,1fr)]"}`}>
+      <aside className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto">
+        <div className="flex items-center justify-between gap-2 mb-3"><p className={`text-xs font-bold uppercase tracking-wider text-slate-500 ${crmNavCollapsed ? "lg:hidden" : ""}`}>CRM workspace</p><Button type="button" variant="ghost" size="icon" className="hidden lg:inline-flex text-slate-600 hover:bg-slate-100" onClick={() => setCrmNavCollapsed(value => !value)} aria-label={crmNavCollapsed ? "Expand CRM submenu" : "Collapse CRM submenu"}>{crmNavCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}</Button></div>
+        {[{ id: "crm-overview", label: "Overview", icon: Target }, { id: "crm-pipeline", label: "Sales pipeline", icon: ListChecks }, { id: "crm-journeys", label: "Service journeys", icon: BriefcaseBusiness }, { id: "crm-followups", label: "Follow-ups", icon: CalendarClock }, { id: "crm-ai", label: "Leo AI assistant", icon: BrainCircuit }, { id: "crm-analytics", label: "Inquiry analytics", icon: BarChart3 }, { id: "crm-leads", label: "Lead management", icon: Users }, { id: "crm-customer360", label: "Customer 360", icon: UserRoundSearch }].map(item => <button key={item.id} type="button" onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })} title={crmNavCollapsed ? item.label : undefined} className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 mb-1 text-left text-sm font-medium text-slate-700 hover:bg-violet-50 hover:text-violet-900 transition-colors ${crmNavCollapsed ? "lg:justify-center lg:px-2" : ""}`}><item.icon className="h-4 w-4 shrink-0" /><span className={crmNavCollapsed ? "lg:hidden" : ""}>{item.label}</span></button>)}
+      </aside>
+      <div className="min-w-0 space-y-5">
+      <Card id="crm-overview" className="bg-white border-slate-200 shadow-sm scroll-mt-28">
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <CardTitle className="text-white flex items-center gap-2"><Target className="h-5 w-5 text-primary" />CRM Workspace</CardTitle>
-              <p className="text-sm text-slate-400 mt-1">One place to see the sales pipeline, follow-ups and conversion activity.</p>
+              <CardTitle className="text-slate-900 flex items-center gap-2"><Target className="h-5 w-5 text-primary" />CRM Workspace</CardTitle>
+              <p className="text-sm text-slate-600 mt-1">One place to see the sales pipeline, follow-ups and conversion activity.</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => void loadWorkspace()} disabled={loading} className="gap-2">
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh
@@ -96,25 +102,25 @@ const AdminCRMWorkspace: React.FC = () => {
               { label: 'Win Rate', value: `${metrics.winRate}%`, icon: Target },
               { label: 'Won Value', value: formatNaira(metrics.wonValue), icon: CircleDollarSign },
             ].map(item => (
-              <div key={item.label} className="rounded-lg border border-slate-700 bg-slate-900/50 p-3">
-                <div className="flex items-center gap-2 text-slate-400"><item.icon className="h-4 w-4" /><span className="text-xs">{item.label}</span></div>
-                <p className="text-lg font-bold text-white mt-1 truncate">{item.value}</p>
+              <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-center gap-2 text-slate-600"><item.icon className="h-4 w-4" /><span className="text-xs">{item.label}</span></div>
+                <p className="text-lg font-bold text-slate-900 mt-1 truncate">{item.value}</p>
               </div>
             ))}
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-            <Card className="xl:col-span-2 bg-slate-900/40 border-slate-700">
-              <CardHeader className="pb-2"><CardTitle className="text-sm text-white">Pipeline</CardTitle></CardHeader>
+            <Card id="crm-pipeline" className="xl:col-span-2 bg-white border-slate-200 shadow-sm scroll-mt-28">
+              <CardHeader className="pb-2"><CardTitle className="text-sm text-slate-900">Pipeline</CardTitle></CardHeader>
               <CardContent><div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
-                {pipeline.map(item => <div key={item.status} className="rounded-md bg-slate-800 p-3"><p className="text-xs text-slate-400">{titleCase(item.status)}</p><p className="text-xl font-semibold text-white">{item.count}</p></div>)}
+                {pipeline.map(item => <div key={item.status} className="rounded-xl border border-slate-200 bg-slate-50 p-3"><p className="text-xs text-slate-600">{titleCase(item.status)}</p><p className="text-xl font-semibold text-slate-900">{item.count}</p></div>)}
               </div></CardContent>
             </Card>
-            <Card className="bg-slate-900/40 border-slate-700">
+            <Card className="bg-white border-slate-200 shadow-sm scroll-mt-28">
               <CardHeader className="pb-2"><CardTitle className="text-sm text-white">Lead Sources</CardTitle></CardHeader>
               <CardContent className="space-y-2">
                 {sourceBreakdown.length === 0 && <p className="text-sm text-slate-500">No lead data yet.</p>}
-                {sourceBreakdown.map(([source, count]) => <div key={source} className="flex items-center justify-between text-sm"><span className="text-slate-300">{titleCase(source)}</span><Badge variant="secondary">{count}</Badge></div>)}
+                {sourceBreakdown.map(([source, count]) => <div key={source} className="flex items-center justify-between text-sm"><span className="text-slate-700">{titleCase(source)}</span><Badge variant="secondary">{count}</Badge></div>)}
               </CardContent>
             </Card>
           </div>
@@ -133,10 +139,10 @@ const AdminCRMWorkspace: React.FC = () => {
                 {Array.from(new Set(journeys.map(j => j.service_type))).slice(0,5).map(type => {
                   const count = journeys.filter(j => j.service_type === type).length;
                   const active = journeys.filter(j => j.service_type === type && !['CONVERTED','LOST','CLOSED','COMPLETED','CANCELLED','DECLINED','EXPIRED'].includes(j.status)).length;
-                  return <div key={type} className="rounded-xl border border-slate-700 bg-slate-800/70 p-3">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-500">{titleCase(type)}</p>
+                  return <div key={type} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-[11px] uppercase tracking-wide text-slate-600">{titleCase(type)}</p>
                     <p className="mt-1 text-xl font-semibold text-white">{count}</p>
-                    <p className="text-[11px] text-slate-400">{active} active</p>
+                    <p className="text-[11px] text-slate-600">{active} active</p>
                   </div>;
                 })}
                 {journeys.length === 0 && <p className="col-span-full py-4 text-center text-sm text-slate-500">Service journeys will appear here as customers interact with Bridgefort services.</p>}
@@ -153,13 +159,13 @@ const AdminCRMWorkspace: React.FC = () => {
             </CardHeader>
             <CardContent>
               {attention.length === 0 ? <div className="py-5 text-center text-sm text-slate-500">No overdue or due-today follow-ups.</div> : (
-                <div className="divide-y divide-slate-800">
+                <div className="divide-y divide-slate-200">
                   {attention.map(({ followUp, lead }) => {
                     const overdue = new Date(followUp.scheduled_at).getTime() < Date.now();
                     return <div key={followUp.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 py-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2"><span className="font-medium text-white truncate">{lead?.name}</span><Badge className={overdue ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-300'}>{overdue ? 'Overdue' : 'Today'}</Badge></div>
-                        <p className="text-xs text-slate-400 mt-1">{titleCase(followUp.action_type)} · {format(new Date(followUp.scheduled_at), 'MMM d, h:mm a')}{lead?.estate_interest ? ` · ${lead.estate_interest}` : ''}</p>
+                        <p className="text-xs text-slate-600 mt-1">{titleCase(followUp.action_type)} · {format(new Date(followUp.scheduled_at), 'MMM d, h:mm a')}{lead?.estate_interest ? ` · ${lead.estate_interest}` : ''}</p>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-slate-500">{lead?.phone && <Phone className="h-3.5 w-3.5" />}<ArrowRight className="h-3.5 w-3.5" /></div>
                     </div>;
@@ -170,10 +176,11 @@ const AdminCRMWorkspace: React.FC = () => {
           </Card>
         </CardContent>
       </Card>
-      <AdminLeadAIAssistant />
-      <AdminInquiryAnalytics />
-      <AdminCRMLeads />
-      <AdminCustomer360 />
+      </div>
+      <div id="crm-ai" className="min-w-0 scroll-mt-28"><AdminLeadAIAssistant /></div>
+      <div id="crm-analytics" className="min-w-0 scroll-mt-28"><AdminInquiryAnalytics /></div>
+      <div id="crm-leads" className="min-w-0 scroll-mt-28"><AdminCRMLeads /></div>
+      <div id="crm-customer360" className="min-w-0 scroll-mt-28"><AdminCustomer360 /></div>
     </div>
   );
 };
