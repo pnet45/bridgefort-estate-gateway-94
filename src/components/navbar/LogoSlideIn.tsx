@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const LIGHT_LOGO = '/lovable-uploads/BridgefortHomesLogo.png';
-const DARK_LOGO = '/bridgefort-logo-dark.png';
+// Existing second logo asset is used for dark mode to avoid referencing a missing file.
+const DARK_LOGO = '/images/BridgefortHomesLogo2.png';
 
 /**
- * Header brand: logo slides in from the left. The "BRIDGEFORT HOMES" label
- * drops in centered on mobile and slides in beside the logo on desktop.
- * Logo swaps via the existing `dark` class on <html>; motion respects
- * prefers-reduced-motion through the bf-* animation classes in index.css.
+ * Header brand: theme-aware logo. The brand mark slides in from the left;
+ * the label drops in centered on mobile and slides in beside the logo on desktop.
+ * Theme switching follows the existing `.dark` class on <html>.
  */
 const LogoSlideIn = () => {
   const [darkLogoFailed, setDarkLogoFailed] = useState(false);
@@ -32,20 +32,18 @@ const LogoSlideIn = () => {
         )}
       </Link>
 
-      {/* Mobile: centered, drops from top */}
       <span
         aria-hidden="true"
         className="lg:hidden pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap"
       >
-        <span className="block bf-label-drop font-bold tracking-[0.14em] text-xs sm:text-base text-foreground">
+        <span className="block bf-label-drop font-extrabold tracking-[0.12em] text-sm sm:text-base md:text-lg text-foreground">
           BRIDGEFORT HOMES
         </span>
       </span>
 
-      {/* Desktop: immediately after the logo, slides from left */}
       <span
         aria-hidden="true"
-        className="hidden xl:inline-block ml-3 whitespace-nowrap bf-label-slide font-bold tracking-[0.16em] text-base text-foreground"
+        className="hidden lg:inline-block ml-3 whitespace-nowrap bf-label-slide font-extrabold tracking-[0.12em] text-lg xl:text-xl 2xl:text-2xl text-foreground"
       >
         BRIDGEFORT HOMES
       </span>
