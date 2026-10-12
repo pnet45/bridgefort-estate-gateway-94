@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Plane, Hotel, MapPin, FileCheck, Shield, Headphones, BadgeDollarSign,
-  Compass, CalendarCheck, Ticket, Globe2, Check, Star, Briefcase, GraduationCap, Stethoscope, Heart, SearchX
+  Compass, CalendarCheck, Ticket, Globe2, Check, Star, Briefcase, GraduationCap, Stethoscope, Heart, SearchX, Clock, Wallet, House
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -24,7 +24,7 @@ const valueProps = [
 
 type DestType = Exclude<TravelType, 'all'>;
 interface Destination {
-  city: string; country: string; img?: string; flag?: string; from: string; price: number; types: DestType[];
+  city: string; country: string; img?: string; from: string; price: number; types: DestType[]; workProgram?: boolean;
 }
 
 const destinations: Destination[] = [
@@ -34,21 +34,19 @@ const destinations: Destination[] = [
   { city: 'Cape Town', country: 'South Africa', img: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=900&q=80', from: '920,000', price: 920000, types: ['tourist', 'luxury'] },
   { city: 'Bali', country: 'Indonesia', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80', from: '1,250,000', price: 1250000, types: ['tourist', 'luxury'] },
   { city: 'New York', country: 'United States', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=900&q=80', from: '2,000,000', price: 2000000, types: ['tourist', 'business', 'student'] },
-  // Travel & Work in Europe — 100% guaranteed visa destinations, matching
-  // the Bridgefort Travels flyer. Total cost ranges ₦6.5M–₦8.5M depending on
-  // country, payable in instalments (see the dedicated campaign section).
-  { city: 'Poland', country: 'Work & Residence Visa', flag: '🇵🇱', from: '6,500,000', price: 6500000, types: ['work'] },
-  { city: 'Romania', country: 'Work & Residence Visa', flag: '🇷🇴', from: '6,500,000', price: 6500000, types: ['work'] },
-  { city: 'Belarus', country: 'Work & Residence Visa', flag: '🇧🇾', from: '6,800,000', price: 6800000, types: ['work'] },
-  { city: 'Moldova', country: 'Work & Residence Visa', flag: '🇲🇩', from: '6,800,000', price: 6800000, types: ['work'] },
-  { city: 'Serbia', country: 'Work & Residence Visa', flag: '🇷🇸', from: '7,200,000', price: 7200000, types: ['work'] },
-  { city: 'Czech Republic', country: 'Work & Residence Visa', flag: '🇨🇿', from: '7,500,000', price: 7500000, types: ['work'] },
-  { city: 'Ukraine', country: 'Work & Residence Visa', flag: '🇺🇦', from: '7,000,000', price: 7000000, types: ['work'] },
-  { city: 'Russia', country: 'Work & Residence Visa', flag: '🇷🇺', from: '8,500,000', price: 8500000, types: ['work'] },
+  // Work-abroad destinations from the supplied Bridgefort Travels campaign artwork.
+  { city: 'Poland', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1519197924294-4ba991a11128?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Czech Republic', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1541849546-216549ae216d?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Serbia', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1555990538-1e6c1e4c1f5d?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Romania', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Portugal', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Belarus', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1513326738677-b0c1c9e8db6d?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Moldova', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1562835155-7b3b4c7c6f10?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Ukraine', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1561542320-9a18cd340469?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
 ];
 
 const PRICE_MIN = 500000;
-const PRICE_MAX = 8500000;
+const PRICE_MAX = 12000000;
 
 const packages = [
   {
@@ -171,7 +169,7 @@ const Travels = () => {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="inline-block px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-sm font-semibold tracking-wide w-fit mb-6"
           >
-            ✈️ Bridgefort Travels
+            Bridgefort Travels
           </motion.span>
           <motion.h1
             initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
@@ -266,7 +264,7 @@ const Travels = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: i * 0.06 }}
                   className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-2xl transition-shadow cursor-pointer"
-                  onClick={() => scrollToBooking(d.flag ? 'Work & Travel Europe' : '', d.city)}
+                  onClick={() => scrollToBooking(d.workProgram ? 'Work & Travel Europe' : '', d.city)}
                 >
                   <div className="aspect-[4/5] overflow-hidden">
                     {d.img ? (
@@ -278,14 +276,14 @@ const Travels = () => {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-estate-blue via-estate-darkBlue to-estate-red transition-transform duration-700">
-                        <span className="text-5xl">{d.flag}</span>
+                        <Globe2 className="h-14 w-14 text-white/85" aria-hidden="true" />
                       </div>
                     )}
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                  {d.flag && (
+                  {d.workProgram && (
                     <span className="absolute top-2 right-2 text-[10px] font-bold uppercase tracking-wide bg-emerald-500 text-white rounded-full px-2 py-0.5">
-                      Visa Guaranteed
+                      Work Abroad
                     </span>
                   )}
                   <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
@@ -403,29 +401,53 @@ const Travels = () => {
                 Travel &amp; <span className="text-amber-400">Work</span> in Europe
               </h2>
               <p className="text-lg text-white/85 mb-2">
-                Salary: <span className="font-bold text-amber-300">€500 to €1500 monthly</span>
+                Indicative salary: <span className="font-bold text-amber-300">€500 to €1,500 monthly</span>
               </p>
               <p className="text-white/70 mb-6 max-w-lg">
-                100% guaranteed visa to 8 European countries — depending on the country of choice,
-                total cost ranges from ₦6.5M to ₦8.5M, payable in instalments (not all at once).
-                The process takes between 1 and 5 months, depending on your chosen country.
+                Work-abroad and residence application support across eight destinations. The campaign artwork lists estimated total costs from ₦6.5M to ₦12M, with instalment options and processing timelines of approximately 1–5 months. Eligibility, job availability, visa decisions and final costs depend on the employer, country and official requirements; no visa outcome is guaranteed.
               </p>
 
               <p className="text-sm font-semibold uppercase tracking-wide text-amber-300 mb-3">
-                100% Guaranteed Visa To:
+                Featured Work-Abroad Destinations:
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-8 max-w-lg">
-                {destinations.filter((d) => d.flag).map((d) => (
+                {destinations.filter((d) => d.workProgram).map((d) => (
                   <button
                     key={d.city}
                     onClick={() => scrollToBooking('Work & Travel Europe', d.city)}
                     className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/15 rounded-lg px-3 py-2 text-sm transition-colors text-left"
                   >
-                    <span className="text-lg">{d.flag}</span> {d.city}
+                    <Globe2 className="h-4 w-4 shrink-0" aria-hidden="true" /> {d.city}
                   </button>
                 ))}
               </div>
 
+              <div className="grid sm:grid-cols-2 gap-3 mb-7">
+                {[
+                  { country: 'Poland', roles: 'Warehouse, metal production, field work', age: '18–50', salary: '€1,100–€1,500' },
+                  { country: 'Czech Republic', roles: 'Warehouse, lawn care, forestry, cleaning', age: '18–52', salary: '€700–€1,300' },
+                  { country: 'Serbia', roles: 'Fruit and vegetable packing, solar installation, courier', age: '18–55', salary: '€550–€950' },
+                  { country: 'Romania', roles: 'Meat factory', age: '18–55', salary: '€800–€900' },
+                  { country: 'Portugal', roles: 'Fruit and vegetable farm', age: '18–45', salary: '€800–€1,100' },
+                  { country: 'Belarus', roles: 'Farm work', age: '18–55', salary: '€700–€900' },
+                  { country: 'Moldova', roles: 'Hotel housekeeping', age: '18–50', salary: '€600–€700' },
+                  { country: 'Ukraine', roles: 'Food warehouse, factory, pasta production, postal and transport work', age: '18–55', salary: '€500–€1,000' },
+                ].map((item) => (
+                  <button key={item.country} onClick={() => scrollToBooking('Work & Travel Europe', item.country)} className="text-left rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 p-4 transition-colors">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="font-bold text-white">{item.country}</span>
+                      <span className="text-xs font-semibold text-amber-300 whitespace-nowrap">{item.salary} / month</span>
+                    </div>
+                    <p className="text-sm text-white/75 mt-2">{item.roles}</p>
+                    <div className="flex items-center gap-2 text-xs text-white/60 mt-3"><Clock className="h-3.5 w-3.5" /> Age range shown in campaign: {item.age}</div>
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-3 mb-7 text-sm text-white/80">
+                <span className="inline-flex items-center gap-2"><House className="h-4 w-4 text-amber-300" /> Accommodation support may be available</span>
+                <span className="inline-flex items-center gap-2"><Shield className="h-4 w-4 text-amber-300" /> Document and permit guidance</span>
+                <span className="inline-flex items-center gap-2"><Wallet className="h-4 w-4 text-amber-300" /> Instalment plans subject to terms</span>
+              </div>
               <div className="flex flex-wrap gap-4">
                 <Button variant="cta" size="lg" onClick={() => scrollToBooking('Work & Travel Europe')}>
                   Apply for Work &amp; Travel
