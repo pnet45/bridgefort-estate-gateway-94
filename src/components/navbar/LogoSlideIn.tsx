@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const LIGHT_LOGO = '/lovable-uploads/BridgefortHomesLogo.png';
+const LIGHT_LOGO = '/images/BridgefortHomesLogo.png';
 // Existing second logo asset is used for dark mode to avoid referencing a missing file.
 const DARK_LOGO = '/images/BridgefortHomesLogo2.png';
 
