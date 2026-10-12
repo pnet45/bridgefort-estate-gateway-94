@@ -80,7 +80,7 @@ serve(async (req) => {
         .eq("id", bookingId);
       if (upErr) throw upErr;
 
-      const label = status === "confirmed" ? "Confirmed ✅"
+      const label = status === "confirmed" ? "Confirmed"
         : status === "rejected" ? "Rejected"
         : status === "cancelled" ? "Cancelled" : "Received";
       const colour = status === "confirmed" ? "#16a34a"
