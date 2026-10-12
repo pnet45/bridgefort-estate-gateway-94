@@ -160,7 +160,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   return (
     <>
       <div
-        className={`glass-card rounded-xl border border-border/70 bg-card text-card-foreground shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-estate-gold/60 group cursor-pointer relative ${isSoldOut ? 'opacity-60' : ''}`}
+        className={`glass-card rounded-lg overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group cursor-pointer relative ${isSoldOut ? 'opacity-60' : ''}`}
         onClick={handleCardClick}
         role="button"
         tabIndex={0}
@@ -176,7 +176,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           <img 
             src={images[currentImageIndex]} 
             alt={property.title}
-            className="w-full h-full object-cover bg-muted transition-transform duration-300"
+            className="w-full h-full object-contain bg-gray-100 transition-transform duration-300"
             loading="lazy"
             onError={handleImageError}
           />
@@ -227,12 +227,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           {/* Status Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {property.phase && (
-              <Badge variant="secondary" className="bg-background/95 text-foreground border border-border font-semibold">
+              <Badge variant="secondary" className="bg-white/90 text-estate-blue font-semibold">
                 Phase {property.phase}
               </Badge>
             )}
             {isHome && (
-              <Badge className="bg-estate-blue text-primary-foreground">
+              <Badge className="bg-estate-blue text-white">
                 <Home size={12} className="mr-1" />
                 Home
               </Badge>
@@ -250,13 +250,13 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           </div>
           {/* Property Type Badge */}
           <div className="absolute top-3 right-3">
-            <Badge variant="outline" className="bg-background/95 text-foreground border-border">
+            <Badge variant="outline" className="bg-white/90 text-estate-blue border-estate-blue">
               {property.propertyType}
             </Badge>
           </div>
           {/* Compare toggle */}
           <label
-            className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-background/95 border border-border rounded-full px-2.5 py-1 text-xs font-medium text-foreground cursor-pointer select-none shadow-sm"
+            className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-white/90 rounded-full px-2.5 py-1 text-xs font-medium text-estate-blue cursor-pointer select-none"
             onClick={(e) => e.stopPropagation()}
           >
             <Checkbox
@@ -283,14 +283,14 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             {property.title}
           </h3>
           <PropertyRatingBadge propertyId={property.id} className="mb-2" />
-          <div className="flex items-center text-muted-foreground mb-3">
+          <div className="flex items-center text-gray-600 mb-3">
             <MapPin size={16} className="mr-2 text-estate-red" />
             <span className="text-sm">{property.location}</span>
           </div>
           
           {/* Room info for homes */}
           {isHome && roomInfo && (
-            <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-3">
+            <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
               {roomInfo.bedrooms > 0 && (
                 <div className="flex items-center">
                   <Bed size={14} className="mr-1" />
@@ -307,33 +307,27 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           )}
           
           {/* Property Stats */}
-          {(property.sqm > 0 || property.availablePlots > 0) && (
-            <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-              {property.sqm > 0 && (
-                <div className="flex items-center">
-                  <Maximize size={16} className="mr-2 text-estate-blue" />
-                  <span>{property.sqm} sqm{!isHome ? ' per plot' : ''}</span>
-                </div>
-              )}
-              {property.availablePlots > 0 && (
-                <div className="flex items-center">
-                  <Users size={16} className="mr-2 text-estate-blue" />
-                  <span>{property.availablePlots} {isHome ? 'Units' : 'Plots'} Available</span>
-                </div>
-              )}
+          <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+            <div className="flex items-center">
+              <Maximize size={16} className="mr-2 text-estate-blue" />
+              <span>{property.sqm} sqm{!isHome ? ' per plot' : ''}</span>
             </div>
-          )}
+            <div className="flex items-center">
+              <Users size={16} className="mr-2 text-estate-blue" />
+              <span>{property.availablePlots} {isHome ? 'Units' : 'Plots'} Available</span>
+            </div>
+          </div>
           
           {/* Price */}
           <div className="mb-4">
             <p className="text-2xl font-bold text-estate-red">{property.price}</p>
             {property.pricePerPlot > 0 && !isHome && (
-              <p className="text-sm text-muted-foreground">₦{property.pricePerPlot.toLocaleString()} per plot</p>
+              <p className="text-sm text-gray-600">₦{property.pricePerPlot.toLocaleString()} per plot</p>
             )}
             
             {/* Rental price for homes */}
             {isHome && rentalInfo && (
-              <div className="text-sm text-muted-foreground mt-2">
+              <div className="text-sm text-gray-600 mt-2">
                 <div>Monthly: <span className="font-semibold text-green-600">{rentalInfo.monthly}</span></div>
                 <div>Annual: <span className="font-semibold text-green-600">{rentalInfo.annual}</span></div>
               </div>
@@ -341,25 +335,23 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           </div>
           
           {/* Progress Bar */}
-          {property.totalPlots > 0 && (
-            <div className="mb-4">
-              <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                <span>Availability</span>
-                <span>{Math.round((property.availablePlots / property.totalPlots) * 100)}% available</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className="bg-estate-gold h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(property.availablePlots / property.totalPlots) * 100}%` }}
-                ></div>
-              </div>
+          <div className="mb-4">
+            <div className="flex justify-between text-xs text-gray-600 mb-1">
+              <span>Availability</span>
+              <span>{Math.round((property.availablePlots / property.totalPlots) * 100)}% available</span>
             </div>
-          )}
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-estate-blue h-2 rounded-full transition-all duration-300"
+                style={{ width: `${(property.availablePlots / property.totalPlots) * 100}%` }}
+              ></div>
+            </div>
+          </div>
           {/* Action Buttons */}
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 border-estate-gold text-foreground hover:bg-estate-gold hover:text-slate-950 transition-colors"
+              className="flex-1 border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/properties/estates/${property.id}`);
@@ -369,7 +361,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             </Button>
             {!isSoldOut && (
               <Button
-                className="flex-1 bg-estate-gold hover:bg-amber-300 text-slate-950 transition-colors"
+                className="flex-1 bg-estate-red hover:bg-red-600 text-white transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleAddToCart();
@@ -382,8 +374,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
         </div>
         {/* Overlay if sold out */}
         {isSoldOut && (
-          <div className="absolute inset-0 bg-background/85 flex items-center justify-center rounded-xl pointer-events-none z-10">
-            <span className="text-lg font-bold text-foreground">SOLD OUT</span>
+          <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center rounded-lg pointer-events-none z-10">
+            <span className="text-lg font-bold text-gray-600">SOLD OUT</span>
           </div>
         )}
       </div>

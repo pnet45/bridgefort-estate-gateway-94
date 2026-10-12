@@ -82,7 +82,7 @@ const handler = async (req: Request): Promise<Response> => {
       metadata: { locked_email: lockedEmail.toLowerCase(), attempt_count: safeAttempt },
       payload: { from: "Bridgefort Homes Development Ltd Security <noreply@bridgeforthomes.com>",
       to: [adminEmail],
-      subject: ` Account Locked: ${lockedEmail}`,
+      subject: `🔒 Account Locked: ${lockedEmail}`,
       html: bridgefortEmail(`
         <!DOCTYPE html>
         <html>
@@ -102,12 +102,12 @@ const handler = async (req: Request): Promise<Response> => {
         <body>
           <div class="container">
             <div class="header">
-              <h1> Account Lockout Alert</h1>
+              <h1>🔒 Account Lockout Alert</h1>
               <p>Bridgefort Homes Development Ltd Admin Security</p>
             </div>
             <div class="content">
               <div class="alert-box">
-                <strong> Security Alert:</strong> An admin account has been locked due to multiple failed login attempts.
+                <strong>⚠️ Security Alert:</strong> An admin account has been locked due to multiple failed login attempts.
               </div>
               
               <div class="details">
@@ -141,7 +141,7 @@ const handler = async (req: Request): Promise<Response> => {
               </p>
             </div>
             <div class="footer">
-              <p> ${new Date().getFullYear()} Bridgefort Homes Development Ltd.</p>
+              <p>© ${new Date().getFullYear()} Bridgefort Homes Development Ltd.</p>
               <p>This is an automated security notification.</p>
             </div>
           </div>

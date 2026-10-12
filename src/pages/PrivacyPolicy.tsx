@@ -179,15 +179,15 @@ const PrivacyPolicy = () => {
               <div className="bg-gray-50 p-4 rounded">
                 <p><strong>Bridgefort Homes Development Ltd</strong></p>
                 <p>
-                   Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate,<br />
+                  📍 Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate,<br />
                   VGC Bus Stop, Lekki-Ajah, Lagos
                 </p>
-                <p> <a href="mailto:info@bridgeforthomes.com" className="text-estate-blue hover:underline">info@bridgeforthomes.com</a></p>
-                <p> <a href="tel:+2348030624059, +2348070710688" className="text-estate-blue hover:underline">+234 803 062 4059</a></p>
+                <p>📧 <a href="mailto:info@bridgeforthomes.com" className="text-estate-blue hover:underline">info@bridgeforthomes.com</a></p>
+                <p>📞 <a href="tel:+2348030624059, +2348070710688" className="text-estate-blue hover:underline">+234 803 062 4059</a></p>
               </div>
             </section>
             <footer className="text-center text-gray-600 mt-10">
-               2026 Bridgefort Homes Development Ltd. All rights reserved. <br />
+              © 2026 Bridgefort Homes Development Ltd. All rights reserved. <br />
               This platform and all data are protected under Nigerian law and global privacy standards.
             </footer>
           </div>

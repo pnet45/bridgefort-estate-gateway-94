@@ -84,7 +84,7 @@ const PurchaseGuide = () => {
               <div className="space-y-2">
                 <p className="font-medium">Send documents to:</p>
                 <a href="mailto:sales@pwanbridgefort.ng" className="text-gray-200 hover:text-white transition-colors">
-                   sales@bridgeforthome.com
+                  📧 sales@bridgeforthome.com
                 </a>
                 <p className="text-sm text-gray-200 mt-3">
                   Subject Line: "Estate Subscription & Payment Confirmation – (Your Name)"
@@ -104,7 +104,7 @@ const PurchaseGuide = () => {
               <div className="space-y-2">
                 <p className="font-medium">Sales Hotline:</p>
                 <a href="tel:+2348030624059" className="text-gray-200 hover:text-white transition-colors text-lg font-bold">
-                   +234 803 062 4059
+                  📞 +234 803 062 4059
                 </a>
                 <p className="text-sm text-gray-200 mt-3">
                   Our customer support team is ready to assist you at any stage of your purchase journey.
@@ -119,7 +119,7 @@ const PurchaseGuide = () => {
           <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
             <CardContent className="pt-6">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-estate-blue mb-2">Congratulations! </h3>
+              <h3 className="text-2xl font-bold text-estate-blue mb-2">Congratulations! 🏡✨</h3>
               <p className="text-lg text-gray-700 max-w-2xl mx-auto">
                 Thank you for taking this exciting step toward owning a property in one of our exquisite estates! 
                 We look forward to welcoming you as a valued homeowner.

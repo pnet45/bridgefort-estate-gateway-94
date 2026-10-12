@@ -92,7 +92,7 @@ const handler = async (req: Request): Promise<Response> => {
             subject: "Complete Your Profile - Unlock Full Access to Bridgefort Homes Development Ltd",
             html: bridgefortEmail(`
             <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
-              <h2> Complete Your Bridgefort Homes Profile</h2>
+              <h2>🏡 Complete Your Bridgefort Homes Profile</h2>
               <p>Dear ${safeFirstName},</p>
               <p>Your profile is currently <strong>${percentage}% complete</strong>. Completing it helps us serve you better and gives you access to more account features.</p>
               <div style="margin:20px 0;padding:16px;background:#f3eef8;border-radius:10px;text-align:center">

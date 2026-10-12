@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.3"
   }
   public: {
     Tables: {
@@ -302,6 +302,66 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      admin_menu_visibility: {
+        Row: {
+          id: string
+          is_visible: boolean
+          tab_key: string
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_visible?: boolean
+          tab_key: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_visible?: boolean
+          tab_key?: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_menu_visibility_audit: {
+        Row: {
+          actor_user_id: string | null
+          changed_at: string
+          id: number
+          new_is_visible: boolean | null
+          old_is_visible: boolean | null
+          operation: string
+          tab_key: string
+          target_user_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          changed_at?: string
+          id?: never
+          new_is_visible?: boolean | null
+          old_is_visible?: boolean | null
+          operation: string
+          tab_key: string
+          target_user_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          changed_at?: string
+          id?: never
+          new_is_visible?: boolean | null
+          old_is_visible?: boolean | null
+          operation?: string
+          tab_key?: string
+          target_user_id?: string
         }
         Relationships: []
       }
@@ -822,10 +882,79 @@ export type Database = {
           },
         ]
       }
-      bh_realtor_promotions: {\n        Row: {\n          content: string\n          created_at: string\n          created_by: string | null\n          campaign_period_label: string | null
-          display_order: number\n          ends_at: string | null\n          id: string\n          image_url: string | null\n          slug: string\n          starts_at: string\n          status: string\n          summary: string\n          terms_and_conditions: string\n          title: string\n          updated_at: string\n          updated_by: string | null\n        }\n        Insert: {\n          content?: string\n          created_at?: string\n          created_by?: string | null\n          campaign_period_label?: string | null
-          display_order?: number\n          ends_at: string | null\n          id?: string\n          image_url?: string | null\n          slug: string\n          starts_at: string\n          status?: string\n          summary?: string\n          terms_and_conditions?: string\n          title: string\n          updated_at?: string\n          updated_by?: string | null\n        }\n        Update: {\n          content?: string\n          created_at?: string\n          created_by?: string | null\n          campaign_period_label?: string | null
-          display_order?: number\n          ends_at?: string\n          id?: string\n          image_url?: string | null\n          slug?: string\n          starts_at?: string\n          status?: string\n          summary?: string\n          terms_and_conditions?: string\n          title?: string\n          updated_at?: string\n          updated_by?: string | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"bh_realtor_promotions_created_by_fkey\"\n            columns: [\"created_by\"]\n            isOneToOne: false\n            referencedRelation: \"profiles\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"bh_realtor_promotions_updated_by_fkey\"\n            columns: [\"updated_by\"]\n            isOneToOne: false\n            referencedRelation: \"profiles\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      bh_subscription_payments: {
+      bh_realtor_promotions: {
+        Row: {
+          campaign_period_label: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          display_order: number
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          slug: string
+          starts_at: string
+          status: string
+          summary: string
+          terms_and_conditions: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          campaign_period_label?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          display_order?: number
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          slug: string
+          starts_at: string
+          status?: string
+          summary?: string
+          terms_and_conditions?: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          campaign_period_label?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          display_order?: number
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          slug?: string
+          starts_at?: string
+          status?: string
+          summary?: string
+          terms_and_conditions?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bh_realtor_promotions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bh_realtor_promotions_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bh_subscription_payments: {
         Row: {
           amount: number
           created_at: string
@@ -1696,9 +1825,9 @@ export type Database = {
       }
       email_campaigns: {
         Row: {
+          attachments: Json
           body: string
           body_html: string | null
-          attachments: Json
           created_at: string
           created_by: string | null
           failed_count: number | null
@@ -1716,9 +1845,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          attachments?: Json
           body: string
           body_html?: string | null
-          attachments?: Json
           created_at?: string
           created_by?: string | null
           failed_count?: number | null
@@ -1736,9 +1865,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          attachments?: Json
           body?: string
           body_html?: string | null
-          attachments?: Json
           created_at?: string
           created_by?: string | null
           failed_count?: number | null
@@ -5539,6 +5668,14 @@ export type Database = {
         Args: { root_id: string }
         Returns: {
           id: string
+        }[]
+      }
+      get_manageable_admin_accounts: {
+        Args: never
+        Returns: {
+          display_name: string
+          role_name: string
+          user_id: string
         }[]
       }
       get_my_bhrealtor_commission_history: {

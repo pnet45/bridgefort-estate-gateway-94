@@ -8,9 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  Users, Wallet, RefreshCw, Loader2, CheckCircle2, Network,
+  Users, Wallet, RefreshCw, ArrowUpRight, Loader2, CheckCircle2, Network,
   Trophy, TrendingUp, Building2, Sprout, Target, Star, Crown,
-  BriefcaseBusiness, Copy, Check, ShoppingBag, LockKeyhole,
+  BriefcaseBusiness, Copy, Check, ShoppingBag, LockKeyhole, ChevronRight,
 } from 'lucide-react';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
 import RealtorsRegistrationForm from '@/components/bhRealtors/RealtorsRegistrationForm';
@@ -18,7 +18,6 @@ import ReferralLeaderboard from '@/components/bhRealtors/ReferralLeaderboard';
 import DownlineTree from '@/components/bhRealtors/DownlineTree';
 import CommissionHistory, { type CommissionRow } from '@/components/bhRealtors/CommissionHistory';
 import ReferralShareCard from '@/components/bhRealtors/ReferralShareCard';
-import BHRealtorPromotions from '@/components/bhRealtors/BHRealtorPromotions';
 
 const rank: Record<string, number> = { associate: 1, gold: 2, classic_gold: 3 };
 const naira = (n: number) => `₦${Number(n || 0).toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
@@ -203,9 +202,8 @@ const BHRealtors: React.FC = () => {
                 <h1 className="mt-3 text-4xl font-black leading-tight text-white md:text-6xl">Turn relationships into <span className="text-cyan-200">opportunity</span>.</h1>
                 <p className="mt-5 max-w-3xl text-base leading-7 text-slate-100 md:text-lg">BHRealtors gives you more than a referral link. Build a genuine sales network, introduce people to quality real estate opportunities, earn according to your package, and grow through property.</p>
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <a href="#packages"><Button className="bg-estate-gold text-slate-950 hover:bg-amber-300">Explore Packages</Button></a>
-                  {isRealtor && referralCode && <a href="#bhrealtors-referral-share"><Button variant="outline" className="border-white/50 bg-white/10 text-white hover:bg-white/20 hover:text-white"><Network className="mr-2 h-4 w-4" /> Share referral QR</Button></a>}
-                  {isRealtor && <Link to="/bh-realtors/withdraw"><Button variant="outline" className="border-white/50 bg-white/10 text-white hover:bg-white/20 hover:text-white"><Wallet className="mr-2 h-4 w-4" /> Withdraw funds</Button></Link>}
+                  <a href="#packages"><Button className="bg-white text-slate-950 hover:bg-slate-100">Explore Packages</Button></a>
+                  {isPbo && <Link to="/bh-realtors/withdraw"><Button className="border border-white/30 bg-white/10 text-white hover:bg-white/20" variant="outline"><Wallet className="mr-2 h-4 w-4" /> Withdraw</Button></Link>}
                 </div>
               </div>
             </div>
@@ -217,7 +215,7 @@ const BHRealtors: React.FC = () => {
             </section>
           )}
 
-          <section className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-3 xl:grid-cols-6">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
             {[
               [Users, 'Direct referrals', downlineCount],
               [CheckCircle2, 'Active direct', activeDownlineCount],
@@ -225,18 +223,13 @@ const BHRealtors: React.FC = () => {
               [LockKeyhole, 'Locked commission', naira(locked)],
               [Wallet, 'Available balance', naira(availableBalance)],
               [Wallet, 'Pending withdrawal', naira(pendingWithdrawal)],
-            ].map(([Icon, label, value]) => (
-              <div key={label} className={`${glass} min-w-0 rounded-2xl p-3 sm:p-4`}>
+            ].map(([IconRaw, labelRaw, value]) => { const Icon = IconRaw as typeof Users; const label = String(labelRaw); return (
+              <div key={label} className={`${glass} rounded-2xl p-4`}>
                 <Icon className="h-5 w-5 text-estate-purple" />
                 <p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">{label}</p>
-                <p className="mt-1 break-words text-lg font-bold text-slate-950 sm:text-xl dark:text-white">{value}</p>
-                {label === 'Available balance' && isRealtor && (
-                  <Link to="/bh-realtors/withdraw" className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-estate-blue px-3 py-2 text-xs font-bold text-white transition hover:bg-estate-blue/90">
-                    <Wallet className="h-3.5 w-3.5" /> Withdraw funds
-                  </Link>
-                )}
+                <p className="mt-1 text-xl font-bold text-slate-950 dark:text-white">{String(value)}</p>
               </div>
-            ))}
+            ); })}
           </section>
 
           {isRealtor && (
@@ -251,15 +244,13 @@ const BHRealtors: React.FC = () => {
                   <Badge className={currentRank >= 2 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200' : 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200'}>{currentRank >= 2 ? 'Withdrawable' : 'Locked'}</Badge>
                 </div>
               </div>
-              <div className="group rounded-3xl border border-white/15 bg-estate-blue p-6 text-white shadow-2xl transition hover:-translate-y-1 hover:shadow-estate-blue/20">
-                <div className="flex items-start justify-between gap-3"><div><Wallet className="h-7 w-7" /><p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Wallet balance</p></div><Badge className="border border-white/20 bg-white/10 text-white">BHRealtors Wallet</Badge></div>
-                <p className="mt-4 text-sm text-slate-200">Available commission</p>
+              <Link to="/bh-realtors/withdraw" className="group rounded-3xl border border-white/15 bg-estate-blue p-6 text-white shadow-2xl transition hover:-translate-y-1 hover:shadow-estate-blue/20">
+                <div className="flex items-start justify-between"><Wallet className="h-7 w-7" /><ArrowUpRight className="h-5 w-5 opacity-70 transition group-hover:translate-x-1 group-hover:-translate-y-1" /></div>
+                <p className="mt-5 text-sm text-slate-200">Available commission</p>
                 <p className="mt-1 text-3xl font-black">{naira(availableBalance)}</p>
+                <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">Withdraw <ChevronRight className="h-4 w-4" /></span>
                 {pendingWithdrawal > 0 && <p className="mt-2 text-xs text-white/70">{naira(pendingWithdrawal)} pending review</p>}
-                <Link to="/bh-realtors/withdraw" className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-slate-100">
-                  Withdraw Funds
-                </Link>
-              </div>
+              </Link>
             </section>
           )}
 
@@ -285,27 +276,13 @@ const BHRealtors: React.FC = () => {
             </div>
           </section>
 
-          {isRealtor && referralCode && (
-            <>
-              <section className={`${glass} overflow-hidden rounded-3xl p-5 sm:p-7`}>
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Your unique Realtor identity</p><h2 className="mt-1 text-2xl font-black text-estate-blue dark:text-white">Referral code & client linking</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-200">Give clients this code. When they enter it in the Referrer section of their profile, their profile is securely linked to your Realtor account.</p></div>
-                  <div className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-2"><code className="min-w-0 flex-1 truncate px-3 text-base font-black tracking-wider text-estate-purple">{referralCode}</code><Button type="button" onClick={copyReferralCode} variant="outline" className="shrink-0">{copiedCode ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4" />}{copiedCode ? 'Copied' : 'Copy'}</Button></div>
-                </div>
-              </section>
-              <div id="bhrealtors-referral-share" className="scroll-mt-28">
-                <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />
-              </div>
-            </>
-          )}
-
           <section id="packages">
             <div className="mb-6">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Membership & growth</p>
               <h2 className="mt-1 text-3xl font-black text-estate-blue dark:text-white">Choose your level. Build your future.</h2>
               <p className={`mt-2 max-w-3xl ${muted}`}>Associate can move directly to Gold or directly to Classic Gold. You are not required to upgrade one level at a time.</p>
             </div>
-            <div className="grid items-stretch gap-3 md:grid-cols-3">
+            <div className="grid items-stretch gap-5 md:grid-cols-3">
               {packages.map((pkg) => {
                 const active = pkg.package_code === currentCode && isPbo;
                 const higher = !isPbo || rank[pkg.package_code] > currentRank;
@@ -313,17 +290,17 @@ const BHRealtors: React.FC = () => {
                 const visual = packageVisuals[pkg.package_code] || packageVisuals.associate;
                 return (
                   <article key={pkg.package_code} className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl dark:bg-slate-950 ${active ? 'ring-2 ring-estate-purple ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-950' : 'border-slate-200 dark:border-white/10'}`}>
-                    <div className={`relative h-32 overflow-hidden bg-gradient-to-br sm:h-36 ${visual.accent}`}>
+                    <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${visual.accent}`}>
                       <img src={visual.image} alt={`${pkg.package_name} BHRealtors package`} className="h-full w-full object-cover opacity-55 mix-blend-overlay transition duration-500 group-hover:scale-105 group-hover:opacity-70" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                       <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">{visual.icon}{visual.label}</div>
                       <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-3"><div><p className="text-sm font-semibold text-white/80">{pkg.package_name}</p><p className="mt-1 text-3xl font-black text-white">{naira(pkg.price)}</p></div>{active && <Badge className="border border-white/20 bg-white/20 text-white">Current</Badge>}</div>
                     </div>
-                    <div className="flex flex-1 flex-col p-4">
+                    <div className="flex flex-1 flex-col p-5 sm:p-6">
                       <div className="flex flex-wrap gap-2"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>L1: {pkg.direct_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>L2: {pkg.indirect_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>Sales: {salesRate}%</span></div>
-                      <p className={`mt-3 min-h-[64px] text-sm leading-5 ${muted}`}>{pkg.description}</p>
-                      <div className="mt-3 grid grid-cols-2 gap-2"><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Membership</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{pkg.direct_commission_pct}% / {pkg.indirect_commission_pct}%</p></div><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Land sales</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{salesRate}%</p></div></div>
-                      <div className="mt-auto pt-4">
+                      <p className={`mt-5 min-h-[96px] text-sm leading-6 ${muted}`}>{pkg.description}</p>
+                      <div className="mt-5 grid grid-cols-2 gap-2"><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Membership</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{pkg.direct_commission_pct}% / {pkg.indirect_commission_pct}%</p></div><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Land sales</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{salesRate}%</p></div></div>
+                      <div className="mt-auto pt-5">
                         {higher && <Button className={`w-full bg-gradient-to-r ${visual.accent} text-white shadow-lg hover:opacity-95`} onClick={() => openRegistration(pkg)}>{isPbo ? `Upgrade to ${pkg.package_name}` : `Join ${pkg.package_name} — ${naira(pkg.price)}`}</Button>}
                         {active && <div className="mt-3 flex items-start gap-2 rounded-xl bg-emerald-500/10 px-3 py-2.5 text-xs leading-5 text-emerald-700 dark:text-emerald-200"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />You are currently on this package.</div>}
                       </div>
@@ -336,9 +313,17 @@ const BHRealtors: React.FC = () => {
 
           {!isPbo && <section className={`${glass} rounded-3xl p-7`}><div className="flex items-center gap-3"><Sprout className="h-6 w-6 text-emerald-500" /><h2 className="text-xl font-black text-estate-blue dark:text-white">Start with a real opportunity</h2></div><p className={`mt-3 max-w-3xl leading-7 ${muted}`}>Join a network where property sales, referrals and personal development work together. Start at the level that fits your plan and grow responsibly.</p></section>}
 
-
-
-          <BHRealtorPromotions />
+          {isRealtor && referralCode && (
+            <>
+              <section className={`${glass} overflow-hidden rounded-3xl p-5 sm:p-7`}>
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Your unique Realtor identity</p><h2 className="mt-1 text-2xl font-black text-estate-blue dark:text-white">Referral code & client linking</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-200">Give clients this code. When they enter it in the Referrer section of their profile, their profile is securely linked to your Realtor account.</p></div>
+                  <div className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-2"><code className="min-w-0 flex-1 truncate px-3 text-base font-black tracking-wider text-estate-purple">{referralCode}</code><Button type="button" onClick={copyReferralCode} variant="outline" className="shrink-0">{copiedCode ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4" />}{copiedCode ? 'Copied' : 'Copy'}</Button></div>
+                </div>
+              </section>
+              <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />
+            </>
+          )}
 
           {isRealtor && <section className="grid gap-5 lg:grid-cols-2">
             <div className={`${glass} rounded-3xl p-6`}><div className="mb-4 flex items-center gap-2"><Trophy className="h-5 w-5 text-estate-purple" /><h2 className="font-bold text-slate-950 dark:text-white">Referral leaderboard</h2></div><ReferralLeaderboard /></div>

@@ -120,13 +120,13 @@ const TermsOfService = () => {
                 <p><strong>Bridgefort Homes Development Ltd</strong></p>
                 <p>Plot 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate,<br />
                   VGC Bus Stop, Lekki-Ajah, Lagos, Nigeria</p>
-                <p> <a href="tel:+2348030624059" className="text-estate-blue hover:underline">+234 803 062 4059</a></p>
-                <p> <a href="tel:+2348070710688" className="text-estate-blue hover:underline">+234 807 071 0688</a></p>
-                <p> <a href="mailto:info@bridgeforthomes.com" className="text-estate-blue hover:underline">info@bridgeforthomes.com</a></p>
+                <p>📞 <a href="tel:+2348030624059" className="text-estate-blue hover:underline">+234 803 062 4059</a></p>
+                <p>📞 <a href="tel:+2348070710688" className="text-estate-blue hover:underline">+234 807 071 0688</a></p>
+                <p>📧 <a href="mailto:info@bridgeforthomes.com" className="text-estate-blue hover:underline">info@bridgeforthomes.com</a></p>
               </div>
             </section>
             <footer className="text-center text-gray-600 mt-10">
-               2025 Bridgefort Homes Development Ltd. E-commerce, digital real estate and land investment platform. Regulated and protected under Nigerian law.
+              © 2025 Bridgefort Homes Development Ltd. E-commerce, digital real estate and land investment platform. Regulated and protected under Nigerian law.
             </footer>
           </div>
         </div>

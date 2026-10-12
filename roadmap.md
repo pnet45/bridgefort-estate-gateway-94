@@ -14,4 +14,4 @@
 - [ ] Automatically analyze real property-listing inquiries and save the summary, priority, and suggested follow-ups into CRM
 - [ ] Add live admin dashboard widgets for inquiry volume, open leads, follow-ups, and conversions
 - [ ] Verify inquiry-to-agent-assignment and follow-up workflow end to end
-- [ ] Determine whether a safe test admin account/session can be provisioned for this external Supabase project
+- [ ] Determine whether a safe test admin account/session can be provisioned for this external Supabase project- [ ] Header: theme-based logo (dark: public/bridgefort-logo-dark.png), mobile/desktop "BRIDGEFORT HOMES" animations, reduced motion

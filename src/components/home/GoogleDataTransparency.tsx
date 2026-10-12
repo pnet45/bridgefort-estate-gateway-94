@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, UserCheck, ChevronDown } from 'lucide-react';
+import { Shield, Lock, UserCheck } from 'lucide-react';
 
 /**
  * GoogleDataTransparency
@@ -15,14 +15,10 @@ import { Shield, Lock, UserCheck, ChevronDown } from 'lucide-react';
  * - Include a direct link to the Privacy Policy
  */
 const GoogleDataTransparency = () => {
-  const [open, setOpen] = useState(false);
   return (
-    <section id="google-data-transparency" className="py-6 bg-muted/40 border-t border-border">
+    <section className="py-12 bg-muted/40 border-t border-border">
       <div className="container-custom max-w-4xl mx-auto">
-        <button type="button" aria-expanded={open} aria-controls="google-data-transparency-content" onClick={() => setOpen((value) => !value)} className="mx-auto flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-estate-gold/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-gold">
-          <Shield size={16} className="text-estate-gold" /> How we use your information <ChevronDown size={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
-        </button>
-        {open && <div id="google-data-transparency-content" className="pt-6">
+
         {/* Section header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 bg-estate-purple/10 text-estate-purple px-4 py-1.5 rounded-full text-sm font-medium mb-3">
@@ -112,7 +108,6 @@ const GoogleDataTransparency = () => {
           </p>
         </div>
 
-        </div>}
       </div>
     </section>
   );

@@ -113,7 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
           </head>
           <body>
             <div class="header">
-              <h1 style="margin: 0; font-size: 24px;"> Password Reset Request</h1>
+              <h1 style="margin: 0; font-size: 24px;">🔐 Password Reset Request</h1>
             </div>
             <div class="content">
               <p>Hello,</p>
@@ -126,7 +126,7 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <div class="warning">
-                <strong> Important:</strong>
+                <strong>⚠️ Important:</strong>
                 <ul style="margin: 10px 0 0 0; padding-left: 20px;">
                   <li>This code expires in 10 minutes</li>
                   <li>Never share this code with anyone</li>

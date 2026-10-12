@@ -130,7 +130,7 @@ serve(async (req: Request) => {
         <html>
           <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: #5b2a86; color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-              <h1 style="margin: 0; font-size: 24px;"> Password Reset Request</h1>
+              <h1 style="margin: 0; font-size: 24px;">🔐 Password Reset Request</h1>
             </div>
             <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
               <p>Hello,</p>
@@ -140,7 +140,7 @@ serve(async (req: Request) => {
                 <div style="font-size: 36px; font-weight: bold; color: #5b2a86; letter-spacing: 8px;">${otpCode}</div>
               </div>
               <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
-                <strong> Important:</strong>
+                <strong>⚠️ Important:</strong>
                 <ul style="margin: 10px 0 0 0; padding-left: 20px;">
                   <li>This code expires in 10 minutes</li>
                   <li>Never share this code with anyone</li>

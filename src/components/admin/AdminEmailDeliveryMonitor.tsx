@@ -117,17 +117,17 @@ export default function AdminEmailDeliveryMonitor() {
             ["Sent", stats.sent, CheckCircle2, "text-emerald-600"],
             ["Failed", stats.failed, XCircle, "text-red-600"],
             ["Pending", stats.pending, Clock3, "text-amber-600"],
-          ].map(([label, value, Icon, tone]) => (
+          ].map(([label, value, IconRaw, tone]) => { const Icon = IconRaw as typeof Mail; return (
             <Card key={String(label)} className="rounded-2xl border-slate-200 shadow-sm">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-500">{label}</span>
+                  <span className="text-xs font-medium text-slate-500">{String(label)}</span>
                   <Icon className={`h-4 w-4 ${tone}`} />
                 </div>
                 <div className="mt-2 text-2xl font-bold text-slate-900">{String(value)}</div>
               </CardContent>
             </Card>
-          ))}
+          ); })}
         </div>
 
         {stats.failed > 0 && (

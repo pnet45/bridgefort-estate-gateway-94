@@ -12,11 +12,11 @@ const Sidebar = () => (
   <aside className="bg-white border-r w-full sm:w-64 p-6 overflow-y-auto h-full">
     <div className="mb-4 font-semibold text-lg text-estate-blue">Application Tips</div>
     <ul className="text-gray-700 text-sm space-y-3">
-      <li> Fill in all required fields accurately</li>
-      <li> Tailor your cover letter for the role</li>
-      <li> Double-check your contact info</li>
-      <li> Attach a clear, up-to-date resume</li>
-      <li> We'll contact you if shortlisted</li>
+      <li>✔️ Fill in all required fields accurately</li>
+      <li>✔️ Tailor your cover letter for the role</li>
+      <li>✔️ Double-check your contact info</li>
+      <li>📑 Attach a clear, up-to-date resume</li>
+      <li>🕑 We'll contact you if shortlisted</li>
     </ul>
   </aside>
 );

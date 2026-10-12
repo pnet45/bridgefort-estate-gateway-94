@@ -33,7 +33,7 @@ const PropertyShowcase = () => {
         
         <div className="w-full md:w-1/2 space-y-8">
           <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-estate-blue">Fortress Hills Estate </h2>
+            <h2 className="text-3xl font-bold text-estate-blue">Fortress Hills Estate 🏡</h2>
             <p className="text-xl font-medium">Exclusive Land Deals in Imota, Ikorodu, Lagos!</p>
             <p className="text-lg">Subscribe to our formidable estate at Fortress Hills with our unbeatable Price!</p>
             
@@ -42,7 +42,7 @@ const PropertyShowcase = () => {
               <p>Imota, Ikorodu, Lagos</p>
             </div>
             
-            <p className="font-medium"> Title: Survey Plan & Deed</p>
+            <p className="font-medium">📜 Title: Survey Plan & Deed</p>
             
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-2xl font-bold text-estate-red mb-4">PRICE ALERT</h3>
@@ -69,7 +69,7 @@ const PropertyShowcase = () => {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold"> STRATEGIC LOCATION & LANDMARKS</h3>
+              <h3 className="text-xl font-semibold">🛣️ STRATEGIC LOCATION & LANDMARKS</h3>
               <ul className="list-none grid grid-cols-2 gap-2">
                 <li>✓ Caleb University</li>
                 <li>✓ Imota Palace</li>
@@ -82,24 +82,24 @@ const PropertyShowcase = () => {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold"> ESTATE FEATURES</h3>
+              <h3 className="text-xl font-semibold">🏗️ ESTATE FEATURES</h3>
               <ul className="list-none grid grid-cols-2 gap-2">
-                <li>✓ Gated Community </li>
-                <li>✓ Security & Surveillance </li>
-                <li>✓ Green Parks & Recreation </li>
-                <li>✓ Modern Road Network </li>
-                <li>✓ WiFi Connectivity </li>
-                <li>✓ Shopping & Commercial Hubs </li>
+                <li>✓ Gated Community 🏘️</li>
+                <li>✓ Security & Surveillance 🔒</li>
+                <li>✓ Green Parks & Recreation 🌳</li>
+                <li>✓ Modern Road Network 🛣️</li>
+                <li>✓ WiFi Connectivity 📶</li>
+                <li>✓ Shopping & Commercial Hubs 🏬</li>
               </ul>
             </div>
 
             <div className="bg-estate-blue bg-opacity-5 p-4 rounded-lg space-y-4">
-              <p className="font-semibold"> Don't Miss This Opportunity!</p>
+              <p className="font-semibold">📢 Don't Miss This Opportunity!</p>
               <p>Secure your dream property now with Bridgefort Homes Development Ltd.</p>
               
               <div>
-                <p className="font-medium"> Call/WhatsApp: For Further Inquiries & Site Inspection</p>
-                <p className="font-medium"> Payments To: Zenith Bank – Bridgefort Homes Development Ltd</p>
+                <p className="font-medium">📞 Call/WhatsApp: For Further Inquiries & Site Inspection</p>
+                <p className="font-medium">💳 Payments To: Zenith Bank – Bridgefort Homes Development Ltd</p>
                 <p className="font-medium">Account Number: 1310702860</p>
               </div>
               

@@ -52,7 +52,7 @@ const AgriculturalTrainingProgramme = ({ compact = false }: Props) => {
                   <p className="mb-2 text-sm font-semibold uppercase tracking-[0.25em] text-lime-200">Bridgefort Homes presents</p>
                   <h2 className="text-3xl font-black leading-tight md:text-5xl">Advanced Sales & Marketing Clinic</h2>
                   <p className="mt-2 text-lg font-semibold text-emerald-100">Five Tuesdays. Five Game-Changing Modules. One New You in Sales. FREE.</p>
-                  <p className="mt-4 max-w-3xl text-sm leading-7 text-emerald-50/90 md:text-base">It's not just a clinic — it's a TRANSFORMATION.  FREE to attend..</p>
+                  <p className="mt-4 max-w-3xl text-sm leading-7 text-emerald-50/90 md:text-base">It's not just a clinic — it's a TRANSFORMATION. ⭐ FREE to attend..</p>
                   <div className="mt-6 flex flex-wrap gap-3 text-sm text-emerald-50">
                     <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2"><CalendarDays className="h-4 w-4" /> All Tuesdays, in September</span>
                     <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2"><Clock3 className="h-4 w-4" /> 11:00 a.m.</span>

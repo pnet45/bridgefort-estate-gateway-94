@@ -781,87 +781,12 @@
   cursor: col-resize;
 }
 
-
-/* Accessibility polish: visible keyboard focus and readable gold surfaces.
-   Gold is an accent, not a body-text color on pale backgrounds. */
-@layer base {
-  :focus-visible {
-    outline: 3px solid hsl(var(--estate-gold));
-    outline-offset: 3px;
-  }
-  ::selection {
-    background: hsl(var(--estate-gold) / 0.32);
-    color: hsl(var(--foreground));
-  }
-}
-@layer utilities {
-  .bg-estate-gold-readable {
-    background-color: hsl(var(--estate-gold));
-    color: hsl(240 15% 8%);
-  }
-  .text-gold-readable {
-    color: hsl(38 85% 30%);
-  }
-  .dark .text-gold-readable {
-    color: hsl(46 85% 68%);
-  }
-  .surface-readable {
-    background-color: hsl(var(--card));
-    color: hsl(var(--card-foreground));
-    border: 1px solid hsl(var(--border));
-  }
-}
-
-
-/* Mobile usability baseline for iPhone and Android */
-@media (max-width: 640px) {
-  html {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-    scroll-padding-top: 88px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  body {
-    -webkit-tap-highlight-color: hsl(var(--estate-gold) / 0.18);
-    /* Keep normal document scrolling available on iOS Safari and Android
-       browsers; contain can trap touch scroll at nested/short containers. */
-    overscroll-behavior-y: auto;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-  }
-
-  #root,
-  .App {
-    min-height: 100vh;
-    min-height: 100dvh;
-  }
-
-  /* Prevent iOS Safari from zooming the page when form fields receive focus. */
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-  select,
-  textarea {
-    font-size: 16px;
-    max-width: 100%;
-  }
-
-  button,
-  [role="button"],
-  a {
-    touch-action: manipulation;
-  }
-
-  img,
-  video,
-  iframe {
-    max-width: 100%;
-  }
-}
-
-@supports (padding: max(0px)) {
-  .mobile-safe-bottom {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
+/* Header brand animations */
+@keyframes bf-slide-left { from { opacity: 0; transform: translateX(-2rem); } to { opacity: 1; transform: translateX(0); } }
+@keyframes bf-drop-top { from { opacity: 0; transform: translateY(-1.5rem); } to { opacity: 1; transform: translateY(0); } }
+.bf-logo-slide { animation: bf-slide-left 0.7s ease-out both; }
+.bf-label-slide { animation: bf-slide-left 0.7s ease-out 0.25s both; }
+.bf-label-drop { animation: bf-drop-top 0.6s ease-out 0.3s both; }
+@media (prefers-reduced-motion: reduce) {
+  .bf-logo-slide, .bf-label-slide, .bf-label-drop { animation: none; }
 }

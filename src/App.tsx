@@ -74,7 +74,6 @@ const LocationsIndex = lazy(() => import('@/pages/LocationsIndex'));
 const LocationLanding = lazy(() => import('@/pages/LocationLanding'));
 const BHRealtors = lazy(() => import('@/pages/BHRealtors'));
 const BHRealtorsWithdraw = lazy(() => import('@/pages/BHRealtorsWithdraw'));
-const BHRealtorPromotionDetail = lazy(() => import('@/pages/BHRealtorPromotionDetail'));
 const Travels = lazy(() => import('@/pages/Travels'));
 const TravelBookingStatus = lazy(() => import('@/pages/TravelBookingStatus'));
 const Agrovest = lazy(() => import('@/pages/Agrovest'));
@@ -171,7 +170,6 @@ function AppLayout() {
                         <BHRealtors />
                       </PrivateRoute>
                     } />
-                    <Route path="/bh-realtors/promotions/:slug" element={<BHRealtorPromotionDetail />} />
                     <Route path="/bh-realtors/withdraw" element={
                       <PrivateRoute>
                         <BHRealtorsWithdraw />
