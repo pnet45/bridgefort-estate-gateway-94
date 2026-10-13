@@ -13,6 +13,7 @@ const allowedTypes = new Set(["contract_of_sale", "survey_plan", "plot_demarcati
 const money = (value: unknown) => new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(Number(value || 0));
 const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const replaceTokens = (template: string, tokens: Record<string, string>) => template.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_match, key) => tokens[key] ?? "");
+const sanitizeTemplateHtml = (value: string) => value.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "").replace(/\son\w+="[^"]*"/gi, "").replace(/\son\w+='[^']*'/gi, "");
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -113,7 +114,7 @@ serve(async (req: Request) => {
       document_date: new Date().toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Lagos" }),
     };
     const subject = replaceTokens(template.subject_template, tokens);
-    const html = bridgefortEmail(replaceTokens(template.body_html_template, tokens));
+    const html = bridgefortEmail(sanitizeTemplateHtml(replaceTokens(template.body_html_template, tokens)));
     const text = html.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
     const resendKey = Deno.env.get("RESEND_API_KEY");
     if (!resendKey) throw Object.assign(new Error("Email delivery is not configured."), { status: 503 });
