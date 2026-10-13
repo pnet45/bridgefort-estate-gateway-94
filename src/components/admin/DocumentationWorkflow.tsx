@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { FileText, RefreshCw, Search, Save, Upload, Mail, Printer, CheckCircle2, Clock3, ShieldCheck, FileUp } from "lucide-react";
+import { FileText, RefreshCw, Search, Save, Upload, Mail, Printer, CheckCircle2, Clock3, ShieldCheck, FileUp, Download } from "lucide-react";
 
 type DocumentType = "contract_of_sale" | "survey_plan" | "plot_demarcation" | "deed_of_assignment";
 type PurchaseOrder = {
@@ -182,6 +182,12 @@ const DocumentationWorkflow: React.FC = () => {
     }
   };
 
+  const viewSentDocument = async (doc: SentDocument) => {
+    const { data, error } = await supabase.storage.from("transaction-documents").createSignedUrl(doc.storage_path, 60);
+    if (error || !data?.signedUrl) return toast({ title: "Could not open document", description: error?.message || "Please try again.", variant: "destructive" });
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
   const docsForOrder = (orderId: string) => sent.filter((d) => d.order_id === orderId);
   const sentCount = sent.filter((d) => d.status === "sent").length;
   const propertyReady = enriched.filter((row) => row.propertyPaid).length;
@@ -234,7 +240,7 @@ const DocumentationWorkflow: React.FC = () => {
                 </div>;
               })}
             </div>
-            {history.length > 0 && <div className="border-t pt-3"><p className="mb-2 text-sm font-semibold text-slate-800">Delivery history</p><div className="space-y-2">{history.slice(0,6).map((doc)=><div key={doc.id} className="flex flex-col gap-1 rounded-lg bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="text-sm font-medium text-slate-800">{titleCase(doc.document_type)} · {doc.file_name}</p><p className="text-xs text-slate-500">{new Date(doc.sent_at).toLocaleString("en-NG")}</p></div><Badge variant={doc.status === "sent" ? "default" : "destructive"}>{doc.status}</Badge></div>)}</div></div>}
+            {history.length > 0 && <div className="border-t pt-3"><p className="mb-2 text-sm font-semibold text-slate-800">Delivery history</p><div className="space-y-2">{history.slice(0,6).map((doc)=><div key={doc.id} className="flex flex-col gap-1 rounded-lg bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="text-sm font-medium text-slate-800">{titleCase(doc.document_type)} · {doc.file_name}</p><p className="text-xs text-slate-500">{new Date(doc.sent_at).toLocaleString("en-NG")}</p></div><div className="flex items-center gap-2"><Badge variant={doc.status === "sent" ? "default" : "destructive"}>{doc.status}</Badge><Button variant="outline" size="sm" onClick={()=>void viewSentDocument(doc)} className="gap-1"><Download className="h-3.5 w-3.5"/>PDF</Button></div></div>)}</div></div>}
           </CardContent>
         </Card>;
       })}
