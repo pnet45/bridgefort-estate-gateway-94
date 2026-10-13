@@ -19,7 +19,7 @@ type PurchaseOrder = {
 };
 type Template = { id?: string; document_type: DocumentType; name: string; subject_template: string; body_html_template: string; enabled: boolean; };
 type SentDocument = { id: string; order_id: string; document_type: DocumentType; file_name: string; status: string; sent_at: string; storage_path: string; };
-type FeePayment = { order_id: string | null; user_id: string; status: string; amount: number | null; created_at: string; };
+type FeePayment = { order_id: string | null; user_id: string; status: string; amount: number | null; total_bundle_amount: number | null; created_at: string; };
 type ClientProfile = { id: string; first_name: string | null; last_name: string | null; address: string | null; current_residence: string | null; phone_number: string | null; };
 
 const DOCS: { type: DocumentType; label: string; feeGated: boolean; description: string }[] = [
@@ -58,7 +58,7 @@ const DocumentationWorkflow: React.FC = () => {
     try {
       const [orderResult, feeResult, templateResult, sentResult, profileResult, accountResult] = await Promise.all([
         supabase.from("orders").select("id,user_id,customer_email,customer_name,total_amount,amount_paid,balance,payment_status,items,created_at").order("created_at", { ascending: false }).limit(500),
-        supabase.from("estate_documentation_payments").select("order_id,user_id,status,amount,created_at").order("created_at", { ascending: false }).limit(1000),
+        supabase.from("estate_documentation_payments").select("order_id,user_id,status,amount,total_bundle_amount,created_at").order("created_at", { ascending: false }).limit(1000),
         supabase.from("transaction_document_templates").select("*").order("name"),
         supabase.from("transaction_documents").select("id,order_id,document_type,file_name,status,sent_at,storage_path").order("sent_at", { ascending: false }).limit(1000),
         supabase.from("profiles").select("id,first_name,last_name,address,current_residence,phone_number").limit(1000),
@@ -106,7 +106,7 @@ const DocumentationWorkflow: React.FC = () => {
       const balance = Number(order.balance ?? Math.max(total - paid, 0));
       const status = String(order.payment_status || "").toLowerCase();
       const propertyPaid = total > 0 && balance <= 0 && paid >= total && ["paid", "completed"].includes(status);
-      const feePayment = fees.find((fee) => fee.order_id === order.id && fee.user_id === order.user_id && ["approved", "paid", "completed"].includes(String(fee.status).toLowerCase()));
+      const feePayment = fees.find((fee) => fee.order_id === order.id && fee.user_id === order.user_id && ["approved", "paid", "completed"].includes(String(fee.status).toLowerCase()) && Number(fee.amount || 0) > 0 && Number(fee.amount || 0) >= Number(fee.total_bundle_amount || fee.amount || 0));
       const clientName = order.customer_name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Client name unavailable";
       const clientEmail = order.customer_email || accountEmails[order.user_id] || "";
       return { order, profile, propertyName, propertyAddress, plotCount, plotSize, total, paid, balance, propertyPaid, feePayment, clientName, clientEmail, items };
