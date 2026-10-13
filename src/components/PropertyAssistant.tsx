@@ -302,6 +302,12 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
       if (invokeError) {
         const details = await getAssistantErrorDetails(invokeError);
         if (details?.requiresAuth) {
+          setMessages((current) => {
+            const latestMessage = current[current.length - 1];
+            return latestMessage?.role === 'user' && latestMessage.content === content
+              ? current.slice(0, -1)
+              : current;
+          });
           setAuthRequired(true);
           setAuthPendingMessage(content);
           setError('');
@@ -401,7 +407,7 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
       setAuthPassword('');
       const pendingMessage = authPendingMessage;
       setAuthPendingMessage('');
-      if (pendingMessage) await sendChatMessage(pendingMessage, false);
+      if (pendingMessage) await sendChatMessage(pendingMessage);
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Sign-in could not be completed. Please try again.');
     } finally {
