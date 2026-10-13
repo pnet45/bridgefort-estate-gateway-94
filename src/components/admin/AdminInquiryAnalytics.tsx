@@ -190,8 +190,8 @@ const AdminInquiryAnalytics: React.FC = () => {
   };
 
   const BreakdownTable = ({ title, rows }: { title: string; rows: ReturnType<typeof breakdown> }) => (
-    <Card className="bg-slate-900/40 border-slate-700">
-      <CardHeader className="pb-2"><CardTitle className="text-sm text-white">{title}</CardTitle></CardHeader>
+    <Card className="bg-white border-slate-200">
+      <CardHeader className="pb-2"><CardTitle className="text-sm text-slate-900">{title}</CardTitle></CardHeader>
       <CardContent className="overflow-x-auto">
         <Table>
           <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Leads</TableHead><TableHead>Status changes</TableHead><TableHead>Follow-ups</TableHead><TableHead>Won</TableHead><TableHead>Lost</TableHead><TableHead>Win rate</TableHead><TableHead>Value</TableHead></TableRow></TableHeader>
@@ -209,10 +209,10 @@ const AdminInquiryAnalytics: React.FC = () => {
   );
 
   return (
-    <Card className="bg-slate-800 border-slate-700">
+    <Card className="bg-slate-50 border-slate-200">
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <CardTitle className="text-white flex items-center gap-2"><BarChart3 className="h-5 w-5 text-primary" />Inquiry Analytics</CardTitle>
+          <CardTitle className="text-slate-900 flex items-center gap-2"><BarChart3 className="h-5 w-5 text-primary" />Inquiry Analytics</CardTitle>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading} className="gap-2"><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh</Button>
             <Button variant="outline" size="sm" onClick={exportCSV} className="gap-2"><Download className="h-4 w-4" />CSV</Button>
@@ -222,18 +222,18 @@ const AdminInquiryAnalytics: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <div className="space-y-1"><Label className="text-slate-400 text-xs">From</Label><Input type="date" value={from} onChange={e => setFrom(e.target.value)} /></div>
-          <div className="space-y-1"><Label className="text-slate-400 text-xs">To</Label><Input type="date" value={to} onChange={e => setTo(e.target.value)} /></div>
-          <div className="space-y-1"><Label className="text-slate-400 text-xs">Property</Label>
+          <div className="space-y-1"><Label className="text-slate-600 text-xs">From</Label><Input type="date" value={from} onChange={e => setFrom(e.target.value)} /></div>
+          <div className="space-y-1"><Label className="text-slate-600 text-xs">To</Label><Input type="date" value={to} onChange={e => setTo(e.target.value)} /></div>
+          <div className="space-y-1"><Label className="text-slate-600 text-xs">Property</Label>
             <Select value={property} onValueChange={setProperty}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
               <SelectItem value="all">All properties</SelectItem>{properties.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
             </SelectContent></Select></div>
-          <div className="space-y-1"><Label className="text-slate-400 text-xs">Agent</Label>
+          <div className="space-y-1"><Label className="text-slate-600 text-xs">Agent</Label>
             <Select value={agent} onValueChange={setAgent}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
               <SelectItem value="all">All agents</SelectItem><SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
               {members.map(m => <SelectItem key={m.id} value={m.id}>{agentName(m.id)}</SelectItem>)}
             </SelectContent></Select></div>
-          <div className="space-y-1"><Label className="text-slate-400 text-xs">Status</Label>
+          <div className="space-y-1"><Label className="text-slate-600 text-xs">Status</Label>
             <Select value={status} onValueChange={setStatus}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               {['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -245,14 +245,14 @@ const AdminInquiryAnalytics: React.FC = () => {
             ['Inquiries', stats.total], ['Status changes', stats.statusChanges], ['Follow-ups', stats.fuTotal], ['Completed', stats.fuDone],
             ['Overdue', stats.fuOverdue], ['Win rate', `${stats.winRate}%`], ['Loss rate', `${stats.lossRate}%`], ['Won value', naira(stats.wonValue)],
           ].map(([k, v]) => (
-            <div key={k as string} className="rounded-lg border border-slate-700 bg-slate-900/50 p-3">
-              <p className="text-xs text-slate-400">{k}</p><p className="text-lg font-bold text-white truncate">{v}</p>
+            <div key={k as string} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs text-slate-600">{k}</p><p className="text-lg font-bold text-slate-900 truncate">{v}</p>
             </div>
           ))}
         </div>
 
-        <Card className="bg-slate-900/40 border-slate-700">
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-white">Inquiry volume</CardTitle></CardHeader>
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-slate-900">Inquiry volume</CardTitle></CardHeader>
           <CardContent className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={volume}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />

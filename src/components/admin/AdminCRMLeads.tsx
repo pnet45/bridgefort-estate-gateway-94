@@ -315,7 +315,7 @@ const AdminCRMLeads: React.FC = () => {
       ? 'bg-red-500/20 text-red-400'
       : isToday
         ? 'bg-amber-500/20 text-amber-400'
-        : 'bg-slate-500/20 text-slate-300';
+        : 'bg-slate-500/20 text-slate-700';
 
     return (
       <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded ${colorClass}`}>
@@ -381,12 +381,12 @@ const AdminCRMLeads: React.FC = () => {
           { label: 'Win Rate', value: `${stats.winRate}%`, icon: Target, color: 'text-cyan-400' },
           { label: 'Won Value', value: `₦${Math.round(stats.value / 1000000)}m`, icon: CircleDollarSign, color: 'text-emerald-400' },
         ].map(s => (
-          <Card key={s.label} className="bg-slate-700/50 border-slate-600">
+          <Card key={s.label} className="bg-white/50 border-slate-200">
             <CardContent className="p-4 flex items-center gap-3">
               <s.icon className={`h-5 w-5 ${s.color}`} />
               <div>
-                <p className="text-2xl font-bold text-white">{s.value}</p>
-                <p className="text-xs text-slate-400">{s.label}</p>
+                <p className="text-2xl font-bold text-slate-900">{s.value}</p>
+                <p className="text-xs text-slate-600">{s.label}</p>
               </div>
             </CardContent>
           </Card>
@@ -396,12 +396,12 @@ const AdminCRMLeads: React.FC = () => {
       {/* Search & Filter */}
       <div className="flex gap-3 items-center flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600" />
           <Input placeholder="Search leads..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-            className="pl-9 bg-slate-700 border-slate-600 text-white" />
+            className="pl-9 bg-white border-slate-200 text-slate-900" />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px] bg-slate-700 border-slate-600 text-white">
+          <SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-900">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -409,14 +409,14 @@ const AdminCRMLeads: React.FC = () => {
             {STATUSES.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}><SelectTrigger className="w-[160px] bg-slate-700 border-slate-600 text-white"><SelectValue placeholder="Assignee" /></SelectTrigger><SelectContent><SelectItem value="all">All assignees</SelectItem><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select>
-        <Select value={priorityFilter} onValueChange={setPriorityFilter}><SelectTrigger className="w-[130px] bg-slate-700 border-slate-600 text-white"><SelectValue placeholder="Priority" /></SelectTrigger><SelectContent><SelectItem value="all">All priorities</SelectItem>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select>
-        <Select value={sourceFilter} onValueChange={setSourceFilter}><SelectTrigger className="w-[140px] bg-slate-700 border-slate-600 text-white"><SelectValue placeholder="Source" /></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{[...new Set(leads.map(lead => lead.source).filter(Boolean))].map(source => <SelectItem key={source} value={source}>{source.replace('_', ' ')}</SelectItem>)}</SelectContent></Select>
+        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}><SelectTrigger className="w-[160px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Assignee" /></SelectTrigger><SelectContent><SelectItem value="all">All assignees</SelectItem><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select>
+        <Select value={priorityFilter} onValueChange={setPriorityFilter}><SelectTrigger className="w-[130px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Priority" /></SelectTrigger><SelectContent><SelectItem value="all">All priorities</SelectItem>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select>
+        <Select value={sourceFilter} onValueChange={setSourceFilter}><SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Source" /></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{[...new Set(leads.map(lead => lead.source).filter(Boolean))].map(source => <SelectItem key={source} value={source}>{source.replace('_', ' ')}</SelectItem>)}</SelectContent></Select>
         <Button variant={overdueOnly ? 'default' : 'outline'} onClick={() => setOverdueOnly(value => !value)}><Clock className="h-4 w-4 mr-1" />Overdue</Button>
         <Button onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' }); setIsFormOpen(true); }} className="gap-1">
           <Plus className="h-4 w-4" /> Add Lead
         </Button>
-        <Button variant="outline" onClick={handleExportCsv} className="gap-1 border-slate-600 text-white hover:bg-slate-700">
+        <Button variant="outline" onClick={handleExportCsv} className="gap-1 border-slate-200 text-slate-900 hover:bg-white">
           <Download className="h-4 w-4" /> Export CSV
         </Button>
       </div>
@@ -426,19 +426,19 @@ const AdminCRMLeads: React.FC = () => {
         <div className={`${selectedLead ? 'w-1/2' : 'w-full'} transition-all`}>
           <ScrollArea className="h-[500px]">
             <div className="space-y-2">
-              {loading ? <p className="text-slate-400 p-4">Loading...</p> :
-                filtered.length === 0 ? <p className="text-slate-400 p-4 text-center">No leads found</p> :
+              {loading ? <p className="text-slate-600 p-4">Loading...</p> :
+                filtered.length === 0 ? <p className="text-slate-600 p-4 text-center">No leads found</p> :
                 filtered.map(lead => (
-                  <Card key={lead.id} className={`border-slate-600 cursor-pointer transition-colors ${selectedLead?.id === lead.id ? 'bg-slate-600' : 'bg-slate-700/50 hover:bg-slate-700'}`}
+                  <Card key={lead.id} className={`border-slate-200 cursor-pointer transition-colors ${selectedLead?.id === lead.id ? 'bg-slate-600' : 'bg-white/50 hover:bg-white'}`}
                     onClick={() => handleOpenLead(lead)}>
                     <CardContent className="p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-white truncate">{lead.name}</span>
+                            <span className="font-semibold text-slate-900 truncate">{lead.name}</span>
                             <Badge className={`text-xs ${STATUS_COLORS[lead.status] || ''}`}>{lead.status}</Badge>
                           </div>
-                          <div className="flex gap-3 mt-1 text-xs text-slate-400">
+                          <div className="flex gap-3 mt-1 text-xs text-slate-600">
                             {lead.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{lead.email}</span>}
                             {lead.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{lead.phone}</span>}
                           </div>
@@ -446,14 +446,14 @@ const AdminCRMLeads: React.FC = () => {
                           <div className="flex flex-wrap gap-2 mt-2">
                             {renderNextAction(lead.id)}
                             {lead.last_contacted_at && (
-                              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-slate-700/60 text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-white/60 text-slate-600">
                                 <PhoneCall className="h-3 w-3" /> Last contact: {format(new Date(lead.last_contacted_at), 'MMM d')}
                               </span>
                             )}
                           </div>
                         </div>
                         <div className="flex gap-1 shrink-0">
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400"
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-600"
                             onClick={e => { e.stopPropagation(); setEditingLead(lead); setForm({ name: lead.name, email: lead.email || '', phone: lead.phone || '', source: lead.source, status: lead.status, estate_interest: lead.estate_interest || '', notes: lead.notes || '', assigned_to: lead.assigned_to || '', priority: lead.priority, property_key: lead.estate_id ? `estate:${lead.estate_id}` : lead.listing_id ? `listing:${lead.listing_id}` : '' }); setIsFormOpen(true); }}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
@@ -473,42 +473,42 @@ const AdminCRMLeads: React.FC = () => {
         {/* Lead Detail Panel */}
         {selectedLead && (
           <div className="w-1/2">
-            <Card className="bg-slate-700/50 border-slate-600 h-[500px]">
+            <Card className="bg-white/50 border-slate-200 h-[500px]">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-white text-lg">{selectedLead.name}</CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedLead(null)} className="text-slate-400">✕</Button>
+                  <CardTitle className="text-slate-900 text-lg">{selectedLead.name}</CardTitle>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedLead(null)} className="text-slate-600">✕</Button>
                 </div>
                 <div className="flex gap-2 mt-1">
                   <Select value={selectedLead.status} onValueChange={s => { handleStatusChange(selectedLead, s); setSelectedLead({ ...selectedLead, status: s }); }}>
-                    <SelectTrigger className="w-[120px] h-7 text-xs bg-slate-600 border-slate-500 text-white">
+                    <SelectTrigger className="w-[120px] h-7 text-xs bg-slate-600 border-slate-300 text-slate-900">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {STATUSES.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
                     </SelectContent>
                   </Select>
-                  <Badge variant="outline" className="text-xs text-slate-400">{selectedLead.source}</Badge>
-                  <Badge variant="outline" className="text-xs text-slate-400">{selectedLead.priority}</Badge>
+                  <Badge variant="outline" className="text-xs text-slate-600">{selectedLead.source}</Badge>
+                  <Badge variant="outline" className="text-xs text-slate-600">{selectedLead.priority}</Badge>
                 </div>
               </CardHeader>
               <ScrollArea className="h-[400px] px-4 pb-4">
                 <div className="space-y-4">
                   {/* Contact Info */}
-                  <div className="space-y-1 text-sm text-slate-300">
+                  <div className="space-y-1 text-sm text-slate-700">
                     {selectedLead.email && <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> {selectedLead.email}</p>}
                     {selectedLead.phone && <p className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> {selectedLead.phone}</p>}
                     {selectedLead.estate_interest && <p className="flex items-center gap-2"><User className="h-3.5 w-3.5" /> {selectedLead.estate_interest}</p>}
                     {selectedLead.notes && (
                       <div
-                        className="text-slate-400 mt-2 prose prose-sm prose-invert max-w-none"
+                        className="text-slate-600 mt-2 prose prose-sm prose-invert max-w-none"
                         dangerouslySetInnerHTML={{ __html: sanitizeRichText(selectedLead.notes) }}
                       />
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label className="text-xs text-slate-400">Assigned to</Label><Select value={selectedLead.assigned_to || 'unassigned'} onValueChange={async value => { const assigned = value === 'unassigned' ? null : value; await supabase.from('crm_leads').update({ assigned_to: assigned }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, assigned_to: assigned }); fetchLeads(); }}><SelectTrigger className="bg-slate-600 border-slate-500 text-white"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div>
-                    <div><Label className="text-xs text-slate-400">Priority</Label><Select value={selectedLead.priority} onValueChange={async priority => { await supabase.from('crm_leads').update({ priority }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, priority }); fetchLeads(); }}><SelectTrigger className="bg-slate-600 border-slate-500 text-white"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label className="text-xs text-slate-600">Assigned to</Label><Select value={selectedLead.assigned_to || 'unassigned'} onValueChange={async value => { const assigned = value === 'unassigned' ? null : value; await supabase.from('crm_leads').update({ assigned_to: assigned }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, assigned_to: assigned }); fetchLeads(); }}><SelectTrigger className="bg-slate-600 border-slate-300 text-slate-900"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label className="text-xs text-slate-600">Priority</Label><Select value={selectedLead.priority} onValueChange={async priority => { await supabase.from('crm_leads').update({ priority }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, priority }); fetchLeads(); }}><SelectTrigger className="bg-slate-600 border-slate-300 text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div>
                   </div>
 
                   {/* Quick Actions */}
@@ -526,13 +526,13 @@ const AdminCRMLeads: React.FC = () => {
 
                   {/* Follow-up form */}
                   {showFollowUpForm && (
-                    <Card className="bg-slate-600 border-slate-500">
+                    <Card className="bg-slate-600 border-slate-300">
                       <CardContent className="p-3 space-y-2">
                         <Input type="datetime-local" value={followUpForm.scheduled_at}
                           onChange={e => setFollowUpForm(p => ({ ...p, scheduled_at: e.target.value }))}
-                          className="bg-slate-700 border-slate-500 text-white text-sm" />
+                          className="bg-white border-slate-300 text-slate-900 text-sm" />
                         <Select value={followUpForm.action_type} onValueChange={v => setFollowUpForm(p => ({ ...p, action_type: v }))}>
-                          <SelectTrigger className="bg-slate-700 border-slate-500 text-white text-sm">
+                          <SelectTrigger className="bg-white border-slate-300 text-slate-900 text-sm">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -541,7 +541,7 @@ const AdminCRMLeads: React.FC = () => {
                         </Select>
                         <Input placeholder="Notes..." value={followUpForm.notes}
                           onChange={e => setFollowUpForm(p => ({ ...p, notes: e.target.value }))}
-                          className="bg-slate-700 border-slate-500 text-white text-sm" />
+                          className="bg-white border-slate-300 text-slate-900 text-sm" />
                         <div className="flex gap-2">
                           <Button size="sm" onClick={handleAddFollowUp}>Save</Button>
                           <Button size="sm" variant="ghost" onClick={() => setShowFollowUpForm(false)}>Cancel</Button>
@@ -553,15 +553,15 @@ const AdminCRMLeads: React.FC = () => {
                   {/* Follow-ups */}
                   {followUps.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Follow-ups</h4>
+                      <h4 className="text-sm font-semibold text-slate-900 mb-2 flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Follow-ups</h4>
                       <div className="space-y-1">
                         {followUps.map(f => (
                           <div key={f.id} className={`flex items-center justify-between text-xs p-2 rounded ${f.completed_at ? 'bg-green-900/20' : f.cancelled_at ? 'bg-red-900/20' : 'bg-slate-600'}`}>
                             <div>
-                              <span className="text-white">{f.action_type}</span>
-                              <span className="text-slate-400 ml-2">{format(new Date(f.scheduled_at), 'MMM d, h:mm a')}</span>
+                              <span className="text-slate-900">{f.action_type}</span>
+                              <span className="text-slate-600 ml-2">{format(new Date(f.scheduled_at), 'MMM d, h:mm a')}</span>
                               {f.notes && <span className="text-slate-500 ml-2">— {f.notes}</span>}
-                              {f.completion_notes && <span className="block text-slate-400 mt-1">{f.completion_notes}</span>}
+                              {f.completion_notes && <span className="block text-slate-600 mt-1">{f.completion_notes}</span>}
                             </div>
                             {!f.completed_at && !f.cancelled_at && <div className="flex gap-1"><Button size="sm" variant="ghost" className="h-6 text-xs text-green-400" onClick={() => handleCompleteFollowUp(f)}><CheckCircle className="h-3 w-3 mr-1" /> Done</Button><Button size="sm" variant="ghost" className="h-6 text-xs text-red-400" onClick={() => handleCancelFollowUp(f)}>Cancel</Button></div>}
                           </div>
@@ -573,12 +573,12 @@ const AdminCRMLeads: React.FC = () => {
                   {/* Activity Log */}
                   {activities.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-semibold text-white mb-2 flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" /> Activity Log</h4>
+                      <h4 className="text-sm font-semibold text-slate-900 mb-2 flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" /> Activity Log</h4>
                       <div className="space-y-1">
                         {activities.map(a => (
                           <div key={a.id} className="text-xs p-2 bg-slate-600/50 rounded">
-                            <span className="text-slate-400">{format(new Date(a.created_at), 'MMM d, h:mm a')}</span>
-                            <span className="text-white ml-2">{a.description}</span>
+                            <span className="text-slate-600">{format(new Date(a.created_at), 'MMM d, h:mm a')}</span>
+                            <span className="text-slate-900 ml-2">{a.description}</span>
                           </div>
                         ))}
                       </div>
@@ -593,41 +593,41 @@ const AdminCRMLeads: React.FC = () => {
 
       {/* Lead Form Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700">
+        <DialogContent className="bg-slate-50 border-slate-200">
           <DialogHeader>
-            <DialogTitle className="text-white">{editingLead ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
+            <DialogTitle className="text-slate-900">{editingLead ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label className="text-slate-300">Name *</Label>
-              <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="bg-slate-700 border-slate-600 text-white" />
+              <Label className="text-slate-700">Name *</Label>
+              <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="bg-white border-slate-200 text-slate-900" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-slate-300">Email</Label>
-                <Input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} className="bg-slate-700 border-slate-600 text-white" />
+                <Label className="text-slate-700">Email</Label>
+                <Input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} className="bg-white border-slate-200 text-slate-900" />
               </div>
               <div>
-                <Label className="text-slate-300">Phone</Label>
-                <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="bg-slate-700 border-slate-600 text-white" />
+                <Label className="text-slate-700">Phone</Label>
+                <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="bg-white border-slate-200 text-slate-900" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-300">Assignee</Label><Select value={form.assigned_to || 'unassigned'} onValueChange={value => setForm(current => ({ ...current, assigned_to: value === 'unassigned' ? '' : value }))}><SelectTrigger className="bg-slate-700 border-slate-600 text-white"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div><div><Label className="text-slate-300">Priority</Label><Select value={form.priority} onValueChange={priority => setForm(current => ({ ...current, priority }))}><SelectTrigger className="bg-slate-700 border-slate-600 text-white"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div></div>
-            <div><Label className="text-slate-300">Property</Label><Select value={form.property_key || 'none'} onValueChange={property_key => setForm(current => ({ ...current, property_key: property_key === 'none' ? '' : property_key }))}><SelectTrigger className="bg-slate-700 border-slate-600 text-white"><SelectValue placeholder="Select a property" /></SelectTrigger><SelectContent><SelectItem value="none">No linked property</SelectItem>{properties.map(property => <SelectItem key={`${property.kind}:${property.id}`} value={`${property.kind}:${property.id}`}>{property.name} · {property.kind}</SelectItem>)}</SelectContent></Select></div>
+            <div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-700">Assignee</Label><Select value={form.assigned_to || 'unassigned'} onValueChange={value => setForm(current => ({ ...current, assigned_to: value === 'unassigned' ? '' : value }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div><div><Label className="text-slate-700">Priority</Label><Select value={form.priority} onValueChange={priority => setForm(current => ({ ...current, priority }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div></div>
+            <div><Label className="text-slate-700">Property</Label><Select value={form.property_key || 'none'} onValueChange={property_key => setForm(current => ({ ...current, property_key: property_key === 'none' ? '' : property_key }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Select a property" /></SelectTrigger><SelectContent><SelectItem value="none">No linked property</SelectItem>{properties.map(property => <SelectItem key={`${property.kind}:${property.id}`} value={`${property.kind}:${property.id}`}>{property.name} · {property.kind}</SelectItem>)}</SelectContent></Select></div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-slate-300">Source</Label>
+                <Label className="text-slate-700">Source</Label>
                 <Select value={form.source} onValueChange={v => setForm(p => ({ ...p, source: v }))}>
-                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {SOURCES.map(s => <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className="text-slate-300">Status</Label>
+                <Label className="text-slate-700">Status</Label>
                 <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v }))}>
-                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {STATUSES.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
                   </SelectContent>
@@ -635,11 +635,11 @@ const AdminCRMLeads: React.FC = () => {
               </div>
             </div>
             <div>
-              <Label className="text-slate-300">Estate Interest</Label>
-              <Input value={form.estate_interest} onChange={e => setForm(p => ({ ...p, estate_interest: e.target.value }))} placeholder="e.g., Hampton Court Phase 3" className="bg-slate-700 border-slate-600 text-white" />
+              <Label className="text-slate-700">Estate Interest</Label>
+              <Input value={form.estate_interest} onChange={e => setForm(p => ({ ...p, estate_interest: e.target.value }))} placeholder="e.g., Hampton Court Phase 3" className="bg-white border-slate-200 text-slate-900" />
             </div>
             <div>
-              <Label className="text-slate-300">Notes</Label>
+              <Label className="text-slate-700">Notes</Label>
               <RichTextEditor
                 value={form.notes}
                 onChange={(html) => setForm(p => ({ ...p, notes: html }))}
@@ -654,7 +654,7 @@ const AdminCRMLeads: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-      <Dialog open={showOutcomeForm} onOpenChange={setShowOutcomeForm}><DialogContent className="bg-slate-800 border-slate-700"><DialogHeader><DialogTitle className="text-white">Record conversion outcome</DialogTitle></DialogHeader><div className="space-y-3"><div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-300">Outcome</Label><Select value={outcomeForm.status} onValueChange={status => setOutcomeForm(current => ({ ...current, status }))}><SelectTrigger className="bg-slate-700 border-slate-600 text-white"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="won">Won</SelectItem><SelectItem value="lost">Lost</SelectItem></SelectContent></Select></div><div><Label className="text-slate-300">Close date</Label><Input type="date" value={outcomeForm.closed_at} onChange={event => setOutcomeForm(current => ({ ...current, closed_at: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div></div>{outcomeForm.status === 'won' && <div><Label className="text-slate-300">Conversion value (₦)</Label><Input type="number" min="0" value={outcomeForm.conversion_value} onChange={event => setOutcomeForm(current => ({ ...current, conversion_value: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div>}<div><Label className="text-slate-300">Outcome reason *</Label><Input value={outcomeForm.outcome_reason} onChange={event => setOutcomeForm(current => ({ ...current, outcome_reason: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div><div><Label className="text-slate-300">Closing notes</Label><Input value={outcomeForm.closing_notes} onChange={event => setOutcomeForm(current => ({ ...current, closing_notes: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div><div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-300">Order ID (optional)</Label><Input value={outcomeForm.order_id} onChange={event => setOutcomeForm(current => ({ ...current, order_id: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div><div><Label className="text-slate-300">Payment ID (optional)</Label><Input value={outcomeForm.payment_id} onChange={event => setOutcomeForm(current => ({ ...current, payment_id: event.target.value }))} className="bg-slate-700 border-slate-600 text-white" /></div></div><Button className="w-full" onClick={handleSaveOutcome}>Save outcome</Button></div></DialogContent></Dialog>
+      <Dialog open={showOutcomeForm} onOpenChange={setShowOutcomeForm}><DialogContent className="bg-slate-50 border-slate-200"><DialogHeader><DialogTitle className="text-slate-900">Record conversion outcome</DialogTitle></DialogHeader><div className="space-y-3"><div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-700">Outcome</Label><Select value={outcomeForm.status} onValueChange={status => setOutcomeForm(current => ({ ...current, status }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="won">Won</SelectItem><SelectItem value="lost">Lost</SelectItem></SelectContent></Select></div><div><Label className="text-slate-700">Close date</Label><Input type="date" value={outcomeForm.closed_at} onChange={event => setOutcomeForm(current => ({ ...current, closed_at: event.target.value }))} className="bg-white border-slate-200 text-slate-900" /></div></div>{outcomeForm.status === 'won' && <div><Label className="text-slate-700">Conversion value (₦)</Label><Input type="number" min="0" value={outcomeForm.conversion_value} onChange={event => setOutcomeForm(current => ({ ...current, conversion_value: event.target.value }))} className="bg-white border-slate-200 text-slate-900" /></div>}<div><Label className="text-slate-700">Outcome reason *</Label><Input value={outcomeForm.outcome_reason} onChange={event => setOutcomeForm(current => ({ ...current, outcome_reason: event.target.value }))} className="bg-white border-slate-200 text-slate-900" /></div><div><Label className="text-slate-700">Closing notes</Label><Input value={outcomeForm.closing_notes} onChange={event => setOutcomeForm(current => ({ ...current, closing_notes: event.target.value }))} className="bg-white border-slate-200 text-slate-900" /></div><div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-700">Order ID (optional)</Label><Input value={outcomeForm.order_id} onChange={event => setOutcomeForm(current => ({ ...current, order_id: event.target.value }))} className="bg-white border-slate-200 text-slate-900" /></div><div><Label className="text-slate-700">Payment ID (optional)</Label><Input value={outcomeForm.payment_id} onChange={event => setOutcomeForm(current => ({ ...current, payment_id: event.target.value }))} className="bg-white border-slate-200 text-slate-900" /></div></div><Button className="w-full" onClick={handleSaveOutcome}>Save outcome</Button></div></DialogContent></Dialog>
     </div>
   );
 };

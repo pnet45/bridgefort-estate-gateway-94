@@ -20,7 +20,7 @@ type Analysis = {
 type LeadOption = { id: string; name: string; estate_interest: string | null; notes: string | null };
 
 const PRIORITY_STYLE: Record<string, string> = {
-  low: 'bg-slate-500/20 text-slate-300', medium: 'bg-blue-500/20 text-blue-300',
+  low: 'bg-slate-500/20 text-slate-700', medium: 'bg-blue-500/20 text-blue-300',
   high: 'bg-orange-500/20 text-orange-300', urgent: 'bg-red-500/20 text-red-300',
 };
 const label = (v: string) => v.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -82,15 +82,15 @@ const AdminLeadAIAssistant: React.FC = () => {
   };
 
   return (
-    <Card className="bg-slate-800 border-slate-700">
+    <Card className="bg-slate-50 border-slate-200">
       <CardHeader className="pb-3">
-        <CardTitle className="text-white flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" />AI Inquiry Assistant</CardTitle>
-        <p className="text-sm text-slate-400">Paste a lead's message to get a summary, suggested priority and next steps.</p>
+        <CardTitle className="text-slate-900 flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" />AI Inquiry Assistant</CardTitle>
+        <p className="text-sm text-slate-600">Paste a lead's message to get a summary, suggested priority and next steps.</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-3 md:grid-cols-3">
           <div className="space-y-1 md:col-span-1">
-            <Label className="text-slate-300">Link to lead (optional)</Label>
+            <Label className="text-slate-700">Link to lead (optional)</Label>
             <Select value={leadId} onValueChange={setLeadId}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -100,7 +100,7 @@ const AdminLeadAIAssistant: React.FC = () => {
             </Select>
           </div>
           <div className="space-y-1 md:col-span-2">
-            <Label className="text-slate-300">Inquiry text</Label>
+            <Label className="text-slate-700">Inquiry text</Label>
             <Textarea rows={5} maxLength={8000} value={inquiry} onChange={e => setInquiry(e.target.value)}
               placeholder="e.g. Good evening, I want 2 plots in Asaba, can I pay in 6 months? I can come for inspection Saturday." />
           </div>
@@ -112,22 +112,22 @@ const AdminLeadAIAssistant: React.FC = () => {
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
         {analysis && (
-          <div className="rounded-lg border border-slate-700 bg-slate-900/50 p-4 space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{label(analysis.intent_category)}</Badge>
               <Badge className={PRIORITY_STYLE[analysis.recommended_priority]}>Priority: {label(analysis.recommended_priority)}</Badge>
             </div>
-            <p className="text-white">{analysis.intent_summary}</p>
-            <p className="text-xs text-slate-400">Why: {analysis.priority_reason}</p>
+            <p className="text-slate-900">{analysis.intent_summary}</p>
+            <p className="text-xs text-slate-600">Why: {analysis.priority_reason}</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
               {(['budget', 'timeline', 'location', 'concerns'] as const).map(k => (
-                <div key={k} className="rounded-md bg-slate-800 p-2"><p className="text-xs text-slate-500">{label(k)}</p><p className="text-slate-200">{analysis.key_details[k] || '—'}</p></div>
+                <div key={k} className="rounded-md bg-slate-50 p-2"><p className="text-xs text-slate-500">{label(k)}</p><p className="text-slate-200">{analysis.key_details[k] || '—'}</p></div>
               ))}
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-300">Suggested next steps</p>
+              <p className="text-sm font-medium text-slate-700">Suggested next steps</p>
               {analysis.next_steps.map((s, i) => (
-                <div key={i} className="flex items-center justify-between gap-3 rounded-md bg-slate-800 p-2 text-sm">
+                <div key={i} className="flex items-center justify-between gap-3 rounded-md bg-slate-50 p-2 text-sm">
                   <span className="text-slate-200">{s.action} <span className="text-xs text-slate-500">({label(s.action_type)}, within {s.due_in_hours}h)</span></span>
                   {lead && <Button size="sm" variant="outline" className="gap-1 shrink-0" onClick={() => scheduleStep(s)}><CalendarPlus className="h-3 w-3" />Schedule</Button>}
                 </div>
