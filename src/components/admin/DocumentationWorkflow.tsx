@@ -44,7 +44,6 @@ const DocumentationWorkflow: React.FC = () => {
   const [sendingKey, setSendingKey] = useState("");
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"queue" | "templates">("queue");
-  const [selectedType, setSelectedType] = useState<Record<string, DocumentType>>({});
   const [selectedFiles, setSelectedFiles] = useState<Record<string, File | null>>({});
   const [editingTemplate, setEditingTemplate] = useState<DocumentType>("contract_of_sale");
   const [draft, setDraft] = useState<Template | null>(null);
@@ -148,18 +147,17 @@ const DocumentationWorkflow: React.FC = () => {
     await load();
   };
 
-  const sendDocument = async (row: (typeof enriched)[number]) => {
+  const sendDocument = async (row: (typeof enriched)[number], type: DocumentType) => {
     if (!canManage) return;
-    const type = selectedType[row.order.id] || "contract_of_sale";
     const doc = DOCS.find((d) => d.type === type)!;
-    const file = selectedFiles[row.order.id];
+    const key = `${row.order.id}:${type}`;
+    const file = selectedFiles[key];
     if (!row.clientEmail) return toast({ title: "Client email missing", description: "Add a valid email to the transaction record before sending.", variant: "destructive" });
     if (type === "contract_of_sale" && !row.propertyPaid) return toast({ title: "Payment not complete", description: "The Contract of Sale is locked until full property payment is confirmed.", variant: "destructive" });
     if (doc.feeGated && !row.feePayment) return toast({ title: "Documentation fee not confirmed", description: "Survey, demarcation and deed are locked until Documentation Fees payment is confirmed.", variant: "destructive" });
     if (!file || file.type !== "application/pdf" || !file.name.toLowerCase().endsWith(".pdf")) return toast({ title: "PDF required", description: "Upload the personalized PDF generated from the template preview.", variant: "destructive" });
     if (file.size > 10 * 1024 * 1024) return toast({ title: "File too large", description: "PDF files must be 10 MB or smaller.", variant: "destructive" });
 
-    const key = `${row.order.id}:${type}`;
     setSendingKey(key);
     try {
       const storagePath = `${row.order.id}/${type}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
@@ -171,7 +169,7 @@ const DocumentationWorkflow: React.FC = () => {
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || "Email could not be sent.");
       toast({ title: "Document emailed", description: `${doc.label} was sent to ${row.clientEmail} and added to the service journey.` });
-      setSelectedFiles((previous) => ({ ...previous, [row.order.id]: null }));
+      setSelectedFiles((previous) => ({ ...previous, [key]: null }));
       await load();
     } catch (error: any) {
       toast({ title: "Document not sent", description: error?.message || "Please check the PDF and retry.", variant: "destructive" });
@@ -213,9 +211,22 @@ const DocumentationWorkflow: React.FC = () => {
           <CardHeader className="pb-3"><div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div className="min-w-0"><CardTitle className="text-base text-slate-900">{row.clientName}</CardTitle><p className="mt-1 break-all text-sm text-slate-600">{row.clientEmail || "Client email missing"}</p><p className="mt-2 font-semibold text-slate-900">{row.propertyName}</p><p className="text-xs text-slate-600">{row.propertyAddress || "Property address not recorded"} · {row.plotCount} {row.plotCount === 1 ? "plot" : "plots"} · {row.plotSize}</p><p className="mt-2 text-xs text-slate-500">Order {row.order.id.slice(0,8)} · {new Date(row.order.created_at).toLocaleDateString("en-NG")}</p></div><div className="flex flex-wrap gap-2"><Badge variant={row.propertyPaid ? "default" : "secondary"}>{row.propertyPaid ? "Property fully paid" : `Balance ${money(row.balance)}`}</Badge><Badge variant={row.feePayment ? "default" : "outline"}>{row.feePayment ? "Documentation fee paid" : "Documentation fee pending"}</Badge></div></div></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3"><div className="rounded-lg bg-slate-50 p-3"><p className="text-xs text-slate-500">Purchase price</p><p className="mt-1 font-semibold text-slate-900">{money(row.total)}</p></div><div className="rounded-lg bg-slate-50 p-3"><p className="text-xs text-slate-500">Amount paid</p><p className="mt-1 font-semibold text-slate-900">{money(row.paid)}</p></div><div className="rounded-lg bg-slate-50 p-3"><p className="text-xs text-slate-500">Outstanding</p><p className="mt-1 font-semibold text-slate-900">{money(row.balance)}</p></div></div>
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-              <div className="space-y-2"><label className="text-sm font-medium text-slate-800">Document type</label><select value={currentType} onChange={(e)=>setSelectedType((prev)=>({...prev,[row.order.id]:e.target.value as DocumentType}))} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">{DOCS.map((doc)=><option key={doc.type} value={doc.type}>{doc.label}</option>)}</select><p className="text-xs text-slate-500">{selectedDoc.description}</p><div className="rounded-lg border border-slate-200 p-3 text-sm">{ready ? <span className="inline-flex items-center gap-2 text-emerald-700"><CheckCircle2 className="h-4 w-4"/>Eligible for sending</span> : <span className="inline-flex items-center gap-2 text-amber-700"><Clock3 className="h-4 w-4"/>Payment requirement not met</span>}</div><Button variant="outline" onClick={()=>openPreview(row,currentType)} disabled={!templateFor(currentType)} className="w-full gap-2"><Printer className="h-4 w-4"/>Personalize & print template</Button></div>
-              <div className="space-y-2"><label className="text-sm font-medium text-slate-800">Attach personalized PDF</label><Input type="file" accept="application/pdf,.pdf" onChange={(e)=>setSelectedFiles((prev)=>({...prev,[row.order.id]:e.target.files?.[0] || null}))} className="h-auto py-2 file:mr-3 file:rounded file:border-0 file:bg-muted file:px-3 file:py-1.5"/><p className="text-xs text-slate-500">Print the preview to PDF, then attach it here. PDF only, max 10 MB.</p><Button onClick={()=>void sendDocument(row)} disabled={!canManage || !ready || !selectedFiles[row.order.id] || sendingKey===key} className="w-full gap-2">{sendingKey===key ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Mail className="h-4 w-4"/>}{sendingKey===key ? "Sending…" : `Send ${selectedDoc.label}`}</Button>{!canManage&&<p className="text-xs text-amber-700">You have view-only access. Ask an administrator for documentation management permission.</p>}</div>
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+              {DOCS.map((doc) => {
+                const ready = doc.feeGated ? !!row.feePayment : row.propertyPaid;
+                const key = `${row.order.id}:${doc.type}`;
+                const file = selectedFiles[key];
+                return <div key={doc.type} className="min-w-0 rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-start justify-between gap-2"><div><h4 className="font-semibold text-slate-900">{doc.label}</h4><p className="mt-1 text-xs text-slate-500">{doc.description}</p></div><Badge variant={ready ? "default" : "secondary"}>{ready ? "Eligible" : "Payment pending"}</Badge></div>
+                  <div className="mt-3 flex flex-col gap-2">
+                    <Button variant="outline" onClick={() => openPreview(row,doc.type)} disabled={!templateFor(doc.type)} className="w-full gap-2"><Printer className="h-4 w-4"/>Personalize & print template</Button>
+                    <div className="space-y-1"><label className="text-xs font-medium text-slate-700">Attach personalized PDF</label><Input type="file" accept="application/pdf,.pdf" onChange={(e)=>setSelectedFiles((prev)=>({...prev,[key]:e.target.files?.[0] || null}))} className="h-auto py-2 file:mr-2 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1.5"/><p className="text-[11px] text-slate-500">{file ? file.name : "PDF only · maximum 10 MB"}</p></div>
+                    <Button onClick={()=>void sendDocument(row,doc.type)} disabled={!canManage || !ready || !file || sendingKey===key} className="w-full gap-2">{sendingKey===key ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Mail className="h-4 w-4"/>}{sendingKey===key ? "Sending…" : `Send ${doc.label}`}</Button>
+                    {!ready && <p className="text-[11px] text-amber-700">{doc.feeGated ? "Requires confirmed Documentation Fees payment." : "Requires confirmed full property payment."}</p>}
+                    {!canManage && <p className="text-[11px] text-amber-700">View only. Ask an administrator for documentation management permission.</p>}
+                  </div>
+                </div>;
+              })}
             </div>
             {history.length > 0 && <div className="border-t pt-3"><p className="mb-2 text-sm font-semibold text-slate-800">Delivery history</p><div className="space-y-2">{history.slice(0,6).map((doc)=><div key={doc.id} className="flex flex-col gap-1 rounded-lg bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="text-sm font-medium text-slate-800">{titleCase(doc.document_type)} · {doc.file_name}</p><p className="text-xs text-slate-500">{new Date(doc.sent_at).toLocaleString("en-NG")}</p></div><Badge variant={doc.status === "sent" ? "default" : "destructive"}>{doc.status}</Badge></div>)}</div></div>}
           </CardContent>
