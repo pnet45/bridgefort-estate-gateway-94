@@ -1,5 +1,7 @@
 # Bridgefort Homes Design System
 
+> For the full reusable workflow covering `/restyle`, `/ux-audit`, `/ux-design`, `/ux-review`, implementation, accessibility, responsive QA, and release readiness, see [docs/UX-UI-SKILL.md](docs/UX-UI-SKILL.md). This file remains the source of truth for visual tokens and implementation conventions.
+
 This document records the existing UI tokens and implementation conventions. Extend the current system instead of introducing a competing palette or one-off styling.
 
 ## Visual character
