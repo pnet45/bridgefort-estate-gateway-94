@@ -83,24 +83,24 @@ const AdminCustomer360: React.FC = () => {
   const active = journeys.filter(j => !terminal.has(j.status)).length;
   const next = followUps.find(f => !f.completed_at && !f.cancelled_at);
 
-  return <Card className="bg-slate-800 border-slate-700">
+  return <Card className="bg-slate-50 border-slate-200">
     <CardHeader className="pb-3">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div><CardTitle className="text-white flex items-center gap-2"><User className="h-5 w-5 text-primary" />Customer 360</CardTitle>
-          <p className="text-sm text-slate-400 mt-1">One view of customer leads, service journeys, activities and follow-ups.</p></div>
+        <div><CardTitle className="text-slate-900 flex items-center gap-2"><User className="h-5 w-5 text-primary" />Customer 360</CardTitle>
+          <p className="text-sm text-slate-600 mt-1">One view of customer leads, service journeys, activities and follow-ups.</p></div>
         <Button variant="outline" size="sm" onClick={() => void loadLeads()} disabled={loading} className="gap-2"><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Refresh</Button>
       </div>
     </CardHeader>
     <CardContent>
       <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-4">
         <div className="space-y-3">
-          <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search name, email, phone..." className="pl-9 bg-slate-900 border-slate-700 text-white" /></div>
+          <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600" />
+            <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search name, email, phone..." className="pl-9 bg-white border-slate-200 text-slate-900" /></div>
           <div className="h-[420px] overflow-y-auto space-y-2 pr-1">
             {filtered.map(lead => <button key={lead.id} type="button" onClick={() => void loadCustomer(lead)}
-              className={`w-full text-left rounded-lg border p-3 ${selected?.id === lead.id ? 'border-primary bg-primary/10' : 'border-slate-700 bg-slate-900/50 hover:bg-slate-900'}`}>
-              <div className="flex items-start justify-between gap-2"><span className="font-medium text-white truncate">{lead.name}</span><Badge variant="outline" className="text-[10px]">{titleCase(lead.status)}</Badge></div>
-              <p className="text-xs text-slate-400 mt-1 truncate">{lead.email || lead.phone || 'No contact details'}</p>
+              className={`w-full text-left rounded-lg border p-3 ${selected?.id === lead.id ? 'border-primary bg-primary/10' : 'border-slate-200 bg-slate-50 hover:bg-white'}`}>
+              <div className="flex items-start justify-between gap-2"><span className="font-medium text-slate-900 truncate">{lead.name}</span><Badge variant="outline" className="text-[10px]">{titleCase(lead.status)}</Badge></div>
+              <p className="text-xs text-slate-600 mt-1 truncate">{lead.email || lead.phone || 'No contact details'}</p>
               {lead.estate_interest && <p className="text-xs text-slate-500 mt-1 truncate">{lead.estate_interest}</p>}
             </button>)}
             {!loading && !filtered.length && <p className="py-8 text-center text-sm text-slate-500">No matching customers found.</p>}
@@ -108,36 +108,36 @@ const AdminCustomer360: React.FC = () => {
         </div>
 
         <div className="min-w-0">
-          {!selected ? <div className="min-h-[420px] rounded-xl border border-dashed border-slate-700 flex items-center justify-center text-center p-6">
-            <div><User className="h-10 w-10 mx-auto text-slate-600" /><p className="text-white font-medium mt-3">Select a customer</p><p className="text-sm text-slate-500 mt-1">Their linked service history will appear here.</p></div>
+          {!selected ? <div className="min-h-[420px] rounded-xl border border-dashed border-slate-200 flex items-center justify-center text-center p-6">
+            <div><User className="h-10 w-10 mx-auto text-slate-600" /><p className="text-slate-900 font-medium mt-3">Select a customer</p><p className="text-sm text-slate-500 mt-1">Their linked service history will appear here.</p></div>
           </div> : detailsLoading ? <div className="py-12 text-center text-sm text-slate-500">Loading customer history...</div> : <div className="space-y-4">
-            <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-4">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div><h3 className="text-xl font-semibold text-white">{selected.name}</h3>
-                  <div className="flex flex-wrap gap-3 mt-2 text-sm text-slate-400">
+                <div><h3 className="text-xl font-semibold text-slate-900">{selected.name}</h3>
+                  <div className="flex flex-wrap gap-3 mt-2 text-sm text-slate-600">
                     {selected.email && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{selected.email}</span>}
                     {selected.phone && <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{selected.phone}</span>}
                   </div></div>
                 <div className="flex gap-2"><Badge>{titleCase(selected.status)}</Badge><Badge variant="outline">{titleCase(selected.priority)}</Badge></div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
-                <div className="rounded-lg bg-slate-800 p-3"><p className="text-[11px] text-slate-500">Active Journeys</p><p className="text-sm text-white mt-1">{active}</p></div>
-                <div className="rounded-lg bg-slate-800 p-3"><p className="text-[11px] text-slate-500">Next Follow-up</p><p className="text-sm text-white mt-1">{next ? format(new Date(next.scheduled_at), 'MMM d, h:mm a') : 'None'}</p></div>
-                <div className="rounded-lg bg-slate-800 p-3"><p className="text-[11px] text-slate-500">Lead Source</p><p className="text-sm text-white mt-1">{titleCase(selected.source || 'unknown')}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="text-[11px] text-slate-500">Active Journeys</p><p className="text-sm text-slate-900 mt-1">{active}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="text-[11px] text-slate-500">Next Follow-up</p><p className="text-sm text-slate-900 mt-1">{next ? format(new Date(next.scheduled_at), 'MMM d, h:mm a') : 'None'}</p></div>
+                <div className="rounded-lg bg-slate-50 p-3"><p className="text-[11px] text-slate-500">Lead Source</p><p className="text-sm text-slate-900 mt-1">{titleCase(selected.source || 'unknown')}</p></div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              <Card className="bg-slate-900/40 border-slate-700"><CardHeader className="pb-2"><CardTitle className="text-sm text-white flex items-center gap-2"><Activity className="h-4 w-4" />Service Journeys</CardTitle></CardHeader><CardContent className="space-y-2">
-                {!journeys.length ? <p className="text-sm text-slate-500">No linked service journeys.</p> : journeys.map(j => <div key={j.id} className="rounded-lg bg-slate-800 p-3"><div className="flex justify-between gap-2"><span className="text-sm text-white">{titleCase(j.service_type)}</span><Badge variant="outline" className="text-[10px]">{titleCase(j.status)}</Badge></div><p className="text-xs text-slate-500 mt-1">{j.outcome || j.notes || `Priority: ${titleCase(j.priority)}`}</p></div>)}
+              <Card className="bg-white border-slate-200"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-900 flex items-center gap-2"><Activity className="h-4 w-4" />Service Journeys</CardTitle></CardHeader><CardContent className="space-y-2">
+                {!journeys.length ? <p className="text-sm text-slate-500">No linked service journeys.</p> : journeys.map(j => <div key={j.id} className="rounded-lg bg-slate-50 p-3"><div className="flex justify-between gap-2"><span className="text-sm text-slate-900">{titleCase(j.service_type)}</span><Badge variant="outline" className="text-[10px]">{titleCase(j.status)}</Badge></div><p className="text-xs text-slate-500 mt-1">{j.outcome || j.notes || `Priority: ${titleCase(j.priority)}`}</p></div>)}
               </CardContent></Card>
-              <Card className="bg-slate-900/40 border-slate-700"><CardHeader className="pb-2"><CardTitle className="text-sm text-white flex items-center gap-2"><CalendarClock className="h-4 w-4" />Follow-ups</CardTitle></CardHeader><CardContent className="space-y-2">
-                {!followUps.length ? <p className="text-sm text-slate-500">No follow-ups recorded.</p> : followUps.slice(0,8).map(f => <div key={f.id} className="rounded-lg bg-slate-800 p-3"><div className="flex justify-between gap-2"><span className="text-sm text-white">{titleCase(f.action_type)}</span>{f.completed_at ? <CheckCircle2 className="h-4 w-4 text-green-400" /> : f.cancelled_at ? <Badge variant="outline">Cancelled</Badge> : <Clock3 className="h-4 w-4 text-amber-400" />}</div><p className="text-xs text-slate-500 mt-1">{format(new Date(f.scheduled_at), 'MMM d, yyyy h:mm a')}</p></div>)}
+              <Card className="bg-white border-slate-200"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-900 flex items-center gap-2"><CalendarClock className="h-4 w-4" />Follow-ups</CardTitle></CardHeader><CardContent className="space-y-2">
+                {!followUps.length ? <p className="text-sm text-slate-500">No follow-ups recorded.</p> : followUps.slice(0,8).map(f => <div key={f.id} className="rounded-lg bg-slate-50 p-3"><div className="flex justify-between gap-2"><span className="text-sm text-slate-900">{titleCase(f.action_type)}</span>{f.completed_at ? <CheckCircle2 className="h-4 w-4 text-green-400" /> : f.cancelled_at ? <Badge variant="outline">Cancelled</Badge> : <Clock3 className="h-4 w-4 text-amber-400" />}</div><p className="text-xs text-slate-500 mt-1">{format(new Date(f.scheduled_at), 'MMM d, yyyy h:mm a')}</p></div>)}
               </CardContent></Card>
             </div>
 
-            <Card className="bg-slate-900/40 border-slate-700"><CardHeader className="pb-2"><CardTitle className="text-sm text-white">Unified Activity Timeline</CardTitle></CardHeader><CardContent>
-              {!timeline.length ? <p className="text-sm text-slate-500">No activity recorded yet.</p> : <div className="space-y-3">{timeline.map(item => <div key={item.id} className="flex gap-3"><div className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /><div><div className="flex flex-wrap items-center gap-2"><span className="text-sm font-medium text-white">{item.title}</span><span className="text-[11px] text-slate-500">{format(new Date(item.date), 'MMM d, yyyy h:mm a')}</span></div><p className="text-xs text-slate-400 mt-1">{item.detail}</p></div></div>)}</div>}
+            <Card className="bg-white border-slate-200"><CardHeader className="pb-2"><CardTitle className="text-sm text-slate-900">Unified Activity Timeline</CardTitle></CardHeader><CardContent>
+              {!timeline.length ? <p className="text-sm text-slate-500">No activity recorded yet.</p> : <div className="space-y-3">{timeline.map(item => <div key={item.id} className="flex gap-3"><div className="mt-1 h-2 w-2 rounded-full bg-primary shrink-0" /><div><div className="flex flex-wrap items-center gap-2"><span className="text-sm font-medium text-slate-900">{item.title}</span><span className="text-[11px] text-slate-500">{format(new Date(item.date), 'MMM d, yyyy h:mm a')}</span></div><p className="text-xs text-slate-600 mt-1">{item.detail}</p></div></div>)}</div>}
             </CardContent></Card>
           </div>}
         </div>
