@@ -118,13 +118,6 @@ Deno.serve(async (req) => {
     const { data: authData, error: authError } = await userClient.auth.getUser(authHeader.slice(7));
     const user = authData.user;
     if (authError || !user || !user.email) return json({ error: "A valid account is required" }, 401);
-    const authProviders = user.app_metadata?.providers;
-    if (
-      user.app_metadata?.provider !== "email" &&
-      (!Array.isArray(authProviders) || !authProviders.includes("email"))
-    ) {
-      return json({ error: "Sign in with your email address and password to chat with Leo" }, 403);
-    }
 
     const service = createClient(supabaseUrl, serviceKey);
     if (parsed.data.action === "list_inquiries" || parsed.data.action === "load_inquiry") {

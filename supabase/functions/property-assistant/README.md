@@ -26,7 +26,8 @@ directly readable or writable by browser roles.
 
 Leo's server-side boundary is intentionally limited:
 
-- Every chat and transcript restore requires a verified Supabase user session.
+- Every chat and transcript restore requires a verified Supabase user session
+  with an account email. Email/password and OAuth sign-ins are supported.
 - Public context is restricted to published listing fields; unpublished listing
   data, owner contact details, credentials, staff records, CRM, and inbox content
   are not sent to the model.
