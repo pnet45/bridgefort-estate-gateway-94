@@ -30,6 +30,7 @@ const money = (value: unknown) => new Intl.NumberFormat("en-NG", { style: "curre
 const titleCase = (value: string) => value.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const fillTemplate = (value: string, tokens: Record<string, string>) => value.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_m, key) => tokens[key] ?? "");
+const sanitizeTemplateHtml = (value: string) => value.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "").replace(/\son\w+="[^"]*"/gi, "").replace(/\son\w+='[^']*'/gi, "");
 
 const DocumentationWorkflow: React.FC = () => {
   const { user, permissions } = useAuth();
@@ -131,7 +132,7 @@ const DocumentationWorkflow: React.FC = () => {
     const template = templateFor(type);
     if (!template) return toast({ title: "Template not found", description: "Save or restore this document template first.", variant: "destructive" });
     const tokens = tokensFor(row);
-    const html = fillTemplate(template.body_html_template, tokens);
+    const html = sanitizeTemplateHtml(fillTemplate(template.body_html_template, tokens));
     const subject = fillTemplate(template.subject_template, tokens);
     const preview = window.open("", "_blank", "width=900,height=720");
     if (!preview) return toast({ title: "Preview blocked", description: "Allow pop-ups for this site to preview and print the document.", variant: "destructive" });
@@ -163,6 +164,7 @@ const DocumentationWorkflow: React.FC = () => {
     if (!file || file.type !== "application/pdf" || !file.name.toLowerCase().endsWith(".pdf")) return toast({ title: "PDF required", description: "Upload the personalized PDF generated from the template preview.", variant: "destructive" });
     if (file.size > 10 * 1024 * 1024) return toast({ title: "File too large", description: "PDF files must be 10 MB or smaller.", variant: "destructive" });
 
+    if (!window.confirm(`Send ${doc.label} PDF to ${row.clientEmail} for ${row.propertyName}? Verify the attached PDF belongs to this client and order.`)) return;
     setSendingKey(key);
     try {
       const storagePath = `${row.order.id}/${type}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
