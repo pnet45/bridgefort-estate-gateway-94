@@ -426,8 +426,19 @@ const AdminCRMLeads: React.FC = () => {
         <div className={`${selectedLead ? 'w-1/2' : 'w-full'} transition-all`}>
           <ScrollArea className="h-[500px]">
             <div className="space-y-2">
-              {loading ? <p className="text-slate-600 p-4">Loading...</p> :
-                filtered.length === 0 ? <p className="text-slate-600 p-4 text-center">No leads found</p> :
+              {loading ? <p role="status" aria-live="polite" className="text-slate-600 p-4">Loading leads…</p> :
+                filtered.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center" role="status">
+                    <UsersIcon className="mx-auto h-9 w-9 text-slate-400" aria-hidden="true" />
+                    <h3 className="mt-3 text-sm font-semibold text-slate-900">{leads.length === 0 ? 'No leads yet' : 'No leads match these filters'}</h3>
+                    <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">{leads.length === 0 ? 'Add your first lead to start tracking inquiries, follow-ups and conversions.' : 'Try a different search term or adjust the status, assignee, priority or source filters.'}</p>
+                    {leads.length === 0 && (
+                      <Button className="mt-4 gap-2" onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' }); setIsFormOpen(true); }}>
+                        <Plus className="h-4 w-4" /> Add your first lead
+                      </Button>
+                    )}
+                  </div>
+                ) :
                 filtered.map(lead => (
                   <Card key={lead.id} className={`border-slate-200 cursor-pointer transition-colors ${selectedLead?.id === lead.id ? 'bg-slate-600' : 'bg-white/50 hover:bg-white'}`}
                     onClick={() => handleOpenLead(lead)}>
