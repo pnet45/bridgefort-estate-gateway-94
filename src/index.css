@@ -790,3 +790,13 @@
 @media (prefers-reduced-motion: reduce) {
   .bf-logo-slide, .bf-label-slide, .bf-label-drop { animation: none; }
 }
+
+
+/* Consistent keyboard focus treatment across light/dark themes. */
+@layer base {
+  :where(a, button, input, select, textarea, [role="button"], [role="menuitem"], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: max(2px, var(--radius));
+  }
+}
