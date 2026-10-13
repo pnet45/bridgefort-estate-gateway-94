@@ -46,6 +46,7 @@ const DocumentationWorkflow: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [sendingKey, setSendingKey] = useState("");
+  const [generatingKey, setGeneratingKey] = useState("");
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"queue" | "templates">("queue");
   const [selectedFiles, setSelectedFiles] = useState<Record<string, File | null>>({});
@@ -147,7 +148,7 @@ const DocumentationWorkflow: React.FC = () => {
     if (!template?.enabled) return toast({ title: "Template not approved", description: "An authorized administrator must approve and enable this template before generating a sendable document.", variant: "destructive" });
     const key = row.order.id + ":" + type;
     try {
-      setSendingKey("pdf:" + key);
+      setGeneratingKey(key);
       const tokens = tokensFor(row);
       const html = sanitizeTemplateHtml(fillTemplate(template.body_html_template, tokens));
       const host = document.createElement("div");
@@ -182,7 +183,7 @@ const DocumentationWorkflow: React.FC = () => {
     } catch (error: any) {
       toast({ title: "PDF generation failed", description: error?.message || "Please preview and print the document, or upload an approved PDF.", variant: "destructive" });
     } finally {
-      setSendingKey("");
+      setGeneratingKey("");
     }
   };
 
@@ -275,9 +276,9 @@ const DocumentationWorkflow: React.FC = () => {
                 return <div key={doc.type} className="min-w-0 rounded-xl border border-slate-200 p-4">
                   <div className="flex items-start justify-between gap-2"><div><h4 className="font-semibold text-slate-900">{doc.label}</h4><p className="mt-1 text-xs text-slate-500">{doc.description}</p></div><Badge variant={ready ? "default" : "secondary"}>{ready ? "Eligible" : "Payment pending"}</Badge></div>
                   <div className="mt-3 flex flex-col gap-2">
-                    <Button variant="outline" onClick={() => openPreview(row,doc.type)} disabled={!templateFor(doc.type)} className="w-full gap-2"><Printer className="h-4 w-4"/>Preview template</Button><Button variant="outline" onClick={() => void generatePersonalizedPdf(row,doc.type)} disabled={!templateEnabled || sendingKey==="pdf:"+key} className="w-full gap-2"><FileText className="h-4 w-4"/>{sendingKey==="pdf:"+key ? "Generating PDF…" : "Generate personalized PDF"}</Button>
+                    <Button variant="outline" onClick={() => openPreview(row,doc.type)} disabled={!templateFor(doc.type)} className="w-full gap-2"><Printer className="h-4 w-4"/>Preview template</Button><Button variant="outline" onClick={() => void generatePersonalizedPdf(row,doc.type)} disabled={!templateEnabled || generatingKey===key} className="w-full gap-2"><FileText className="h-4 w-4"/>{generatingKey===key ? "Generating PDF…" : "Generate personalized PDF"}</Button>
                     <div className="space-y-1"><label className="text-xs font-medium text-slate-700">Attach personalized PDF</label><Input key={`${key}-${file?.name || "empty"}`} type="file" accept="application/pdf,.pdf" onChange={(e)=>setSelectedFiles((prev)=>({...prev,[key]:e.target.files?.[0] || null}))} className="h-auto py-2 file:mr-2 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1.5"/><p className="text-[11px] text-slate-500">{file ? file.name : "PDF only · maximum 10 MB"}</p></div>
-                    <Button onClick={()=>void sendDocument(row,doc.type)} disabled={!canManage || !ready || !templateEnabled || !file || sendingKey===key} className="w-full gap-2">{sendingKey===key ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Mail className="h-4 w-4"/>}{sendingKey===key ? "Sending…" : `Send ${doc.label}`}</Button>
+                    <Button onClick={()=>void sendDocument(row,doc.type)} disabled={!canManage || !ready || !templateEnabled || !file || sendingKey===key || generatingKey===key} className="w-full gap-2">{sendingKey===key ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Mail className="h-4 w-4"/>}{sendingKey===key ? "Sending…" : `Send ${doc.label}`}</Button>
                     {!ready && <p className="text-[11px] text-amber-700">{doc.feeGated ? "Requires confirmed Documentation Fees payment." : "Requires confirmed full property payment."}</p>}
                     {!templateEnabled && <p className="text-[11px] text-amber-700">Starter template is disabled. Add the approved company wording and explicitly enable it before sending.</p>}
                     {!canManage && <p className="text-[11px] text-amber-700">View only. Ask an administrator for documentation management permission.</p>}
