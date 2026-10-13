@@ -106,7 +106,7 @@ const DocumentationWorkflow: React.FC = () => {
       const balance = Number(order.balance ?? Math.max(total - paid, 0));
       const status = String(order.payment_status || "").toLowerCase();
       const propertyPaid = total > 0 && balance <= 0 && paid >= total && ["paid", "completed"].includes(status);
-      const feePayment = fees.find((fee) => fee.order_id === order.id && fee.user_id === order.user_id && ["approved", "paid", "completed"].includes(String(fee.status).toLowerCase()) && Number(fee.amount || 0) > 0 && Number(fee.amount || 0) >= Number(fee.total_bundle_amount || fee.amount || 0));
+      const feePayment = fees.find((fee) => fee.order_id === order.id && fee.user_id === order.user_id && ["approved", "paid", "completed"].includes(String(fee.status).toLowerCase()) && Number(fee.amount || 0) > 0 && Number(fee.total_bundle_amount || 0) > 0 && Number(fee.amount || 0) >= Number(fee.total_bundle_amount || 0));
       const clientName = order.customer_name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Client name unavailable";
       const clientEmail = order.customer_email || accountEmails[order.user_id] || "";
       return { order, profile, propertyName, propertyAddress, plotCount, plotSize, total, paid, balance, propertyPaid, feePayment, clientName, clientEmail, items };
