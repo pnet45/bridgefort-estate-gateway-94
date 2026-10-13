@@ -50,6 +50,27 @@ using (public.admin_has_permission('admin:view_documentation') or public.admin_h
 grant select on public.transaction_documents to authenticated;
 grant select, insert, update on public.transaction_document_templates to authenticated;
 
+-- Give users with explicit documentation permissions the read access needed by the queue.
+drop policy if exists orders_documentation_admin_select on public.orders;
+create policy orders_documentation_admin_select on public.orders
+for select to authenticated
+using (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+
+drop policy if exists estate_doc_payments_documentation_admin_select on public.estate_documentation_payments;
+create policy estate_doc_payments_documentation_admin_select on public.estate_documentation_payments
+for select to authenticated
+using (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+
+drop policy if exists profiles_documentation_admin_select on public.profiles;
+create policy profiles_documentation_admin_select on public.profiles
+for select to authenticated
+using (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+
+drop policy if exists users_documentation_admin_select on public.users;
+create policy users_documentation_admin_select on public.users
+for select to authenticated
+using (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+
 insert into public.permissions (key, label, category, description)
 values
   ('admin:view_documentation', 'View Transaction Documentation', 'admin', 'View payment-eligible client documentation and delivery history.'),
