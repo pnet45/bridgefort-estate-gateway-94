@@ -98,12 +98,19 @@ const AdminCustomer360: React.FC = () => {
             <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search name, email, phone..." className="pl-9 bg-white border-slate-200 text-slate-900" /></div>
           <div className="h-[420px] overflow-y-auto space-y-2 pr-1">
             {filtered.map(lead => <button key={lead.id} type="button" onClick={() => void loadCustomer(lead)}
-              className={`w-full text-left rounded-lg border p-3 ${selected?.id === lead.id ? 'border-primary bg-primary/10' : 'border-slate-200 bg-slate-50 hover:bg-white'}`}>
+              className={`w-full text-left rounded-lg border p-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected?.id === lead.id ? 'border-primary bg-primary/10' : 'border-slate-200 bg-slate-50 hover:bg-white'}`}>
               <div className="flex items-start justify-between gap-2"><span className="font-medium text-slate-900 truncate">{lead.name}</span><Badge variant="outline" className="text-[10px]">{titleCase(lead.status)}</Badge></div>
               <p className="text-xs text-slate-600 mt-1 truncate">{lead.email || lead.phone || 'No contact details'}</p>
               {lead.estate_interest && <p className="text-xs text-slate-500 mt-1 truncate">{lead.estate_interest}</p>}
             </button>)}
-            {!loading && !filtered.length && <p className="py-8 text-center text-sm text-slate-500">No matching customers found.</p>}
+            {!loading && !filtered.length && (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center" role="status">
+                <User className="mx-auto h-8 w-8 text-slate-400" aria-hidden="true" />
+                <p className="mt-3 text-sm font-semibold text-slate-900">{leads.length === 0 ? 'No customer leads yet' : 'No matching customers'}</p>
+                <p className="mt-1 text-sm text-slate-600">{leads.length === 0 ? 'Customer 360 will show linked journeys, activities and follow-ups once leads are available.' : 'Try another name, email or phone number.'}</p>
+                {searchTerm && <Button variant="outline" size="sm" className="mt-3" onClick={() => setSearchTerm('')}>Clear search</Button>}
+              </div>
+            )}
           </div>
         </div>
 
