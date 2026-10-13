@@ -148,6 +148,42 @@ Deno.serve(async (req) => {
     }
 
     const service = createClient(supabaseUrl, serviceKey);
+    if (!user) {
+      const clientAddress =
+        req.headers.get("cf-connecting-ip")?.trim() ||
+        req.headers.get("x-real-ip")?.trim() ||
+        req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+        "unknown";
+      const hmacKey = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(serviceKey),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"],
+      );
+      const addressDigest = await crypto.subtle.sign(
+        "HMAC",
+        hmacKey,
+        new TextEncoder().encode(clientAddress.slice(0, 64)),
+      );
+      const rateKey = `leo:${Array.from(new Uint8Array(addressDigest), (byte) =>
+        byte.toString(16).padStart(2, "0")
+      ).join("")}`;
+      const { data: withinRateLimit, error: rateLimitError } = await service.rpc(
+        "consume_leo_public_rate_limit",
+        { p_rate_key: rateKey, p_limit: 10, p_window_seconds: 60 },
+      );
+      if (rateLimitError) {
+        console.error("property-assistant: public rate-limit check failed", rateLimitError);
+        return json({ error: "Leo is temporarily unavailable. Please try again shortly." }, 503);
+      }
+      if (!withinRateLimit) {
+        const response = json({ error: "Leo is receiving too many messages from this network. Please try again in a minute." }, 429);
+        response.headers.set("Retry-After", "60");
+        return response;
+      }
+    }
+
     if (parsed.data.action === "list_inquiries" || parsed.data.action === "load_inquiry") {
       if (!user) return json({ error: "Sign in to access enquiry tracking" }, 401);
       const { data: canViewCrm, error: permissionError } = await service.rpc(
@@ -253,7 +289,7 @@ Deno.serve(async (req) => {
       : [];
 
     let ownServiceContext: Record<string, unknown> = {};
-    const asksAboutOwnService = /\b(my|account|payment|paid|balance|installment|order|purchase|documentation|receipt|booking|inspection)\b/i
+    const asksAboutOwnService = /\b(my|mine|i paid|i purchased|i booked|personal records|personal information)\b/i
       .test(parsed.data.action === "chat" ? parsed.data.message : "");
     if (user && actorType !== "admin" && asksAboutOwnService) {
       const [{ data: plans, error: plansError }, { data: orders, error: ordersError }, { data: documents, error: documentsError }] =

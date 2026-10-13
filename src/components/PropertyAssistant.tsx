@@ -266,6 +266,7 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
     if (!content || isSending) return;
     if (addUserMessage) {
       setMessages((current) => [...current, { role: 'user', content }]);
+      setAuthPendingMessage('');
     }
     setInput('');
     setError('');
@@ -519,6 +520,9 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
     setTrackingNumber('');
     setMessages([INITIAL_MESSAGE]);
     setError('');
+    setAuthRequired(false);
+    setAuthPendingMessage('');
+    setAuthError('');
   };
 
   return (
@@ -572,7 +576,7 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
             <p className="text-xs leading-5 text-slate-600">
               {user
                 ? "Sign-in verified · Messages may be processed by Bridgefort's configured AI service and are saved under your account until it is deleted. Do not share passwords or payment credentials."
-                : "Ask about published properties and public services without signing in. Guest chats are not saved. Sign in when you need help with your account or other restricted information."}
+                : "Ask about published properties and public services without signing in. Messages may be processed by Bridgefort's AI service; guest chats are not saved. Sign in for personal or restricted information."}
             </p>
             {trackingNumber && (
               <p className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-900">

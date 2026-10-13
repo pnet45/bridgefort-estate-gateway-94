@@ -27,8 +27,9 @@ directly readable or writable by browser roles.
 Leo's server-side boundary is intentionally limited:
 
 - Anonymous visitors can ask public questions using published listings and
-  public approved knowledge. Guest chat history is kept only in the browser
-  session and is not written to the database.
+  public approved knowledge. Guest chat history stays in chat memory and is not
+  written to the database. Anonymous requests are limited to ten messages per
+  source IP per minute; only an HMAC of the source address is stored.
 - Personal account questions, saved conversation restores, and enquiry tracking
   require a verified Supabase user session. Email/password and Google sign-in
   use the existing authentication flow; admin enquiry access is checked against
@@ -55,5 +56,5 @@ Leo's server-side boundary is intentionally limited:
 
 Leo's model context is curated from public listings and the signed-in user's
 permitted data; the full source repository and unrestricted database are never
-loaded into a prompt. Apply request rate limits at the model gateway before
-opening this service to substantial public traffic.
+loaded into a prompt. Configure additional model-gateway limits before
+substantial public traffic.
