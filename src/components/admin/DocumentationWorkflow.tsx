@@ -18,6 +18,7 @@ type PurchaseOrder = {
 type Template = { id?: string; document_type: DocumentType; name: string; subject_template: string; body_html_template: string; enabled: boolean; };
 type SentDocument = { id: string; order_id: string; document_type: DocumentType; file_name: string; status: string; sent_at: string; storage_path: string; };
 type FeePayment = { order_id: string | null; user_id: string; status: string; amount: number | null; created_at: string; };
+type ClientProfile = { id: string; first_name: string | null; last_name: string | null; address: string | null; current_residence: string | null; phone_number: string | null; };
 
 const DOCS: { type: DocumentType; label: string; feeGated: boolean; description: string }[] = [
   { type: "contract_of_sale", label: "Contract of Sale", feeGated: false, description: "Available only after full property payment is confirmed." },
@@ -35,6 +36,7 @@ const DocumentationWorkflow: React.FC = () => {
   const canManage = permissions.includes("admin:manage_documentation") || permissions.includes("admin:all") || permissions.includes("super_admin");
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [fees, setFees] = useState<FeePayment[]>([]);
+  const [profiles, setProfiles] = useState<ClientProfile[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [sent, setSent] = useState<SentDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,18 +52,21 @@ const DocumentationWorkflow: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [orderResult, feeResult, templateResult, sentResult] = await Promise.all([
+      const [orderResult, feeResult, templateResult, sentResult, profileResult] = await Promise.all([
         supabase.from("orders").select("id,user_id,customer_email,customer_name,total_amount,amount_paid,balance,payment_status,items,created_at").order("created_at", { ascending: false }).limit(500),
         supabase.from("estate_documentation_payments").select("order_id,user_id,status,amount,created_at").order("created_at", { ascending: false }).limit(1000),
         supabase.from("transaction_document_templates").select("*").order("name"),
         supabase.from("transaction_documents").select("id,order_id,document_type,file_name,status,sent_at,storage_path").order("sent_at", { ascending: false }).limit(1000),
+        supabase.from("profiles").select("id,first_name,last_name,address,current_residence,phone_number").limit(1000),
       ]);
       if (orderResult.error) throw orderResult.error;
       if (feeResult.error) throw feeResult.error;
       if (templateResult.error) throw templateResult.error;
       if (sentResult.error) throw sentResult.error;
+      if (profileResult.error) throw profileResult.error;
       setOrders((orderResult.data || []) as PurchaseOrder[]);
       setFees((feeResult.data || []) as FeePayment[]);
+      setProfiles((profileResult.data || []) as ClientProfile[]);
       setTemplates((templateResult.data || []) as Template[]);
       setSent((sentResult.data || []) as SentDocument[]);
     } catch (error: any) {
@@ -83,6 +88,7 @@ const DocumentationWorkflow: React.FC = () => {
     const query = search.trim().toLowerCase();
     return orders.map((order) => {
       const items = Array.isArray(order.items) ? order.items : [];
+      const profile = profiles.find((item) => item.id === order.user_id);
       const propertyName = items.map((item: any) => item.property_name || item.estate_name || item.name).filter(Boolean).join(", ") || "Bridgefort Homes Property";
       const propertyAddress = items.map((item: any) => item.location || item.address || item.estate_location).filter(Boolean)[0] || "";
       const plotCount = items.reduce((sum: number, item: any) => sum + Math.max(1, Number(item.quantity || 1)), 0) || 1;
@@ -93,20 +99,20 @@ const DocumentationWorkflow: React.FC = () => {
       const status = String(order.payment_status || "").toLowerCase();
       const propertyPaid = total > 0 && balance <= 0 && (paid >= total || ["paid", "completed"].includes(status));
       const feePayment = fees.find((fee) => fee.order_id === order.id && fee.user_id === order.user_id && ["approved", "paid", "completed"].includes(String(fee.status).toLowerCase()));
-      const clientName = order.customer_name || "Client name unavailable";
+      const clientName = order.customer_name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Client name unavailable";
       const clientEmail = order.customer_email || "";
-      return { order, propertyName, propertyAddress, plotCount, plotSize, total, paid, balance, propertyPaid, feePayment, clientName, clientEmail, items };
+      return { order, profile, propertyName, propertyAddress, plotCount, plotSize, total, paid, balance, propertyPaid, feePayment, clientName, clientEmail, items };
     }).filter((row) => {
       if (!query) return true;
       return [row.clientName, row.clientEmail, row.propertyName, row.propertyAddress, row.order.id].some((value) => String(value || "").toLowerCase().includes(query));
     });
-  }, [orders, fees, search]);
+  }, [orders, fees, profiles, search]);
 
   const tokensFor = (row: (typeof enriched)[number]) => ({
     client_name: escapeHtml(row.clientName),
-    client_address: "",
+    client_address: escapeHtml(row.profile?.address || row.profile?.current_residence || ""),
     client_email: escapeHtml(row.clientEmail),
-    client_phone: "",
+    client_phone: escapeHtml(row.profile?.phone_number || ""),
     property_name: escapeHtml(row.propertyName),
     property_address: escapeHtml(row.propertyAddress),
     plot_count: String(row.plotCount),
@@ -123,7 +129,7 @@ const DocumentationWorkflow: React.FC = () => {
     const tokens = tokensFor(row);
     const html = fillTemplate(template.body_html_template, tokens);
     const subject = fillTemplate(template.subject_template, tokens);
-    const preview = window.open("", "_blank", "noopener,noreferrer,width=900,height=720");
+    const preview = window.open("", "_blank", "width=900,height=720");
     if (!preview) return toast({ title: "Preview blocked", description: "Allow pop-ups for this site to preview and print the document.", variant: "destructive" });
     preview.document.write(`<!doctype html><html><head><title>${escapeHtml(subject)}</title><meta charset="utf-8"/><style>body{font-family:Arial,sans-serif;color:#1f2937;line-height:1.65;max-width:800px;margin:40px auto;padding:24px}h1{color:#241047}p{margin:12px 0}.notice{border:1px solid #d97706;background:#fffbeb;padding:12px;margin:20px 0;font-size:12px}@media print{body{margin:0;padding:12mm}.notice{display:block}}</style></head><body>${html}<div class="notice">Review all transaction details and use the company-approved legal wording before issuing. Print or save this preview as a PDF, then attach the PDF in the admin console.</div><script>window.onload=()=>setTimeout(()=>window.print(),250);<\/script></body></html>`);
     preview.document.close();
