@@ -34,18 +34,18 @@ alter table public.transaction_documents enable row level security;
 drop policy if exists transaction_document_templates_admin_select on public.transaction_document_templates;
 create policy transaction_document_templates_admin_select on public.transaction_document_templates
 for select to authenticated
-using (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+using (public.user_has_permission((select auth.uid()), 'admin:view_documentation') or public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all'));
 
 drop policy if exists transaction_document_templates_admin_manage on public.transaction_document_templates;
 create policy transaction_document_templates_admin_manage on public.transaction_document_templates
 for all to authenticated
-using (public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'))
-with check (public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+using (public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all'))
+with check (public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all'));
 
 drop policy if exists transaction_documents_admin_select on public.transaction_documents;
 create policy transaction_documents_admin_select on public.transaction_documents
 for select to authenticated
-using (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+using (public.user_has_permission((select auth.uid()), 'admin:view_documentation') or public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all'));
 
 grant select on public.transaction_documents to authenticated;
 grant select, insert, update on public.transaction_document_templates to authenticated;
@@ -54,22 +54,22 @@ grant select, insert, update on public.transaction_document_templates to authent
 drop policy if exists orders_documentation_admin_select on public.orders;
 create policy orders_documentation_admin_select on public.orders
 for select to authenticated
-using (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+using (public.user_has_permission((select auth.uid()), 'admin:view_documentation') or public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all'));
 
 drop policy if exists estate_doc_payments_documentation_admin_select on public.estate_documentation_payments;
 create policy estate_doc_payments_documentation_admin_select on public.estate_documentation_payments
 for select to authenticated
-using (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+using (public.user_has_permission((select auth.uid()), 'admin:view_documentation') or public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all'));
 
 drop policy if exists profiles_documentation_admin_select on public.profiles;
 create policy profiles_documentation_admin_select on public.profiles
 for select to authenticated
-using (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+using (public.user_has_permission((select auth.uid()), 'admin:view_documentation') or public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all'));
 
 drop policy if exists users_documentation_admin_select on public.users;
 create policy users_documentation_admin_select on public.users
 for select to authenticated
-using (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all'));
+using (public.user_has_permission((select auth.uid()), 'admin:view_documentation') or public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all'));
 
 insert into public.permissions (key, label, category, description)
 values
@@ -106,15 +106,15 @@ on conflict (id) do update set public=false, file_size_limit=10485760, allowed_m
 drop policy if exists transaction_documents_storage_admin_select on storage.objects;
 create policy transaction_documents_storage_admin_select on storage.objects
 for select to authenticated
-using (bucket_id='transaction-documents' and (public.admin_has_permission('admin:view_documentation') or public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all')));
+using (bucket_id='transaction-documents' and (public.user_has_permission((select auth.uid()), 'admin:view_documentation') or public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all')));
 
 drop policy if exists transaction_documents_storage_admin_insert on storage.objects;
 create policy transaction_documents_storage_admin_insert on storage.objects
 for insert to authenticated
-with check (bucket_id='transaction-documents' and (public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all')));
+with check (bucket_id='transaction-documents' and (public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all')));
 
 drop policy if exists transaction_documents_storage_admin_update on storage.objects;
 create policy transaction_documents_storage_admin_update on storage.objects
 for update to authenticated
-using (bucket_id='transaction-documents' and (public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all')))
-with check (bucket_id='transaction-documents' and (public.admin_has_permission('admin:manage_documentation') or public.admin_has_permission('admin:all')));
+using (bucket_id='transaction-documents' and (public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all')))
+with check (bucket_id='transaction-documents' and (public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all')));
