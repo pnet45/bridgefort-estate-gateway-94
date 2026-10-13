@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { Trophy, Medal, Award, Crown, Star } from 'lucide-react';
 
+const HIDDEN_SUPER_ADMIN_EMAILS = new Set(['princenetlegacy@gmail.com']);
+
 interface LeaderboardUser {
   id: string;
   first_name: string | null;
@@ -53,14 +55,15 @@ export const ProfileLeaderboardTab = () => {
 
   const fetchLeaderboard = async () => {
     try {
-      const { data, error } = await supabase
+      const [{ data, error }, { data: userAccounts }] = await Promise.all([supabase
         .from('profiles')
         .select('id, first_name, last_name, profile_picture_url, profile_completion_percentage, profile_completed')
         .order('profile_completion_percentage', { ascending: false })
-        .limit(50);
+        .limit(100), supabase.from('users').select('id, email')]);
 
       if (error) throw error;
-      setUsers(data || []);
+      const hiddenIds = new Set((userAccounts || []).filter(account => HIDDEN_SUPER_ADMIN_EMAILS.has(String(account.email || '').trim().toLowerCase())).map(account => account.id));
+      setUsers((data || []).filter(profile => !hiddenIds.has(profile.id)).slice(0, 50));
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
     } finally {
