@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { FileText, RefreshCw, Search, Save, Upload, Mail, Printer, CheckCircle2, Clock3, ShieldCheck, FileUp, Download } from "lucide-react";
+import { FileText, RefreshCw, Search, Save, Mail, Printer, CheckCircle2, Clock3, ShieldCheck, Download } from "lucide-react";
 
 type DocumentType = "contract_of_sale" | "survey_plan" | "plot_demarcation" | "deed_of_assignment";
 type PurchaseOrder = {
@@ -81,11 +81,12 @@ const DocumentationWorkflow: React.FC = () => {
 
   useEffect(() => { void load(); }, [load]);
 
-  const templateFor = (type: DocumentType) => templates.find((t) => t.document_type === type);
+  const templateByType = useMemo(() => Object.fromEntries(templates.map((template) => [template.document_type, template])) as Partial<Record<DocumentType, Template>>, [templates]);
+  const templateFor = (type: DocumentType) => templateByType[type];
   useEffect(() => {
-    const t = templateFor(editingTemplate);
-    if (t) setDraft({ ...t });
-  }, [editingTemplate, templates]);
+    const template = templateByType[editingTemplate];
+    if (template) setDraft({ ...template });
+  }, [editingTemplate, templateByType]);
 
   const enriched = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -231,7 +232,7 @@ const DocumentationWorkflow: React.FC = () => {
                   <div className="flex items-start justify-between gap-2"><div><h4 className="font-semibold text-slate-900">{doc.label}</h4><p className="mt-1 text-xs text-slate-500">{doc.description}</p></div><Badge variant={ready ? "default" : "secondary"}>{ready ? "Eligible" : "Payment pending"}</Badge></div>
                   <div className="mt-3 flex flex-col gap-2">
                     <Button variant="outline" onClick={() => openPreview(row,doc.type)} disabled={!templateFor(doc.type)} className="w-full gap-2"><Printer className="h-4 w-4"/>Personalize & print template</Button>
-                    <div className="space-y-1"><label className="text-xs font-medium text-slate-700">Attach personalized PDF</label><Input type="file" accept="application/pdf,.pdf" onChange={(e)=>setSelectedFiles((prev)=>({...prev,[key]:e.target.files?.[0] || null}))} className="h-auto py-2 file:mr-2 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1.5"/><p className="text-[11px] text-slate-500">{file ? file.name : "PDF only · maximum 10 MB"}</p></div>
+                    <div className="space-y-1"><label className="text-xs font-medium text-slate-700">Attach personalized PDF</label><Input key={`${key}-${file?.name || "empty"}`} type="file" accept="application/pdf,.pdf" onChange={(e)=>setSelectedFiles((prev)=>({...prev,[key]:e.target.files?.[0] || null}))} className="h-auto py-2 file:mr-2 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1.5"/><p className="text-[11px] text-slate-500">{file ? file.name : "PDF only · maximum 10 MB"}</p></div>
                     <Button onClick={()=>void sendDocument(row,doc.type)} disabled={!canManage || !ready || !templateEnabled || !file || sendingKey===key} className="w-full gap-2">{sendingKey===key ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Mail className="h-4 w-4"/>}{sendingKey===key ? "Sending…" : `Send ${doc.label}`}</Button>
                     {!ready && <p className="text-[11px] text-amber-700">{doc.feeGated ? "Requires confirmed Documentation Fees payment." : "Requires confirmed full property payment."}</p>}
                     {!templateEnabled && <p className="text-[11px] text-amber-700">Starter template is disabled. Add the approved company wording and explicitly enable it before sending.</p>}
