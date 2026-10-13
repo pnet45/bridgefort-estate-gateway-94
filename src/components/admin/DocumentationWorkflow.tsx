@@ -37,6 +37,7 @@ const DocumentationWorkflow: React.FC = () => {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [fees, setFees] = useState<FeePayment[]>([]);
   const [profiles, setProfiles] = useState<ClientProfile[]>([]);
+  const [accountEmails, setAccountEmails] = useState<Record<string, string>>({});
   const [templates, setTemplates] = useState<Template[]>([]);
   const [sent, setSent] = useState<SentDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,21 +52,24 @@ const DocumentationWorkflow: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [orderResult, feeResult, templateResult, sentResult, profileResult] = await Promise.all([
+      const [orderResult, feeResult, templateResult, sentResult, profileResult, accountResult] = await Promise.all([
         supabase.from("orders").select("id,user_id,customer_email,customer_name,total_amount,amount_paid,balance,payment_status,items,created_at").order("created_at", { ascending: false }).limit(500),
         supabase.from("estate_documentation_payments").select("order_id,user_id,status,amount,created_at").order("created_at", { ascending: false }).limit(1000),
         supabase.from("transaction_document_templates").select("*").order("name"),
         supabase.from("transaction_documents").select("id,order_id,document_type,file_name,status,sent_at,storage_path").order("sent_at", { ascending: false }).limit(1000),
         supabase.from("profiles").select("id,first_name,last_name,address,current_residence,phone_number").limit(1000),
+        supabase.from("users").select("id,email").limit(1000),
       ]);
       if (orderResult.error) throw orderResult.error;
       if (feeResult.error) throw feeResult.error;
       if (templateResult.error) throw templateResult.error;
       if (sentResult.error) throw sentResult.error;
       if (profileResult.error) throw profileResult.error;
+      if (accountResult.error) throw accountResult.error;
       setOrders((orderResult.data || []) as PurchaseOrder[]);
       setFees((feeResult.data || []) as FeePayment[]);
       setProfiles((profileResult.data || []) as ClientProfile[]);
+      setAccountEmails(Object.fromEntries((accountResult.data || []).map((account: any) => [account.id, account.email || ""])));
       setTemplates((templateResult.data || []) as Template[]);
       setSent((sentResult.data || []) as SentDocument[]);
     } catch (error: any) {
@@ -96,16 +100,16 @@ const DocumentationWorkflow: React.FC = () => {
       const paid = Number(order.amount_paid || 0);
       const balance = Number(order.balance ?? Math.max(total - paid, 0));
       const status = String(order.payment_status || "").toLowerCase();
-      const propertyPaid = total > 0 && balance <= 0 && (paid >= total || ["paid", "completed"].includes(status));
+      const propertyPaid = total > 0 && balance <= 0 && paid >= total && ["paid", "completed"].includes(status);
       const feePayment = fees.find((fee) => fee.order_id === order.id && fee.user_id === order.user_id && ["approved", "paid", "completed"].includes(String(fee.status).toLowerCase()));
       const clientName = order.customer_name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Client name unavailable";
-      const clientEmail = order.customer_email || "";
+      const clientEmail = order.customer_email || accountEmails[order.user_id] || "";
       return { order, profile, propertyName, propertyAddress, plotCount, plotSize, total, paid, balance, propertyPaid, feePayment, clientName, clientEmail, items };
     }).filter((row) => {
       if (!query) return true;
       return [row.clientName, row.clientEmail, row.propertyName, row.propertyAddress, row.order.id].some((value) => String(value || "").toLowerCase().includes(query));
     });
-  }, [orders, fees, profiles, search]);
+  }, [orders, fees, profiles, accountEmails, search]);
 
   const tokensFor = (row: (typeof enriched)[number]) => ({
     client_name: escapeHtml(row.clientName),
