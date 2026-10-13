@@ -266,18 +266,18 @@ const Travels = () => {
                   className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-2xl transition-shadow cursor-pointer"
                   onClick={() => scrollToBooking(d.workProgram ? 'Work & Travel Europe' : '', d.city)}
                 >
-                  <div className="aspect-[4/5] overflow-hidden">
-                    {d.img ? (
+                  <div className="aspect-[4/5] overflow-hidden relative bg-gradient-to-br from-estate-blue via-estate-darkBlue to-estate-red">
+                    <div className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
+                      <Globe2 className="h-14 w-14 text-white/85" />
+                    </div>
+                    {d.img && (
                       <img
                         src={d.img}
                         alt={`${d.city}, ${d.country}`}
-                        className="w-full h-full object-cover transition-transform duration-700"
+                        className="relative z-10 w-full h-full object-cover transition-transform duration-700"
                         loading="lazy"
+                        onError={(event) => { event.currentTarget.style.display = 'none'; }}
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-estate-blue via-estate-darkBlue to-estate-red transition-transform duration-700">
-                        <Globe2 className="h-14 w-14 text-white/85" aria-hidden="true" />
-                      </div>
                     )}
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
