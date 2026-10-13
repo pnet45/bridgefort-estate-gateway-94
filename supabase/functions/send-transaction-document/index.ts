@@ -65,7 +65,7 @@ serve(async (req: Request) => {
         .eq("order_id", orderId).eq("user_id", order.user_id).in("status", ["approved", "paid", "completed"])
         .order("created_at", { ascending: false }).limit(10);
       if (docPaymentError) throw docPaymentError;
-      const confirmedFullFeePayment = (docPayments || []).some((payment: any) => Number(payment.amount || 0) > 0 && Number(payment.amount || 0) >= Number(payment.total_bundle_amount || payment.amount || 0));
+      const confirmedFullFeePayment = (docPayments || []).some((payment: any) => Number(payment.amount || 0) > 0 && Number(payment.total_bundle_amount || 0) > 0 && Number(payment.amount || 0) >= Number(payment.total_bundle_amount || 0));
       if (!confirmedFullFeePayment) {
         throw Object.assign(new Error("Survey, plot demarcation and Deed of Assignment can only be sent after the Documentation Fees payment is confirmed."), { status: 409 });
       }
