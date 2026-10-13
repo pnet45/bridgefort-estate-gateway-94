@@ -64,12 +64,32 @@ using (public.user_has_permission((select auth.uid()), 'admin:view_documentation
 drop policy if exists profiles_documentation_admin_select on public.profiles;
 create policy profiles_documentation_admin_select on public.profiles
 for select to authenticated
-using (public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all'));
+using (
+  public.user_has_permission((select auth.uid()), 'admin:manage_documentation')
+  or public.user_has_permission((select auth.uid()), 'admin:all')
+  or (
+    public.user_has_permission((select auth.uid()), 'admin:view_documentation')
+    and exists (
+      select 1 from public.orders o
+      where o.user_id = profiles.id
+    )
+  )
+);
 
 drop policy if exists users_documentation_admin_select on public.users;
 create policy users_documentation_admin_select on public.users
 for select to authenticated
-using (public.user_has_permission((select auth.uid()), 'admin:manage_documentation') or public.user_has_permission((select auth.uid()), 'admin:all'));
+using (
+  public.user_has_permission((select auth.uid()), 'admin:manage_documentation')
+  or public.user_has_permission((select auth.uid()), 'admin:all')
+  or (
+    public.user_has_permission((select auth.uid()), 'admin:view_documentation')
+    and exists (
+      select 1 from public.orders o
+      where o.user_id = users.id
+    )
+  )
+);
 
 insert into public.permissions (key, label, category, description)
 values
