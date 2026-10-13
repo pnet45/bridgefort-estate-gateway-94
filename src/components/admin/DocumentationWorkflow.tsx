@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { FileText, RefreshCw, Search, Save, Mail, Printer, CheckCircle2, Clock3, ShieldCheck, Download } from "lucide-react";
+import { FileText, RefreshCw, Search, Save, Mail, Printer, ShieldCheck, Download } from "lucide-react";
 
 type DocumentType = "contract_of_sale" | "survey_plan" | "plot_demarcation" | "deed_of_assignment";
 type PurchaseOrder = {
