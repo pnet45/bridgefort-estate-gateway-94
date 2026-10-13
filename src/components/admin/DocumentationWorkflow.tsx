@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/auth";
 import { Button } from "@/components/ui/button";
@@ -140,6 +142,50 @@ const DocumentationWorkflow: React.FC = () => {
     preview.document.close();
   };
 
+  const generatePersonalizedPdf = async (row: (typeof enriched)[number], type: DocumentType) => {
+    const template = templateFor(type);
+    if (!template?.enabled) return toast({ title: "Template not approved", description: "An authorized administrator must approve and enable this template before generating a sendable document.", variant: "destructive" });
+    const key = row.order.id + ":" + type;
+    try {
+      setSendingKey("pdf:" + key);
+      const tokens = tokensFor(row);
+      const html = sanitizeTemplateHtml(fillTemplate(template.body_html_template, tokens));
+      const host = document.createElement("div");
+      host.style.cssText = "position:fixed;left:-12000px;top:0;width:794px;min-height:1123px;padding:52px;box-sizing:border-box;background:#fff;color:#1f2937;font-family:Arial,sans-serif;font-size:14px;line-height:1.65;";
+      host.innerHTML = '<div style="border-bottom:3px solid #b88a2b;padding-bottom:18px;margin-bottom:26px"><div style="font-size:13px;font-weight:700;letter-spacing:1.2px;color:#6b531b">BRIDGEFORT HOMES DEVELOPMENT LTD</div><div style="font-size:11px;color:#64748b;margin-top:4px">TRANSACTION DOCUMENT</div></div><div>' + html + '</div><div style="margin-top:42px;padding-top:14px;border-top:1px solid #d1d5db;font-size:10px;color:#64748b">Reference: ' + escapeHtml(row.order.id) + ' · Generated ' + escapeHtml(new Date().toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Lagos" })) + '</div>';
+      document.body.appendChild(host);
+      try {
+        const canvas = await html2canvas(host, { scale: 2, backgroundColor: "#ffffff", useCORS: true, logging: false });
+        const image = canvas.toDataURL("image/jpeg", 0.94);
+        const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const margin = 10;
+        const renderWidth = pageWidth - margin * 2;
+        const renderHeight = canvas.height * renderWidth / canvas.width;
+        let remaining = renderHeight;
+        let offset = 0;
+        while (remaining > 0) {
+          if (offset > 0) pdf.addPage();
+          pdf.addImage(image, "JPEG", margin, margin - offset, renderWidth, renderHeight, undefined, "FAST");
+          remaining -= pageHeight - margin * 2;
+          offset += pageHeight - margin * 2;
+        }
+        const blob = pdf.output("blob");
+        const safeName = type + "-" + row.order.id.slice(0, 8) + ".pdf";
+        const file = new File([blob], safeName, { type: "application/pdf" });
+        setSelectedFiles((previous) => ({ ...previous, [key]: file }));
+        toast({ title: "Personalized PDF generated", description: safeName + " is attached to this document action. Review it before sending." });
+      } finally {
+        host.remove();
+      }
+    } catch (error: any) {
+      toast({ title: "PDF generation failed", description: error?.message || "Please preview and print the document, or upload an approved PDF.", variant: "destructive" });
+    } finally {
+      setSendingKey("");
+    }
+  };
+
   const saveTemplate = async () => {
     if (!canManage || !draft || !draft.name.trim() || !draft.subject_template.trim() || !draft.body_html_template.trim()) return;
     setSavingTemplate(true);
@@ -233,7 +279,7 @@ const DocumentationWorkflow: React.FC = () => {
                 return <div key={doc.type} className="min-w-0 rounded-xl border border-slate-200 p-4">
                   <div className="flex items-start justify-between gap-2"><div><h4 className="font-semibold text-slate-900">{doc.label}</h4><p className="mt-1 text-xs text-slate-500">{doc.description}</p></div><Badge variant={ready ? "default" : "secondary"}>{ready ? "Eligible" : "Payment pending"}</Badge></div>
                   <div className="mt-3 flex flex-col gap-2">
-                    <Button variant="outline" onClick={() => openPreview(row,doc.type)} disabled={!templateFor(doc.type)} className="w-full gap-2"><Printer className="h-4 w-4"/>Personalize & print template</Button>
+                    <Button variant="outline" onClick={() => openPreview(row,doc.type)} disabled={!templateFor(doc.type)} className="w-full gap-2"><Printer className="h-4 w-4"/>Preview template</Button><Button variant="outline" onClick={() => void generatePersonalizedPdf(row,doc.type)} disabled={!templateEnabled || sendingKey==="pdf:"+key} className="w-full gap-2"><FileText className="h-4 w-4"/>{sendingKey==="pdf:"+key ? "Generating PDF…" : "Generate personalized PDF"}</Button>
                     <div className="space-y-1"><label className="text-xs font-medium text-slate-700">Attach personalized PDF</label><Input key={`${key}-${file?.name || "empty"}`} type="file" accept="application/pdf,.pdf" onChange={(e)=>setSelectedFiles((prev)=>({...prev,[key]:e.target.files?.[0] || null}))} className="h-auto py-2 file:mr-2 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1.5"/><p className="text-[11px] text-slate-500">{file ? file.name : "PDF only · maximum 10 MB"}</p></div>
                     <Button onClick={()=>void sendDocument(row,doc.type)} disabled={!canManage || !ready || !templateEnabled || !file || sendingKey===key} className="w-full gap-2">{sendingKey===key ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Mail className="h-4 w-4"/>}{sendingKey===key ? "Sending…" : `Send ${doc.label}`}</Button>
                     {!ready && <p className="text-[11px] text-amber-700">{doc.feeGated ? "Requires confirmed Documentation Fees payment." : "Requires confirmed full property payment."}</p>}
