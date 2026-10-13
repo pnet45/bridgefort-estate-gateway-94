@@ -1,8 +1,8 @@
 # Leo — Bridgefort Homes assistant
 
-The website and signed-in mobile app send authenticated messages to this
-Supabase Edge Function. Leo uses GroqCloud for hosted inference; do not put the
-Groq API key in browser/Vite or mobile-app configuration.
+The website and signed-in mobile app send messages to this Supabase Edge
+Function. Leo uses GroqCloud for hosted inference; do not put the Groq API key
+in browser/Vite or mobile-app configuration.
 
 Configure these Edge Function secrets in the Supabase Dashboard under
 **Project Settings → Edge Functions → Secrets**, or with the Supabase CLI:
@@ -26,11 +26,16 @@ directly readable or writable by browser roles.
 
 Leo's server-side boundary is intentionally limited:
 
-- Every chat and transcript restore requires a verified Supabase user session
-  with an account email. Email/password and OAuth sign-ins are supported.
-- Public context is restricted to published listing fields; unpublished listing
-  data, owner contact details, credentials, staff records, CRM, and inbox content
-  are not sent to the model.
+- Anonymous visitors can ask public questions using published listings and
+  public approved knowledge. Guest chat history is kept only in the browser
+  session and is not written to the database.
+- Personal account questions, saved conversation restores, and enquiry tracking
+  require a verified Supabase user session. Email/password and Google sign-in
+  use the existing authentication flow; admin enquiry access is checked against
+  canonical permissions on every request.
+- Anonymous context is restricted to published listing fields and public
+  approved knowledge. Unpublished listing data, owner contact details,
+  credentials, staff records, CRM, and inbox content are never sent to the model.
 - When a customer or Realtor asks about their own account, the function queries
   only their own payment plans, orders, and documentation payments through their
   authenticated session and existing row-level security. It does not change

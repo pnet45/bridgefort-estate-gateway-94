@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Bot, ClipboardList, LoaderCircle, MessageCircle, Send, X, Mail, Mic, MicOff, Volume2 } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -92,7 +92,6 @@ const getAssistantErrorDetails = async (error: unknown) => {
 const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => {
   const { user, loading: authLoading, userRole, permissions, signIn, signInWithGoogle } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const isAdmin = isAdminRole(userRole) || permissions.some((permission) => permission.startsWith('admin:'));
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
@@ -129,6 +128,11 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
     if (sessionStorage.getItem('leo-open-after-auth') === 'true') {
       sessionStorage.removeItem('leo-open-after-auth');
       setIsOpen(true);
+    }
+    if (sessionStorage.getItem('leo-auth-after-google') === 'true') {
+      sessionStorage.removeItem('leo-auth-after-google');
+      setAuthRequired(false);
+      setError('You’re signed in. Ask Leo your account question again to continue.');
     }
     const savedConversation = sessionStorage.getItem(`leo-conversation:${user.id}`);
     if (savedConversation) {
@@ -259,7 +263,7 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
   };
 
   const sendChatMessage = async (content: string, addUserMessage = true) => {
-    if (!content || isSending || authLoading) return;
+    if (!content || isSending) return;
     if (addUserMessage) {
       setMessages((current) => [...current, { role: 'user', content }]);
     }
@@ -269,7 +273,9 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
     setIsSending(true);
 
     try {
-      const history = !user
+      const { data: { session } } = await supabase.auth.getSession();
+      const activeUser = session?.user ?? user;
+      const history = !activeUser
         ? messages.slice(-5).map(({ role, content: messageContent }) => ({
           role,
           content: messageContent.slice(-1000),
@@ -281,15 +287,15 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
           body: {
             action: 'chat',
             message: content,
-            ...(user && conversationId ? { conversationId } : {}),
+            ...(activeUser && conversationId ? { conversationId } : {}),
             ...(history ? { history } : {}),
           },
-          ...(!user ? { headers: { Authorization: '' } } : {}),
+          ...(!activeUser ? { headers: { Authorization: '' } } : {}),
         },
       );
-      if (user && typeof data?.conversationId === 'string') {
+      if (activeUser && typeof data?.conversationId === 'string') {
         setConversationId(data.conversationId);
-        sessionStorage.setItem(`leo-conversation:${user.id}`, data.conversationId);
+        sessionStorage.setItem(`leo-conversation:${activeUser.id}`, data.conversationId);
       }
       if (typeof data?.trackingNumber === 'string') setTrackingNumber(data.trackingNumber);
       if (invokeError) {
@@ -530,7 +536,9 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
               </span>
               <div>
                 <h2 className="text-sm font-semibold">Bridgefort Assistant</h2>
-                <p className="text-xs text-white/80">Leo · Your Bridgefort service journey</p>
+                <p className="text-xs text-white/80">
+                  {user ? 'Leo · Your Bridgefort service journey' : 'Leo · Public property and service help'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -562,7 +570,9 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
             aria-relevant="additions text"
           >
             <p className="text-xs leading-5 text-slate-600">
-              Sign-in verified · Messages may be processed by Bridgefort's configured AI service and are saved under your account until it is deleted. Do not share passwords or payment credentials.
+              {user
+                ? "Sign-in verified · Messages may be processed by Bridgefort's configured AI service and are saved under your account until it is deleted. Do not share passwords or payment credentials."
+                : "Ask about published properties and public services without signing in. Guest chats are not saved. Sign in when you need help with your account or other restricted information."}
             </p>
             {trackingNumber && (
               <p className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-900">
@@ -669,6 +679,77 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
                 )}
               </div>
             ))}
+            {authRequired && !user && (
+              <section
+                aria-labelledby="leo-sign-in-title"
+                className="space-y-3 rounded-xl border border-blue-200 bg-white p-4 shadow-sm"
+              >
+                <div>
+                  <h3 id="leo-sign-in-title" className="font-semibold text-slate-900">
+                    Sign in for secure account help
+                  </h3>
+                  <p className="mt-1 text-sm leading-5 text-slate-600">
+                    Leo needs to verify your account before accessing personal or restricted information.
+                  </p>
+                </div>
+                <form onSubmit={signInForLeo} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="leo-sign-in-email">Email</Label>
+                    <Input
+                      id="leo-sign-in-email"
+                      type="email"
+                      autoComplete="email"
+                      inputMode="email"
+                      value={authEmail}
+                      onChange={(event) => setAuthEmail(event.target.value)}
+                      required
+                      disabled={isAuthenticating}
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="leo-sign-in-password">Password</Label>
+                    <Input
+                      id="leo-sign-in-password"
+                      type="password"
+                      autoComplete="current-password"
+                      value={authPassword}
+                      onChange={(event) => setAuthPassword(event.target.value)}
+                      required
+                      disabled={isAuthenticating}
+                      className="h-11"
+                    />
+                  </div>
+                  {authError && <p className="text-sm text-red-700" role="alert">{authError}</p>}
+                  <Button type="submit" className="h-11 w-full" disabled={isAuthenticating}>
+                    {isAuthenticating ? <LoaderCircle size={16} className="animate-spin" /> : null}
+                    Sign in securely
+                  </Button>
+                </form>
+                <div className="relative py-1 text-center">
+                  <span className="relative z-10 bg-white px-2 text-xs text-slate-500">or</span>
+                  <span className="absolute inset-x-0 top-1/2 border-t border-slate-200" aria-hidden="true" />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 w-full"
+                  onClick={() => void signInWithGoogleForLeo()}
+                  disabled={isAuthenticating}
+                >
+                  <span className="font-bold text-[#4285F4]" aria-hidden="true">G</span>
+                  Continue with Google
+                </Button>
+                <p className="text-center text-sm text-slate-600">
+                  <Link
+                    to={`/auth?next=${encodeURIComponent(`${location.pathname}${location.search}${location.hash}`)}`}
+                    className="text-estate-blue underline underline-offset-2 hover:text-estate-darkBlue"
+                  >
+                    Forgot your password?
+                  </Link>
+                </p>
+              </section>
+            )}
             {isAdmin && adminLinks.length > 0 && (
               <nav aria-label="Admin console shortcuts" className="flex flex-wrap gap-2">
                 {adminLinks.map((link) => (
@@ -724,7 +805,7 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
               type="submit"
               size="icon"
               className="h-11 w-11 shrink-0 rounded-full"
-              disabled={!input.trim() || isSending}
+              disabled={!input.trim() || isSending || authLoading}
               aria-label="Send message"
             >
               <Send size={17} />
