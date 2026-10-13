@@ -505,7 +505,7 @@ Deno.serve(async (req) => {
 
     let crmSyncStatus: "not_needed" | "linked" | "failed" = "not_needed";
     let nextAction: { label: string; href: string } | null = null;
-    if (actorType !== "admin" && isLeadWorthyLeoMessage(parsed.data.message)) {
+    if (user && conversationId && actorType !== "admin" && isLeadWorthyLeoMessage(parsed.data.message)) {
       try {
         const serviceType = inferCrmServiceType(parsed.data.message);
         const intent = safeCrmIntent(parsed.data.message);
@@ -648,31 +648,33 @@ Deno.serve(async (req) => {
         (/\b(email|e-mail|mail)\b/i.test(parsed.data.message) &&
           /\b(draft|suggest|write|prepare|response|reply)\b/i.test(parsed.data.message)));
 
-    const { error: assistantMessageError } = await service.from("leo_messages").insert({
-      conversation_id: conversationId,
-      owner_id: user.id,
-      role: "assistant",
-      content: modelOutput.reply,
-    });
-    if (assistantMessageError) {
-      console.error("property-assistant: assistant response could not be saved", assistantMessageError);
-      return trackedFailure("Leo responded but could not save the reply", 500);
-    }
+    if (user && conversationId) {
+      const { error: assistantMessageError } = await service.from("leo_messages").insert({
+        conversation_id: conversationId,
+        owner_id: user.id,
+        role: "assistant",
+        content: modelOutput.reply,
+      });
+      if (assistantMessageError) {
+        console.error("property-assistant: assistant response could not be saved", assistantMessageError);
+        return trackedFailure("Leo responded but could not save the reply", 500);
+      }
 
-    const { error: updateConversationError } = await service.from("leo_conversations")
-      .update({ updated_at: new Date().toISOString() })
-      .eq("id", conversationId)
-      .eq("owner_id", user.id);
-    if (updateConversationError) {
-      console.error("property-assistant: conversation timestamp could not be updated", updateConversationError);
-      return trackedFailure("Leo replied but could not update the enquiry", 500);
+      const { error: updateConversationError } = await service.from("leo_conversations")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", conversationId)
+        .eq("owner_id", user.id);
+      if (updateConversationError) {
+        console.error("property-assistant: conversation timestamp could not be updated", updateConversationError);
+        return trackedFailure("Leo replied but could not update the enquiry", 500);
+      }
     }
 
     let emailStatus: "not_requested" | "sent" | "send_failed" | "not_configured" | "not_verified" | "rate_limited" | "draft" =
       "not_requested";
     if (actorType === "admin" && requestedAdminDraft) {
       emailStatus = "draft";
-    } else if (actorType !== "admin" && modelOutput.email?.should_send) {
+    } else if (user && actorType !== "admin" && modelOutput.email?.should_send && userMessage) {
       if (!user.email_confirmed_at) {
         emailStatus = "not_verified";
       } else {
