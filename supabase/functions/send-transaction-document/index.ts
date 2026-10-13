@@ -61,11 +61,12 @@ serve(async (req: Request) => {
 
     if (documentType !== "contract_of_sale") {
       const { data: docPayments, error: docPaymentError } = await admin.from("estate_documentation_payments")
-        .select("id,status,amount,order_id,user_id")
+        .select("id,status,amount,total_bundle_amount,order_id,user_id")
         .eq("order_id", orderId).eq("user_id", order.user_id).in("status", ["approved", "paid", "completed"])
-        .order("created_at", { ascending: false }).limit(1);
+        .order("created_at", { ascending: false }).limit(10);
       if (docPaymentError) throw docPaymentError;
-      if (!docPayments?.length) {
+      const confirmedFullFeePayment = (docPayments || []).some((payment: any) => Number(payment.amount || 0) > 0 && Number(payment.amount || 0) >= Number(payment.total_bundle_amount || payment.amount || 0));
+      if (!confirmedFullFeePayment) {
         throw Object.assign(new Error("Survey, plot demarcation and Deed of Assignment can only be sent after the Documentation Fees payment is confirmed."), { status: 409 });
       }
     }
