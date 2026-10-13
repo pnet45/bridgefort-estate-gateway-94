@@ -117,7 +117,7 @@ const AdminCRMWorkspace: React.FC = () => {
               </div></CardContent>
             </Card>
             <Card className="bg-white border-slate-200 shadow-sm scroll-mt-28">
-              <CardHeader className="pb-2"><CardTitle className="text-sm text-white">Lead Sources</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-sm text-slate-900">Lead Sources</CardTitle></CardHeader>
               <CardContent className="space-y-2">
                 {sourceBreakdown.length === 0 && <p className="text-sm text-slate-500">No lead data yet.</p>}
                 {sourceBreakdown.map(([source, count]) => <div key={source} className="flex items-center justify-between text-sm"><span className="text-slate-700">{titleCase(source)}</span><Badge variant="secondary">{count}</Badge></div>)}
@@ -141,7 +141,7 @@ const AdminCRMWorkspace: React.FC = () => {
                   const active = journeys.filter(j => j.service_type === type && !['CONVERTED','LOST','CLOSED','COMPLETED','CANCELLED','DECLINED','EXPIRED'].includes(j.status)).length;
                   return <div key={type} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <p className="text-[11px] uppercase tracking-wide text-slate-600">{titleCase(type)}</p>
-                    <p className="mt-1 text-xl font-semibold text-white">{count}</p>
+                    <p className="mt-1 text-xl font-semibold text-slate-900">{count}</p>
                     <p className="text-[11px] text-slate-600">{active} active</p>
                   </div>;
                 })}
@@ -164,7 +164,7 @@ const AdminCRMWorkspace: React.FC = () => {
                     const overdue = new Date(followUp.scheduled_at).getTime() < Date.now();
                     return <div key={followUp.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 py-3">
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2"><span className="font-medium text-white truncate">{lead?.name}</span><Badge className={overdue ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-300'}>{overdue ? 'Overdue' : 'Today'}</Badge></div>
+                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900 truncate">{lead?.name}</span><Badge className={overdue ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-amber-100 text-amber-900 border border-amber-200'}>{overdue ? 'Overdue' : 'Today'}</Badge></div>
                         <p className="text-xs text-slate-600 mt-1">{titleCase(followUp.action_type)} · {format(new Date(followUp.scheduled_at), 'MMM d, h:mm a')}{lead?.estate_interest ? ` · ${lead.estate_interest}` : ''}</p>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-slate-500">{lead?.phone && <Phone className="h-3.5 w-3.5" />}<ArrowRight className="h-3.5 w-3.5" /></div>
