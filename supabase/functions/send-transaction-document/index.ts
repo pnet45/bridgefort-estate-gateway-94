@@ -53,7 +53,7 @@ serve(async (req: Request) => {
     const total = Number(order.total_amount || 0);
     const paid = Number(order.amount_paid || 0);
     const balance = Number(order.balance ?? Math.max(total - paid, 0));
-    const propertyPaid = total > 0 && balance <= 0 && (paid >= total || ["paid", "completed"].includes(status));
+    const propertyPaid = total > 0 && balance <= 0 && paid >= total && ["paid", "completed"].includes(status);
     if (documentType === "contract_of_sale" && !propertyPaid) {
       throw Object.assign(new Error("Contract of Sale can only be sent after the property payment is fully confirmed."), { status: 409 });
     }
@@ -141,19 +141,25 @@ serve(async (req: Request) => {
     });
     if (recordError) console.error("Document email sent but delivery history could not be recorded:", recordError);
 
+    const { data: sentRows } = await admin.from("transaction_documents").select("document_type").eq("order_id", orderId).eq("status", "sent");
+    const requiredTypes = ["contract_of_sale", "survey_plan", "plot_demarcation", "deed_of_assignment"];
+    const journeyComplete = requiredTypes.every((type) => (sentRows || []).some((row: any) => row.document_type === type));
     const { data: journey } = await admin.from("service_journeys").select("id,notes")
-      .eq("order_id", orderId).eq("service_type", "DOCUMENTATION").maybeSingle();
+      .eq("order_id", orderId).eq("service_type", "DOCUMENTATION").limit(1).maybeSingle();
     const journeyNote = `${new Date(sentAt).toLocaleString("en-NG")} — sent ${template.name} to ${recipient} (order ${orderId}).`;
     if (journey) {
       await admin.from("service_journeys").update({
-        status: "IN_PROGRESS", outcome: `Sent ${template.name}`, notes: [journey.notes, journeyNote].filter(Boolean).join("\\n"),
+        status: journeyComplete ? "COMPLETED" : "IN_PROGRESS",
+        outcome: journeyComplete ? "All transaction documents sent" : `Sent ${template.name}`,
+        notes: [journey.notes, journeyNote].filter(Boolean).join("\\n"),
         updated_at: sentAt,
       }).eq("id", journey.id);
     } else {
       await admin.from("service_journeys").insert({
-        customer_id: order.user_id, service_type: "DOCUMENTATION", status: "IN_PROGRESS", priority: "NORMAL",
+        customer_id: order.user_id, service_type: "DOCUMENTATION", status: journeyComplete ? "COMPLETED" : "IN_PROGRESS", priority: "NORMAL",
         source: "admin_documentation", order_id: orderId, source_record_type: "order", source_record_id: orderId,
-        outcome: `Sent ${template.name}`, notes: journeyNote, created_at: sentAt, updated_at: sentAt,
+        outcome: journeyComplete ? "All transaction documents sent" : `Sent ${template.name}`,
+        notes: journeyNote, created_at: sentAt, updated_at: sentAt,
       });
     }
 
