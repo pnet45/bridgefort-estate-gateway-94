@@ -2,6 +2,7 @@ export const ADMIN_TAB_PERMISSION_MAP: Record<string, string> = {
   overview: 'admin:view_dashboard',
   properties: 'admin:view_properties',
   allocations: 'admin:view_allocations',
+  documentation: 'admin:view_documentation',
   crm: 'admin:view_crm',
   users: 'admin:view_users',
   approvals: 'admin:view_approvals',
