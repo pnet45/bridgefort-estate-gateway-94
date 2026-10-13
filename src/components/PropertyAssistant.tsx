@@ -2,7 +2,9 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Bot, ClipboardList, LoaderCircle, MessageCircle, Send, X, Mail, Mic, MicOff, Volume2 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { setRememberMe, supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
 import { hasPermission, isAdminRole } from '@/lib/rbac';
 
@@ -64,7 +66,7 @@ const INITIAL_MESSAGE: ChatMessage = {
     "Hello, I'm Leo, the Bridgefort Homes assistant. I can help with your service journey, property questions, and follow-up. I only use information you are authorized to see.",
 };
 
-const getAssistantErrorMessage = async (error: unknown) => {
+const getAssistantErrorDetails = async (error: unknown) => {
   if (typeof error !== 'object' || error === null || !('context' in error)) return null;
   const context = error.context;
   if (!(context instanceof Response)) return null;
@@ -75,7 +77,12 @@ const getAssistantErrorMessage = async (error: unknown) => {
       body !== null &&
       'error' in body &&
       typeof body.error === 'string'
-    ) return body.error;
+    ) {
+      return {
+        message: body.error,
+        requiresAuth: 'requiresAuth' in body && body.requiresAuth === true,
+      };
+    }
   } catch {
     return null;
   }
@@ -83,7 +90,7 @@ const getAssistantErrorMessage = async (error: unknown) => {
 };
 
 const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => {
-  const { user, loading: authLoading, userRole, permissions } = useAuth();
+  const { user, loading: authLoading, userRole, permissions, signIn, signInWithGoogle } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const isAdmin = isAdminRole(userRole) || permissions.some((permission) => permission.startsWith('admin:'));
@@ -92,6 +99,12 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
+  const [authRequired, setAuthRequired] = useState(false);
+  const [authPendingMessage, setAuthPendingMessage] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [trackingNumber, setTrackingNumber] = useState('');
   const [conversationId, setConversationId] = useState('');
   const [adminLinks, setAdminLinks] = useState<AdminLink[]>([]);
@@ -242,37 +255,54 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
   if (adminRoute && !isAdmin) return null;
 
   const openAssistant = () => {
-    if (!user) {
-      sessionStorage.setItem('leo-open-after-auth', 'true');
-      const next = `${location.pathname}${location.search}${location.hash}`;
-      navigate(`/auth?next=${encodeURIComponent(next)}`);
-      return;
-    }
     setIsOpen((open) => !open);
   };
 
-  const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const content = input.trim();
-    if (!content || isSending || !user) return;
-
-    const nextMessages = [...messages, { role: 'user' as const, content }];
-    setMessages(nextMessages);
+  const sendChatMessage = async (content: string, addUserMessage = true) => {
+    if (!content || isSending || authLoading) return;
+    if (addUserMessage) {
+      setMessages((current) => [...current, { role: 'user', content }]);
+    }
     setInput('');
     setError('');
+    setAuthRequired(false);
     setIsSending(true);
 
     try {
+      const history = !user
+        ? messages.slice(-5).map(({ role, content: messageContent }) => ({
+          role,
+          content: messageContent.slice(-1000),
+        }))
+        : undefined;
       const { data, error: invokeError } = await supabase.functions.invoke(
         'property-assistant',
-        { body: { action: 'chat', message: content, ...(conversationId ? { conversationId } : {}) } },
+        {
+          body: {
+            action: 'chat',
+            message: content,
+            ...(user && conversationId ? { conversationId } : {}),
+            ...(history ? { history } : {}),
+          },
+          ...(!user ? { headers: { Authorization: '' } } : {}),
+        },
       );
-      if (typeof data?.conversationId === 'string') {
+      if (user && typeof data?.conversationId === 'string') {
         setConversationId(data.conversationId);
         sessionStorage.setItem(`leo-conversation:${user.id}`, data.conversationId);
       }
       if (typeof data?.trackingNumber === 'string') setTrackingNumber(data.trackingNumber);
-      if (invokeError) throw invokeError;
+      if (invokeError) {
+        const details = await getAssistantErrorDetails(invokeError);
+        if (details?.requiresAuth) {
+          setAuthRequired(true);
+          setAuthPendingMessage(content);
+          setError('');
+          setInput('');
+          return;
+        }
+        throw new Error(details?.message ?? 'Leo could not process that message.');
+      }
       if (typeof data?.reply !== 'string' || !data.reply.trim()) {
         throw new Error('The assistant returned an empty response.');
       }
@@ -312,11 +342,92 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
     } catch (sendError) {
       setInput(content);
       setError(
-        await getAssistantErrorMessage(sendError) ??
+        (sendError instanceof Error ? sendError.message : null) ??
           "Leo is temporarily unavailable. Your tracking reference and saved messages are kept; please try again.",
       );
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const content = input.trim();
+    if (!content || isSending || authLoading) return;
+    await sendChatMessage(content);
+  };
+
+  const signInForLeo = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isAuthenticating) return;
+
+    setAuthError('');
+    setIsAuthenticating(true);
+    setRememberMe(true);
+    try {
+      const { error: signInError } = await signIn(authEmail, authPassword);
+      if (signInError) {
+        setAuthError(signInError.message);
+        return;
+      }
+
+      const { data: { user: signedInUser } } = await supabase.auth.getUser();
+      if (signedInUser) {
+        const { data: lockCheck } = await supabase
+          .from('profiles')
+          .select('account_locked, account_locked_reason')
+          .eq('id', signedInUser.id)
+          .single();
+
+        if (lockCheck?.account_locked) {
+          await supabase.auth.signOut();
+          setAuthError(
+            lockCheck.account_locked_reason
+              ? `This account is locked: ${lockCheck.account_locked_reason}`
+              : 'This account is locked. Contact Bridgefort support for help.',
+          );
+          return;
+        }
+      }
+
+      setAuthRequired(false);
+      setAuthPassword('');
+      const pendingMessage = authPendingMessage;
+      setAuthPendingMessage('');
+      if (pendingMessage) await sendChatMessage(pendingMessage, false);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Sign-in could not be completed. Please try again.');
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
+  const signInWithGoogleForLeo = async () => {
+    if (isAuthenticating) return;
+    setAuthError('');
+    setIsAuthenticating(true);
+    setRememberMe(true);
+    sessionStorage.setItem('leo-open-after-auth', 'true');
+    sessionStorage.setItem('leo-auth-after-google', 'true');
+    sessionStorage.setItem(
+      'bf-post-auth-next',
+      `${location.pathname}${location.search}${location.hash}`,
+    );
+    try {
+      const { error: signInError } = await signInWithGoogle();
+      if (signInError) {
+        sessionStorage.removeItem('leo-open-after-auth');
+        sessionStorage.removeItem('leo-auth-after-google');
+        sessionStorage.removeItem('bf-post-auth-next');
+        setAuthError(signInError.message);
+      }
+    } catch (error) {
+      sessionStorage.removeItem('leo-open-after-auth');
+      sessionStorage.removeItem('leo-auth-after-google');
+      sessionStorage.removeItem('bf-post-auth-next');
+      setAuthError(error instanceof Error ? error.message : 'Google sign-in could not be started.');
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 
