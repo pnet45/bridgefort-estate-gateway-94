@@ -77,13 +77,21 @@ values
   ('admin:manage_documentation', 'Manage Transaction Documentation', 'admin', 'Manage document templates, upload PDFs, and send approved transaction documents.')
 on conflict (key) do update set label=excluded.label, category=excluded.category, description=excluded.description, updated_at=now();
 
+-- Staff roles can view the queue; document issuing and legal template management are restricted.
 insert into public.role_permissions (role, permission_key, is_enabled)
-select roles.role, perms.permission_key, true
+select roles.role, 'admin:view_documentation', true
 from (values ('super_admin'),('admin'),('manager'),('admin_dir'),('admin_adm'),('admin_acct'),('admin_sales'),('admin_cs'),('admin_legal')) as roles(role)
-cross join (values ('admin:view_documentation'),('admin:manage_documentation')) as perms(permission_key)
 where not exists (
   select 1 from public.role_permissions rp
-  where rp.role=roles.role and rp.permission_key=perms.permission_key
+  where rp.role=roles.role and rp.permission_key='admin:view_documentation'
+);
+
+insert into public.role_permissions (role, permission_key, is_enabled)
+select roles.role, 'admin:manage_documentation', true
+from (values ('super_admin'),('admin'),('admin_dir'),('admin_adm'),('admin_acct'),('admin_legal')) as roles(role)
+where not exists (
+  select 1 from public.role_permissions rp
+  where rp.role=roles.role and rp.permission_key='admin:manage_documentation'
 );
 
 insert into public.transaction_document_templates (document_type, name, subject_template, body_html_template, enabled)
