@@ -78,14 +78,14 @@ const AdminOnlineUsers = () => {
 
   const fetchPresences = async () => {
     try {
-      const { data, error } = await supabase
-        .from('admin_presence')
-        .select('*')
-        .order('is_online', { ascending: false })
-        .order('last_seen', { ascending: false });
+      const [{ data, error }, { data: userAccounts }] = await Promise.all([
+        supabase.from('admin_presence').select('*').order('is_online', { ascending: false }).order('last_seen', { ascending: false }),
+        supabase.from('users').select('id, email'),
+      ]);
 
       if (error) throw error;
-      setPresences(((data as AdminPresence[]) || []).filter(presence => presence.user_id === user?.id || !HIDDEN_SUPER_ADMIN_EMAILS.has(String((userAccounts || []).find(account => account.id === presence.user_id)?.email || '').trim().toLowerCase())));
+      const hiddenIds = new Set((userAccounts || []).filter(account => HIDDEN_SUPER_ADMIN_EMAILS.has(String(account.email || '').trim().toLowerCase())).map(account => account.id));
+      setPresences(((data as AdminPresence[]) || []).filter(presence => presence.user_id === user?.id || !hiddenIds.has(presence.user_id)));
 
       // Get my current status
       const myPresence = data?.find(p => p.user_id === user?.id);
