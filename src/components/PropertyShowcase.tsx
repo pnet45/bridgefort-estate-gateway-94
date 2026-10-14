@@ -61,35 +61,35 @@ const PropertyShowcase = () => {
             <div className="space-y-4">
               <h3 className="text-xl font-semibold">WHY INVEST IN THE FORTRESS HILLS ESTATES?</h3>
               <ul className="list-none space-y-2">
-                <li>✓ Rapidly Developing Area – Prime location with high appreciation potential.</li>
-                <li>✓ Secure Investment – Comes with Deed of Assignment & Survey Plan.</li>
-                <li>✓ Flexible Payment Plan – Invest with ease and grow your wealth effortlessly.</li>
-                <li>✓ Secure your plot today at Fortress Hills and enjoy our promo offer!</li>
+                <li> Rapidly Developing Area – Prime location with high appreciation potential.</li>
+                <li> Secure Investment – Comes with Deed of Assignment & Survey Plan.</li>
+                <li> Flexible Payment Plan – Invest with ease and grow your wealth effortlessly.</li>
+                <li> Secure your plot today at Fortress Hills and enjoy our promo offer!</li>
               </ul>
             </div>
 
             <div className="space-y-4">
               <h3 className="text-xl font-semibold"> STRATEGIC LOCATION & LANDMARKS</h3>
               <ul className="list-none grid grid-cols-2 gap-2">
-                <li>✓ Caleb University</li>
-                <li>✓ Imota Palace</li>
-                <li>✓ Lagos State University of Science & Technology</li>
-                <li>✓ Ikorodu-Epe Expressway</li>
-                <li>✓ Caleb Powerplant</li>
-                <li>✓ Agbowa Market</li>
-                <li>✓ Sagamu Road</li>
+                <li> Caleb University</li>
+                <li> Imota Palace</li>
+                <li> Lagos State University of Science & Technology</li>
+                <li> Ikorodu-Epe Expressway</li>
+                <li> Caleb Powerplant</li>
+                <li> Agbowa Market</li>
+                <li> Sagamu Road</li>
               </ul>
             </div>
 
             <div className="space-y-4">
               <h3 className="text-xl font-semibold"> ESTATE FEATURES</h3>
               <ul className="list-none grid grid-cols-2 gap-2">
-                <li>✓ Gated Community </li>
-                <li>✓ Security & Surveillance </li>
-                <li>✓ Green Parks & Recreation </li>
-                <li>✓ Modern Road Network </li>
-                <li>✓ WiFi Connectivity </li>
-                <li>✓ Shopping & Commercial Hubs </li>
+                <li> Gated Community </li>
+                <li> Security & Surveillance </li>
+                <li> Green Parks & Recreation </li>
+                <li> Modern Road Network </li>
+                <li> WiFi Connectivity </li>
+                <li> Shopping & Commercial Hubs </li>
               </ul>
             </div>
 
