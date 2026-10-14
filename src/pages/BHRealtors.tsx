@@ -250,7 +250,7 @@ const BHRealtors: React.FC = () => {
                 <Icon className="h-5 w-5 text-estate-purple" />
                 <p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">{label}</p>
                 <p className="mt-1 text-xl font-bold text-slate-950 dark:text-white">{String(value)}</p>
-                {label === "Available balance" && isPbo && <Link to="/bh-realtors/withdraw" className="mt-3 inline-flex"><Button size="sm" className="h-9 bg-estate-blue text-white hover:bg-estate-blue/90"><Wallet className="mr-2 h-4 w-4" />Withdraw</Button></Link>}
+                {label === "Available balance" && isPbo && (canWithdraw ? <Link to="/bh-realtors/withdraw" className="mt-3 inline-flex"><Button size="sm" className="h-9 bg-estate-blue text-white hover:bg-estate-blue/90"><Wallet className="mr-2 h-4 w-4" />Withdraw</Button></Link> : <Button size="sm" disabled className="mt-3 h-9">Withdraw unavailable</Button>)}
               </div>
             ); })}
           </section>
