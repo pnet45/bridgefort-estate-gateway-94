@@ -4,34 +4,34 @@ export const salesStrategyBlogPost = {
   excerpt: 'Join Dr. Dalvin Silva for exclusive training events that reveal the irrefutable methods of sales masters. Learn strategies that have helped thousands close million-naira deals.',
   content: `
     <div class="blog-post-content">
-      <h2>🚨 MEGA SALES STRATEGY EVENT ALERT!</h2>
+      <h2> MEGA SALES STRATEGY EVENT ALERT!</h2>
       
       <p>Are you ready to break sales records and close deals like a pro? Then these upcoming events will transform your sales game forever!</p>
       
       <img src="/lovable-uploads/8010a8f6-6f7b-4572-a872-da50579b5a14.png" alt="MEGA SALES STRATEGY EVENT - July 4th 2025" class="w-full rounded-lg my-6 shadow-lg" />
       
-      <h3>🔥 STRATEGY FOR CLOSING DEALS IN MILLIONS</h3>
+      <h3> STRATEGY FOR CLOSING DEALS IN MILLIONS</h3>
       <p><strong>Theme:</strong> The Irrefutable Methods of Sales Master Exposed!</p>
       
       <p>Join Dr. Dalvin Silva, the dynamic MD/CEO of BRIDGEFORT HOMES DEVELOPMENT LTD and a proven Sales Master, as he unveils game-changing strategies that have helped thousands generate millions in real estate and business deals.</p>
       
-      <h4>🎙 SPEAKER:</h4>
+      <h4> SPEAKER:</h4>
       <p>Dr. Dalvin Silva – MD/CEO, BRIDGEFORT HOMES DEVELOPMENT LTD<br/>
       Renowned Sales Coach | Real Estate Titan | Leadership Strategist</p>
       
-      <h4>🎤 HOST:</h4>
+      <h4> HOST:</h4>
       <p>Mr. Kenneth Thompson Enyinnaya<br/>
       (Multiple Award Winner)<br/>
       Senior Manager, PWAN Group<br/>
       Chairman, PWAN Amazon Network</p>
       
-      <h4>📍 VENUE:</h4>
+      <h4> VENUE:</h4>
       <p>PWAN AMAZON CENTRE (Golden Destiny Hotel)<br/>
       7 & 8 B/Stop, Airport Road by Tetrazinni, Ajao Estate, Isolo, Lagos.</p>
       
-      <h4>🗓 DATE & TIME:</h4>
+      <h4> DATE & TIME:</h4>
       <p>Friday, 4th July 2025<br/>
-      🕙 10:00 AM Prompt</p>
+       10:00 AM Prompt</p>
       
       <img src="/lovable-uploads/0f839f09-ee13-49eb-bb65-1893614ae632.png" alt="STRATEGY MASTERCLASS - July 2nd 2025" class="w-full rounded-lg my-6 shadow-lg" />
       
@@ -46,20 +46,20 @@ export const salesStrategyBlogPost = {
       
       <img src="/lovable-uploads/cebf7a0b-55c7-4f99-94d7-422c8853bb35.png" alt="BUSINESS MASTERCLASS - June 26th 2025" class="w-full rounded-lg my-6 shadow-lg" />
       
-      <h4>🎯 BUSINESS MASTERCLASS WITH DALVIN SILVA</h4>
+      <h4> BUSINESS MASTERCLASS WITH DALVIN SILVA</h4>
       <p><strong>Date:</strong> Thursday, 26 June 2025<br/>
       <strong>Time:</strong> 11:00 AM<br/>
       <strong>Venue:</strong> PWAN Group Excellence Centre, Nnokwa Hall, Opposite NNPC Petrol Station, By NNPC Bus Stop, Ejigbo, Lagos</p>
       
-      <h3>💼 Why You Should Attend:</h3>
+      <h3> Why You Should Attend:</h3>
       <ul>
-        <li>🔥 Learn how to close high-ticket deals with ease</li>
-        <li>🔥 Gain deep insight into negotiation psychology</li>
-        <li>🔥 Get real-world, actionable steps to grow your business</li>
-        <li>🔥 Connect with top-performing professionals in the industry</li>
+        <li> Learn how to close high-ticket deals with ease</li>
+        <li> Gain deep insight into negotiation psychology</li>
+        <li> Get real-world, actionable steps to grow your business</li>
+        <li> Connect with top-performing professionals in the industry</li>
       </ul>
       
-      <h3>📞 For Inquiries & Registration:</h3>
+      <h3> For Inquiries & Registration:</h3>
       <p>Call/WhatsApp:</p>
       <ul>
         <li>+234 802 321 5308</li>
@@ -71,7 +71,7 @@ export const salesStrategyBlogPost = {
       <p><strong>Email:</strong> training@pwanbridgefort.ng<br/>
       <strong>Web:</strong> www.pwanbridgefort.ng</p>
       
-      <h3>💥 Don't Miss This Opportunity!</h3>
+      <h3> Don't Miss This Opportunity!</h3>
       <p>These explosive opportunities will unlock the blueprint for closing high-value deals and scaling your income beyond limits!</p>
       
       <p>Limited slots available. Secure your seat today and take the first step toward your next million-naira deal!</p>
