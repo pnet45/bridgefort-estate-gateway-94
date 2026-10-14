@@ -30,7 +30,19 @@ const DOCS: { type: DocumentType; label: string; feeGated: boolean; description:
   { type: "deed_of_assignment", label: "Deed of Assignment", feeGated: true, description: "Covered by confirmed Documentation Fees payment." },
 ];
 const money = (value: unknown) => new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(Number(value || 0));
-const titleCase = (value: string) => value.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+const titleCase = (value: string) => value.replace(/[_-]/g, " ").replace(/\\b\\w/g, (c) => c.toUpperCase());
+const smallNumberWords = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+const tensNumberWords = ["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+const numberToWords = (value: number): string => {
+  const n = Math.floor(Math.max(0, Number(value) || 0));
+  if (n < 20) return smallNumberWords[n];
+  if (n < 100) return tensNumberWords[Math.floor(n / 10)] + (n % 10 ? "-" + smallNumberWords[n % 10] : "");
+  if (n < 1000) return smallNumberWords[Math.floor(n / 100)] + " hundred" + (n % 100 ? " and " + numberToWords(n % 100) : "");
+  for (const [unit, label] of [[1_000_000_000,"billion"],[1_000_000,"million"],[1_000,"thousand"]] as [number,string][]) {
+    if (n >= unit) return numberToWords(Math.floor(n / unit)) + " " + label + (n % unit ? " " + numberToWords(n % unit) : "");
+  }
+  return String(n);
+};
 const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const fillTemplate = (value: string, tokens: Record<string, string>) => value.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_m, key) => tokens[key] ?? "");
 const sanitizeTemplateHtml = (value: string) => value.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "").replace(/<\/?(?:iframe|object|embed|form|base|meta)\b[^>]*>/gi, "").replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "").replace(/\s(href|src|xlink:href)\s*=\s*(?:"\s*javascript:[^"]*"|'\s*javascript:[^']*'|javascript:[^\s>]+)/gi, ' $1="#"');
@@ -134,8 +146,10 @@ const DocumentationWorkflow: React.FC = () => {
     property_name: escapeHtml(row.propertyName),
     property_address: escapeHtml(row.propertyAddress),
     plot_count: String(row.plotCount),
+    plot_count_words: escapeHtml(numberToWords(row.plotCount)),
     plot_size: escapeHtml(row.plotSize),
     purchase_price: escapeHtml(money(row.total)),
+    purchase_price_words: escapeHtml(numberToWords(row.total) + " Naira"),
     amount_paid: escapeHtml(money(row.paid)),
     order_reference: escapeHtml(row.order.id),
     document_date: new Date().toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Lagos" }),
