@@ -107,12 +107,12 @@ serve(async (req: Request) => {
     if (authError || !authData.user) return json({ error: "Authentication required" }, 401);
     const caller = authData.user.id;
     admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
-    const [approvePermission, allPermission] = await Promise.all([
+    const [approvePermission, paymentPermission, allPermission] = await Promise.all([
       admin.rpc("admin_has_permission", { _permission: "admin:approve_payments", _user_id: caller }),
       admin.rpc("admin_has_permission", { _permission: "payment.approve", _user_id: caller }),
       admin.rpc("admin_has_permission", { _permission: "admin:all", _user_id: caller }),
     ]);
-    if (!(approvePermission.data || (await admin.rpc("admin_has_permission", { _permission: "payment.approve", _user_id: caller })).data || allPermission.data)) return json({ error: "Payment approval permission is required." }, 403);
+    if (!(approvePermission.data || paymentPermission.data || allPermission.data)) return json({ error: "Payment approval permission is required." }, 403);
 
     const { payment_request_id } = await req.json();
     if (!payment_request_id || typeof payment_request_id !== "string") return json({ error: "payment_request_id is required." }, 400);
