@@ -109,9 +109,10 @@ serve(async (req: Request) => {
     admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
     const [approvePermission, allPermission] = await Promise.all([
       admin.rpc("admin_has_permission", { _permission: "admin:approve_payments", _user_id: caller }),
+      admin.rpc("admin_has_permission", { _permission: "payment.approve", _user_id: caller }),
       admin.rpc("admin_has_permission", { _permission: "admin:all", _user_id: caller }),
     ]);
-    if (!(approvePermission.data || allPermission.data)) return json({ error: "Payment approval permission is required." }, 403);
+    if (!(approvePermission.data || (await admin.rpc("admin_has_permission", { _permission: "payment.approve", _user_id: caller })).data || allPermission.data)) return json({ error: "Payment approval permission is required." }, 403);
 
     const { payment_request_id } = await req.json();
     if (!payment_request_id || typeof payment_request_id !== "string") return json({ error: "payment_request_id is required." }, 400);
@@ -123,7 +124,7 @@ serve(async (req: Request) => {
     if (!request.reference) return json({ success: true, skipped: true, reason: "Payment request has no gateway reference." });
 
     const { data: gatewayEvent } = await admin.from("payment_gateway_events")
-      .select("order_id,user_id,status").eq("reference", request.reference).maybeSingle();
+      .select("order_id,user_id,status").eq("reference", request.reference).limit(1).maybeSingle();
     orderId = String(gatewayEvent?.order_id || "");
     if (!orderId) {
       const { data: byRef } = await admin.from("orders").select("id,user_id").eq("payment_reference", request.reference).maybeSingle();
