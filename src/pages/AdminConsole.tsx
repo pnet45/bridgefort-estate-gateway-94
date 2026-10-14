@@ -52,7 +52,7 @@ const AdminConsole = () => {
   const { isSuperAdmin } = useIsSuperAdmin();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isSuperAdmin) tabs.add('travels'); return Array.from(tabs); }, [permissions, isSuperAdmin]);
+  const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isSuperAdmin) { tabs.add('travels'); tabs.add('documentation'); } return Array.from(tabs); }, [permissions, isSuperAdmin]);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -76,7 +76,7 @@ const AdminConsole = () => {
         {hasPermission('admin:view_dashboard') && <TabsTrigger value="overview" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><LayoutDashboard className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Dashboard</span></TabsTrigger>}
         {hasPermission('admin:view_properties') && <TabsTrigger value="properties" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Building className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Properties</span></TabsTrigger>}
         {hasPermission('admin:view_allocations') && <TabsTrigger value="allocations" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><MapPinned className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Allocations</span></TabsTrigger>}
-        {hasPermission('admin:view_documentation') && <TabsTrigger value="documentation" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><FileText className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Documentation</span></TabsTrigger>}
+        {(hasPermission('admin:view_documentation') || isSuperAdmin || hasPermission('admin:all')) && <TabsTrigger value="documentation" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><FileText className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Documentation</span></TabsTrigger>}
         {hasPermission('admin:view_crm') && <TabsTrigger value="crm" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><CheckSquare className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>CRM</span></TabsTrigger>}
         {hasPermission('admin:view_users') && <TabsTrigger value="users" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Users className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Users</span></TabsTrigger>}
         {hasPermission('admin:view_approvals') && <TabsTrigger value="approvals" className={`${ADMIN_TAB_CLASS} relative lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><UserCheck className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Approvals</span>{pendingCount > 0 && <span className="ml-1 h-5 min-w-5 px-1 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{pendingCount > 99 ? '99+' : pendingCount}</span>}</TabsTrigger>}
@@ -99,7 +99,7 @@ const AdminConsole = () => {
       <TabsContent value="overview" className="min-w-0 space-y-6"><AdminDashboardStats/><div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><div className="lg:col-span-2 space-y-6"><AdminInbox/><AdminEstateViewsLeaderboard/></div><div className="space-y-6"><AdminOnlineUsers/><AdminChat/></div></div></TabsContent>
       <TabsContent value="properties" className="min-w-0"><AdminPropertyManagement/></TabsContent>
       <TabsContent value="allocations" className="min-w-0"><AdminClientAllocations/></TabsContent>
-      {hasPermission('admin:view_documentation') && <TabsContent value="documentation" className="min-w-0"><DocumentationWorkflow/></TabsContent>}
+      {(hasPermission('admin:view_documentation') || isSuperAdmin || hasPermission('admin:all')) && <TabsContent value="documentation" className="min-w-0"><DocumentationWorkflow/></TabsContent>}
       <TabsContent value="crm" className="min-w-0 space-y-6"><AdminBirthdayWidget/><AdminCRMWorkspace/><div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><AdminTaskManager/><AdminCalendar/></div><div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><AdminNotices/><AdminNotes/><AdminFileSharing/></div></TabsContent>
       <TabsContent value="users" className="min-w-0"><UserManagementTab/></TabsContent>
       <TabsContent value="approvals" className="min-w-0"><AdminApprovalsHub onCountChange={setPendingCount}/></TabsContent>
