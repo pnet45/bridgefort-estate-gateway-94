@@ -164,7 +164,7 @@ serve(async (req: Request) => {
     const { data: template, error: templateError } = await admin.from("transaction_document_templates")
       .select("name,subject_template,body_html_template,enabled").eq("document_type","contract_of_sale").maybeSingle();
     if (templateError) throw templateError;
-    if (!template?.enabled) throw Object.assign(new Error("The Contract of Sale template is disabled. Legal counsel must approve and enable it before automatic delivery."), { status: 409 });
+    if (!template?.enabled || /legal review required/i.test(String(template?.name || ""))) throw Object.assign(new Error("The Contract of Sale template is disabled or not marked as legally approved. Legal counsel must approve, rename, and enable it before automatic delivery."), { status: 409 });
     if (/\[(?:TO BE CONFIRMED|ESTATE-SPECIFIC|CURRENT APPROVED|VERIFY|INSERT AND VERIFY|SURVEY COORDINATES)/i.test(template.body_html_template)) {
       throw Object.assign(new Error("The legal template still contains unresolved review fields. Complete and approve those fields before sending."), { status: 409 });
     }
