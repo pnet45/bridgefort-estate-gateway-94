@@ -24,7 +24,7 @@ type FollowUp = {
   completed_at: string | null; cancelled_at: string | null;
 };
 
-const titleCase = (v: string) => v.replace(/[_-]/g, ' ').replace(/\\b\\w/g, c => c.toUpperCase());
+const titleCase = (v: string) => v.replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 const terminal = new Set(['CONVERTED','LOST','CLOSED','COMPLETED','CANCELLED','DECLINED','EXPIRED']);
 
 const AdminCustomer360: React.FC = () => {
