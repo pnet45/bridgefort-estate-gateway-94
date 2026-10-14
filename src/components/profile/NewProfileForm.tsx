@@ -92,6 +92,49 @@ const NewProfileForm = () => {
     return true;
   };
 
+  // Resolve a typed BH Referral Code automatically so the profile form shows
+  // the matching, verified Realtor without requiring a separate lookup click.
+  useEffect(() => {
+    const code = String(form.referrerCode || '').trim().toUpperCase();
+    if (!code) {
+      setReferralLookup(null);
+      setReferralLookupLoading(false);
+      return;
+    }
+    if (referralLookup?.realtor_id && String(form.referrerCode || '').trim().toUpperCase() === code) return;
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setReferralLookupLoading(true);
+      try {
+        const { data, error } = await supabase.rpc('lookup_bhrealtor_referral' as any, { _code: code });
+        if (cancelled) return;
+        if (error) throw error;
+        const match = Array.isArray(data) ? data[0] : data;
+        if (!match) {
+          setReferralLookup(null);
+          return;
+        }
+        setReferralLookup({
+          realtor_id: String(match.realtor_id),
+          first_name: String(match.first_name || ''),
+          last_initial: String(match.last_initial || ''),
+          package: String(match.package || 'associate'),
+        });
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('BH Referral Code lookup failed:', error);
+          setReferralLookup(null);
+        }
+      } finally {
+        if (!cancelled) setReferralLookupLoading(false);
+      }
+    }, 450);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [form.referrerCode]);
+
   const resolveReferralBeforeSave = useCallback(async () => {
     const code = String(form.referrerCode || '').trim().toUpperCase();
     if (!code) { setReferralLookup(null); return null; }
