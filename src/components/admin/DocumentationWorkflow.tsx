@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { bridgefortLegalTemplates } from "@/lib/legalDocumentTemplates";
 import { FileText, RefreshCw, Search, Save, Mail, Printer, ShieldCheck, Download } from "lucide-react";
 
 type DocumentType = "contract_of_sale" | "survey_plan" | "plot_demarcation" | "deed_of_assignment";
@@ -74,7 +75,16 @@ const DocumentationWorkflow: React.FC = () => {
       setFees((feeResult.data || []) as FeePayment[]);
       setProfiles((profileResult.data || []) as ClientProfile[]);
       setAccountEmails(Object.fromEntries((accountResult.data || []).map((account: any) => [account.id, account.email || ""])));
-      setTemplates((templateResult.data || []) as Template[]);
+      const loadedTemplates = ((templateResult.data || []) as Template[]).map((template) => {
+        if (template.document_type === "contract_of_sale" && !String(template.name).startsWith("Bridgefort Contract of Sale")) {
+          return { ...template, ...bridgefortLegalTemplates.contract_of_sale, document_type: "contract_of_sale" as const, id: template.id };
+        }
+        if (template.document_type === "deed_of_assignment" && !String(template.name).startsWith("Bridgefort Deed of Assignment")) {
+          return { ...template, ...bridgefortLegalTemplates.deed_of_assignment, document_type: "deed_of_assignment" as const, id: template.id };
+        }
+        return template;
+      });
+      setTemplates(loadedTemplates);
       setSent((sentResult.data || []) as SentDocument[]);
     } catch (error: any) {
       toast({ title: "Could not load documentation workflow", description: error?.message || "Check your access and try again.", variant: "destructive" });
