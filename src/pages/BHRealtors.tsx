@@ -80,12 +80,13 @@ const BHRealtors: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState(false);
   const [busy, setBusy] = useState(false);
   const [dashboardError, setDashboardError] = useState(false);
+  const [dashboardReferralCode, setDashboardReferralCode] = useState('');
 
   const currentCode = profile?.current_package || 'associate';
   const currentRank = rank[currentCode] || 1;
   const isPbo = Boolean(profile?.is_pbo);
   const isRealtor = Boolean(profile?.is_pbo && profile?.is_active);
-  const referralCode = profile?.pbo_referral_code || '';
+  const referralCode = profile?.pbo_referral_code || dashboardReferralCode || '';
   const referralLink = typeof window !== 'undefined' && referralCode ? `${window.location.origin}/auth?ref=${encodeURIComponent(referralCode)}` : '';
 
   const load = useCallback(async () => {
@@ -113,6 +114,7 @@ const BHRealtors: React.FC = () => {
       toast({ title: 'Unable to load your BHRealtors wallet', description: 'Please refresh and try again.', variant: 'destructive' });
     } else {
       const dashboard = (dashboardResult.data || {}) as DashboardData;
+      setDashboardReferralCode(String(dashboard.profile?.referral_code || ''));
       setDownlineCount(Number(dashboard.direct_referrals || 0));
       setActiveDownlineCount(Number(dashboard.active_direct_referrals || 0));
       setLocked(Number(dashboard.locked_commissions || 0));
@@ -328,6 +330,14 @@ const BHRealtors: React.FC = () => {
           </section>
 
           {!isPbo && <section className={`${glass} rounded-3xl p-7`}><div className="flex items-center gap-3"><Sprout className="h-6 w-6 text-emerald-500" /><h2 className="text-xl font-black text-estate-blue dark:text-white">Start with a real opportunity</h2></div><p className={`mt-3 max-w-3xl leading-7 ${muted}`}>Join a network where property sales, referrals and personal development work together. Start at the level that fits your plan and grow responsibly.</p></section>}
+
+          {isPbo && !referralCode && (
+            <section className={`${glass} rounded-3xl border-amber-300/60 p-5 sm:p-7`}>
+              <h2 className="text-xl font-bold text-slate-950 dark:text-white">Your BH Referral Code</h2>
+              <p className={`${muted} mt-2 text-sm leading-6`}>Your account is recognised as a BHRealtors member, but a referral code has not loaded yet. Refresh this page once. If it is still missing, ask the BHRealtors administrator to verify your member record so your unique code and sharing tools can be enabled.</p>
+              <Button type="button" variant="outline" className="mt-4" onClick={() => { void refreshProfile(); void load(); }} disabled={busy}><RefreshCw className="mr-2 h-4 w-4" />Refresh referral details</Button>
+            </section>
+          )}
 
           {isPbo && referralCode && (
             <>
