@@ -101,7 +101,6 @@ const NewProfileForm = () => {
       setReferralLookupLoading(false);
       return;
     }
-    if (referralLookup?.realtor_id && String(form.referrerCode || '').trim().toUpperCase() === code) return;
     let cancelled = false;
     const timer = window.setTimeout(async () => {
       setReferralLookupLoading(true);
@@ -201,7 +200,8 @@ const NewProfileForm = () => {
           if (!match) { setReferralLookup(null); toast({ title: 'Referral code not found', description: 'Check the code and try again.', variant: 'destructive' }); return; }
           setReferralLookup(match); toast({ title: 'Realtor verified', description: 'Your profile will be linked to this Realtor when you save.' });
         }} disabled={referralLookupLoading || !String(form.referrerCode || '').trim()} className="h-11 shrink-0">{referralLookupLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}{referralLookupLoading ? 'Checking…' : 'Verify code'}</Button></div>
-        {referralLookup && <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200"><UserCheck className="h-5 w-5 shrink-0" /><div><p className="font-semibold">{referralLookup.first_name}{referralLookup.last_initial ? ' ' + referralLookup.last_initial + '.' : ''}</p><p className="text-sm opacity-80">Verified BHRealtor • {referralLookup.package === 'classic_gold' ? 'Classic Gold' : referralLookup.package === 'gold' ? 'Gold' : 'Associate'}</p></div></div>}
+        {referralLookupLoading && <p className="text-sm text-slate-600 dark:text-slate-300">Checking this BH Referral Code against active Realtor records…</p>}
+         {referralLookup && <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200"><UserCheck className="h-5 w-5 shrink-0" /><div><p className="font-semibold">{referralLookup.first_name}{referralLookup.last_initial ? ' ' + referralLookup.last_initial + '.' : ''}</p><p className="text-sm opacity-80">Verified BHRealtor • {referralLookup.package === 'classic_gold' ? 'Classic Gold' : referralLookup.package === 'gold' ? 'Gold' : 'Associate'}</p></div></div>}
         {form.referrerCode && !referralLookup && <div className="flex items-start gap-2 text-sm text-amber-700 dark:text-amber-300"><UserX className="mt-0.5 h-4 w-4 shrink-0" />Verify the code before saving this section.</div>}
         <div className="grid gap-5 md:grid-cols-2"><Field label="Referrer name" name="referrerName" /><Field label="Referrer phone" name="referrerPhone" /><Field label="Referrer email" name="referrerEmail" /></div>
       </div>;
