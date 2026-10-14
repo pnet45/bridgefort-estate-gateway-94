@@ -30,7 +30,7 @@ const DOCS: { type: DocumentType; label: string; feeGated: boolean; description:
   { type: "deed_of_assignment", label: "Deed of Assignment", feeGated: true, description: "Covered by confirmed Documentation Fees payment." },
 ];
 const money = (value: unknown) => new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(Number(value || 0));
-const titleCase = (value: string) => value.replace(/[_-]/g, " ").replace(/\\b\\w/g, (c) => c.toUpperCase());
+const titleCase = (value: string) => value.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 const smallNumberWords = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
 const tensNumberWords = ["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
 const numberToWords = (value: number): string => {
