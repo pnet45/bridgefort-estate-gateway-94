@@ -8,9 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
-  Users, Wallet, RefreshCw, ArrowUpRight, Loader2, CheckCircle2, Network,
+  Users, Wallet, RefreshCw, Loader2, CheckCircle2, Network,
   Trophy, TrendingUp, Building2, Sprout, Target, Star, Crown,
-  BriefcaseBusiness, Copy, Check, ShoppingBag, LockKeyhole, ChevronRight,
+  BriefcaseBusiness, Copy, Check, ShoppingBag, LockKeyhole, ChevronRight, Megaphone,
 } from 'lucide-react';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
 import RealtorsRegistrationForm from '@/components/bhRealtors/RealtorsRegistrationForm';
@@ -203,7 +203,29 @@ const BHRealtors: React.FC = () => {
                 <p className="mt-5 max-w-3xl text-base leading-7 text-slate-100 md:text-lg">BHRealtors gives you more than a referral link. Build a genuine sales network, introduce people to quality real estate opportunities, earn according to your package, and grow through property.</p>
                 <div className="mt-7 flex flex-wrap gap-3">
                   <a href="#packages"><Button className="bg-white text-slate-950 hover:bg-slate-100">Explore Packages</Button></a>
-                  {isPbo && <Link to="/bh-realtors/withdraw"><Button className="border border-white/30 bg-white/10 text-white hover:bg-white/20" variant="outline"><Wallet className="mr-2 h-4 w-4" /> Withdraw</Button></Link>}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="bhrealtors-promotions" className={`${glass} overflow-hidden rounded-3xl`}>
+            <div className="grid items-stretch md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+              <div className="relative min-h-56 overflow-hidden bg-slate-950">
+                <img src="/images/mber-months-promo-2026.webp" alt="Bridgefort Homes seasonal property promotion" className="absolute inset-0 h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/35 to-transparent" />
+                <div className="relative flex h-full min-h-56 flex-col justify-end p-5 sm:p-7">
+                  <Badge className="mb-3 w-fit border border-white/20 bg-white/15 text-white"><Megaphone className="mr-1.5 h-3.5 w-3.5" /> Campaign spotlight</Badge>
+                  <h2 className="max-w-lg text-2xl font-black text-white sm:text-3xl">Promotions & property opportunities</h2>
+                  <p className="mt-2 max-w-lg text-sm leading-6 text-white/90">Share current Bridgefort Homes campaigns with your clients and help them explore available property opportunities.</p>
+                </div>
+              </div>
+              <div className="flex flex-col justify-center p-5 sm:p-7">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">For your network</p>
+                <h3 className="mt-2 text-xl font-bold text-slate-950 dark:text-white">Give clients something worth sharing</h3>
+                <p className={`${muted} mt-2 text-sm leading-6`}>Use the promotion artwork in your conversations, then direct interested clients to Bridgefort Homes to review current listings and enquire.</p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link to="/properties"><Button className="bg-estate-blue text-white hover:bg-estate-blue/90">Explore properties <ChevronRight className="ml-1 h-4 w-4" /></Button></Link>
+                  <a href="/images/mber-months-promo-2026.webp" target="_blank" rel="noreferrer"><Button variant="outline" className="border-slate-300 text-slate-800 dark:border-white/20 dark:text-white">View promo artwork</Button></a>
                 </div>
               </div>
             </div>
@@ -228,13 +250,14 @@ const BHRealtors: React.FC = () => {
                 <Icon className="h-5 w-5 text-estate-purple" />
                 <p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">{label}</p>
                 <p className="mt-1 text-xl font-bold text-slate-950 dark:text-white">{String(value)}</p>
+                {label === "Available balance" && isPbo && <Link to="/bh-realtors/withdraw" className="mt-3 inline-flex"><Button size="sm" className="h-9 bg-estate-blue text-white hover:bg-estate-blue/90"><Wallet className="mr-2 h-4 w-4" />Withdraw</Button></Link>}
               </div>
             ); })}
           </section>
 
           {isRealtor && (
-            <section className="grid gap-5 lg:grid-cols-3">
-              <div className={`${glass} rounded-3xl p-6 lg:col-span-2`}>
+            <section className="grid gap-5 lg:grid-cols-1">
+              <div className={`${glass} rounded-3xl p-5`}>
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-300">Current package / rank</p>
@@ -244,13 +267,6 @@ const BHRealtors: React.FC = () => {
                   <Badge className={currentRank >= 2 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200' : 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200'}>{currentRank >= 2 ? 'Withdrawable' : 'Locked'}</Badge>
                 </div>
               </div>
-              <Link to="/bh-realtors/withdraw" className="group rounded-3xl border border-white/15 bg-estate-blue p-6 text-white shadow-2xl transition hover:-translate-y-1 hover:shadow-estate-blue/20">
-                <div className="flex items-start justify-between"><Wallet className="h-7 w-7" /><ArrowUpRight className="h-5 w-5 opacity-70 transition group-hover:translate-x-1 group-hover:-translate-y-1" /></div>
-                <p className="mt-5 text-sm text-slate-200">Available commission</p>
-                <p className="mt-1 text-3xl font-black">{naira(availableBalance)}</p>
-                <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold">Withdraw <ChevronRight className="h-4 w-4" /></span>
-                {pendingWithdrawal > 0 && <p className="mt-2 text-xs text-white/70">{naira(pendingWithdrawal)} pending review</p>}
-              </Link>
             </section>
           )}
 
@@ -290,15 +306,15 @@ const BHRealtors: React.FC = () => {
                 const visual = packageVisuals[pkg.package_code] || packageVisuals.associate;
                 return (
                   <article key={pkg.package_code} className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl dark:bg-slate-950 ${active ? 'ring-2 ring-estate-purple ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-950' : 'border-slate-200 dark:border-white/10'}`}>
-                    <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${visual.accent}`}>
+                    <div className={`relative h-32 overflow-hidden bg-gradient-to-br ${visual.accent}`}>
                       <img src={visual.image} alt={`${pkg.package_name} BHRealtors package`} className="h-full w-full object-cover opacity-55 mix-blend-overlay transition duration-500 group-hover:scale-105 group-hover:opacity-70" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                       <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">{visual.icon}{visual.label}</div>
-                      <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-3"><div><p className="text-sm font-semibold text-white/80">{pkg.package_name}</p><p className="mt-1 text-3xl font-black text-white">{naira(pkg.price)}</p></div>{active && <Badge className="border border-white/20 bg-white/20 text-white">Current</Badge>}</div>
+                      <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-3"><div><p className="text-sm font-semibold text-white/80">{pkg.package_name}</p><p className="mt-1 text-2xl font-black text-white">{naira(pkg.price)}</p></div>{active && <Badge className="border border-white/20 bg-white/20 text-white">Current</Badge>}</div>
                     </div>
-                    <div className="flex flex-1 flex-col p-5 sm:p-6">
+                    <div className="flex flex-1 flex-col p-4">
                       <div className="flex flex-wrap gap-2"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>L1: {pkg.direct_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>L2: {pkg.indirect_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>Sales: {salesRate}%</span></div>
-                      <p className={`mt-5 min-h-[96px] text-sm leading-6 ${muted}`}>{pkg.description}</p>
+                      <p className={`mt-3 min-h-[72px] text-sm leading-6 font-medium ${muted}`}>{pkg.description}</p>
                       <div className="mt-5 grid grid-cols-2 gap-2"><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Membership</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{pkg.direct_commission_pct}% / {pkg.indirect_commission_pct}%</p></div><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Land sales</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{salesRate}%</p></div></div>
                       <div className="mt-auto pt-5">
                         {higher && <Button className={`w-full bg-gradient-to-r ${visual.accent} text-white shadow-lg hover:opacity-95`} onClick={() => openRegistration(pkg)}>{isPbo ? `Upgrade to ${pkg.package_name}` : `Join ${pkg.package_name} — ${naira(pkg.price)}`}</Button>}
@@ -325,7 +341,7 @@ const BHRealtors: React.FC = () => {
             </>
           )}
 
-          {isRealtor && <section className="grid gap-5 lg:grid-cols-2">
+          {isPbo && <section className="grid gap-5 lg:grid-cols-2">
             <div className={`${glass} rounded-3xl p-6`}><div className="mb-4 flex items-center gap-2"><Trophy className="h-5 w-5 text-estate-purple" /><h2 className="font-bold text-slate-950 dark:text-white">Referral leaderboard</h2></div><ReferralLeaderboard /></div>
             <div className={`${glass} rounded-3xl p-6`}><div className="mb-4 flex items-center gap-2"><Network className="h-5 w-5 text-estate-purple" /><h2 className="font-bold text-slate-950 dark:text-white">Referral tree</h2></div><DownlineTree /></div>
           </section>}
