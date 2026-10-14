@@ -66,6 +66,12 @@ const INITIAL_MESSAGE: ChatMessage = {
     "Hello, I'm Leo, the Bridgefort Homes assistant. I can help with your service journey, property questions, and follow-up. I only use information you are authorized to see.",
 };
 
+const SUGGESTED_QUESTIONS = [
+  'Which properties are currently available?',
+  'What public services do you offer?',
+  'How can I book a viewing?',
+];
+
 const getAssistantErrorDetails = async (error: unknown) => {
   if (typeof error !== 'object' || error === null || !('context' in error)) return null;
   const context = error.context;
@@ -689,6 +695,24 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
                 )}
               </div>
             ))}
+            {messages.length === 1 && !authRequired && !isSending && (
+              <section aria-label="Suggested questions" className="space-y-2">
+                <p className="text-sm font-medium text-slate-700">Try asking about:</p>
+                <div className="flex flex-wrap gap-2">
+                  {SUGGESTED_QUESTIONS.map((question) => (
+                    <Button
+                      key={question}
+                      type="button"
+                      variant="outline"
+                      className="h-auto min-h-11 whitespace-normal px-3 py-2 text-left"
+                      onClick={() => void sendChatMessage(question)}
+                    >
+                      {question}
+                    </Button>
+                  ))}
+                </div>
+              </section>
+            )}
             {authRequired && !user && (
               <section
                 aria-labelledby="leo-sign-in-title"
@@ -714,7 +738,7 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
                       onChange={(event) => setAuthEmail(event.target.value)}
                       required
                       disabled={isAuthenticating}
-                      className="h-11"
+                      className="h-11 focus-visible:ring-estate-blue"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -727,7 +751,7 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
                       onChange={(event) => setAuthPassword(event.target.value)}
                       required
                       disabled={isAuthenticating}
-                      className="h-11"
+                      className="h-11 focus-visible:ring-estate-blue"
                     />
                   </div>
                   {authError && <p className="text-sm text-red-700" role="alert">{authError}</p>}
@@ -809,7 +833,7 @@ const PropertyAssistant = ({ adminRoute = false }: { adminRoute?: boolean }) => 
               maxLength={1500}
               placeholder="Ask about properties or services…"
               disabled={isSending || authLoading}
-              className="h-11 min-w-0 flex-1 rounded-full border border-slate-300 px-4 text-base outline-none focus:border-estate-blue focus:ring-2 focus:ring-estate-blue/20 disabled:bg-slate-100"
+              className="h-11 min-w-0 flex-1 rounded-full border border-slate-300 px-4 text-base focus-visible:border-estate-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-blue focus-visible:ring-offset-2 disabled:bg-slate-100"
             />
             <Button
               type="submit"
