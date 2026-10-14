@@ -47,7 +47,7 @@ const NewProfileForm = () => {
   const [savedStep, setSavedStep] = useState<StepKey | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [referralLookupLoading, setReferralLookupLoading] = useState(false);
-  const [referralLookup, setReferralLookup] = useState<{ realtor_id: string; first_name: string; last_initial: string; package: string } | null>(null);
+  const [referralLookup, setReferralLookup] = useState<{ realtor_id: string; first_name: string; last_initial: string; package: string; code: string } | null>(null);
   const [existingReferralId, setExistingReferralId] = useState<string | null>(null);
   const formRef = useRef<FormState>(initialForm);
   formRef.current = form;
@@ -92,17 +92,60 @@ const NewProfileForm = () => {
     return true;
   };
 
+  // Resolve a typed BH Referral Code automatically so the profile form shows
+  // the matching, verified Realtor without requiring a separate lookup click.
+  useEffect(() => {
+    const code = String(form.referrerCode || '').trim().toUpperCase();
+    if (!code) {
+      setReferralLookup(null);
+      setReferralLookupLoading(false);
+      return;
+    }
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setReferralLookupLoading(true);
+      try {
+        const { data, error } = await supabase.rpc('lookup_bhrealtor_referral' as any, { _code: code });
+        if (cancelled) return;
+        if (error) throw error;
+        const match = Array.isArray(data) ? data[0] : data;
+        if (!match) {
+          setReferralLookup(null);
+          return;
+        }
+        setReferralLookup({
+          realtor_id: String(match.realtor_id),
+          code,
+          first_name: String(match.first_name || ''),
+          last_initial: String(match.last_initial || ''),
+          package: String(match.package || 'associate'),
+        });
+      } catch (error) {
+        if (!cancelled) {
+          console.warn('BH Referral Code lookup failed:', error);
+          setReferralLookup(null);
+        }
+      } finally {
+        if (!cancelled) setReferralLookupLoading(false);
+      }
+    }, 450);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [form.referrerCode]);
+
   const resolveReferralBeforeSave = useCallback(async () => {
     const code = String(form.referrerCode || '').trim().toUpperCase();
     if (!code) { setReferralLookup(null); return null; }
-    if (referralLookup && referralLookup.realtor_id && String(form.referrerCode || '').trim().toUpperCase() === code) return referralLookup.realtor_id;
+    if (referralLookup && referralLookup.realtor_id && referralLookup.code === code) return referralLookup.realtor_id;
     setReferralLookupLoading(true);
     try {
       const { data, error } = await supabase.rpc('lookup_bhrealtor_referral' as any, { _code: code });
       if (error) throw error;
       const match = Array.isArray(data) ? data[0] : data;
       if (!match) throw new Error('That referral code does not belong to an active BHRealtor.');
-      setReferralLookup(match);
+      setReferralLookup({ realtor_id: String(match.realtor_id), code, first_name: String(match.first_name || ''), last_initial: String(match.last_initial || ''), package: String(match.package || 'associate') });
       return match.realtor_id as string;
     } catch (error: any) {
       toast({ title: 'Invalid Realtor referral code', description: error?.message || 'Verify the code before saving.', variant: 'destructive' });
@@ -156,9 +199,10 @@ const NewProfileForm = () => {
           if (error) { console.error('Referral lookup error:', error); toast({ title: 'Could not verify code', description: error.message, variant: 'destructive' }); return; }
           const match = Array.isArray(data) ? data[0] : data;
           if (!match) { setReferralLookup(null); toast({ title: 'Referral code not found', description: 'Check the code and try again.', variant: 'destructive' }); return; }
-          setReferralLookup(match); toast({ title: 'Realtor verified', description: 'Your profile will be linked to this Realtor when you save.' });
+          setReferralLookup({ realtor_id: String(match.realtor_id), code, first_name: String(match.first_name || ''), last_initial: String(match.last_initial || ''), package: String(match.package || 'associate') }); toast({ title: 'Realtor verified', description: 'Your profile will be linked to this Realtor when you save.' });
         }} disabled={referralLookupLoading || !String(form.referrerCode || '').trim()} className="h-11 shrink-0">{referralLookupLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}{referralLookupLoading ? 'Checking…' : 'Verify code'}</Button></div>
-        {referralLookup && <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200"><UserCheck className="h-5 w-5 shrink-0" /><div><p className="font-semibold">{referralLookup.first_name}{referralLookup.last_initial ? ' ' + referralLookup.last_initial + '.' : ''}</p><p className="text-sm opacity-80">Verified BHRealtor • {referralLookup.package === 'classic_gold' ? 'Classic Gold' : referralLookup.package === 'gold' ? 'Gold' : 'Associate'}</p></div></div>}
+        {referralLookupLoading && <p className="text-sm text-slate-600 dark:text-slate-300">Checking this BH Referral Code against active Realtor records…</p>}
+         {referralLookup && <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200"><UserCheck className="h-5 w-5 shrink-0" /><div><p className="font-semibold">{referralLookup.first_name}{referralLookup.last_initial ? ' ' + referralLookup.last_initial + '.' : ''}</p><p className="text-sm opacity-80">Verified BHRealtor • {referralLookup.package === 'classic_gold' ? 'Classic Gold' : referralLookup.package === 'gold' ? 'Gold' : 'Associate'}</p></div></div>}
         {form.referrerCode && !referralLookup && <div className="flex items-start gap-2 text-sm text-amber-700 dark:text-amber-300"><UserX className="mt-0.5 h-4 w-4 shrink-0" />Verify the code before saving this section.</div>}
         <div className="grid gap-5 md:grid-cols-2"><Field label="Referrer name" name="referrerName" /><Field label="Referrer phone" name="referrerPhone" /><Field label="Referrer email" name="referrerEmail" /></div>
       </div>;
