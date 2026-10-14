@@ -145,7 +145,7 @@ const NewProfileForm = () => {
       if (error) throw error;
       const match = Array.isArray(data) ? data[0] : data;
       if (!match) throw new Error('That referral code does not belong to an active BHRealtor.');
-      setReferralLookup(match);
+      setReferralLookup({ realtor_id: String(match.realtor_id), code, first_name: String(match.first_name || ''), last_initial: String(match.last_initial || ''), package: String(match.package || 'associate') });
       return match.realtor_id as string;
     } catch (error: any) {
       toast({ title: 'Invalid Realtor referral code', description: error?.message || 'Verify the code before saving.', variant: 'destructive' });
