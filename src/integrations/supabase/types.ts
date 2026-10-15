@@ -14,6 +14,120 @@ export type Database = {
   }
   public: {
     Tables: {
+      transaction_document_automation_controls: {
+        Row: {
+          document_type: string
+          enabled: boolean
+          updated_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          document_type: string
+          enabled?: boolean
+          updated_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          document_type?: string
+          enabled?: boolean
+          updated_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transaction_document_templates: {
+        Row: {
+          id: string
+          document_type: string
+          name: string
+          subject_template: string
+          body_html_template: string
+          enabled: boolean
+          updated_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          document_type: string
+          name: string
+          subject_template: string
+          body_html_template: string
+          enabled?: boolean
+          updated_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          document_type?: string
+          name?: string
+          subject_template?: string
+          body_html_template?: string
+          enabled?: boolean
+          updated_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transaction_documents: {
+        Row: {
+          id: string
+          order_id: string
+          user_id: string
+          document_type: string
+          storage_path: string
+          file_name: string
+          status: string
+          sent_by: string | null
+          sent_at: string
+          provider_message_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          user_id: string
+          document_type: string
+          storage_path: string
+          file_name: string
+          status?: string
+          sent_by?: string | null
+          sent_at?: string
+          provider_message_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          user_id?: string
+          document_type?: string
+          storage_path?: string
+          file_name?: string
+          status?: string
+          sent_by?: string | null
+          sent_at?: string
+          provider_message_id?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_documents_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_documents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_activity_logs: {
         Row: {
           action_description: string
