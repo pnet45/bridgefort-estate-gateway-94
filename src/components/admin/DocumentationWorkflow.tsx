@@ -56,6 +56,8 @@ const DocumentationWorkflow: React.FC = () => {
   const [accountEmails, setAccountEmails] = useState<Record<string, string>>({});
   const [templates, setTemplates] = useState<Template[]>([]);
   const [sent, setSent] = useState<SentDocument[]>([]);
+  const [deliveryControls, setDeliveryControls] = useState<Partial<Record<DocumentType, boolean>>>({});
+  const [deliveryControlsAvailable, setDeliveryControlsAvailable] = useState(false);
   const [loading, setLoading] = useState(true);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [sendingKey, setSendingKey] = useState("");
@@ -69,13 +71,14 @@ const DocumentationWorkflow: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [orderResult, feeResult, templateResult, sentResult, profileResult, accountResult] = await Promise.all([
+      const [orderResult, feeResult, templateResult, sentResult, profileResult, accountResult, deliveryControlResult] = await Promise.all([
         supabase.from("orders").select("id,user_id,customer_email,customer_name,total_amount,amount_paid,balance,payment_status,items,created_at").order("created_at", { ascending: false }).limit(500),
         supabase.from("estate_documentation_payments").select("order_id,user_id,status,amount,total_bundle_amount,created_at").order("created_at", { ascending: false }).limit(1000),
         supabase.from("transaction_document_templates").select("*").order("name"),
         supabase.from("transaction_documents").select("id,order_id,document_type,file_name,status,sent_at,storage_path").order("sent_at", { ascending: false }).limit(1000),
         supabase.from("profiles").select("id,first_name,last_name,address,current_residence,phone_number").limit(1000),
         supabase.from("users").select("id,email").limit(1000),
+        supabase.from("transaction_document_automation_controls").select("document_type,enabled").in("document_type", ["contract_of_sale", "deed_of_assignment"]),
       ]);
       if (orderResult.error) throw orderResult.error;
       if (feeResult.error) throw feeResult.error;
@@ -98,6 +101,9 @@ const DocumentationWorkflow: React.FC = () => {
       });
       setTemplates(loadedTemplates);
       setSent((sentResult.data || []) as SentDocument[]);
+      const controlRows = deliveryControlResult.error ? [] : (deliveryControlResult.data || []) as { document_type: DocumentType; enabled: boolean }[];
+      setDeliveryControls(Object.fromEntries(controlRows.map((control) => [control.document_type, control.enabled])) as Partial<Record<DocumentType, boolean>>);
+      setDeliveryControlsAvailable(!deliveryControlResult.error && ["contract_of_sale", "deed_of_assignment"].every((type) => controlRows.some((control) => control.document_type === type)));
     } catch (error: any) {
       toast({ title: "Could not load documentation workflow", description: error?.message || "Check your access and try again.", variant: "destructive" });
     } finally {
@@ -233,6 +239,9 @@ const DocumentationWorkflow: React.FC = () => {
     if (!row.clientEmail) return toast({ title: "Client email missing", description: "Add a valid email to the transaction record before sending.", variant: "destructive" });
     if (type === "contract_of_sale" && !row.propertyPaid) return toast({ title: "Payment not complete", description: "The Contract of Sale is locked until full property payment is confirmed.", variant: "destructive" });
     if (doc.feeGated && !row.feePayment) return toast({ title: "Documentation fee not confirmed", description: "Survey, demarcation and deed are locked until Documentation Fees payment is confirmed.", variant: "destructive" });
+    if ((type === "contract_of_sale" || type === "deed_of_assignment") && (!deliveryControlsAvailable || deliveryControls[type] !== true)) {
+      return toast({ title: "Legal document email is switched off", description: "An authorized administrator must enable this document under Admin Email Center > Automations. No email was sent.", variant: "destructive" });
+    }
     if (!file || file.type !== "application/pdf" || !file.name.toLowerCase().endsWith(".pdf")) return toast({ title: "PDF required", description: "Upload the personalized PDF generated from the template preview.", variant: "destructive" });
     if (file.size > 10 * 1024 * 1024) return toast({ title: "File too large", description: "PDF files must be 10 MB or smaller.", variant: "destructive" });
 
@@ -296,6 +305,8 @@ const DocumentationWorkflow: React.FC = () => {
               {DOCS.map((doc) => {
                 const ready = doc.feeGated ? !!row.feePayment : row.propertyPaid;
                 const templateEnabled = !!templateFor(doc.type)?.enabled;
+                const requiresAutomationSwitch = doc.type === "contract_of_sale" || doc.type === "deed_of_assignment";
+                const deliveryEnabled = !requiresAutomationSwitch || (deliveryControlsAvailable && deliveryControls[doc.type] === true);
                 const key = `${row.order.id}:${doc.type}`;
                 const file = selectedFiles[key];
                 return <div key={doc.type} className="min-w-0 rounded-xl border border-slate-200 p-4">
@@ -303,9 +314,10 @@ const DocumentationWorkflow: React.FC = () => {
                   <div className="mt-3 flex flex-col gap-2">
                     <Button variant="outline" onClick={() => openPreview(row,doc.type)} disabled={!templateFor(doc.type)} className="w-full gap-2"><Printer className="h-4 w-4"/>Preview template</Button><Button variant="outline" onClick={() => void generatePersonalizedPdf(row,doc.type)} disabled={!canManage || !templateEnabled || generatingKey===key} className="w-full gap-2"><FileText className="h-4 w-4"/>{generatingKey===key ? "Generating PDF…" : "Generate personalized PDF"}</Button>
                     <div className="space-y-1"><label className="text-xs font-medium text-slate-700">Attach personalized PDF</label><Input key={`${key}-${file?.name || "empty"}`} type="file" accept="application/pdf,.pdf" onChange={(e)=>setSelectedFiles((prev)=>({...prev,[key]:e.target.files?.[0] || null}))} className="h-auto py-2 file:mr-2 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1.5"/><p className="text-[11px] text-slate-500">{file ? file.name : "PDF only · maximum 10 MB"}</p></div>
-                    <Button onClick={()=>void sendDocument(row,doc.type)} disabled={!canManage || !ready || !templateEnabled || !file || sendingKey===key || generatingKey===key} className="w-full gap-2">{sendingKey===key ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Mail className="h-4 w-4"/>}{sendingKey===key ? "Sending…" : `Send ${doc.label}`}</Button>
+                    <Button onClick={()=>void sendDocument(row,doc.type)} disabled={!canManage || !ready || !templateEnabled || !deliveryEnabled || !file || sendingKey===key || generatingKey===key} className="w-full gap-2">{sendingKey===key ? <RefreshCw className="h-4 w-4 animate-spin"/> : <Mail className="h-4 w-4"/>}{sendingKey===key ? "Sending…" : `Send ${doc.label}`}</Button>
                     {!ready && <p className="text-[11px] text-amber-700">{doc.feeGated ? "Requires confirmed Documentation Fees payment." : "Requires confirmed full property payment."}</p>}
                     {!templateEnabled && <p className="text-[11px] text-amber-700">Starter template is disabled. Add the approved company wording and explicitly enable it before sending.</p>}
+                    {!deliveryEnabled && requiresAutomationSwitch && <p className="text-[11px] text-amber-700">Email automation is OFF or unavailable. Enable it under Admin Email Center &gt; Automations. This does not send an email by itself.</p>}
                     {!canManage && <p className="text-[11px] text-amber-700">View only. Ask an administrator for documentation management permission.</p>}
                   </div>
                 </div>;
