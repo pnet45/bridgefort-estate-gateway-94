@@ -50,7 +50,7 @@ export default function TransactionDocumentDeliveryAutomation() {
         const template = templates.find((row: any) => row.document_type === doc.type) as any;
         const ready = !!template?.enabled &&
           !/legal review required/i.test(String(template?.name || "")) &&
-          !/\\[(?:TO BE CONFIRMED|ESTATE-SPECIFIC|CURRENT APPROVED|VERIFY|INSERT AND VERIFY|SURVEY COORDINATES)/i.test(String(template?.body_html_template || ""));
+          !/\[(?:TO BE CONFIRMED|ESTATE-SPECIFIC|CURRENT APPROVED|VERIFY|INSERT AND VERIFY|SURVEY COORDINATES)/i.test(String(template?.body_html_template || ""));
         return [doc.type, ready];
       })) as Partial<Record<DocumentType, boolean>>);
       const missing = DOCUMENTS.filter((doc) => !rows.some((row: any) => row.document_type === doc.type));
