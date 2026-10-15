@@ -10,6 +10,7 @@ import {Switch} from '@/components/ui/switch';
 import {Badge} from '@/components/ui/badge';
 import {toast} from 'sonner';
 import {Save,RefreshCw,ShieldCheck,Clock3,Mail,Users,Eye,Send,X,CheckCircle2} from 'lucide-react';
+import TransactionDocumentDeliveryAutomation from './TransactionDocumentDeliveryAutomation';
 
 type Automation={id:string;campaign_key:string;name:string;description:string;category:string;enabled:boolean;schedule_time:string;timezone:string;cooldown_days:number;threshold_value:number|null;subject:string;body:string;audience_rules:any;last_run_at:string|null;last_run_status:string|null;last_run_count:number};
 
@@ -28,6 +29,7 @@ export default function AdminClientEngagementAutomations(){
  if(!canManage)return <Card><CardContent className="p-8 text-center"><ShieldCheck className="mx-auto mb-3 h-8 w-8 text-slate-400"/><p className="font-semibold">Automation access is restricted.</p><p className="mt-1 text-sm text-slate-500">You need the CRM email-center permission to manage client automations.</p></CardContent></Card>;
  return <div className="grid min-h-[620px] grid-cols-1 gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
   <Card className="border-slate-200"><CardHeader className="pb-3"><div className="flex items-center justify-between"><CardTitle className="text-base">Client Automations</CardTitle><Button variant="ghost" size="icon" onClick={load}><RefreshCw className={loading?'h-4 w-4 animate-spin':'h-4 w-4'}/></Button></div><p className="text-xs text-slate-500">Control which client communications run automatically.</p></CardHeader><CardContent className="space-y-4">
+   <TransactionDocumentDeliveryAutomation/>
    {categories.map(cat=><div key={cat.key}><p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">{cat.label}</p><div className="space-y-1">{items.filter(x=>x.category===cat.key).map(a=><button key={a.id} onClick={()=>setSelected(a)} className={'w-full rounded-xl border p-3 text-left transition '+(selected?.id===a.id?'border-[#5b2a86] bg-[#faf7fd]':'border-slate-200 bg-white hover:bg-slate-50')}><div className="flex items-center justify-between gap-2"><span className="text-sm font-semibold text-slate-800">{a.name}</span><Badge variant="outline" className={a.enabled?'border-emerald-200 bg-emerald-50 text-emerald-700':'text-slate-500'}>{a.enabled?'On':'Off'}</Badge></div><p className="mt-1 text-[11px] leading-4 text-slate-500">{a.description}</p></button>)}</div></div>)}
   </CardContent></Card>
   <Card className="border-slate-200">{!selected?<CardContent className="flex h-full min-h-[560px] flex-col items-center justify-center text-center"><Mail className="mb-3 h-9 w-9 text-slate-300"/><p className="font-semibold">Select an automation</p><p className="mt-1 max-w-sm text-sm text-slate-500">Configure its schedule, audience rules and branded message from one CRM workspace.</p></CardContent>:
