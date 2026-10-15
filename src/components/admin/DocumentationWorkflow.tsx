@@ -45,7 +45,7 @@ const numberToWords = (value: number): string => {
 };
 const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const fillTemplate = (value: string, tokens: Record<string, string>) => value.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_m, key) => tokens[key] ?? "");
-const sanitizeTemplateHtml = (value: string) => value.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "").replace(/<\/?(?:iframe|object|embed|form|base|meta)\b[^>]*>/gi, "").replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "").replace(/\s(href|src|xlink:href)\s*=\s*(?:"\s*javascript:[^"]*"|'\s*javascript:[^']*'|javascript:[^\s>]+)/gi, ' $1="#"');
+const sanitizeTemplateHtml = (value: string) => value.replace(/<script\b[^>]*>[\s\S]*?</script>/gi, "").replace(/<\/?(?:iframe|object|embed|form|base|meta)\b[^>]*>/gi, "").replace(/\son\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "").replace(/\s(href|src|xlink:href)\s*=\s*(?:"\s*javascript:[^"]*"|'\s*javascript:[^']*'|javascript:[^\s>]+)/gi, ' $1="#"');
 
 const DocumentationWorkflow: React.FC = () => {
   const { user, permissions } = useAuth();
