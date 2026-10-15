@@ -36,6 +36,7 @@ jobs:
 
           const read = (path) => readFileSync(path, 'utf8');
           const migration = read('supabase/migrations/20261015213539_transaction_document_delivery_automation_controls.sql');
+          const readiness = read('supabase/migrations/20261015214129_guard_transaction_document_delivery_controls.sql');
           const manual = read('supabase/functions/send-transaction-document/index.ts');
           const automatic = read('supabase/functions/auto-send-contract-of-sale/index.ts');
           const queue = read('src/components/admin/DocumentationWorkflow.tsx');
@@ -55,6 +56,7 @@ jobs:
           assert.match(automatic, /ESTATE-SPECIFIC\|CURRENT APPROVED\|VERIFY/, 'automatic delivery blocks unresolved legal placeholders');
           assert.match(queue, /!deliveryControlsAvailable\s*\|\|\s*deliveryControls\[type\]\s*!==\s*true/, 'queue must block if controls are missing or OFF');
           assert.match(controls, /No email was sent by this switch/, 'switch must not itself send mail');
+          assert.match(controls, /!templateReady\\[doc\\.type\\] && control\\?\\.enabled !== true/, 'UI must disable switches until legal templates are approved');
           assert.match(admin, /TransactionDocumentDeliveryAutomation/, 'admin automation panel must mount the controls');
           console.log('Legal-document automation safety assertions passed.');
           NODE
