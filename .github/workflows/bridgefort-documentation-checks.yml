@@ -45,6 +45,14 @@ jobs:
           assert.match(migration, /values\s*\(\s*'contract_of_sale'\s*,\s*false\s*\),\s*\(\s*'deed_of_assignment'\s*,\s*false\s*\)/i, 'both controls must seed OFF');
           assert.match(manual, /deliveryControl\?\.enabled\s*!==\s*true/, 'manual delivery must fail closed');
           assert.match(automatic, /deliveryControl\?\.enabled\s*!==\s*true/, 'automatic delivery must fail closed');
+          assert.match(manual, /const propertyPaid = total > 0 && balance <= 0 && paid >= total && \["paid", "completed"\]\.includes\(status\)/, 'manual Contract of Sale requires full confirmed property payment');
+          assert.match(manual, /\.in\("status", \["approved", "paid", "completed"\]\)/, 'documentation fee gate must use confirmed statuses');
+          assert.match(manual, /Number\(payment\.amount \|\| 0\) >= Number\(payment\.total_bundle_amount \|\| 0\)/, 'documentation fee gate must confirm the full bundle amount');
+          assert.match(automatic, /request\.status !== "approved"/, 'automatic delivery requires an approved payment request');
+          assert.match(automatic, /String\(request\.type\)\.toLowerCase\(\) !== "property"/, 'automatic delivery only applies to property purchase requests');
+          assert.match(automatic, /paid >= total && balance <= 0/, 'automatic delivery requires the order to be fully paid');
+          assert.match(automatic, /!template\?\.enabled/, 'automatic delivery requires an enabled legal template');
+          assert.match(automatic, /ESTATE-SPECIFIC\|CURRENT APPROVED\|VERIFY/, 'automatic delivery blocks unresolved legal placeholders');
           assert.match(queue, /!deliveryControlsAvailable\s*\|\|\s*deliveryControls\[type\]\s*!==\s*true/, 'queue must block if controls are missing or OFF');
           assert.match(controls, /No email was sent by this switch/, 'switch must not itself send mail');
           assert.match(admin, /TransactionDocumentDeliveryAutomation/, 'admin automation panel must mount the controls');
