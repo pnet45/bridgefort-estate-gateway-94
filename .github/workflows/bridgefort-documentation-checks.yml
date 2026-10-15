@@ -44,6 +44,9 @@ jobs:
           const admin = read('src/components/admin/AdminClientEngagementAutomations.tsx');
 
           assert.match(migration, /values\s*\(\s*'contract_of_sale'\s*,\s*false\s*\),\s*\(\s*'deed_of_assignment'\s*,\s*false\s*\)/i, 'both controls must seed OFF');
+          assert.match(readiness, /before insert or update of enabled, document_type/i, 'database must gate control changes');
+          assert.match(readiness, /Cannot enable legal-document email delivery until the matching template is approved/i, 'database must reject unapproved legal templates');
+          assert.match(readiness, /update public\.transaction_document_automation_controls\s+set enabled = false/i, 'database must turn delivery OFF if a template becomes unapproved');
           assert.match(manual, /deliveryControl\?\.enabled\s*!==\s*true/, 'manual delivery must fail closed');
           assert.match(automatic, /deliveryControl\?\.enabled\s*!==\s*true/, 'automatic delivery must fail closed');
           assert.match(manual, /const propertyPaid = total > 0 && balance <= 0 && paid >= total && \["paid", "completed"\]\.includes\(status\)/, 'manual Contract of Sale requires full confirmed property payment');
