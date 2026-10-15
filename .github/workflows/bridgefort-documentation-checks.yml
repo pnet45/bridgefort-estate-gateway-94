@@ -35,7 +35,7 @@ jobs:
           import assert from 'node:assert/strict';
 
           const read = (path) => readFileSync(path, 'utf8');
-          const migration = read('supabase/migrations/20261015120000_transaction_document_delivery_automation_controls.sql');
+          const migration = read('supabase/migrations/20261015213539_transaction_document_delivery_automation_controls.sql');
           const manual = read('supabase/functions/send-transaction-document/index.ts');
           const automatic = read('supabase/functions/auto-send-contract-of-sale/index.ts');
           const queue = read('src/components/admin/DocumentationWorkflow.tsx');
