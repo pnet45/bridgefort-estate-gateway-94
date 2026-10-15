@@ -114,6 +114,18 @@ serve(async (req: Request) => {
     ]);
     if (!(approvePermission.data || paymentPermission.data || allPermission.data)) return json({ error: "Payment approval permission is required." }, 403);
 
+    // Fail closed: do not claim, generate, upload, or email a Contract of Sale while
+    // the admin-controlled automation switch is OFF or missing.
+    const { data: deliveryControl, error: deliveryControlError } = await admin
+      .from("transaction_document_automation_controls")
+      .select("enabled")
+      .eq("document_type", "contract_of_sale")
+      .maybeSingle();
+    if (deliveryControlError) throw deliveryControlError;
+    if (deliveryControl?.enabled !== true) {
+      return json({ success: true, skipped: true, reason: "Contract of Sale email automation is OFF in Admin Email Center > Automations. No email was sent." });
+    }
+
     const { payment_request_id } = await req.json();
     if (!payment_request_id || typeof payment_request_id !== "string") return json({ error: "payment_request_id is required." }, 400);
     const { data: request, error: requestError } = await admin.from("payment_requests")
