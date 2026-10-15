@@ -115,7 +115,7 @@ serve(async (req: Request) => {
     if (!template?.enabled) throw Object.assign(new Error("This document template is not available."), { status: 409 });
     if (["contract_of_sale", "deed_of_assignment"].includes(documentType) && (
       /legal review required/i.test(String(template.name || "")) ||
-      /\\[(?:TO BE CONFIRMED|ESTATE-SPECIFIC|CURRENT APPROVED|VERIFY|INSERT AND VERIFY|SURVEY COORDINATES)/i.test(String(template.body_html_template || ""))
+      /\[(?:TO BE CONFIRMED|ESTATE-SPECIFIC|CURRENT APPROVED|VERIFY|INSERT AND VERIFY|SURVEY COORDINATES)/i.test(String(template.body_html_template || ""))
     )) {
       throw Object.assign(new Error("This legal template still requires counsel review. Complete the legal fields and rename it to an approved template before sending."), { status: 409 });
     }
