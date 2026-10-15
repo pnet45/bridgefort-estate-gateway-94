@@ -44,6 +44,20 @@ serve(async (req: Request) => {
       throw Object.assign(new Error("A valid order, document type and uploaded PDF are required."), { status: 400 });
     }
 
+    // Fail closed: Contract of Sale and Deed of Assignment email delivery stays OFF until
+    // an authorized administrator enables it under Admin Email Center > Automations.
+    if (documentType === "contract_of_sale" || documentType === "deed_of_assignment") {
+      const { data: deliveryControl, error: deliveryControlError } = await admin
+        .from("transaction_document_automation_controls")
+        .select("enabled")
+        .eq("document_type", documentType)
+        .maybeSingle();
+      if (deliveryControlError) throw deliveryControlError;
+      if (deliveryControl?.enabled !== true) {
+        throw Object.assign(new Error(`${documentType === "contract_of_sale" ? "Contract of Sale" : "Deed of Assignment"} email delivery is switched off in Admin Automations. No email was sent.`), { status: 409 });
+      }
+    }
+
     const { data: order, error: orderError } = await admin.from("orders")
       .select("id,user_id,customer_email,customer_name,total_amount,amount_paid,balance,payment_status,items,created_at")
       .eq("id", orderId).maybeSingle();
