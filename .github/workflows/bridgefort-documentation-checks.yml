@@ -59,7 +59,7 @@ jobs:
           assert.match(automatic, /ESTATE-SPECIFIC\|CURRENT APPROVED\|VERIFY/, 'automatic delivery blocks unresolved legal placeholders');
           assert.match(queue, /!deliveryControlsAvailable\s*\|\|\s*deliveryControls\[type\]\s*!==\s*true/, 'queue must block if controls are missing or OFF');
           assert.match(controls, /No email was sent by this switch/, 'switch must not itself send mail');
-          assert.match(controls, /!templateReady\\[doc\\.type\\] && control\\?\\.enabled !== true/, 'UI must disable switches until legal templates are approved');
+          assert.match(controls, /!templateReady\[doc\.type\] && control\?\.enabled !== true/, 'UI must disable switches until legal templates are approved');
           assert.match(admin, /TransactionDocumentDeliveryAutomation/, 'admin automation panel must mount the controls');
           console.log('Legal-document automation safety assertions passed.');
           NODE
