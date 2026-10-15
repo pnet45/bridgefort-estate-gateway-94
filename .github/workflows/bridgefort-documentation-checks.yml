@@ -54,4 +54,5 @@ jobs:
         run: npm run lint
 
       - name: Production build
+        if: always()
         run: npm run build
