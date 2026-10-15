@@ -20,6 +20,7 @@ export default function TransactionDocumentDeliveryAutomation() {
   const canManage = permissions.includes("admin:manage_documentation") ||
     permissions.includes("admin:all") || permissions.includes("super_admin");
   const [controls, setControls] = useState<Control[]>([]);
+  const [templateReady, setTemplateReady] = useState<Partial<Record<DocumentType, boolean>>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<DocumentType | "">("");
   const [loadError, setLoadError] = useState("");
@@ -27,16 +28,32 @@ export default function TransactionDocumentDeliveryAutomation() {
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError("");
-    const { data, error } = await supabase
-      .from("transaction_document_automation_controls")
-      .select("document_type,enabled,updated_at")
-      .in("document_type", DOCUMENTS.map((doc) => doc.type));
-    if (error) {
+    const [controlResult, templateResult] = await Promise.all([
+      supabase
+        .from("transaction_document_automation_controls")
+        .select("document_type,enabled,updated_at")
+        .in("document_type", DOCUMENTS.map((doc) => doc.type)),
+      supabase
+        .from("transaction_document_templates")
+        .select("document_type,name,body_html_template,enabled")
+        .in("document_type", DOCUMENTS.map((doc) => doc.type)),
+    ]);
+    if (controlResult.error || templateResult.error) {
       setControls([]);
-      setLoadError(error.message);
+      setTemplateReady({});
+      setLoadError(controlResult.error?.message || templateResult.error?.message || "Delivery settings could not be verified.");
     } else {
-      setControls((data || []) as Control[]);
-      const missing = DOCUMENTS.filter((doc) => !(data || []).some((row: any) => row.document_type === doc.type));
+      const rows = controlResult.data || [];
+      const templates = templateResult.data || [];
+      setControls(rows as Control[]);
+      setTemplateReady(Object.fromEntries(DOCUMENTS.map((doc) => {
+        const template = templates.find((row: any) => row.document_type === doc.type) as any;
+        const ready = !!template?.enabled &&
+          !/legal review required/i.test(String(template?.name || "")) &&
+          !/\\[(?:TO BE CONFIRMED|ESTATE-SPECIFIC|CURRENT APPROVED|VERIFY|INSERT AND VERIFY|SURVEY COORDINATES)/i.test(String(template?.body_html_template || ""));
+        return [doc.type, ready];
+      })) as Partial<Record<DocumentType, boolean>>);
+      const missing = DOCUMENTS.filter((doc) => !rows.some((row: any) => row.document_type === doc.type));
       if (missing.length) setLoadError("Automation controls are not fully installed. Delivery remains blocked until the database migration is applied.");
     }
     setLoading(false);
@@ -46,6 +63,10 @@ export default function TransactionDocumentDeliveryAutomation() {
 
   const toggle = async (type: DocumentType, enabled: boolean) => {
     if (!canManage || loadError || loading || saving) return;
+    if (enabled && !templateReady[type]) {
+      toast.error("Approve the legal wording and resolve all review placeholders before enabling delivery.");
+      return;
+    }
     const current = controls.find((control) => control.document_type === type);
     if (!current) {
       toast.error("The server-side automation control is missing. Email delivery remains blocked.");
@@ -94,12 +115,13 @@ export default function TransactionDocumentDeliveryAutomation() {
             <div className="min-w-0">
               <p className="text-sm font-semibold text-slate-800">{doc.label}</p>
               <p className="mt-1 text-xs leading-5 text-slate-500">{doc.description}</p>
+              {!templateReady[doc.type] ? <p className="mt-2 text-xs leading-5 text-amber-700">Template is disabled or still has legal-review fields. Delivery stays OFF until approved.</p> : null}
               <Badge variant="outline" className={control?.enabled ? "mt-2 border-emerald-200 bg-emerald-50 text-emerald-700" : "mt-2 border-slate-200 bg-slate-50 text-slate-600"}>{control?.enabled ? "On" : "Off"}</Badge>
             </div>
             <Switch
               checked={control?.enabled === true}
               onCheckedChange={(value) => void toggle(doc.type, value)}
-              disabled={loading || !!loadError || !control || !!saving || !canManage}
+              disabled={loading || !!loadError || !control || !!saving || !canManage || (!templateReady[doc.type] && control?.enabled !== true)}
               aria-label={`Enable ${doc.label}`}
             />
           </div>;
