@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - fix/documentation-automation-off-switch
+      - release/documentation-workflow-clean-main
 
 permissions:
   contents: read
