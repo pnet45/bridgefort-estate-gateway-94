@@ -169,7 +169,8 @@ const DocumentationWorkflow: React.FC = () => {
     const subject = fillTemplate(template.subject_template, tokens);
     const preview = window.open("", "_blank", "width=900,height=720");
     if (!preview) return toast({ title: "Preview blocked", description: "Allow pop-ups for this site to preview and print the document.", variant: "destructive" });
-    preview.document.write(`<!doctype html><html><head><title>${escapeHtml(subject)}</title><meta charset="utf-8"/><style>body{font-family:Arial,sans-serif;color:#1f2937;line-height:1.65;max-width:800px;margin:40px auto;padding:24px}h1{color:#241047}p{margin:12px 0}.notice{border:1px solid #d97706;background:#fffbeb;padding:12px;margin:20px 0;font-size:12px}@media print{body{margin:0;padding:12mm}.notice{display:none}}</style></head><body>${html}<div class="notice">Review all transaction details and use the company-approved legal wording before issuing. Print or save this preview as a PDF, then attach the PDF in the admin console.</div><script>window.onload=()=>setTimeout(()=>window.print(),250);<${"/"}script></body></html>`);
+    const closeScriptTag = ["<", "/script>"].join("");
+    preview.document.write(`<!doctype html><html><head><title>${escapeHtml(subject)}</title><meta charset="utf-8"/><style>body{font-family:Arial,sans-serif;color:#1f2937;line-height:1.65;max-width:800px;margin:40px auto;padding:24px}h1{color:#241047}p{margin:12px 0}.notice{border:1px solid #d97706;background:#fffbeb;padding:12px;margin:20px 0;font-size:12px}@media print{body{margin:0;padding:12mm}.notice{display:none}}</style></head><body>${html}<div class="notice">Review all transaction details and use the company-approved legal wording before issuing. Print or save this preview as a PDF, then attach the PDF in the admin console.</div><script>window.onload=()=>setTimeout(()=>window.print(),250);${closeScriptTag}</body></html>`);
     preview.document.close();
   };
 
