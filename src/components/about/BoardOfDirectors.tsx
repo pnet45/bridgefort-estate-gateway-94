@@ -1,22 +1,22 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const boardOfDirectors = [{
-  name: 'Dr. Austin Onwumere',
-  role: 'Founding Chairman, PWAN Group',
-  imageUrl: '/lovable-uploads/AUGUSTIN-OWUNMERE-DR.png'
-}, {
-  name: 'Dr. Jayne Onwumere',
-  role: 'Global President, PWAN Group',
-  imageUrl: '/lovable-uploads/JaneOwunmere.png'
-}, {
-  name: 'Dr. Michael Okonkwo',
-  role: 'Executive Chairman, PWAN Group',
-  imageUrl: '/lovable-uploads/2ef7dd06-9cf0-458d-b8a2-9e82f2a5cf26.png'
-}, {
-  name: 'Dr. Michael Akhuetie',
-  role: 'Chairman, Bridgefort Homes Development Ltd',
-  imageUrl: '/lovable-uploads/DR-MICHAEL-AKHUETIE.png'
-}, {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   name: 'Dr. Dalvin Silva, PhD',
   role: 'Managing Director, Bridgefort Homes Development Ltd',
   imageUrl: '/lovable-uploads/Dalvin-Silva-MD.png'
