@@ -24,6 +24,7 @@ const AdminCRMWorkspace: React.FC = () => {
   const [journeys, setJourneys] = useState<Journey[]>([]);
   const [loading, setLoading] = useState(true);
   const [crmNavCollapsed, setCrmNavCollapsed] = useState(false);
+  const [activeSection, setActiveSection] = useState('crm-overview');
 
   const loadWorkspace = useCallback(async () => {
     setLoading(true);
@@ -75,10 +76,10 @@ const AdminCRMWorkspace: React.FC = () => {
     <div className={`grid grid-cols-1 gap-5 lg:items-start ${crmNavCollapsed ? "lg:grid-cols-[4.25rem_minmax(0,1fr)]" : "lg:grid-cols-[14rem_minmax(0,1fr)]"}`}>
       <aside className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto">
         <div className="flex items-center justify-between gap-2 mb-3"><p className={`text-xs font-bold uppercase tracking-wider text-slate-500 ${crmNavCollapsed ? "lg:hidden" : ""}`}>CRM workspace</p><Button type="button" variant="ghost" size="icon" className="hidden lg:inline-flex text-slate-600 hover:bg-slate-100" onClick={() => setCrmNavCollapsed(value => !value)} aria-label={crmNavCollapsed ? "Expand CRM submenu" : "Collapse CRM submenu"}>{crmNavCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}</Button></div>
-        {[{ id: "crm-overview", label: "Overview", icon: Target }, { id: "crm-pipeline", label: "Sales pipeline", icon: ListChecks }, { id: "crm-journeys", label: "Service journeys", icon: BriefcaseBusiness }, { id: "crm-followups", label: "Follow-ups", icon: CalendarClock }, { id: "crm-ai", label: "Leo AI assistant", icon: BrainCircuit }, { id: "crm-analytics", label: "Inquiry analytics", icon: BarChart3 }, { id: "crm-leads", label: "Lead management", icon: Users }, { id: "crm-customer360", label: "Customer 360", icon: UserRoundSearch }].map(item => <button key={item.id} type="button" onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })} title={crmNavCollapsed ? item.label : undefined} className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 mb-1 text-left text-sm font-medium text-slate-700 hover:bg-violet-50 hover:text-violet-900 transition-colors ${crmNavCollapsed ? "lg:justify-center lg:px-2" : ""}`}><item.icon className="h-4 w-4 shrink-0" /><span className={crmNavCollapsed ? "lg:hidden" : ""}>{item.label}</span></button>)}
+        {[{ id: "crm-overview", label: "Overview", icon: Target }, { id: "crm-pipeline", label: "Sales pipeline", icon: ListChecks }, { id: "crm-journeys", label: "Service journeys", icon: BriefcaseBusiness }, { id: "crm-followups", label: "Follow-ups", icon: CalendarClock }, { id: "crm-ai", label: "Leo AI assistant", icon: BrainCircuit }, { id: "crm-analytics", label: "Inquiry analytics", icon: BarChart3 }, { id: "crm-leads", label: "Lead management", icon: Users }, { id: "crm-customer360", label: "Customer 360", icon: UserRoundSearch }].map(item => <button key={item.id} type="button" onClick={() => setActiveSection(item.id)} title={crmNavCollapsed ? item.label : undefined} className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 mb-1 text-left text-sm font-medium transition-colors ${activeSection === item.id ? "bg-violet-100 text-violet-950 ring-1 ring-violet-200" : "text-slate-700 hover:bg-violet-50 hover:text-violet-900"} ${crmNavCollapsed ? "lg:justify-center lg:px-2" : ""}`}><item.icon className="h-4 w-4 shrink-0" /><span className={crmNavCollapsed ? "lg:hidden" : ""}>{item.label}</span></button>)}
       </aside>
       <div className="min-w-0 space-y-5">
-      <Card id="crm-overview" className="bg-white border-slate-200 shadow-sm scroll-mt-28">
+      {activeSection === "crm-overview" && <Card id="crm-overview" className="bg-white border-slate-200 shadow-sm scroll-mt-28">
         <CardHeader className="pb-3">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
@@ -175,11 +176,14 @@ const AdminCRMWorkspace: React.FC = () => {
             </CardContent>
           </Card>
         </CardContent>
-      </Card>
-      <div id="crm-ai" className="min-w-0 scroll-mt-28"><AdminLeadAIAssistant /></div>
-      <div id="crm-analytics" className="min-w-0 scroll-mt-28"><AdminInquiryAnalytics /></div>
-      <div id="crm-leads" className="min-w-0 scroll-mt-28"><AdminCRMLeads /></div>
-      <div id="crm-customer360" className="min-w-0 scroll-mt-28"><AdminCustomer360 /></div>
+      </Card>}
+      {activeSection === "crm-pipeline" && <Card id="crm-pipeline-view" className="bg-white border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-slate-900">Sales pipeline</CardTitle><p className="text-sm text-slate-600">Lead distribution across each sales stage.</p></CardHeader><CardContent><div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">{pipeline.map(item => <div key={item.status} className="rounded-xl border border-slate-200 bg-slate-50 p-4"><p className="text-xs text-slate-600">{titleCase(item.status)}</p><p className="text-2xl font-semibold text-slate-900 mt-1">{item.count}</p></div>)}</div></CardContent></Card>}
+      {activeSection === "crm-journeys" && <Card id="crm-journeys-view" className="bg-white border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-slate-900">Service journeys</CardTitle><p className="text-sm text-slate-600">{metrics.journeys} linked service records</p></CardHeader><CardContent><div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">{Array.from(new Set(journeys.map(j => j.service_type))).map(type => { const matching = journeys.filter(j => j.service_type === type); const active = matching.filter(j => !["CONVERTED","LOST","CLOSED","COMPLETED","CANCELLED","DECLINED","EXPIRED"].includes(j.status)).length; return <div key={type} className="rounded-xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-medium text-slate-800">{titleCase(type)}</p><p className="text-2xl font-semibold text-slate-900 mt-1">{matching.length}</p><p className="text-xs text-slate-600">{active} active</p></div>; })}{journeys.length === 0 && <p className="text-sm text-slate-500">Service journeys will appear here as customers interact with Bridgefort services.</p>}</div></CardContent></Card>}
+      {activeSection === "crm-followups" && <Card id="crm-followups-view" className="bg-white border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-slate-900">Follow-ups</CardTitle><p className="text-sm text-slate-600">Overdue and due-today follow-ups requiring attention.</p></CardHeader><CardContent>{attention.length === 0 ? <p className="py-5 text-center text-sm text-slate-500">No overdue or due-today follow-ups.</p> : <div className="divide-y divide-slate-200">{attention.map(({followUp, lead}) => { const overdue = new Date(followUp.scheduled_at).getTime() < Date.now(); return <div key={followUp.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><div className="flex items-center gap-2"><span className="font-medium text-slate-900 truncate">{lead?.name}</span><Badge className={overdue ? "bg-red-100 text-red-800 border border-red-200" : "bg-amber-100 text-amber-900 border border-amber-200"}>{overdue ? "Overdue" : "Today"}</Badge></div><p className="text-xs text-slate-600 mt-1">{titleCase(followUp.action_type)} · {format(new Date(followUp.scheduled_at), "MMM d, h:mm a")}{lead?.estate_interest ? ` · ${lead.estate_interest}` : ""}</p></div>{lead?.phone && <span className="text-xs text-slate-600">{lead.phone}</span>}</div>; })}</div>}</CardContent></Card>}
+      {activeSection === "crm-ai" && <div id="crm-ai" className="min-w-0"><AdminLeadAIAssistant /></div>}
+      {activeSection === "crm-analytics" && <div id="crm-analytics" className="min-w-0"><AdminInquiryAnalytics /></div>}
+      {activeSection === "crm-leads" && <div id="crm-leads" className="min-w-0"><AdminCRMLeads /></div>}
+      {activeSection === "crm-customer360" && <div id="crm-customer360" className="min-w-0"><AdminCustomer360 /></div>}
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ type FollowUp = {
   completed_at: string | null; cancelled_at: string | null;
 };
 
-const titleCase = (v: string) => v.replace(/[_-]/g, ' ').replace(/\\b\\w/g, c => c.toUpperCase());
+const titleCase = (v: string) => v.replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 const terminal = new Set(['CONVERTED','LOST','CLOSED','COMPLETED','CANCELLED','DECLINED','EXPIRED']);
 
 const AdminCustomer360: React.FC = () => {
@@ -52,9 +52,9 @@ const AdminCustomer360: React.FC = () => {
     setSelected(lead);
     setDetailsLoading(true);
     const [j, a, f] = await Promise.all([
-      supabase.from('service_journeys')
-        .select('id,service_type,status,priority,outcome,notes,updated_at')
-        .eq('lead_id', lead.id).order('updated_at', { ascending: false }),
+      (lead.customer_id
+        ? supabase.from('service_journeys').select('id,service_type,status,priority,outcome,notes,updated_at').or(`lead_id.eq.${lead.id},customer_id.eq.${lead.customer_id}`).order('updated_at', { ascending: false })
+        : supabase.from('service_journeys').select('id,service_type,status,priority,outcome,notes,updated_at').eq('lead_id', lead.id).order('updated_at', { ascending: false })),
       supabase.from('crm_activities')
         .select('id,activity_type,subject,notes,outcome,created_at')
         .eq('lead_id', lead.id).order('created_at', { ascending: false }).limit(50),

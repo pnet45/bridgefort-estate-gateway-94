@@ -32,6 +32,7 @@ const BUSINESS_ROLE_LABELS: Record<(typeof BUSINESS_ROLES)[number], string> = {
 const getSafeRoleLabel = (role: string | null | undefined, fallback?: string | null) => {
   const normalized = role?.toLowerCase();
   if (normalized === 'super_admin' || normalized === 'admin_dir') return '$Admin';
+  if (normalized === 'admin_acct') return 'Manager Admin';
   return fallback || BUSINESS_ROLE_LABELS[normalized as keyof typeof BUSINESS_ROLE_LABELS] || 'No role';
 };
 
