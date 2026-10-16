@@ -76,3 +76,7 @@ verify_jwt = false
 
 [functions.leo-knowledge-admin]
 verify_jwt = false
+
+# Transaction document delivery validates the caller JWT and authorization in-function.
+[functions.send-transaction-document]
+verify_jwt = false
