@@ -30,7 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { "Content-Type": "application/json", ...corsHeaders },
+        status: 401, headers: { "Content-Type": "application/json",...corsHeaders },
       });
     }
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -39,16 +39,16 @@ const handler = async (req: Request): Promise<Response> => {
     });
     const token = authHeader.replace("Bearer ", "");
     const { data: claimsData, error: claimsError } = await authed.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    if (claimsError ||!claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { "Content-Type": "application/json", ...corsHeaders },
+        status: 401, headers: { "Content-Type": "application/json",...corsHeaders },
       });
     }
     const service = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: isAdmin } = await service.rpc("has_role", { _user_id: claimsData.claims.sub, _role: "admin" });
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403, headers: { "Content-Type": "application/json", ...corsHeaders },
+        status: 403, headers: { "Content-Type": "application/json",...corsHeaders },
       });
     }
 
@@ -59,7 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ error: "No profiles provided" }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: { "Content-Type": "application/json",...corsHeaders },
         }
       );
     }
@@ -92,7 +92,7 @@ const handler = async (req: Request): Promise<Response> => {
             subject: "Complete Your Profile - Unlock Full Access to Bridgefort Homes Development Ltd",
             html: bridgefortEmail(`
             <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
-              <h2>🏡 Complete Your Bridgefort Homes Profile</h2>
+              <h2> Complete Your Bridgefort Homes Profile</h2>
               <p>Dear ${safeFirstName},</p>
               <p>Your profile is currently <strong>${percentage}% complete</strong>. Completing it helps us serve you better and gives you access to more account features.</p>
               <div style="margin:20px 0;padding:16px;background:#f3eef8;border-radius:10px;text-align:center">
@@ -115,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const results = await Promise.all(emailPromises);
     const successful = results.filter(r => r.success).length;
-    const failed = results.filter(r => !r.success).length;
+    const failed = results.filter(r =>!r.success).length;
 
     console.log(`Bulk email results: ${successful} successful, ${failed} failed`);
 
@@ -128,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
       }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json",...corsHeaders },
       }
     );
   } catch (error: any) {
@@ -137,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ error: error.message }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { "Content-Type": "application/json",...corsHeaders },
       }
     );
   }

@@ -13,7 +13,7 @@ const stories = [
     summary: "We're proud to recognize Ifeanyi Okongwu, one of PWAN's star business owners, for his outstanding sales achievement of 8 plots at Precious Gardens under Bridgefort Homes Development Ltd. Ifeanyi's success stems from his expert market knowledge, client trust, and dedication to PWANs vision. His performance sets a shining example for our network, proving what's possible through hard work and commitment. Join us in celebrating this milestone! His story inspires us all to keep pushing boundaries in real estate!",
   },
   {
-    title: "🎉 Ambassadorial Honor to Our Q2 Sales Hero – Amb. Emeka! 🎖️",
+    title: " Ambassadorial Honor to Our Q2 Sales Hero – Amb. Emeka! ",
     img: "/lovable-uploads/Amb Emeka.png",
     summary: "At Bridgefort Homes Development Ltd, we believe that extraordinary commitment and outstanding results deserve extraordinary recognition. Today, we are proud to announce Ambassador Emeka as our Q2 Sales Hero, honored with the prestigious title of Bridgefort Homes Development Ltd Ambassador. Amb. Emeka’s relentless drive, professionalism, and passion for helping clients secure their dream properties have set a new standard for excellence in our team. Throughout the second quarter, he not only surpassed his sales targets but also exemplified the core values of integrity, dedication, and customer-first service that define our brand. This ambassadorial honor reflects our appreciation of Amb. Emeka’s unwavering contributions and celebrates his role in driving our mission to make land ownership accessible, convenient, and rewarding for all. Join us in congratulating Amb. Emeka for this remarkable achievement. His success story inspires us all to aim higher and work together toward rebuilding the future, one satisfied client at a time!",
   },
@@ -28,7 +28,7 @@ const SuccessStories = () => {
   const [expandedStory, setExpandedStory] = useState<number | null>(null);
 
   const toggleExpanded = (index: number) => {
-    setExpandedStory(expandedStory === index ? null : index);
+    setExpandedStory(expandedStory === index? null: index);
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -60,8 +60,8 @@ const SuccessStories = () => {
                 <div className="text-gray-700 text-sm sm:text-base leading-relaxed">
                   <p>
                     {expandedStory === idx 
-                      ? s.summary 
-                      : truncateText(s.summary, 150)
+? s.summary 
+: truncateText(s.summary, 150)
                     }
                   </p>
                   {s.summary.length > 150 && (
@@ -69,7 +69,7 @@ const SuccessStories = () => {
                       onClick={() => toggleExpanded(idx)}
                       className="mt-3 text-estate-blue hover:text-estate-darkBlue font-medium text-sm underline transition-colors duration-200"
                     >
-                      {expandedStory === idx ? 'Read Less' : 'Read More'}
+                      {expandedStory === idx? 'Read Less': 'Read More'}
                     </button>
                   )}
                 </div>

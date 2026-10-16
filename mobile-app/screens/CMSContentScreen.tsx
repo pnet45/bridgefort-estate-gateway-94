@@ -27,12 +27,12 @@ export default function CMSContentScreen({ page, title }: Props) {
 
   const load = async () => {
     const { data } = await supabase
-      .from('content_items')
-      .select('*')
-      .eq('page', page)
-      .eq('is_published', true)
-      .order('display_order')
-      .order('created_at', { ascending: false });
+.from('content_items')
+.select('*')
+.eq('page', page)
+.eq('is_published', true)
+.order('display_order')
+.order('created_at', { ascending: false });
     setItems((data as ContentItem[]) || []);
     setLoading(false);
     setRefreshing(false);
@@ -41,9 +41,9 @@ export default function CMSContentScreen({ page, title }: Props) {
   useEffect(() => {
     load();
     const channel = supabase
-      .channel(`cms_${page}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, () => load())
-      .subscribe();
+.channel(`cms_${page}`)
+.on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, () => load())
+.subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [page]);
 
@@ -54,7 +54,7 @@ export default function CMSContentScreen({ page, title }: Props) {
       data={items}
       keyExtractor={i => i.id}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} />}
-      ListHeaderComponent={title ? <Text style={styles.heading}>{title}</Text> : null}
+      ListHeaderComponent={title? <Text style={styles.heading}>{title}</Text>: null}
       contentContainerStyle={styles.list}
       renderItem={({ item }) => (
         <TouchableOpacity
@@ -66,11 +66,11 @@ export default function CMSContentScreen({ page, title }: Props) {
           <View style={styles.body}>
             {item.category && <Text style={styles.category}>{item.category.toUpperCase()}</Text>}
             <Text style={styles.title}>{item.title}</Text>
-            {item.subtitle ? <Text style={styles.subtitle}>{item.subtitle}</Text> : null}
-            {item.excerpt ? <Text style={styles.excerpt} numberOfLines={3}>{item.excerpt}</Text> : null}
-            {item.event_date ? <Text style={styles.meta}>📅 {new Date(item.event_date).toLocaleString()}</Text> : null}
-            {item.event_location ? <Text style={styles.meta}>📍 {item.event_location}</Text> : null}
-            {item.link_url ? <Text style={styles.cta}>{item.cta_label || 'Learn more'} →</Text> : null}
+            {item.subtitle? <Text style={styles.subtitle}>{item.subtitle}</Text>: null}
+            {item.excerpt? <Text style={styles.excerpt} numberOfLines={3}>{item.excerpt}</Text>: null}
+            {item.event_date? <Text style={styles.meta}> {new Date(item.event_date).toLocaleString()}</Text>: null}
+            {item.event_location? <Text style={styles.meta}> {item.event_location}</Text>: null}
+            {item.link_url? <Text style={styles.cta}>{item.cta_label || 'Learn more'} →</Text>: null}
           </View>
         </TouchableOpacity>
       )}
