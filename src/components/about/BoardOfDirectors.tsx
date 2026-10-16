@@ -1,23 +1,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const boardOfDirectors = [{
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  name: 'Dr. Dalvin Silva, PhD',
+ name: 'Dr. Dalvin Silva, PhD',
   role: 'Managing Director, Bridgefort Homes Development Ltd',
   imageUrl: '/lovable-uploads/Dalvin-Silva-MD.png'
 }, {
