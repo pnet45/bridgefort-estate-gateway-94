@@ -13,11 +13,12 @@ type Task = { id: string; title: string; description: string | null; department:
 type JobDescription = { id: string; title: string; department: string; role_name: string; purpose: string | null; responsibilities: string[]; monthly_deliverables: string[]; performance_measures: string[]; version: number; is_active: boolean };
 type DailyReport = { id: string; staff_user_id: string; report_date: string; tasks_completed: string; challenges: string; support_required: string; next_actions: string; evidence_url: string | null; submitted_at: string };
 type Section = 'staff' | 'tasks' | 'reports' | 'jobs';
+type AccountOption = { id: string; first_name: string | null; last_name: string | null; email: string | null };
 const DEPARTMENTS = ['Administration', 'Human Resources', 'IT Support', 'Sales', 'Customer Service', 'Legal', 'Finance', 'Marketing', 'Operations', 'Travels', 'Agro'];
 const TASK_STATUSES = [{ value: 'not_started', label: 'Not started' }, { value: 'in_progress', label: 'In progress' }, { value: 'blocked', label: 'Blocked' }, { value: 'completed', label: 'Completed' }, { value: 'cancelled', label: 'Cancelled' }];
 const inputClass = 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500';
 const labelClass = 'mb-1 block text-xs font-semibold text-slate-700';
-const today = () => new Date().toLocaleDateString('en-CA');
+const today = () => { const date = new Date(); return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); };
 
 const AdminHRITWorkspace: React.FC = () => {
   const { user } = useAuth();
@@ -25,6 +26,7 @@ const AdminHRITWorkspace: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<AccountOption[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [jobs, setJobs] = useState<JobDescription[]>([]);
   const [reports, setReports] = useState<DailyReport[]>([]);
@@ -53,6 +55,14 @@ const AdminHRITWorkspace: React.FC = () => {
     setTasks((results[1].data || []) as Task[]);
     setJobs((results[2].data || []) as JobDescription[]);
     setReports((results[3].data || []) as DailyReport[]);
+    const { data: roleRows } = await db.from('user_roles').select('user_id,role').in('role', ['admin','staff','admin_adm','admin_it','admin_acct','admin_dir','admin_cs','admin_sales','admin_legal']);
+    const accountIds = [...new Set((roleRows || []).map((row: { user_id: string }) => row.user_id))];
+    if (accountIds.length) {
+      const { data: accountRows } = await db.from('profiles').select('id,first_name,last_name,email').in('id', accountIds);
+      setAvailableUsers((accountRows || []) as AccountOption[]);
+    } else {
+      setAvailableUsers([]);
+    }
     setLoading(false);
   }, []);
 
@@ -174,7 +184,7 @@ const AdminHRITWorkspace: React.FC = () => {
         {loading ? <p className="py-8 text-center text-sm text-slate-500">Loading staff register…</p> : staff.length === 0 ? <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center"><Users className="mx-auto h-8 w-8 text-slate-400" /><p className="mt-3 font-semibold text-slate-800">No staff records yet</p><p className="mt-1 text-sm text-slate-500">Add the approved staff register using the form.</p></div> : staff.map(person => <div key={person.id} className="rounded-xl border border-slate-200 p-4"><div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between"><div><p className="font-semibold text-slate-900">{person.first_name} {person.last_name}</p><p className="text-sm text-slate-600">{person.job_title} · {person.department}</p><p className="mt-1 text-xs text-slate-500">{person.employee_code || 'No employee code'}{person.email ? ' · ' + person.email : ''}{person.phone ? ' · ' + person.phone : ''}</p></div><Button variant="outline" size="sm" onClick={() => editStaff(person)}>Edit record</Button></div><div className="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-600 sm:grid-cols-2"><p><strong className="text-slate-800">Reports to:</strong> {staff.find(manager => manager.id === person.reports_to)?.first_name || 'Not assigned'}</p><p><strong className="text-slate-800">Emergency contact:</strong> {person.emergency_contact_name || 'Not recorded'}{person.emergency_contact_phone ? ' · ' + person.emergency_contact_phone : ''}</p><p><strong className="text-slate-800">System account:</strong> {person.user_id ? 'Linked' : 'Not linked'}</p><p><strong className="text-slate-800">Status:</strong> {person.employment_status}</p></div></div>)}
       </CardContent></Card>
       <Card className="h-fit border-slate-200 bg-white shadow-sm"><CardHeader><CardTitle className="text-slate-950">{editingStaff ? 'Update staff member' : 'Add staff member'}</CardTitle></CardHeader><CardContent><form className="space-y-3" onSubmit={saveStaff}>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{field('First name',staffForm.first_name,v=>setStaffForm(s=>({...s,first_name:v})),'text',true)}{field('Last name',staffForm.last_name,v=>setStaffForm(s=>({...s,last_name:v})),'text',true)}{field('Employee code',staffForm.employee_code,v=>setStaffForm(s=>({...s,employee_code:v})))}{field('Linked auth user ID',staffForm.user_id,v=>setStaffForm(s=>({...s,user_id:v})),'text',false,'Paste the existing user UUID if applicable')}{field('Email',staffForm.email,v=>setStaffForm(s=>({...s,email:v})),'email')}{field('Phone',staffForm.phone,v=>setStaffForm(s=>({...s,phone:v})))}{field('Job title',staffForm.job_title,v=>setStaffForm(s=>({...s,job_title:v})),'text',true)}{field('System role',staffForm.role_name,v=>setStaffForm(s=>({...s,role_name:v})))}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{field('First name',staffForm.first_name,v=>setStaffForm(s=>({...s,first_name:v})),'text',true)}{field('Last name',staffForm.last_name,v=>setStaffForm(s=>({...s,last_name:v})),'text',true)}{field('Employee code',staffForm.employee_code,v=>setStaffForm(s=>({...s,employee_code:v})))}{selectField('Linked staff account',staffForm.user_id,v=>setStaffForm(s=>({...s,user_id:v})),[{value:'',label:'Not linked'},...availableUsers.filter(account=>!staff.some(person=>person.user_id===account.id&&person.id!==editingStaff)).map(account=>({value:account.id,label:[account.first_name,account.last_name].filter(Boolean).join(' ') + (account.email ? ' — '+account.email : '')}))])}{field('Email',staffForm.email,v=>setStaffForm(s=>({...s,email:v})),'email')}{field('Phone',staffForm.phone,v=>setStaffForm(s=>({...s,phone:v})))}{field('Job title',staffForm.job_title,v=>setStaffForm(s=>({...s,job_title:v})),'text',true)}{field('System role',staffForm.role_name,v=>setStaffForm(s=>({...s,role_name:v})))}
         {selectField('Department',staffForm.department,v=>setStaffForm(s=>({...s,department:v})),DEPARTMENTS.map(value=>({value,label:value})))}
         {selectField('Reports to',staffForm.reports_to,v=>setStaffForm(s=>({...s,reports_to:v})),[{value:'',label:'Not assigned'},...staff.filter(p=>p.id!==editingStaff).map(p=>({value:p.id,label:p.first_name+' '+p.last_name+' — '+p.job_title}))])}
         {field('Start date',staffForm.start_date,v=>setStaffForm(s=>({...s,start_date:v})),'date')}
