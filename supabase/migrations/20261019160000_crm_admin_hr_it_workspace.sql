@@ -84,9 +84,8 @@ CREATE OR REPLACE FUNCTION public.is_hr_manager(_user_id uuid DEFAULT auth.uid()
 RETURNS boolean
 LANGUAGE sql
 STABLE
-SECURITY DEFINER
 SET search_path = public
-AS $$
+AS $
   SELECT coalesce(
     _user_id = auth.uid()
     AND (
