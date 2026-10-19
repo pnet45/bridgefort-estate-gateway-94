@@ -50,6 +50,7 @@ const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const OTPResetPassword = lazy(() => import('@/pages/OTPResetPassword'));
 const HomesSales = lazy(() => import('@/pages/HomesSales'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const StaffWorkHub = lazy(() => import('@/pages/StaffWorkHub'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const Buy2Sell = lazy(() => import('@/pages/Buy2Sell'));
 const CreatePost = lazy(() => import('@/pages/CreatePost'));
@@ -158,6 +159,11 @@ function AppLayout() {
                     <Route path="/dashboard" element={
                       <PrivateRoute>
                         <Dashboard />
+                      </PrivateRoute>
+                    } />
+                    <Route path="/staff-workspace" element={
+                      <PrivateRoute>
+                        <StaffWorkHub />
                       </PrivateRoute>
                     } />
                     <Route path="/profile" element={
