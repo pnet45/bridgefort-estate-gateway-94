@@ -11,6 +11,7 @@ import { CalendarCheck, ClipboardList, RefreshCw, ArrowLeft, AlertCircle } from 
 const db = supabase as any;
 type AssignedTask = { id: string; title: string; description: string | null; department: string; priority: string; status: string; due_date: string | null; blocker: string | null; evidence_url: string | null; completion_notes: string | null };
 type Report = { id: string; report_date: string; tasks_completed: string; challenges: string; support_required: string; next_actions: string; evidence_url: string | null; submitted_at: string };
+type JobDescription = { title: string; department: string; role_name: string; purpose: string | null; responsibilities: string[]; monthly_deliverables: string[]; performance_measures: string[] };
 const inputClass = 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500';
 const labelClass = 'mb-1 block text-xs font-semibold text-slate-700';
 const today = () => { const date = new Date(); return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); };
@@ -19,6 +20,7 @@ const StaffWorkHub: React.FC = () => {
   const { user, profile } = useAuth();
   const [tasks, setTasks] = useState<AssignedTask[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
+  const [myJobDescription, setMyJobDescription] = useState<JobDescription | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [reportForm, setReportForm] = useState({ report_date: today(), tasks_completed: '', challenges: '', support_required: '', next_actions: '', evidence_url: '' });
@@ -34,6 +36,17 @@ const StaffWorkHub: React.FC = () => {
     if (reportResult.error) toast({ title: 'Your reports could not load', description: reportResult.error.message, variant: 'destructive' });
     setTasks((taskResult.data || []) as AssignedTask[]);
     setReports((reportResult.data || []) as Report[]);
+    const [{ data: staffRecord }, { data: jobRows }] = await Promise.all([
+      db.from('hr_staff_directory').select('job_title,role_name,department').eq('user_id', user.id).maybeSingle(),
+      db.from('hr_job_descriptions').select('title,department,role_name,purpose,responsibilities,monthly_deliverables,performance_measures').eq('is_active', true),
+    ]);
+    const matchingJob = (jobRows || []).find((job: JobDescription) =>
+      staffRecord && (
+        job.role_name.toLowerCase() === String(staffRecord.role_name || '').toLowerCase()
+        || job.title.toLowerCase() === String(staffRecord.job_title || '').toLowerCase()
+      )
+    );
+    setMyJobDescription((matchingJob as JobDescription | undefined) || null);
     setLoading(false);
   }, [user?.id]);
 
@@ -78,6 +91,7 @@ const StaffWorkHub: React.FC = () => {
           {field('Report date',reportForm.report_date,value=>setReportForm(s=>({...s,report_date:value})),'date')}{area('Tasks completed and outcomes',reportForm.tasks_completed,value=>setReportForm(s=>({...s,tasks_completed:value})),'What did you complete today, and what was the result?')}{area('Challenges / blockers',reportForm.challenges,value=>setReportForm(s=>({...s,challenges:value})),'What could not be completed and why?')}{area('Support required',reportForm.support_required,value=>setReportForm(s=>({...s,support_required:value})),'What decision, access or support do you need?')}{area('Next actions',reportForm.next_actions,value=>setReportForm(s=>({...s,next_actions:value})),'What are your next steps?')}{field('Evidence URL',reportForm.evidence_url,value=>setReportForm(s=>({...s,evidence_url:value})),'url')}<Button type="submit" disabled={saving} className="w-full">{saving?'Submitting…':'Submit daily report'}</Button>
         </form></CardContent></Card>
       </div>
+      {myJobDescription && <Card className="border-slate-200 bg-white shadow-sm"><CardHeader><CardTitle className="text-slate-950">My job description and monthly deliverables</CardTitle><p className="text-sm text-slate-600">{myJobDescription.title} · {myJobDescription.department}</p>{myJobDescription.purpose&&<p className="text-sm text-slate-700">{myJobDescription.purpose}</p>}</CardHeader><CardContent className="grid grid-cols-1 gap-4 md:grid-cols-3">{[{title:'Responsibilities',items:myJobDescription.responsibilities},{title:'Monthly deliverables',items:myJobDescription.monthly_deliverables},{title:'Performance measures',items:myJobDescription.performance_measures}].map(group=><div key={group.title} className="rounded-lg bg-slate-50 p-3"><p className="text-xs font-bold uppercase tracking-wide text-slate-600">{group.title}</p>{group.items?.length?<ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">{group.items.map((item,index)=><li key={index}>{item}</li>)}</ul>:<p className="mt-2 text-xs text-slate-500">Not defined yet</p>}</div>)}</CardContent></Card>}
       <Card className="border-slate-200 bg-white shadow-sm"><CardHeader><CardTitle className="text-slate-950">My recent reports</CardTitle><p className="text-sm text-slate-600">Your own submissions only. Management can review these through the authorised CRM workspace.</p></CardHeader><CardContent className="space-y-3">
         {reports.length===0?<p className="py-5 text-center text-sm text-slate-500">No reports submitted yet.</p>:reports.map(report=><article key={report.id} className="rounded-xl border border-slate-200 p-4"><div className="flex items-center justify-between gap-3"><p className="font-semibold">{report.report_date}</p><span className="text-xs text-slate-500">{new Date(report.submitted_at).toLocaleString()}</span></div>{report.tasks_completed&&<p className="mt-2 whitespace-pre-wrap text-sm"><strong>Completed:</strong> {report.tasks_completed}</p>}{report.challenges&&<p className="mt-2 whitespace-pre-wrap text-sm text-amber-900"><strong>Challenges:</strong> {report.challenges}</p>}{report.support_required&&<p className="mt-2 whitespace-pre-wrap text-sm"><strong>Support required:</strong> {report.support_required}</p>}{report.next_actions&&<p className="mt-2 whitespace-pre-wrap text-sm"><strong>Next actions:</strong> {report.next_actions}</p>}</article>)}
       </CardContent></Card>
