@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
+import { useIsGlobalAdmin } from '@/hooks/useIsGlobalAdmin';
 import { Loader2, Shield, LockKeyhole } from 'lucide-react';
 
 interface Permission {
@@ -35,7 +35,7 @@ const AdminRolePermissions = () => {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
-  const { isSuperAdmin, loading: globalAdminLoading } = useIsSuperAdmin();
+  const { isGlobalAdmin, loading: globalAdminLoading } = useIsGlobalAdmin();
 
   useEffect(() => {
     fetchPermissions();
@@ -55,7 +55,7 @@ const AdminRolePermissions = () => {
   };
 
   const toggleAdminTab = async (role: string, permissionKey: string, enabled: boolean) => {
-    if (!isSuperAdmin) return;
+    if (!isGlobalAdmin) return;
     const updateKey = role + ':' + permissionKey;
     setUpdating(updateKey);
     const { error } = await supabase
@@ -91,7 +91,7 @@ const AdminRolePermissions = () => {
 
   return (
     <div className="space-y-6">
-      {isSuperAdmin && (
+      {isGlobalAdmin && (
         <section className="space-y-4 rounded-xl border p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-start gap-3">
@@ -118,7 +118,7 @@ const AdminRolePermissions = () => {
                     return (
                       <div key={tab.key} className="flex min-h-10 items-center justify-between gap-3 border-b pb-2 last:border-0 last:pb-0">
                         <Label className="min-w-0 flex-1 text-sm leading-5">{tab.label}</Label>
-                        <Switch checked={enabled} onCheckedChange={(value) => void toggleAdminTab(role.key, tab.key, value)} disabled={busy || !isSuperAdmin} aria-label={role.label + ': ' + tab.label} />
+                        <Switch checked={enabled} onCheckedChange={(value) => void toggleAdminTab(role.key, tab.key, value)} disabled={busy || !isGlobalAdmin} aria-label={role.label + ': ' + tab.label} />
                       </div>
                     );
                   })}
