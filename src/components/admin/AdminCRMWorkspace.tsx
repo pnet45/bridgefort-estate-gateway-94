@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,8 @@ const formatNaira = (value: number) => new Intl.NumberFormat('en-NG', { style: '
 const titleCase = (value: string) => value.replace(/[_-]/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
 const AdminCRMWorkspace: React.FC = () => {
+  const { userRole, hasPermission } = useAuth();
+  const canManagePeople = ['super_admin', 'admin_dir', 'admin_acct', 'admin_adm', 'admin_it', 'admin'].includes(userRole || '') || hasPermission('admin:manage_departments');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [journeys, setJourneys] = useState<Journey[]>([]);
@@ -77,7 +80,7 @@ const AdminCRMWorkspace: React.FC = () => {
     <div className={`grid grid-cols-1 gap-5 lg:items-start ${crmNavCollapsed ? "lg:grid-cols-[4.25rem_minmax(0,1fr)]" : "lg:grid-cols-[14rem_minmax(0,1fr)]"}`}>
       <aside className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto">
         <div className="flex items-center justify-between gap-2 mb-3"><p className={`text-xs font-bold uppercase tracking-wider text-slate-500 ${crmNavCollapsed ? "lg:hidden" : ""}`}>CRM workspace</p><Button type="button" variant="ghost" size="icon" className="hidden lg:inline-flex text-slate-600 hover:bg-slate-100" onClick={() => setCrmNavCollapsed(value => !value)} aria-label={crmNavCollapsed ? "Expand CRM submenu" : "Collapse CRM submenu"}>{crmNavCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}</Button></div>
-        {[{ id: "crm-overview", label: "Overview", icon: Target }, { id: "crm-pipeline", label: "Sales pipeline", icon: ListChecks }, { id: "crm-journeys", label: "Service journeys", icon: BriefcaseBusiness }, { id: "crm-followups", label: "Follow-ups", icon: CalendarClock }, { id: "crm-ai", label: "Leo AI assistant", icon: BrainCircuit }, { id: "crm-analytics", label: "Inquiry analytics", icon: BarChart3 }, { id: "crm-leads", label: "Lead management", icon: Users }, { id: "crm-customer360", label: "Customer 360", icon: UserRoundSearch }, { id: "crm-admin-hrit", label: "Administration, HR & IT", icon: BriefcaseBusiness }].map(item => <button key={item.id} type="button" onClick={() => setActiveSection(item.id)} title={crmNavCollapsed ? item.label : undefined} className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 mb-1 text-left text-sm font-medium transition-colors ${activeSection === item.id ? "bg-violet-100 text-violet-950 ring-1 ring-violet-200" : "text-slate-700 hover:bg-violet-50 hover:text-violet-900"} ${crmNavCollapsed ? "lg:justify-center lg:px-2" : ""}`}><item.icon className="h-4 w-4 shrink-0" /><span className={crmNavCollapsed ? "lg:hidden" : ""}>{item.label}</span></button>)}
+        {[{ id: "crm-overview", label: "Overview", icon: Target }, { id: "crm-pipeline", label: "Sales pipeline", icon: ListChecks }, { id: "crm-journeys", label: "Service journeys", icon: BriefcaseBusiness }, { id: "crm-followups", label: "Follow-ups", icon: CalendarClock }, { id: "crm-ai", label: "Leo AI assistant", icon: BrainCircuit }, { id: "crm-analytics", label: "Inquiry analytics", icon: BarChart3 }, { id: "crm-leads", label: "Lead management", icon: Users }, { id: "crm-customer360", label: "Customer 360", icon: UserRoundSearch }, ...(canManagePeople ? [{ id: "crm-admin-hrit", label: "Administration, HR & IT", icon: BriefcaseBusiness }] : [])].map(item => <button key={item.id} type="button" onClick={() => setActiveSection(item.id)} title={crmNavCollapsed ? item.label : undefined} className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 mb-1 text-left text-sm font-medium transition-colors ${activeSection === item.id ? "bg-violet-100 text-violet-950 ring-1 ring-violet-200" : "text-slate-700 hover:bg-violet-50 hover:text-violet-900"} ${crmNavCollapsed ? "lg:justify-center lg:px-2" : ""}`}><item.icon className="h-4 w-4 shrink-0" /><span className={crmNavCollapsed ? "lg:hidden" : ""}>{item.label}</span></button>)}
       </aside>
       <div className="min-w-0 space-y-5">
       {activeSection === "crm-overview" && <Card id="crm-overview" className="bg-white border-slate-200 shadow-sm scroll-mt-28">
@@ -185,7 +188,7 @@ const AdminCRMWorkspace: React.FC = () => {
       {activeSection === "crm-analytics" && <div id="crm-analytics" className="min-w-0"><AdminInquiryAnalytics /></div>}
       {activeSection === "crm-leads" && <div id="crm-leads" className="min-w-0"><AdminCRMLeads /></div>}
       {activeSection === "crm-customer360" && <div id="crm-customer360" className="min-w-0"><AdminCustomer360 /></div>}
-      {activeSection === "crm-admin-hrit" && <div id="crm-admin-hrit" className="min-w-0"><AdminHRITWorkspace /></div>}
+      {canManagePeople && activeSection === "crm-admin-hrit" && <div id="crm-admin-hrit" className="min-w-0"><AdminHRITWorkspace /></div>}
       </div>
     </div>
   );
