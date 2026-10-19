@@ -88,13 +88,16 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
   SELECT coalesce(
-    public.is_global_admin(_user_id)
-    OR public.has_role(_user_id, 'super_admin')
-    OR public.has_role(_user_id, 'admin_dir')
-    OR public.has_role(_user_id, 'admin_acct')
-    OR public.has_role(_user_id, 'admin_adm')
-    OR public.has_role(_user_id, 'admin_it')
-    OR public.has_role(_user_id, 'admin'),
+    _user_id = auth.uid()
+    AND (
+      public.is_global_admin(auth.uid())
+      OR public.has_role(auth.uid(), 'super_admin')
+      OR public.has_role(auth.uid(), 'admin_dir')
+      OR public.has_role(auth.uid(), 'admin_acct')
+      OR public.has_role(auth.uid(), 'admin_adm')
+      OR public.has_role(auth.uid(), 'admin_it')
+      OR public.has_role(auth.uid(), 'admin')
+    ),
     false
   );
 $$;
