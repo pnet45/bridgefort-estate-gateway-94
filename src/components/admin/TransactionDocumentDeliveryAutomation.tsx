@@ -29,12 +29,10 @@ export default function TransactionDocumentDeliveryAutomation() {
     setLoading(true);
     setLoadError("");
     const [controlResult, templateResult] = await Promise.all([
-      supabase
-        .from("transaction_document_automation_controls")
+      supabase.from("transaction_document_automation_controls")
         .select("document_type,enabled,updated_at")
         .in("document_type", DOCUMENTS.map((doc) => doc.type)),
-      supabase
-        .from("transaction_document_templates")
+      supabase.from("transaction_document_templates")
         .select("document_type,name,body_html_template,enabled")
         .in("document_type", DOCUMENTS.map((doc) => doc.type)),
     ]);
@@ -64,7 +62,7 @@ export default function TransactionDocumentDeliveryAutomation() {
   const toggle = async (type: DocumentType, enabled: boolean) => {
     if (!canManage || loadError || loading || saving) return;
     if (enabled && !templateReady[type]) {
-      toast.error("Approve the legal wording and resolve all review placeholders before enabling delivery.");
+      toast.error("Cannot enable delivery yet. First enable the matching approved template and resolve all legal-review placeholders.");
       return;
     }
     const current = controls.find((control) => control.document_type === type);
@@ -81,6 +79,7 @@ export default function TransactionDocumentDeliveryAutomation() {
       .maybeSingle();
     if (error || !data) {
       toast.error(error?.message || "The automation setting was not saved. Email delivery remains unchanged.");
+      await load();
     } else {
       setControls((previous) => previous.map((item) => item.document_type === type ? data as Control : item));
       toast.success(enabled ? "Document email automation enabled. No email was sent by this switch." : "Document email automation disabled.");
@@ -100,7 +99,7 @@ export default function TransactionDocumentDeliveryAutomation() {
               <CardTitle className="text-sm">Legal document email controls</CardTitle>
               <Badge variant="outline" className="border-amber-300 bg-white text-amber-800">Default: Off</Badge>
             </div>
-            <p className="mt-1 text-xs leading-5 text-slate-600">These switches are separate from template approval. Turning one on does not send an email; it only permits later eligible sends. Server-side payment and permission checks still apply.</p>
+            <p className="mt-1 text-xs leading-5 text-slate-600">Turning a switch on never sends an email by itself. Activation is permitted only after the matching template is enabled and all legal-review placeholders are resolved. Server-side payment and permission checks still apply.</p>
           </div>
           <button type="button" onClick={() => void load()} aria-label="Refresh legal document automation controls" className="rounded-lg p-2 text-slate-500 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b2a86]" disabled={loading}>
             <RefreshCw className={loading ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
@@ -115,13 +114,13 @@ export default function TransactionDocumentDeliveryAutomation() {
             <div className="min-w-0">
               <p className="text-sm font-semibold text-slate-800">{doc.label}</p>
               <p className="mt-1 text-xs leading-5 text-slate-500">{doc.description}</p>
-              {!templateReady[doc.type] ? <p className="mt-2 text-xs leading-5 text-amber-700">Template is disabled or still has legal-review fields. Delivery stays OFF until approved.</p> : null}
+              {!templateReady[doc.type] ? <p className="mt-2 text-xs leading-5 text-amber-700">Activation is blocked until the template is enabled, legally approved, and all review placeholders are resolved.</p> : null}
               <Badge variant="outline" className={control?.enabled ? "mt-2 border-emerald-200 bg-emerald-50 text-emerald-700" : "mt-2 border-slate-200 bg-slate-50 text-slate-600"}>{control?.enabled ? "On" : "Off"}</Badge>
             </div>
             <Switch
               checked={control?.enabled === true}
               onCheckedChange={(value) => void toggle(doc.type, value)}
-              disabled={loading || !!loadError || !control || !!saving || !canManage || (!templateReady[doc.type] && control?.enabled !== true)}
+              disabled={loading || !!loadError || !control || !!saving || !canManage}
               aria-label={`Enable ${doc.label}`}
             />
           </div>;
