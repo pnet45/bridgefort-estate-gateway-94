@@ -13,7 +13,7 @@ type AssignedTask = { id: string; title: string; description: string | null; dep
 type Report = { id: string; report_date: string; tasks_completed: string; challenges: string; support_required: string; next_actions: string; evidence_url: string | null; submitted_at: string };
 const inputClass = 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500';
 const labelClass = 'mb-1 block text-xs font-semibold text-slate-700';
-const today = () => new Date().toLocaleDateString('en-CA');
+const today = () => { const date = new Date(); return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); };
 
 const StaffWorkHub: React.FC = () => {
   const { user, profile } = useAuth();
