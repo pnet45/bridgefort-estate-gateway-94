@@ -120,7 +120,7 @@ export default function TransactionDocumentDeliveryAutomation() {
             <Switch
               checked={control?.enabled === true}
               onCheckedChange={(value) => void toggle(doc.type, value)}
-              disabled={loading || !!loadError || !control || !!saving || !canManage}
+              disabled={loading || !!loadError || !control || !!saving || !canManage || (!templateReady[doc.type] && control?.enabled !== true)}
               aria-label={`Enable ${doc.label}`}
             />
           </div>;
