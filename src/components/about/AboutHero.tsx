@@ -1,7 +1,7 @@
 import React from 'react';
 
 const AboutHero = () => (
-  <section className="relative pt-[88px] lg:pt-[136px]">
+  <section className="relative pt-[88px] lg:pt-[104px]">
     <div
       className="relative flex min-h-[340px] items-center overflow-hidden bg-slate-950 bg-cover bg-center py-14 sm:min-h-[400px] md:py-20 lg:min-h-[440px]"
       style={{
