@@ -49,10 +49,10 @@ const Navbar = () => {
   const toggleMenu = () => setIsMenuOpen((open) => !open);
 
   return (
-    <nav className="glass-strong fixed top-0 left-0 right-0 z-50 flex flex-col h-[88px] lg:h-[136px] border-b border-estate-purple/10 transition-all duration-300">
+    <nav className="glass-strong fixed top-0 left-0 right-0 z-50 flex flex-col h-[88px] lg:h-[104px] border-b border-estate-purple/10 transition-all duration-300">
       <div className="container-custom flex flex-col flex-1 min-h-0">
         {/* First row: brand/title sits above the desktop navigation. */}
-        <div className="flex items-center justify-between relative h-full lg:h-[82px] shrink-0 py-2">
+        <div className="flex items-center justify-between relative h-full lg:h-[60px] shrink-0 py-2">
           <div className="flex items-center min-w-0">
             <LogoSlideIn />
           </div>
@@ -83,7 +83,7 @@ const Navbar = () => {
         </div>
 
         {/* Desktop navigation begins beneath the Bridgefort Homes title. */}
-        <div className="hidden lg:flex flex-1 min-h-[50px] items-center justify-center border-t border-estate-purple/10">
+        <div className="hidden lg:flex flex-1 min-h-[44px] items-center justify-center border-t border-estate-purple/10">
           <div className="flex w-full items-center justify-center gap-x-0.5 xl:gap-x-1 2xl:gap-x-2">
             <AnimatedNavLinks className="!px-2 !py-1.5 text-xs xl:text-sm" />
           </div>
