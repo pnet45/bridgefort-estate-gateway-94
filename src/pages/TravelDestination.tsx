@@ -173,7 +173,7 @@ const TravelDestination = () => {
     <div className="flex min-h-screen flex-col overflow-x-clip bg-background">
       <Navbar />
       <main className="flex-1">
-        <section className="relative pt-[88px] lg:pt-[136px]">
+        <section className="relative pt-[88px] lg:pt-[104px]">
           <div className="relative min-h-[360px] overflow-hidden sm:min-h-[440px]">
             <img src={guide.image} alt={`${guide.name} travel destination`} className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/55 to-slate-950/20" />
