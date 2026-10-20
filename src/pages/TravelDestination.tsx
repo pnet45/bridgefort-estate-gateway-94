@@ -17,11 +17,12 @@ interface DestinationGuide {
   planning: string[];
   itinerary: string[];
   workProgram?: boolean;
+  videoId?: string;
 }
 
 const guides: DestinationGuide[] = [
   {
-    slug: 'dubai', name: 'United Arab Emirates', city: 'Dubai', price: '1,850,000',
+    slug: 'dubai', name: 'United Arab Emirates', city: 'Dubai', price: '1,850,000', videoId: '836NsfwKj-4',
     image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1400&q=85',
     intro: 'A modern city break known for striking architecture, waterfront promenades, shopping, desert experiences and family-friendly attractions. Bridgefort Travels can help you plan the trip around your dates, budget and preferred pace.',
     highlights: ['Burj Khalifa and Downtown Dubai', 'Dubai Marina and the waterfront', 'Old Dubai, souks and cultural districts', 'Desert experiences and family attractions'],
@@ -29,7 +30,7 @@ const guides: DestinationGuide[] = [
     itinerary: ['Arrival and hotel transfer', 'City landmarks and local culture', 'Optional desert or family activity', 'Flexible departure day'],
   },
   {
-    slug: 'london', name: 'United Kingdom', city: 'London', price: '2,250,000',
+    slug: 'london', name: 'United Kingdom', city: 'London', price: '2,250,000', videoId: '6O79dj2wbgU',
     image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1400&q=85',
     intro: 'London combines world-famous landmarks, museums, theatre, shopping and easy rail connections for wider UK trips. We can help organise the flight, hotel, itinerary and visa-documentation support appropriate to your travel purpose.',
     highlights: ['Westminster and the River Thames', 'Museums, galleries and historic sites', 'West End theatre and shopping districts', 'Day-trip options beyond central London'],
@@ -37,7 +38,7 @@ const guides: DestinationGuide[] = [
     itinerary: ['Arrival and neighbourhood orientation', 'Historic landmarks and museums', 'Shopping, theatre or a day trip', 'Departure or onward travel'],
   },
   {
-    slug: 'istanbul', name: 'Türkiye', city: 'Istanbul', price: '1,780,000',
+    slug: 'istanbul', name: 'Türkiye', city: 'Istanbul', price: '1,780,000', videoId: 'zT-36RCzyVk',
     image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1400&q=85',
     intro: 'Istanbul is a meeting point of cultures, with historic architecture, waterfront views, markets and distinctive food. A tailored plan can balance major sights with time to explore at your own pace.',
     highlights: ['Historic Sultanahmet district', 'Bosphorus waterfront and ferry views', 'Grand Bazaar and local markets', 'Turkish cuisine and neighbourhood walks'],
@@ -45,7 +46,7 @@ const guides: DestinationGuide[] = [
     itinerary: ['Arrival and hotel check-in', 'Historic landmarks and museums', 'Bosphorus and market exploration', 'Departure or optional extension'],
   },
   {
-    slug: 'cape-town', name: 'South Africa', city: 'Cape Town', price: '920,000',
+    slug: 'cape-town', name: 'South Africa', city: 'Cape Town', price: '920,000', videoId: 'xF_f1oNRfw8',
     image: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=1400&q=85',
     intro: 'Cape Town offers dramatic coastal scenery, mountain views, beaches, food and cultural experiences. It suits travellers looking for a relaxed city stay with optional outdoor excursions.',
     highlights: ['Table Mountain and city viewpoints', 'V&A Waterfront', 'Cape Peninsula and coastal scenery', 'Beaches, food and local culture'],
@@ -53,7 +54,7 @@ const guides: DestinationGuide[] = [
     itinerary: ['Arrival and waterfront visit', 'Mountain or city sightseeing', 'Coastal excursion or leisure day', 'Departure'],
   },
   {
-    slug: 'bali', name: 'Indonesia', city: 'Bali', price: '1,250,000',
+    slug: 'bali', name: 'Indonesia', city: 'Bali', price: '1,250,000', videoId: 'LAqnQr9f4HU',
     image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1400&q=85',
     intro: 'Bali is known for tropical landscapes, temples, beaches, wellness retreats and cultural experiences. A good itinerary balances transfer time with the places and activities most important to you.',
     highlights: ['Ubud and its cultural attractions', 'Temple visits and rice terraces', 'Beach areas and coastal sunsets', 'Wellness, food and nature experiences'],
@@ -61,7 +62,7 @@ const guides: DestinationGuide[] = [
     itinerary: ['Arrival and transfer to your selected area', 'Culture and landscape day', 'Beach, wellness or optional excursion', 'Departure'],
   },
   {
-    slug: 'new-york', name: 'United States', city: 'New York', price: '2,000,000',
+    slug: 'new-york', name: 'United States', city: 'New York', price: '2,000,000', videoId: 'JhHRR32wUWw',
     image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=1400&q=85',
     intro: 'New York offers landmark skyline views, museums, theatre, neighbourhood food and shopping. We can help you coordinate the travel arrangements and build a realistic itinerary around your visit.',
     highlights: ['Central Park and Midtown landmarks', 'Museums and cultural institutions', 'Broadway and entertainment', 'Neighbourhood food and shopping'],
@@ -69,7 +70,7 @@ const guides: DestinationGuide[] = [
     itinerary: ['Arrival and local orientation', 'Landmarks and museums', 'Neighbourhood exploration or theatre', 'Departure'],
   },
   {
-    slug: 'poland', name: 'Poland', city: 'Work & Residence Enquiry', price: '6,500,000',
+    slug: 'poland', name: 'Poland', city: 'Work & Residence Enquiry', price: '6,500,000', videoId: 'iNqVXvsxjaM',
     image: 'https://images.unsplash.com/photo-1519197924294-4ba991a11128?w=1400&q=85',
     intro: 'Bridgefort Travels accepts enquiries about work and residence pathways connected with Poland. Opportunities, employer sponsorship, eligibility and timelines must be assessed case by case; an enquiry is not a job offer or a visa guarantee.',
     highlights: ['Work and residence pathway assessment', 'Document and application preparation guidance', 'Discussion of employer, role and contract details', 'Clear review of quoted fees and inclusions'],
@@ -78,7 +79,7 @@ const guides: DestinationGuide[] = [
     workProgram: true,
   },
   {
-    slug: 'czech-republic', name: 'Czech Republic', city: 'Work & Residence Enquiry', price: '6,500,000',
+    slug: 'czech-republic', name: 'Czech Republic', city: 'Work & Residence Enquiry', price: '6,500,000', videoId: 'Ht9OBJtq7Jg',
     image: 'https://images.unsplash.com/photo-1541849546-216549ae216d?w=1400&q=85',
     intro: 'Enquire about potential work and residence options connected with the Czech Republic. Roles, employer details, eligibility and processing times vary, and approval remains with the relevant authorities.',
     highlights: ['Initial eligibility discussion', 'Employer and role detail review', 'Document checklist and application guidance', 'Transparent explanation of fees and stages'],
@@ -96,7 +97,7 @@ const guides: DestinationGuide[] = [
     workProgram: true,
   },
   {
-    slug: 'romania', name: 'Romania', city: 'Work & Residence Enquiry', price: '6,500,000',
+    slug: 'romania', name: 'Romania', city: 'Work & Residence Enquiry', price: '6,500,000', videoId: '6oyHVKhBjhk',
     image: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=1400&q=85',
     intro: 'Enquire about possible Romania work and residence routes. Any opportunity must be reviewed against current employer, permit, eligibility and consular requirements.',
     highlights: ['Eligibility and pathway review', 'Employer and contract detail checks', 'Application document guidance', 'Written fee and timeline explanation'],
@@ -250,13 +251,26 @@ const TravelDestination = () => {
                   <div>
                     <h2 className="text-xl font-bold">See short videos of {guide.name}</h2>
                     <p className="mt-2 leading-7 text-muted-foreground">Explore short destination clips and travel inspiration before you decide. Video availability and content are provided by the external video platform.</p>
+                    {guide.videoId ? (
+                      <div className="mt-4 overflow-hidden rounded-xl border border-border bg-black">
+                        <iframe
+                          title={`Short travel video about ${guide.name}`}
+                          src={`https://www.youtube-nocookie.com/embed/${guide.videoId}`}
+                          className="aspect-video w-full"
+                          loading="lazy"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : null}
                     <a
                       href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${guide.name} ${guide.city === 'Work & Residence Enquiry' ? 'work and residence information' : 'travel shorts landmarks'}`)}`}
                       target="_blank"
                       rel="noreferrer"
                       className="mt-4 inline-flex items-center gap-2 font-semibold text-estate-blue hover:underline"
                     >
-                      Watch destination videos <ArrowRight size={16} />
+                      {guide.videoId ? 'More short videos' : 'Find short videos'} <ArrowRight size={16} />
                     </a>
                   </div>
                 </div>
