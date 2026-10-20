@@ -76,6 +76,7 @@ const LocationLanding = lazy(() => import('@/pages/LocationLanding'));
 const BHRealtors = lazy(() => import('@/pages/BHRealtors'));
 const BHRealtorsWithdraw = lazy(() => import('@/pages/BHRealtorsWithdraw'));
 const Travels = lazy(() => import('@/pages/Travels'));
+const TravelDestination = lazy(() => import('@/pages/TravelDestination'));
 const TravelBookingStatus = lazy(() => import('@/pages/TravelBookingStatus'));
 const Agrovest = lazy(() => import('@/pages/Agrovest'));
 const AgrovestCategoryDetail = lazy(() => import('@/pages/AgrovestCategoryDetail'));
@@ -123,6 +124,7 @@ function AppLayout() {
                     <Route path="/agrovest/:slug" element={<AgrovestCategoryDetail />} />
                     <Route path="/5k-daily-promo" element={<FiveKDailyPromo />} />
                     <Route path="/travels" element={<Travels />} />
+                    <Route path="/travels/destination/:slug" element={<TravelDestination />} />
                     <Route path="/travels/booking/:token" element={<TravelBookingStatus />} />
                     <Route path="/career" element={<Career />} />
                     <Route path="/career/apply" element={<CareerApplication />} />

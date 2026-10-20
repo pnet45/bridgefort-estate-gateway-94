@@ -35,14 +35,14 @@ const destinations: Destination[] = [
   { city: 'Bali', country: 'Indonesia', img: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=900&q=80', from: '1,250,000', price: 1250000, types: ['tourist', 'luxury'] },
   { city: 'New York', country: 'United States', img: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=900&q=80', from: '2,000,000', price: 2000000, types: ['tourist', 'business', 'student'] },
   // Work-abroad destinations from the supplied Bridgefort Travels campaign artwork.
-  { city: 'Poland', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1519197924294-4ba991a11128?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
-  { city: 'Czech Republic', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1541849546-216549ae216d?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
-  { city: 'Serbia', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1555990538-1e6c1e4c1f5d?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
-  { city: 'Romania', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
-  { city: 'Portugal', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
-  { city: 'Belarus', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1513326738677-b0c1c9e8db6d?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
-  { city: 'Moldova', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1562835155-7b3b4c7c6f10?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
-  { city: 'Ukraine', country: 'Work & Residence Enquiry', img: 'https://images.unsplash.com/photo-1561542320-9a18cd340469?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Poland', country: 'Poland', img: 'https://images.unsplash.com/photo-1519197924294-4ba991a11128?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Czech Republic', country: 'Czech Republic', img: 'https://images.unsplash.com/photo-1541849546-216549ae216d?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Serbia', country: 'Serbia', img: 'https://images.unsplash.com/photo-1555990538-1e6c1e4c1f5d?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Romania', country: 'Romania', img: 'https://images.unsplash.com/photo-1565008447742-97f6f38c985c?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Portugal', country: 'Portugal', img: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Belarus', country: 'Belarus', img: 'https://images.unsplash.com/photo-1513326738677-b0c1c9e8db6d?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Moldova', country: 'Moldova', img: 'https://images.unsplash.com/photo-1562835155-7b3b4c7c6f10?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
+  { city: 'Ukraine', country: 'Ukraine', img: 'https://images.unsplash.com/photo-1561542320-9a18cd340469?w=900&q=80', from: '6,500,000', price: 6500000, types: ['work'], workProgram: true },
 ];
 
 const PRICE_MIN = 500000;
@@ -257,14 +257,18 @@ const Travels = () => {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredDestinations.map((d, i) => (
-                <motion.div
+                <Link
                   key={d.city}
+                  to={`/travels/destination/${d.city.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                  className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-blue focus-visible:ring-offset-2"
+                  aria-label={`Read the ${d.country} travel guide`}
+                >
+                <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: i * 0.06 }}
-                  className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-2xl transition-shadow cursor-pointer"
-                  onClick={() => scrollToBooking(d.workProgram ? 'Work & Travel Europe' : '', d.city)}
+                  className="group relative overflow-hidden rounded-xl shadow-md transition-shadow hover:shadow-2xl"
                 >
                   <div className="aspect-[4/5] overflow-hidden relative bg-gradient-to-br from-estate-blue via-estate-darkBlue to-estate-red">
                     <div className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
@@ -286,17 +290,18 @@ const Travels = () => {
                       Work Abroad
                     </span>
                   )}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                    <div className="text-xs font-medium opacity-80 truncate">{d.country}</div>
-                    <div className="font-display text-lg font-bold">{d.city}</div>
-                    <div className="mt-1.5 text-xs flex items-center justify-between gap-1">
-                      <span>From <span className="text-estate-blue font-bold text-sm">₦{d.from}</span></span>
-                      <span className="text-[10px] font-semibold bg-white/15 backdrop-blur-md border border-white/20 rounded-full px-2 py-1 shrink-0">
-                        Book →
+                  <div className="absolute bottom-0 left-0 right-0 p-3 text-white sm:p-4">
+                    <div className="font-display text-base font-bold leading-tight sm:text-lg">{d.country}</div>
+                    {d.city !== d.country && <div className="mt-0.5 truncate text-xs text-white/80 sm:text-sm">{d.city}</div>}
+                    <div className="mt-2 flex items-center justify-between gap-1 text-xs">
+                      <span>From <span className="font-bold text-sm text-amber-300">₦{d.from}</span></span>
+                      <span className="shrink-0 rounded-full border border-white/25 bg-white/15 px-2 py-1 text-[10px] font-semibold backdrop-blur-md">
+                        Explore →
                       </span>
                     </div>
                   </div>
                 </motion.div>
+                </Link>
               ))}
             </div>
           )}
