@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, CircleHelp, MapPin, Plane, PlayCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -144,7 +144,6 @@ const guides: DestinationGuide[] = [
 
 const TravelDestination = () => {
   const { slug = '' } = useParams();
-  const navigate = useNavigate();
   const guide = guides.find((item) => item.slug === slug);
 
   useEffect(() => {
