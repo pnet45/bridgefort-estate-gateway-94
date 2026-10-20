@@ -1,11 +1,12 @@
 
 import React, { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ClientDashboard from '@/components/dashboard/ClientDashboard';
-import { Camera } from 'lucide-react';
+import { Camera, ClipboardList } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyProfileUpdated } from '@/lib/profileEvents';
 import { isAdminRole } from '@/lib/rbac';
@@ -160,6 +161,17 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {(userRole === 'staff' || isAdminRole(userRole)) && (
+          <div className="container-custom pt-5">
+            <Link to="/staff-workspace" className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-white p-4 shadow-sm transition-colors hover:border-amber-400 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <div className="flex items-start gap-3">
+                <span className="rounded-xl bg-amber-50 p-2.5 text-amber-800"><ClipboardList className="h-5 w-5" /></span>
+                <div><p className="font-semibold text-slate-950">My tasks and daily report</p><p className="mt-1 text-sm text-slate-600">View assigned work, update progress, record blockers and submit your daily execution report.</p></div>
+              </div>
+              <span className="text-sm font-semibold text-amber-800">Open work hub →</span>
+            </Link>
+          </div>
+        )}
         <ClientDashboard />
       </div>
       <Footer />
