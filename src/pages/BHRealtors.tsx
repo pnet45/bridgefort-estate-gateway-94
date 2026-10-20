@@ -294,6 +294,19 @@ const BHRealtors: React.FC = () => {
             </div>
           </section>
 
+          {isRealtor && referralCode && (
+            <>
+              <section className={`${glass} overflow-hidden rounded-3xl p-5 sm:p-7`}>
+                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Your unique Realtor identity</p><h2 className="mt-1 text-2xl font-black text-estate-blue dark:text-white">Referral code & client linking</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-200">Share your personal code and link with clients or prospective Realtors. Referral sharing is available to every BHRealtors member; commission eligibility and network reporting still follow your membership status.</p></div>
+                  <div className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-2"><code className="min-w-0 flex-1 truncate px-3 text-base font-black tracking-wider text-estate-purple">{referralCode}</code><Button type="button" onClick={copyReferralCode} variant="outline" className="shrink-0">{copiedCode ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4" />}{copiedCode ? 'Copied' : 'Copy'}</Button></div>
+                </div>
+              </section>
+              <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />
+            </>
+          )}
+
+
           <section id="packages">
             <div className="mb-6">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Membership & growth</p>
@@ -337,18 +350,6 @@ const BHRealtors: React.FC = () => {
               <p className={`${muted} mt-2 text-sm leading-6`}>Your account is recognised as a BHRealtors member, but a referral code has not loaded yet. Refresh this page once. If it is still missing, ask the BHRealtors administrator to verify your member record so your unique code and sharing tools can be enabled.</p>
               <Button type="button" variant="outline" className="mt-4" onClick={() => { void refreshProfile(); void load(); }} disabled={busy}><RefreshCw className="mr-2 h-4 w-4" />Refresh referral details</Button>
             </section>
-          )}
-
-          {isPbo && referralCode && (
-            <>
-              <section className={`${glass} overflow-hidden rounded-3xl p-5 sm:p-7`}>
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Your unique Realtor identity</p><h2 className="mt-1 text-2xl font-black text-estate-blue dark:text-white">Referral code & client linking</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-200">Share your personal code and link with clients or prospective Realtors. Referral sharing is available to every BHRealtors member; commission eligibility and network reporting still follow your membership status.</p></div>
-                  <div className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-2"><code className="min-w-0 flex-1 truncate px-3 text-base font-black tracking-wider text-estate-purple">{referralCode}</code><Button type="button" onClick={copyReferralCode} variant="outline" className="shrink-0">{copiedCode ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4" />}{copiedCode ? 'Copied' : 'Copy'}</Button></div>
-                </div>
-              </section>
-              <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />
-            </>
           )}
 
           {isPbo && <section className="grid gap-5 lg:grid-cols-2">
