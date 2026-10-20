@@ -11,25 +11,33 @@ import TeamPhoto from '../components/about/TeamPhoto';
 import ManagementTeam from '../components/about/ManagementTeam';
 import BoardOfDirectors from '../components/about/BoardOfDirectors';
 import CallToAction from '../components/about/CallToAction';
-const About = () => {
-  return <div className="flex flex-col min-h-screen bg-aurora-mesh">
-      <Navbar />
+
+const About = () => (
+  <div className="flex min-h-screen flex-col overflow-x-clip bg-background text-foreground">
+    <Navbar />
+    <main className="flex-1">
       <AboutHero />
-      
-      <div className="section-padding">
-        <div className="container-custom">
-          <div className="glass-strong rounded-3xl p-8 md:p-14 max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Bridgefort Homes Development Ltd: Redefining Property Investment with Integrity, Expertise, and Lasting Value</h2>
-            <div className="w-20 h-1 bg-estate-red mx-auto mb-6"></div>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Bridgefort Homes is one of Nigeria's leading real estate investment companies, 
-              providing affordable land and housing solutions while helping individuals 
-              build sustainable wealth through property ownership.
+
+      <section className="px-4 py-10 sm:px-6 md:py-16 lg:px-8">
+        <div className="mx-auto grid max-w-6xl items-center gap-6 rounded-3xl border border-border/70 bg-card/90 p-5 shadow-sm sm:p-8 md:p-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12 lg:p-14">
+          <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-amber-600">Who we are</p>
+            <h2 className="text-2xl font-bold leading-tight sm:text-3xl lg:text-4xl">
+              Property ownership built on trust, service and lasting value.
+            </h2>
+            <div className="mt-5 h-1 w-16 rounded-full bg-amber-500" />
+          </div>
+          <div className="space-y-4 text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+            <p>
+              Bridgefort Homes Development Ltd provides land and housing opportunities that help individuals and families plan confidently for the future.
+            </p>
+            <p>
+              We bring together property development, realtor support and customer service with a commitment to integrity, transparency and responsible follow-through.
             </p>
           </div>
         </div>
-      </div>
-      
+      </section>
+
       <VisionMission />
       <CoreValues />
       <WhyRealEstate />
@@ -38,8 +46,10 @@ const About = () => {
       <ManagementTeam />
       <BoardOfDirectors />
       <CallToAction />
-      <Footer />
-      <WhatsAppChat />
-    </div>;
-};
+    </main>
+    <Footer />
+    <WhatsAppChat />
+  </div>
+);
+
 export default About;
