@@ -85,7 +85,7 @@ RETURNS boolean
 LANGUAGE sql
 STABLE
 SET search_path = public
-AS $
+AS $$
   SELECT coalesce(
     _user_id = auth.uid()
     AND (
