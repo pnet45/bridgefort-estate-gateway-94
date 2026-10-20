@@ -80,6 +80,34 @@ CREATE INDEX IF NOT EXISTS hr_tasks_assignee_status_idx ON public.hr_tasks(assig
 CREATE INDEX IF NOT EXISTS hr_tasks_due_date_idx ON public.hr_tasks(due_date) WHERE status NOT IN ('completed','cancelled');
 CREATE INDEX IF NOT EXISTS hr_daily_reports_date_idx ON public.hr_daily_reports(report_date DESC);
 
+-- Keep staff daily-report identity and submission timestamps authoritative.
+-- Staff may edit report content, but cannot move a report to another date or
+-- rewrite its original submission time. Managers retain the broader policy.
+CREATE OR REPLACE FUNCTION public.protect_hr_daily_report_updates()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $
+BEGIN
+  IF NOT public.is_hr_manager(auth.uid()) AND (
+    NEW.staff_user_id IS DISTINCT FROM OLD.staff_user_id
+    OR NEW.report_date IS DISTINCT FROM OLD.report_date
+    OR NEW.submitted_at IS DISTINCT FROM OLD.submitted_at
+  ) THEN
+    RAISE EXCEPTION 'Staff may update report content but not its owner, date, or submission time';
+  END IF;
+  NEW.updated_at := now();
+  RETURN NEW;
+END;
+$;
+REVOKE ALL ON FUNCTION public.protect_hr_daily_report_updates() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS protect_hr_daily_report_updates_trigger ON public.hr_daily_reports;
+CREATE TRIGGER protect_hr_daily_report_updates_trigger
+BEFORE UPDATE ON public.hr_daily_reports
+FOR EACH ROW
+EXECUTE FUNCTION public.protect_hr_daily_report_updates();
+
+
 CREATE OR REPLACE FUNCTION public.is_hr_manager(_user_id uuid DEFAULT auth.uid())
 RETURNS boolean
 LANGUAGE sql
