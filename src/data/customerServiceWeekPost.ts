@@ -48,12 +48,12 @@ With a clear focus on service excellence and customer trust, analysts and client
 
 ## Contact Us
 
-📍 **Bridgefort Homes Development Ltd**  
+ **Bridgefort Homes Development Ltd**  
 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, opposite VGC Estate, Lekki, Lagos State
 
-📞 **+234 803 062 4059**  
-🌐 **www.pwanbridgefort.ng**  
-✉️ **info@pwanbridgefort.ng**
+ **+234 803 062 4059**  
+ **www.pwanbridgefort.ng**  
+ **info@pwanbridgefort.ng**
 
 **"…Rebuilding the Future."**
 
