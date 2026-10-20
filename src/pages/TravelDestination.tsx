@@ -106,7 +106,7 @@ const guides: DestinationGuide[] = [
     workProgram: true,
   },
   {
-    slug: 'portugal', name: 'Portugal', city: 'Work & Residence Enquiry', price: '6,500,000',
+    slug: 'portugal', name: 'Portugal', city: 'Work & Residence Enquiry', price: '6,500,000', videoId: 'dG94fRHGxV4',
     image: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=1400&q=85',
     intro: 'Explore an enquiry about potential work or residence routes connected with Portugal. Eligibility, work opportunities and official processing requirements depend on individual circumstances and current rules.',
     highlights: ['Initial profile and eligibility review', 'Employer or opportunity details', 'Document preparation guidance', 'Written breakdown of costs and steps'],
