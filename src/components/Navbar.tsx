@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import MobileMenu from './navbar/MobileMenu';
-import NavbarUserMenu from './navbar/NavbarUserMenu';
-import NavbarLoginIcon from './navbar/NavbarLoginIcon';
 import LogoSlideIn from './navbar/LogoSlideIn';
 import AnimatedNavLinks from './navbar/AnimatedNavLinks';
 import AnimatedAuthSection from './navbar/AnimatedAuthSection';
@@ -16,22 +12,16 @@ import { onProfileUpdated } from '@/lib/profileEvents';
 
 const Navbar = () => {
   const { user, userRole } = useAuth();
-  const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  
-  // Control when to show login button (not on auth page or on Realtor login page)
+
   const authPaths = ['/auth', '/bridgefort-realtors-login'];
   const shouldShowLogin = !authPaths.some((path) => window.location.pathname.includes(path));
 
   useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
+    if (user) fetchProfile();
   }, [user]);
 
-  // Refresh immediately when a profile picture/details are updated elsewhere
-  // (Dashboard quick-upload, Profile/KYC form, etc.) instead of requiring a reload.
   useEffect(() => onProfileUpdated(() => {
     if (user) fetchProfile();
   }), [user]);
@@ -43,72 +33,69 @@ const Navbar = () => {
         .select('*')
         .eq('id', user?.id)
         .single();
-      
+
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching profile:', error);
         return;
       }
-      
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
   };
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleMenu = () => setIsMenuOpen((open) => !open);
 
   return (
-    <>
-        <nav className="glass-strong fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 h-[88px] lg:h-[104px] border-b border-estate-purple/10">
-        <div className="container-custom flex flex-col flex-1 h-full">
-          <div className="flex justify-between items-center py-3 flex-shrink-0 relative h-full">
-            {/* Brand - logo left; label centered on mobile, beside logo on desktop */}
-            <div className="flex items-center shrink-0">
-              <LogoSlideIn />
-            </div>
+    <nav className="glass-strong fixed top-0 left-0 right-0 z-50 h-[88px] lg:h-[150px] border-b border-estate-purple/10 transition-all duration-300">
+      <div className="container-custom h-full min-w-0">
+        <div className="flex h-full min-w-0 items-center justify-between gap-3 lg:grid lg:grid-cols-[minmax(160px,auto)_minmax(0,1fr)_minmax(190px,auto)] lg:gap-4">
+          {/* Brand stays on the left; the desktop navbar remains a single row. */}
+          <div className="flex min-w-0 shrink items-center">
+            <LogoSlideIn />
+          </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center space-x-1 xl:space-x-2 2xl:space-x-4 flex-1 min-w-0 justify-center">
-              <AnimatedNavLinks className="hover:text-estate-blue transition whitespace-nowrap text-sm xl:text-base" />
-            </div>
-            
-            {/* Desktop Auth Section — grouped tight by default (grid with a
-                small gap) so the nav links above have room to breathe; the
-                cluster only "drops open" to its fuller spacing on hover or
-                keyboard focus. */}
-            <div className="hidden lg:grid grid-flow-col auto-cols-max items-center gap-1.5 hover:gap-3 focus-within:gap-3 transition-[gap] duration-300 shrink-0">
-              <DarkModeToggle />
-              {user && <ProfileCompletionWidget />}
-              <AnimatedAuthSection 
-                user={user}
-                profile={profile}
-                userRole={userRole}
-                shouldShowLogin={shouldShowLogin}
-              />
-            </div>
-            
-            {/* Mobile Menu Button - aligned right */}
-            <div className="lg:hidden flex items-center gap-2">
-              <DarkModeToggle />
-              <button
-                onClick={toggleMenu}
-                aria-label="Toggle menu"
-                className="text-foreground"
-              >
-                {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
-              </button>
+          {/* Keep navigation in the middle column; allow horizontal overflow rather than overlap. */}
+          <div className="hidden min-w-0 items-center justify-center overflow-x-auto lg:flex">
+            <div className="flex min-w-max items-center justify-center gap-x-1 xl:gap-x-2 2xl:gap-x-3">
+              <AnimatedNavLinks className="!px-2 !py-2 text-sm xl:text-base whitespace-nowrap" />
             </div>
           </div>
-        </div>
 
-        {/* Mobile Menu */}
-        <MobileMenu 
-          isOpen={isMenuOpen} 
-          toggleMenu={toggleMenu}
-          shouldShowLogin={shouldShowLogin}
-        />
-      </nav>
-    </>
+          {/* Login/profile, theme toggle and profile completion stay grouped on the right. */}
+          <div className="hidden min-w-0 grid-flow-col auto-cols-max items-center justify-end gap-2 lg:grid">
+            <DarkModeToggle />
+            {user && <ProfileCompletionWidget />}
+            <AnimatedAuthSection
+              user={user}
+              profile={profile}
+              userRole={userRole}
+              shouldShowLogin={shouldShowLogin}
+            />
+          </div>
+
+          {/* Mobile stays a single row with controls aligned right. */}
+          <div className="flex shrink-0 items-center gap-2 lg:hidden">
+            <DarkModeToggle />
+            <button
+              type="button"
+              onClick={toggleMenu}
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMenuOpen}
+              className="rounded-md p-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-blue"
+            >
+              {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <MobileMenu
+        isOpen={isMenuOpen}
+        toggleMenu={toggleMenu}
+        shouldShowLogin={shouldShowLogin}
+      />
+    </nav>
   );
 };
 

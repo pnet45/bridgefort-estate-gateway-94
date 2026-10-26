@@ -57,22 +57,22 @@ const coreValues = [{
   description: 'We are one body, many talents. Collaboration is our culture. We win together, fail together, and rise together. Unity is our greatest strength.'
 }];
 const CoreValues = () => {
-  return <section className="section-padding my-0">
-      <div className="container-custom">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold mb-4">OUR CORE VALUES</h2>
-          <p className="text-gray-600 max-w-3xl mx-auto">
+  return <section className="px-4 py-8 sm:px-6 md:py-14 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mx-auto mb-8 max-w-3xl text-center sm:mb-10">
+          <h2 className="mb-4 text-2xl font-bold sm:text-3xl md:text-4xl">OUR CORE VALUES</h2>
+          <p className="mx-auto max-w-3xl leading-7 text-muted-foreground">
             Each letter in BRIDGEFORT HOMES DEVELOPMENT LTD symbolizes the pillars upon which our company stands—principles that guide our actions, influence our culture, and define how we deliver value across the real estate ecosystem.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {coreValues.map((value, index) => <div key={index} className="glass-card p-6 rounded-2xl">
-              <div className="flex items-center mb-4">
-                <span className="text-2xl font-bold text-estate-blue mr-2">{value.letter}</span>
-                <h3 className="text-xl font-semibold">– {value.value}</h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
+          {coreValues.map((value, index) => <div key={index} className="h-full rounded-2xl border border-border/70 bg-card p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6">
+              <div className="mb-4 flex items-start gap-2">
+                <span className="text-2xl font-bold text-amber-600">{value.letter}</span>
+                <h3 className="text-lg font-semibold leading-snug sm:text-xl">– {value.value}</h3>
               </div>
-              <p className="text-muted-foreground">{value.description}</p>
+              <p className="leading-7 text-muted-foreground">{value.description}</p>
             </div>)}
         </div>
       </div>

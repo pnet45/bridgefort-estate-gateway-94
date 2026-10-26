@@ -12,7 +12,7 @@ const DARK_LOGO = '/images/BridgefortHomesLogo2.png';
  */
 const LogoSlideIn = () => {
   const [darkLogoFailed, setDarkLogoFailed] = useState(false);
-  const logoClass = 'h-11 sm:h-14 lg:h-20 w-auto max-w-none object-contain';
+  const logoClass = 'h-11 sm:h-14 lg:h-14 w-auto max-w-none object-contain';
 
   return (
     <>
@@ -43,7 +43,7 @@ const LogoSlideIn = () => {
 
       <span
         aria-hidden="true"
-        className="hidden lg:inline-block ml-3 whitespace-nowrap bf-label-slide font-extrabold tracking-[0.12em] text-lg xl:text-xl 2xl:text-2xl text-foreground"
+        className="hidden lg:inline-block ml-3 whitespace-nowrap bf-label-slide font-extrabold tracking-[0.12em] text-lg xl:text-lg 2xl:text-xl text-foreground"
       >
         BRIDGEFORT HOMES
       </span>
