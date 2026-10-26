@@ -60,7 +60,7 @@ const packages = [
     name: 'Premium',
     price: '7,450,000',
     tagline: 'Our most popular package',
-    perks: ['Premium economy flight', '5-night 4-star hotel', 'Private city tours', 'Visa fast-track', 'Travel insurance', '24/7 concierge'],
+    perks: ['Premium economy flight', '5-night 4-star hotel', 'Private city tours', 'Visa priority processing (where available)', 'Travel insurance', '24/7 concierge'],
     featured: true,
   },
   {
@@ -95,10 +95,10 @@ const testimonials = [
 ];
 
 const faqs = [
-  { q: 'How long does visa processing take?', a: 'Most tourist visas are processed in 7–21 working days depending on the embassy. We offer fast-track options where available.' },
+  { q: 'How long does visa processing take?', a: 'Processing times vary by destination, visa category, season and consular workload. Any priority service depends on the relevant authority and may not be available.' },
   { q: 'Do you offer payment plans?', a: 'Yes. Premium and Luxury packages can be split into flexible instalments. Speak to our consultant for details.' },
   { q: 'Can you arrange group travel?', a: 'Absolutely. We organise corporate retreats, family groups, pilgrimage groups, and student tours of any size.' },
-  { q: 'What if my visa is denied?', a: 'We provide a refund of refundable components and assist with re-application strategy at no extra consultation fee.' },
+  { q: 'What if my visa is denied?', a: 'If a visa is refused, any refund depends on the written service agreement and the refundable components of the booking. Further assistance and fees will be explained before proceeding.' },
   { q: 'Are flight prices guaranteed?', a: 'Fares are confirmed at the point of ticket issuance. We always source the best available rate at the time of booking.' },
 ];
 
@@ -544,9 +544,9 @@ const Travels = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { icon: Shield, title: 'Licensed & Trusted', desc: 'Fully accredited travel partner with IATA-affiliated suppliers.' },
+              { icon: Shield, title: 'Travel Planning Support', desc: 'We help coordinate travel arrangements and explain supplier and booking details before confirmation.' },
               { icon: Headphones, title: '24/7 Support', desc: 'Live travel concierge before, during, and after your trip.' },
-              { icon: BadgeDollarSign, title: 'Best Price Guarantee', desc: "Find a better quote? We'll match it — or beat it." },
+              { icon: BadgeDollarSign, title: 'Clear, Indicative Pricing', desc: 'Compare the written quote, inclusions and supplier terms before confirming a booking.' },
             ].map((w, i) => (
               <motion.div
                 key={w.title}
