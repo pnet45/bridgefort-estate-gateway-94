@@ -67,7 +67,8 @@ const StaffWorkHub: React.FC = () => {
       return;
     }
     setSaving(true);
-    const result = await db.from('hr_daily_reports').upsert({ ...reportForm, staff_user_id: user.id, evidence_url: reportForm.evidence_url || null, submitted_at: new Date().toISOString(), updated_at: new Date().toISOString() }, { onConflict: 'staff_user_id,report_date' });
+    // Keep submitted_at immutable on edits; the database trigger owns updated_at.
+    const result = await db.from('hr_daily_reports').upsert({ ...reportForm, staff_user_id: user.id, evidence_url: reportForm.evidence_url || null }, { onConflict: 'staff_user_id,report_date' });
     setSaving(false);
     if (result.error) { toast({ title: 'Report could not be submitted', description: result.error.message, variant: 'destructive' }); return; }
     toast({ title: 'Daily report submitted' });
