@@ -486,11 +486,11 @@ const Travels = () => {
               {/* Fees covered */}
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
                 <p className="text-sm font-semibold uppercase tracking-wide text-amber-300 mb-3">
-                  The fees paid will cover the following:
+                  Depending on the written service agreement, fees may cover:
                 </p>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-white/85">
                   {[
-                    'Visa 100% Guaranteed', 'Flight Ticket',
+                    'Visa application support (outcome not guaranteed)', 'Flight Ticket',
                     'Work Permit', 'Accommodation',
                     'Residence Permit', 'Processing Fees (Abroad)',
                     'Job/Employment Offer', 'Processing Fees (Nigeria)',
