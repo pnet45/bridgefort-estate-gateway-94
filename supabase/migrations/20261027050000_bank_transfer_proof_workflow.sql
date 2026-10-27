@@ -145,3 +145,47 @@ BEGIN
   RETURN o;
 END;
 $function$;
+
+
+-- Preserve the existing admin detail payload while resolving transfer requests
+-- by their explicit order_id (their unique bank reference is not the checkout reference).
+CREATE OR REPLACE FUNCTION public.get_admin_payment_request_details(_request_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $function$
+DECLARE
+  r jsonb;
+  uid uuid := auth.uid();
+BEGIN
+  IF uid IS NULL OR NOT (
+    public.user_has_permission(uid, 'admin:approve_payments')
+    OR public.is_global_admin(uid)
+  ) THEN
+    RAISE EXCEPTION USING errcode='42501', message='Not authorized to view payment approval details';
+  END IF;
+  SELECT jsonb_build_object(
+    'payment_request', to_jsonb(pr),
+    'payment', CASE WHEN p.id IS NULL THEN NULL ELSE to_jsonb(p) END,
+    'order', CASE WHEN o.id IS NULL THEN NULL ELSE to_jsonb(o) END,
+    'customer', CASE WHEN prof.id IS NULL THEN NULL ELSE
+      jsonb_build_object('id',prof.id,'name',concat_ws(' ',prof.first_name,prof.last_name),
+                         'email',prof.email,'phone',prof.phone) END,
+    'items', coalesce(o.items,'[]'::jsonb),
+    'history', coalesce((
+      SELECT jsonb_agg(jsonb_build_object('id',pt.id,'amount',pt.amount,'status',pt.status,
+        'reference',pt.reference,'gateway',pt.gateway,'payment_date',pt.payment_date)
+        ORDER BY pt.payment_date DESC)
+      FROM payment_transactions pt WHERE pt.payment_request_id=pr.id
+    ),'[]'::jsonb)
+  ) INTO r
+  FROM payment_requests pr
+  LEFT JOIN payments p ON p.id=pr.related_payment_id
+  LEFT JOIN orders o ON o.id=pr.order_id OR (pr.order_id IS NULL AND o.payment_reference=pr.reference)
+  LEFT JOIN profiles prof ON prof.id=coalesce(pr.user_id,p.user_id,o.user_id)
+  WHERE pr.id=_request_id;
+  IF r IS NULL THEN RAISE EXCEPTION USING errcode='P0002',message='Payment request not found'; END IF;
+  RETURN r;
+END;
+$function$;
