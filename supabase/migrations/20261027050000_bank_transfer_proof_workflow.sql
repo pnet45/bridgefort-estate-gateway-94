@@ -59,8 +59,9 @@ DECLARE
   caller uuid := auth.uid();
   o public.orders;
   related_payment uuid;
-  request_id uuid;
+  request_id uuid := gen_random_uuid();
   request_type text;
+  internal_reference text;
   transfer_ref text := nullif(trim(coalesce(_transfer_reference, '')), '');
   proof_path text := nullif(trim(coalesce(_proof_storage_path, '')), '');
   outstanding numeric;
@@ -99,14 +100,18 @@ BEGIN
     ELSE 'property'
   END;
 
+  -- payment_requests.reference has a pre-existing unique index and is used by
+  -- gateway checkout references. Keep the client's bank reference in its own
+  -- field and assign this manual request a separate internal unique reference.
+  internal_reference := 'BANK-' || request_id::text;
+
   INSERT INTO public.payment_requests
-    (user_id, type, amount, reference, related_payment_id, description, status,
+    (id, user_id, type, amount, reference, related_payment_id, description, status,
      payment_method, transfer_reference, proof_storage_path, order_id)
   VALUES
-    (caller, request_type, _amount, transfer_ref, related_payment,
+    (request_id, caller, request_type, _amount, internal_reference, related_payment,
      'Bank transfer awaiting manual verification for order ' || o.id::text,
-     'pending', 'bank_transfer', transfer_ref, proof_path, o.id)
-  RETURNING id INTO request_id;
+     'pending', 'bank_transfer', transfer_ref, proof_path, o.id);
 
   RETURN jsonb_build_object('success', true, 'request_id', request_id,
                             'status', 'pending', 'outstanding_balance', outstanding - _amount);
