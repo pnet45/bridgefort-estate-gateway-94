@@ -3,7 +3,8 @@
 ALTER TABLE public.payment_requests
   ADD COLUMN IF NOT EXISTS payment_method text,
   ADD COLUMN IF NOT EXISTS transfer_reference text,
-  ADD COLUMN IF NOT EXISTS proof_storage_path text;
+  ADD COLUMN IF NOT EXISTS proof_storage_path text,
+  ADD COLUMN IF NOT EXISTS order_id uuid REFERENCES public.orders(id) ON DELETE SET NULL;
 
 ALTER TABLE public.payment_requests
   DROP CONSTRAINT IF EXISTS payment_requests_payment_method_check;
@@ -40,7 +41,7 @@ USING (
   AND (
     (storage.foldername(name))[1] = auth.uid()::text
     OR public.user_has_permission(auth.uid(), 'admin:approve_payments')
-    OR public.user_has_permission(auth.uid(), 'admin:all')
+    OR public.is_global_admin(auth.uid())
   )
 );
 
@@ -100,11 +101,11 @@ BEGIN
 
   INSERT INTO public.payment_requests
     (user_id, type, amount, reference, related_payment_id, description, status,
-     payment_method, transfer_reference, proof_storage_path)
+     payment_method, transfer_reference, proof_storage_path, order_id)
   VALUES
-    (caller, request_type, _amount, o.payment_reference, related_payment,
+    (caller, request_type, _amount, transfer_ref, related_payment,
      'Bank transfer awaiting manual verification for order ' || o.id::text,
-     'pending', 'bank_transfer', transfer_ref, proof_path)
+     'pending', 'bank_transfer', transfer_ref, proof_path, o.id)
   RETURNING id INTO request_id;
 
   RETURN jsonb_build_object('success', true, 'request_id', request_id,
@@ -114,3 +115,33 @@ $$;
 
 REVOKE ALL ON FUNCTION public.submit_bank_transfer_request(uuid,numeric,text,text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.submit_bank_transfer_request(uuid,numeric,text,text) TO authenticated;
+
+-- Let the existing approval RPC resolve bank-transfer requests to their exact order.
+CREATE OR REPLACE FUNCTION public.resolve_payment_order(_payment_request_id uuid)
+RETURNS public.orders
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $function$
+DECLARE
+  p public.payment_requests;
+  pay_ref text;
+  o public.orders;
+BEGIN
+  SELECT * INTO p FROM public.payment_requests WHERE id = _payment_request_id;
+  IF p.id IS NULL THEN RETURN NULL; END IF;
+  IF p.order_id IS NOT NULL THEN
+    SELECT * INTO o FROM public.orders WHERE id = p.order_id;
+    IF o.id IS NOT NULL THEN RETURN o; END IF;
+  END IF;
+  IF p.related_payment_id IS NOT NULL THEN
+    SELECT reference INTO pay_ref FROM public.payments WHERE id = p.related_payment_id;
+    IF pay_ref IS NOT NULL THEN
+      SELECT * INTO o FROM public.orders WHERE payment_reference = pay_ref LIMIT 1;
+      IF o.id IS NOT NULL THEN RETURN o; END IF;
+    END IF;
+  END IF;
+  SELECT * INTO o FROM public.orders WHERE payment_reference = p.reference LIMIT 1;
+  RETURN o;
+END;
+$function$;
