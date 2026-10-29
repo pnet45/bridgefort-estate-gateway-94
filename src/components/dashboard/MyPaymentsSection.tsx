@@ -240,6 +240,7 @@ const MyPaymentsSection: React.FC = () => {
         </div>
       </CardContent>
     </Card>
+    <div className="mt-4"><BankTransferSubmission /></div>
   );
 };
 
