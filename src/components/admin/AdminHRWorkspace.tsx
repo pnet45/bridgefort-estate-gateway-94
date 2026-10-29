@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/auth';
+import { useIsGlobalAdmin } from '@/hooks/useIsGlobalAdmin';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ const emptyTask = { title: '', description: '', department: 'Administration', pr
 
 const AdminHRWorkspace: React.FC = () => {
   const { user, userRole } = useAuth();
+  const { isGlobalAdmin } = useIsGlobalAdmin();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -27,7 +29,7 @@ const AdminHRWorkspace: React.FC = () => {
   const [savingStaff, setSavingStaff] = useState(false);
   const [savingTask, setSavingTask] = useState(false);
   const [loading, setLoading] = useState(true);
-  const managerAllowed = userRole === 'admin_acct';
+  const managerAllowed = isGlobalAdmin || userRole === 'admin_acct';
 
   const load = useCallback(async () => {
     setLoading(true);
