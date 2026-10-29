@@ -104,8 +104,15 @@ const MyPaymentsSection: React.FC = () => {
   }
 
   if (!payments.length && !docPayments.length) {
-    return <Card>
-      <><Card><CardHeader><CardTitle>My Payments</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">No payment records found.</p></CardContent></Card><div className="mt-4"><BankTransferSubmission /></div></>;
+    return (
+      <div className="space-y-4">
+        <Card>
+          <CardHeader><CardTitle>My Payments</CardTitle></CardHeader>
+          <CardContent><p className="text-muted-foreground">No payment records found.</p></CardContent>
+        </Card>
+        <BankTransferSubmission />
+      </div>
+    );
   }
 
   const promoPlans = payments.filter((pm) => {
