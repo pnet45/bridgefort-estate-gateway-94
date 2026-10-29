@@ -39,7 +39,7 @@ const StaffWorkHub: React.FC = () => {
     setTasks((taskResult.data || []) as AssignedTask[]);
     setReports((reportResult.data || []) as Report[]);
     const [{ data: staffRecord }, { data: jobRows }] = await Promise.all([
-      db.from('hr_staff_directory').select('job_title,role_name,department').eq('user_id', user.id).maybeSingle(),
+      db.from('hr_staff_directory').select('first_name,last_name,email,job_title,role_name,department').eq('user_id', user.id).maybeSingle(),
       db.from('hr_job_descriptions').select('title,department,role_name,purpose,responsibilities,monthly_deliverables,performance_measures').eq('is_active', true),
     ]);
     setStaffIdentity((staffRecord as StaffIdentity | null) || null);
