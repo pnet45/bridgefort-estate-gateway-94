@@ -24,6 +24,7 @@ import AdminClientAllocations from '@/components/admin/AdminClientAllocations';
 import DocumentationWorkflow from '@/components/admin/DocumentationWorkflow';
 import AdminActivityLogs from '@/components/admin/AdminActivityLogs';
 import AdminDailyReports from '@/components/admin/AdminDailyReports';
+import AdminHRWorkspace from '@/components/admin/AdminHRWorkspace';
 import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import AdminPropertyAnalytics from '@/components/admin/AdminPropertyAnalytics';
@@ -54,7 +55,8 @@ const AdminConsole = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const canReviewReports = isGlobalAdmin || ['super_admin','admin_dir','admin_acct','admin_adm','admin_it','admin','manager'].includes(userRole || '');
-  const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isGlobalAdmin) { tabs.add('overview'); tabs.add('permissions'); tabs.add('travels'); tabs.add('documentation'); } if (canReviewReports) tabs.add('reports'); return Array.from(tabs); }, [permissions, isGlobalAdmin, canReviewReports]);
+  const canManageHR = isGlobalAdmin || userRole === 'admin_acct';
+  const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isGlobalAdmin) { tabs.add('overview'); tabs.add('permissions'); tabs.add('travels'); tabs.add('documentation'); } if (canReviewReports) tabs.add('reports'); if (canManageHR) tabs.add('hr-workspace'); return Array.from(tabs); }, [permissions, isGlobalAdmin, canReviewReports]);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -83,6 +85,7 @@ const AdminConsole = () => {
         {(hasPermission('admin:view_documentation') || isGlobalAdmin || hasPermission('admin:all')) && <TabsTrigger value="documentation" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><FileText className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Documentation</span></TabsTrigger>}
         {hasPermission('admin:view_crm') && <TabsTrigger value="crm" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><CheckSquare className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>CRM</span></TabsTrigger>}
         {canReviewReports && <TabsTrigger value="reports" className={`${ADMIN_TAB_CLASS} mt-3 border-t border-slate-200 pt-3 lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><FileText className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Reports</span></TabsTrigger>}
+        {canManageHR && <TabsTrigger value="hr-workspace" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Users className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Staff & Tasks</span></TabsTrigger>}
         {hasPermission('admin:view_users') && <TabsTrigger value="users" className={`${ADMIN_TAB_CLASS} mt-3 border-t border-slate-200 pt-3 lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Users className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Users</span></TabsTrigger>}
         {hasPermission('admin:view_approvals') && <TabsTrigger value="approvals" className={`${ADMIN_TAB_CLASS} relative lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><UserCheck className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Approvals</span>{pendingCount > 0 && <span className="ml-1 h-5 min-w-5 px-1 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{pendingCount > 99 ? '99+' : pendingCount}</span>}</TabsTrigger>}
         {hasPermission('admin:view_subscribers') && <TabsTrigger value="subscribers" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Users className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Subscribers</span></TabsTrigger>}
@@ -107,6 +110,7 @@ const AdminConsole = () => {
       {(hasPermission('admin:view_documentation') || isGlobalAdmin || hasPermission('admin:all')) && <TabsContent value="documentation" className="min-w-0"><DocumentationWorkflow/></TabsContent>}
       <TabsContent value="crm" className="min-w-0 space-y-6"><AdminBirthdayWidget/><AdminCRMWorkspace/><div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><AdminTaskManager/><AdminCalendar/></div><div className="grid grid-cols-1 lg:grid-cols-3 gap-6"><AdminNotices/><AdminNotes/><AdminFileSharing/></div></TabsContent>
       {canReviewReports && <TabsContent value="reports" className="min-w-0"><AdminDailyReports/></TabsContent>}
+      {canManageHR && <TabsContent value="hr-workspace" className="min-w-0"><AdminHRWorkspace/></TabsContent>}
       <TabsContent value="users" className="min-w-0"><UserManagementTab/></TabsContent>
       <TabsContent value="approvals" className="min-w-0"><AdminApprovalsHub onCountChange={setPendingCount}/></TabsContent>
       <TabsContent value="subscribers" className="min-w-0"><AdminEstateSubscribers/></TabsContent>
