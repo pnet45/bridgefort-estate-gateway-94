@@ -87,7 +87,7 @@ CREATE OR REPLACE FUNCTION public.protect_hr_daily_report_updates()
 RETURNS trigger
 LANGUAGE plpgsql
 SET search_path = public
-AS $
+AS $$
 BEGIN
   IF NOT public.is_hr_manager(auth.uid()) AND (
     NEW.staff_user_id IS DISTINCT FROM OLD.staff_user_id
@@ -99,7 +99,7 @@ BEGIN
   NEW.updated_at := now();
   RETURN NEW;
 END;
-$;
+$$;
 REVOKE ALL ON FUNCTION public.protect_hr_daily_report_updates() FROM PUBLIC, anon, authenticated;
 DROP TRIGGER IF EXISTS protect_hr_daily_report_updates_trigger ON public.hr_daily_reports;
 CREATE TRIGGER protect_hr_daily_report_updates_trigger

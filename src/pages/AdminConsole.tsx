@@ -23,6 +23,7 @@ import AdminPropertyManagement from '@/components/admin/AdminPropertyManagement'
 import AdminClientAllocations from '@/components/admin/AdminClientAllocations';
 import DocumentationWorkflow from '@/components/admin/DocumentationWorkflow';
 import AdminActivityLogs from '@/components/admin/AdminActivityLogs';
+import AdminDailyReports from '@/components/admin/AdminDailyReports';
 import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import AdminPropertyAnalytics from '@/components/admin/AdminPropertyAnalytics';
@@ -52,7 +53,8 @@ const AdminConsole = () => {
   const { isGlobalAdmin, loading: globalAdminLoading } = useIsGlobalAdmin();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isGlobalAdmin) { tabs.add('overview'); tabs.add('permissions'); tabs.add('travels'); tabs.add('documentation'); } return Array.from(tabs); }, [permissions, isGlobalAdmin]);
+  const canReviewReports = isGlobalAdmin || ['super_admin','admin_dir','admin_acct','admin_adm','admin_it','admin','manager'].includes(userRole || '');
+  const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isGlobalAdmin) { tabs.add('overview'); tabs.add('permissions'); tabs.add('travels'); tabs.add('documentation'); } if (canReviewReports) tabs.add('reports'); return Array.from(tabs); }, [permissions, isGlobalAdmin, canReviewReports]);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -87,6 +89,7 @@ const AdminConsole = () => {
         {hasPermission('admin:view_analytics') && <TabsTrigger value="analytics" className={`${ADMIN_TAB_CLASS} mt-3 border-t border-slate-200 pt-3 lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><TrendingUp className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Analytics</span></TabsTrigger>}
         {hasPermission('admin:view_mlm_funnel') && <TabsTrigger value="mlm-funnel" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Network className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>BHRealtors Funnel</span></TabsTrigger>}
         {hasPermission('admin:view_activity') && <TabsTrigger value="activity" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Activity className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Activity</span></TabsTrigger>}
+        {canReviewReports && <TabsTrigger value="reports" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><FileText className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Reports</span></TabsTrigger>}
         {hasPermission('admin:view_content') && <TabsTrigger value="content" className={`${ADMIN_TAB_CLASS} mt-3 border-t border-slate-200 pt-3 lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><FileText className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Content</span></TabsTrigger>}
         {hasPermission('admin:view_content') && <TabsTrigger value="leo-knowledge" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><BookOpen className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Leo Knowledge</span></TabsTrigger>}
         {hasPermission('admin:view_dashboard') && <TabsTrigger value="training" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Sprout className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Training</span></TabsTrigger>}
@@ -110,6 +113,7 @@ const AdminConsole = () => {
       <TabsContent value="analytics" className="min-w-0"><AdminPropertyAnalytics/></TabsContent>
       <TabsContent value="mlm-funnel" className="min-w-0"><AdminMlmFunnelDashboard/></TabsContent>
       <TabsContent value="activity" className="min-w-0"><AdminActivityLogs/></TabsContent>
+      {canReviewReports && <TabsContent value="reports" className="min-w-0"><AdminDailyReports/></TabsContent>}
       <TabsContent value="content" className="min-w-0"><AdminContentManagement/></TabsContent>
       <TabsContent value="leo-knowledge" className="min-w-0"><AdminLeoKnowledgeManagement/></TabsContent>
       <TabsContent value="training" className="min-w-0"><AdminTrainingRegistrations/></TabsContent>
