@@ -1,5 +1,9 @@
 # Bridgefort Travels — Booking.com Demand API 3.2
 
+## API version decision
+
+This implementation targets Demand API v3.2. Booking.com currently lists v3.3 as the latest stable version and v3.2 as a supported, frozen version. v3.2 is retained here as an explicit compatibility target for this staged implementation; it must not be described as the newest API. Before production release, confirm partner-account access and decide whether to keep v3.2 or migrate this branch to v3.3. Do not change the API version or endpoint paths without a separate compatibility review and sandbox tests.
+
 ## Integration model
 
 This branch prepares a **Search, Look and Redirect** accommodation integration. It does not implement Search, Look and Book, create orders, collect payment, or confirm reservations inside Bridgefort.
