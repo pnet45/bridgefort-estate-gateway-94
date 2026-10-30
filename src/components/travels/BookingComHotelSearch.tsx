@@ -53,8 +53,15 @@ const getPrice = (value: any): number | null => {
   return typeof found === "number" ? found : null;
 };
 
-const getCurrency = (value: any) =>
-  value?.currency?.booker || value?.currency?.accommodation || value?.currency || "";
+const getCurrency = (value: any): string => {
+  const currency = value?.currency;
+  if (typeof currency === "string") return currency;
+  if (currency && typeof currency === "object") {
+    const selected = currency.booker || currency.accommodation;
+    return typeof selected === "string" ? selected : "";
+  }
+  return "";
+};
 
 const getPhoto = (details: any): string | null => {
   const photo = details?.photos?.[0];
