@@ -60,7 +60,7 @@ serve(async (req) => {
     }
 
     if (!canManageBookings && !isGlobalAdmin) {
-      return response({ error: "Forbidden — booking.manage permission required" }, 403);
+      return response({ error: "Forbidden — travel-management permission required" }, 403);
     }
 
     const body = await req.json();
