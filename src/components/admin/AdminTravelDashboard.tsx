@@ -358,7 +358,7 @@ Bridgefort Travels`
                     <th className="text-left p-3">Start</th>
                     <th className="text-left p-3">End</th>
                     <th className="text-left p-3">Reason</th>
-                    <th className="text-right p-3">Actions</th>
+                    {canManage && <th className="text-right p-3">Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="text-slate-200">
