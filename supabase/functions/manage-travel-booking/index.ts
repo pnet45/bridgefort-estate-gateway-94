@@ -46,7 +46,7 @@ serve(async (req) => {
     const userId = userData.user.id;
     const { data: canManageBookings, error: permissionError } = await supabase.rpc("user_has_permission", {
       _user_id: userId,
-      _permission_key: "booking.manage",
+      _permission_key: "admin:manage_travels",
     });
     if (permissionError) {
       console.error("travel booking permission check failed", permissionError);
