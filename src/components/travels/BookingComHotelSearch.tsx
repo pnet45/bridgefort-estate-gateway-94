@@ -44,10 +44,10 @@ const getPrice = (value: any): number | null => {
     value?.price?.display?.accommodation_currency,
     value?.price?.total?.booker_currency,
     value?.price?.total?.accommodation_currency,
-    product?.price?.total?.booker_currency,
     product?.price?.display?.booker_currency,
-    product?.price?.total?.accommodation_currency,
     product?.price?.display?.accommodation_currency,
+    product?.price?.total?.booker_currency,
+    product?.price?.total?.accommodation_currency,
   ];
   const found = candidates.find((candidate) => typeof candidate === "number" && Number.isFinite(candidate));
   return typeof found === "number" ? found : null;
