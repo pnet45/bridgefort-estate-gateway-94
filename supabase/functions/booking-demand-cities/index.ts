@@ -41,7 +41,7 @@ serve(async (req) => {
   let upstream = await bookingDemandRequest("/common/locations/cities", {
     country,
     languages: ["en-gb"],
-    rows: 1000,
+    rows: 100,
   });
   if (!upstream.ok) {
     return jsonResponse(req, { error: upstream.message, requestId: upstream.requestId || null }, upstream.status,
@@ -57,7 +57,7 @@ serve(async (req) => {
     upstream = await bookingDemandRequest("/common/locations/cities", {
       country,
       languages: ["en-gb"],
-      rows: 1000,
+      rows: 100,
       page: nextPage,
     });
     if (!upstream.ok) {
