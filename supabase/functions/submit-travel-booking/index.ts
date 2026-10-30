@@ -84,7 +84,7 @@ serve(async (req) => {
       || req.headers.get("x-real-ip")
       || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       || "unknown";
-    const rateKeyMaterial = `${forwardedFor}|${req.headers.get("user-agent") || "unknown"}`;
+    const rateKeyMaterial = forwardedFor;
     const rateKeyDigest = await crypto.subtle.digest(
       "SHA-256",
       new TextEncoder().encode(rateKeyMaterial),
