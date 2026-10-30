@@ -75,11 +75,34 @@ create policy "travel_bookings_staff_insert"
   to authenticated
   with check (
     public.is_global_admin(auth.uid())
-    or public.user_has_permission(auth.uid(), 'booking.manage')
+    or public.user_has_permission(auth.uid(), 'admin:manage_travels')
   );
 
 revoke insert on table public.travel_bookings from anon;
 grant insert on table public.travel_bookings to authenticated, service_role;
+
+-- A view permission is not a management permission. Only manager admins receive
+-- the explicit travel-management capability here; global admins bypass it.
+insert into public.role_permissions (role, permission_key, is_enabled)
+values ('manager', 'admin:manage_travels', true)
+on conflict (role, permission_key)
+do update set is_enabled = excluded.is_enabled;
+
+-- Correct the existing permissive update policy: booking.manage currently maps
+-- to admin:view_travels and must not allow view-only staff to change bookings.
+drop policy if exists "travel_bookings_staff_update" on public.travel_bookings;
+create policy "travel_bookings_staff_update"
+  on public.travel_bookings
+  for update
+  to authenticated
+  using (
+    public.is_global_admin(auth.uid())
+    or public.user_has_permission(auth.uid(), 'admin:manage_travels')
+  )
+  with check (
+    public.is_global_admin(auth.uid())
+    or public.user_has_permission(auth.uid(), 'admin:manage_travels')
+  );
 
 -- Replace the legacy role-name check with the canonical permission system.
 drop policy if exists "Admins manage blackouts" on public.travel_package_blackouts;
@@ -90,11 +113,11 @@ create policy "travel_package_blackouts_manage"
   to authenticated
   using (
     public.is_global_admin(auth.uid())
-    or public.user_has_permission(auth.uid(), 'booking.manage')
+    or public.user_has_permission(auth.uid(), 'admin:manage_travels')
   )
   with check (
     public.is_global_admin(auth.uid())
-    or public.user_has_permission(auth.uid(), 'booking.manage')
+    or public.user_has_permission(auth.uid(), 'admin:manage_travels')
   );
 
 comment on table public.travel_enquiry_rate_limits is
