@@ -84,7 +84,7 @@ grant insert on table public.travel_bookings to authenticated, service_role;
 -- A view permission is not a management permission. Only manager admins receive
 -- the explicit travel-management capability here; global admins bypass it.
 insert into public.role_permissions (role, permission_key, is_enabled)
-values ('manager', 'admin:manage_travels', true)
+values ('admin_acct', 'admin:manage_travels', true)
 on conflict (role, permission_key)
 do update set is_enabled = excluded.is_enabled;
 
