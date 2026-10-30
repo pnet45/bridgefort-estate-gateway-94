@@ -8,7 +8,7 @@ const DEFAULT_ORIGINS = [
 
 export function allowedOrigin(req: Request): string | null {
   const origin = req.headers.get("origin");
-  if (!origin) return "https://bridgeforthomes.com";
+  if (!origin) return null;
   const configured = (Deno.env.get("BOOKING_DEMAND_ALLOWED_ORIGINS") || "")
     .split(",").map((value) => value.trim()).filter(Boolean);
   return [...DEFAULT_ORIGINS, ...configured].includes(origin) ? origin : null;
