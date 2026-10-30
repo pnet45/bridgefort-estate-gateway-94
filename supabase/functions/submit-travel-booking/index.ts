@@ -48,9 +48,21 @@ serve(async (req) => {
     const contentLength = Number(req.headers.get("content-length") || 0);
     if (contentLength > 16_384) return json({ error: "Enquiry is too large" }, 413);
 
-    const body = await req.json();
-    if (!body || typeof body !== "object" || Array.isArray(body)) {
-      return json({ error: "Invalid enquiry payload" }, 400);
+    // Enforce the limit on the actual body as well; Content-Length may be absent.
+    const rawBody = await req.text();
+    if (new TextEncoder().encode(rawBody).byteLength > 16_384) {
+      return json({ error: "Enquiry is too large" }, 413);
+    }
+
+    let body: Record<string, unknown>;
+    try {
+      const parsed = JSON.parse(rawBody);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return json({ error: "Invalid enquiry payload" }, 400);
+      }
+      body = parsed as Record<string, unknown>;
+    } catch {
+      return json({ error: "Invalid JSON payload" }, 400);
     }
 
     // Honeypot: real visitors never see or fill this field.
@@ -84,32 +96,42 @@ serve(async (req) => {
       || req.headers.get("x-real-ip")
       || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       || "unknown";
-    const rateKeyMaterial = forwardedFor === "unknown" ? `email:${email}` : `ip:${forwardedFor}`;
-    const rateLimitKey = await crypto.subtle.importKey(
+    const hmacKey = await crypto.subtle.importKey(
       "raw",
       new TextEncoder().encode(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!),
       { name: "HMAC", hash: "SHA-256" },
       false,
       ["sign"],
     );
-    const rateKeyDigest = await crypto.subtle.sign(
-      "HMAC",
-      rateLimitKey,
-      new TextEncoder().encode(rateKeyMaterial),
-    );
-    const rateKey = Array.from(new Uint8Array(rateKeyDigest))
-      .map((byte) => byte.toString(16).padStart(2, "0"))
-      .join("");
-    const { data: allowed, error: rateLimitError } = await supabase.rpc(
-      "consume_travel_enquiry_rate_limit",
-      { _client_key: rateKey, _window_seconds: 900, _max_requests: 5 },
-    );
-    if (rateLimitError) {
-      console.error("travel enquiry rate-limit check failed", rateLimitError);
-      return json({ error: "Enquiry service is temporarily unavailable. Please try again shortly." }, 503);
-    }
-    if (allowed !== true) {
-      return json({ error: "Too many enquiries. Please try again in 15 minutes." }, 429);
+    const makeRateKey = async (material: string) => {
+      const digest = await crypto.subtle.sign(
+        "HMAC",
+        hmacKey,
+        new TextEncoder().encode(material),
+      );
+      return Array.from(new Uint8Array(digest))
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+    };
+
+    // Apply independent IP and email limits. The email limit prevents easy
+    // bypass by rotating/spoofing forwarded-IP headers; only keyed hashes persist.
+    const rateKeyMaterials = forwardedFor === "unknown"
+      ? [`email:${email}`]
+      : [`ip:${forwardedFor}`, `email:${email}`];
+    for (const material of rateKeyMaterials) {
+      const rateKey = await makeRateKey(material);
+      const { data: allowed, error: rateLimitError } = await supabase.rpc(
+        "consume_travel_enquiry_rate_limit",
+        { _client_key: rateKey, _window_seconds: 900, _max_requests: 5 },
+      );
+      if (rateLimitError) {
+        console.error("travel enquiry rate-limit check failed", rateLimitError);
+        return json({ error: "Enquiry service is temporarily unavailable. Please try again shortly." }, 503);
+      }
+      if (allowed !== true) {
+        return json({ error: "Too many enquiries. Please try again in 15 minutes." }, 429);
+      }
     }
 
     // Optional Cloudflare Turnstile verification. Enforcement is activated only
@@ -185,8 +207,7 @@ serve(async (req) => {
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resend = resendKey ? new Resend(resendKey) : null;
     const from = "Bridgefort Travels <travels@bridgeforthomes.com>";
-    const origin = req.headers.get("origin") || "https://bridgeforthomes.com";
-    const statusUrl = `${origin}/travels/booking/${booking.confirmation_token}`;
+    const statusUrl = `https://bridgeforthomes.com/travels/booking/${booking.confirmation_token}`;
 
     // Put the booking directly into the admin mail centre so the request is
     // visible even when external mailbox sync is delayed.
