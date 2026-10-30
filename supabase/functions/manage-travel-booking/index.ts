@@ -76,8 +76,7 @@ serve(async (req) => {
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resend = resendKey ? new Resend(resendKey) : null;
-    const origin = req.headers.get("origin") || "https://bridgeforthomes.com";
-    const statusUrl = `${origin}/travels/booking/${booking.confirmation_token}`;
+    const statusUrl = `https://bridgeforthomes.com/travels/booking/${booking.confirmation_token}`;
 
     if (action === "update_status") {
       const status = String(body.status ?? "");
@@ -104,7 +103,7 @@ serve(async (req) => {
           resend,
           eventKey: `travel_booking_status:${booking.id}:${status}`,
           recipientEmail: booking.email,
-          recipientUserId: booking.user_id ?? null,
+          recipientUserId: booking.customer_id ?? null,
           recipientName: booking.name,
           templateKey: "travel_booking_status",
           sourceFunction: "manage-travel-booking",
@@ -130,7 +129,7 @@ serve(async (req) => {
         resend,
         eventKey: `travel_booking_message:${booking.id}:${userId}:${Date.now()}`,
         recipientEmail: booking.email,
-        recipientUserId: booking.user_id ?? null,
+        recipientUserId: booking.customer_id ?? null,
         recipientName: booking.name,
         templateKey: "travel_booking_message",
         sourceFunction: "manage-travel-booking",
@@ -178,7 +177,7 @@ serve(async (req) => {
         resend,
         eventKey: `travel_booking_confirmation_resend:${booking.id}:${new Date().toISOString().slice(0, 10)}`,
         recipientEmail: booking.email,
-        recipientUserId: booking.user_id ?? null,
+        recipientUserId: booking.customer_id ?? null,
         recipientName: booking.name,
         templateKey: "travel_booking_confirmation_resend",
         sourceFunction: "manage-travel-booking",
