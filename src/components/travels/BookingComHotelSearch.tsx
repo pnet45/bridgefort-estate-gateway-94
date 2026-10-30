@@ -39,11 +39,11 @@ const cityName = (city: City) => typeof city.name === "string"
 const getPrice = (value: any): number | null => {
   const product = value?.recommendation?.products?.[0] || value?.products?.[0];
   const candidates = [
-    value?.price?.total?.booker_currency,
+    // Booking.com v3.2 requires the display price in traveller-facing search views.
     value?.price?.display?.booker_currency,
-    value?.price?.base?.booker_currency,
-    value?.price?.total?.accommodation_currency,
     value?.price?.display?.accommodation_currency,
+    value?.price?.total?.booker_currency,
+    value?.price?.total?.accommodation_currency,
     product?.price?.total?.booker_currency,
     product?.price?.display?.booker_currency,
     product?.price?.total?.accommodation_currency,
@@ -168,7 +168,7 @@ const BookingComHotelSearch: React.FC = () => {
         adults: Number(adults),
         rooms: Number(rooms),
         bookerCountry: "ng",
-        platform: "desktop",
+        platform: getBookerPlatform(),
       },
     });
     setLookingId(null);
