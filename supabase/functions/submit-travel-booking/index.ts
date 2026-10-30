@@ -104,6 +104,28 @@ serve(async (req) => {
       return json({ error: "Too many enquiries. Please try again in 15 minutes." }, 429);
     }
 
+    // Optional Cloudflare Turnstile verification. Once TURNSTILE_SECRET_KEY
+    // is configured, a valid captcha_token is required for every public enquiry.
+    const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
+    if (turnstileSecret) {
+      const captchaToken = String(body?.captcha_token ?? "").trim();
+      if (!captchaToken) return json({ error: "Please complete the security check." }, 403);
+
+      const verification = new URLSearchParams({
+        secret: turnstileSecret,
+        response: captchaToken,
+      });
+      if (forwardedFor !== "unknown") verification.set("remoteip", forwardedFor);
+      const captchaResponse = await fetch(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        { method: "POST", body: verification },
+      );
+      const captchaResult = await captchaResponse.json().catch(() => null);
+      if (!captchaResponse.ok || captchaResult?.success !== true) {
+        return json({ error: "Security check failed. Please try again." }, 403);
+      }
+    }
+
     const { data: blackout, error: blackoutError } = await supabase
       .from("travel_package_blackouts")
       .select("package,start_date,end_date,reason")
