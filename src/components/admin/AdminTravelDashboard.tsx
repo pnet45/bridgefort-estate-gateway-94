@@ -186,7 +186,7 @@ Bridgefort Travels`
           <div className="p-2 bg-primary/10 rounded-lg"><Plane className="h-5 w-5 text-primary" /></div>
           <div>
             <h2 className="text-2xl font-bold text-white">Travel Management</h2>
-            <p className="text-sm text-slate-400">Super-admin only — bookings, statuses, and blackouts</p>
+            <p className="text-sm text-slate-400">Authorised travel managers — bookings, statuses, and blackouts</p>
           </div>
         </div>
         <div className="flex gap-2">
