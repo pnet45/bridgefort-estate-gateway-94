@@ -85,3 +85,14 @@ verify_jwt = false
 # the server-side automation control must be enabled before any document is generated or emailed.
 [functions.auto-send-contract-of-sale]
 verify_jwt = false
+
+# Booking.com Demand API is called server-side. These public proxy functions
+# enforce origin allow-lists, payload validation and persistent rate limiting.
+[functions.booking-demand-cities]
+verify_jwt = false
+
+[functions.booking-demand-search]
+verify_jwt = false
+
+[functions.booking-demand-look]
+verify_jwt = false
