@@ -44,11 +44,21 @@ serve(async (req) => {
     if (userErr || !userData.user) return response({ error: "Invalid session" }, 401);
 
     const userId = userData.user.id;
-    const { data: canManageBookings } = await supabase.rpc("user_has_permission", {
+    const { data: canManageBookings, error: permissionError } = await supabase.rpc("user_has_permission", {
       _user_id: userId,
-      _permission: "booking.manage",
+      _permission_key: "booking.manage",
     });
-    const { data: isGlobalAdmin } = await supabase.rpc("is_global_admin", { _user_id: userId });
+    if (permissionError) {
+      console.error("travel booking permission check failed", permissionError);
+      return response({ error: "Unable to verify travel-management permissions" }, 503);
+    }
+
+    const { data: isGlobalAdmin, error: globalAdminError } = await supabase.rpc("is_global_admin", { _user_id: userId });
+    if (globalAdminError) {
+      console.error("global-admin permission check failed", globalAdminError);
+      return response({ error: "Unable to verify travel-management permissions" }, 503);
+    }
+
     if (!canManageBookings && !isGlobalAdmin) {
       return response({ error: "Forbidden — booking.manage permission required" }, 403);
     }
