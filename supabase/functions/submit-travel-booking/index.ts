@@ -112,8 +112,8 @@ serve(async (req) => {
       return json({ error: "Too many enquiries. Please try again in 15 minutes." }, 429);
     }
 
-    // Optional Cloudflare Turnstile verification. Once TURNSTILE_SECRET_KEY
-    // is configured, a valid captcha_token is required for every public enquiry.
+    // Optional Cloudflare Turnstile verification. Enforcement is activated only
+    // when TURNSTILE_ENABLED=true and TURNSTILE_SECRET_KEY is configured.
     const turnstileEnabled = Deno.env.get("TURNSTILE_ENABLED") === "true";
     const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
     if (turnstileEnabled && !turnstileSecret) {
