@@ -36,6 +36,7 @@ const AdminTravelDashboard: React.FC = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [blackouts, setBlackouts] = useState<Blackout[]>([]);
   const [loading, setLoading] = useState(true);
+  const [canManage, setCanManage] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [editing, setEditing] = useState<Booking | null>(null);
@@ -62,7 +63,26 @@ const AdminTravelDashboard: React.FC = () => {
     setLoading(false);
   };
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    let active = true;
+    const initialise = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        if (active) setCanManage(false);
+        if (active) setLoading(false);
+        return;
+      }
+      const { data, error } = await supabase.rpc("user_has_permission", {
+        _user_id: user.id,
+        _permission_key: "admin:manage_travels",
+      });
+      if (active) setCanManage(!error && data === true);
+      if (active) setLoading(false);
+    };
+    initialise();
+    fetchAll();
+    return () => { active = false; };
+  }, []);
 
   const filtered = bookings.filter(b => {
     if (statusFilter !== 'all' && b.status !== statusFilter) return false;
@@ -186,7 +206,9 @@ Bridgefort Travels`
           <div className="p-2 bg-primary/10 rounded-lg"><Plane className="h-5 w-5 text-primary" /></div>
           <div>
             <h2 className="text-2xl font-bold text-white">Travel Management</h2>
-            <p className="text-sm text-slate-400">Authorised travel managers — bookings, statuses, and blackouts</p>
+            <p className="text-sm text-slate-400">
+              {canManage ? "Manage travel bookings, customer updates and package blackouts." : "Read-only travel access. Manager Admin or Global Admin approval is required to make changes."}
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -248,7 +270,7 @@ Bridgefort Travels`
                       <th className="text-left p-3">Dates</th>
                       <th className="text-left p-3">Status</th>
                       <th className="text-left p-3">Submitted</th>
-                      <th className="text-right p-3">Actions</th>
+                      {canManage && <th className="text-right p-3">Actions</th>}
                     </tr>
                   </thead>
                   <tbody className="text-slate-200">
@@ -272,15 +294,17 @@ Bridgefort Travels`
                           {b.status_note && <div className="text-xs text-slate-400 mt-1 max-w-[200px] truncate">{b.status_note}</div>}
                         </td>
                         <td className="p-3 text-xs text-slate-400">{new Date(b.created_at).toLocaleDateString()}</td>
-                        <td className="p-3 text-right space-x-1">
-                          <Button size="sm" variant="outline" onClick={() => openEdit(b)}>Manage</Button>
-                          <Button size="sm" variant="ghost" onClick={() => openEmail(b)} className="text-slate-300" title="Email customer">
-                            <Mail className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => resendEmail(b)} className="text-slate-400" title="Resend booking confirmation">
-                            <RefreshCw className="h-3.5 w-3.5" />
-                          </Button>
-                        </td>
+                        {canManage && (
+                          <td className="p-3 text-right space-x-1">
+                            <Button size="sm" variant="outline" onClick={() => openEdit(b)}>Manage</Button>
+                            <Button size="sm" variant="ghost" onClick={() => openEmail(b)} className="text-slate-300" title="Email customer">
+                              <Mail className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => resendEmail(b)} className="text-slate-400" title="Resend booking confirmation">
+                              <RefreshCw className="h-3.5 w-3.5" />
+                            </Button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -292,7 +316,8 @@ Bridgefort Travels`
       )}
 
       {tab === 'blackouts' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className={canManage ? "grid grid-cols-1 lg:grid-cols-3 gap-6" : "grid grid-cols-1 gap-6"}>
+          {canManage && (
           <div className="lg:col-span-1 bg-slate-800 border border-slate-700 rounded-lg p-5 space-y-3 h-fit">
             <h3 className="font-semibold text-white flex items-center gap-2"><Plus className="h-4 w-4" /> Add Blackout</h3>
             <div>
@@ -318,8 +343,9 @@ Bridgefort Travels`
               {boSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add blackout'}
             </Button>
           </div>
+          )}
 
-          <div className="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+          <div className={canManage ? "lg:col-span-2 bg-slate-800 border border-slate-700 rounded-lg overflow-hidden" : "bg-slate-800 border border-slate-700 rounded-lg overflow-hidden"}>
             {loading ? (
               <div className="p-12 flex justify-center"><Loader2 className="animate-spin text-slate-400" /></div>
             ) : blackouts.length === 0 ? (
@@ -339,25 +365,29 @@ Bridgefort Travels`
                   {blackouts.map(b => (
                     <tr key={b.id} className="border-t border-slate-700">
                       <td className="p-3">
-                        <Select value={b.package} onValueChange={v => updateBlackout(b, { package: v })}>
-                          <SelectTrigger className="bg-slate-900 border-slate-700 text-white h-9"><SelectValue /></SelectTrigger>
-                          <SelectContent>{PACKAGES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                        </Select>
+                        {canManage ? (
+                          <Select value={b.package} onValueChange={v => updateBlackout(b, { package: v })}>
+                            <SelectTrigger className="bg-slate-900 border-slate-700 text-white h-9"><SelectValue /></SelectTrigger>
+                            <SelectContent>{PACKAGES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                          </Select>
+                        ) : b.package}
                       </td>
                       <td className="p-3">
-                        <Input type="date" defaultValue={b.start_date} onBlur={e => e.target.value !== b.start_date && updateBlackout(b, { start_date: e.target.value })} className="bg-slate-900 border-slate-700 text-white h-9" />
+                        {canManage ? <Input type="date" defaultValue={b.start_date} onBlur={e => e.target.value !== b.start_date && updateBlackout(b, { start_date: e.target.value })} className="bg-slate-900 border-slate-700 text-white h-9" /> : b.start_date}
                       </td>
                       <td className="p-3">
-                        <Input type="date" defaultValue={b.end_date} onBlur={e => e.target.value !== b.end_date && updateBlackout(b, { end_date: e.target.value })} className="bg-slate-900 border-slate-700 text-white h-9" />
+                        {canManage ? <Input type="date" defaultValue={b.end_date} onBlur={e => e.target.value !== b.end_date && updateBlackout(b, { end_date: e.target.value })} className="bg-slate-900 border-slate-700 text-white h-9" /> : b.end_date}
                       </td>
                       <td className="p-3">
-                        <Input defaultValue={b.reason || ''} onBlur={e => e.target.value !== (b.reason || '') && updateBlackout(b, { reason: e.target.value || null })} className="bg-slate-900 border-slate-700 text-white h-9" />
+                        {canManage ? <Input defaultValue={b.reason || ''} onBlur={e => e.target.value !== (b.reason || '') && updateBlackout(b, { reason: e.target.value || null })} className="bg-slate-900 border-slate-700 text-white h-9" /> : (b.reason || "—")}
                       </td>
-                      <td className="p-3 text-right">
-                        <Button size="sm" variant="ghost" onClick={() => deleteBlackout(b.id)} className="text-red-400 hover:text-red-300">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </td>
+                      {canManage && (
+                        <td className="p-3 text-right">
+                          <Button size="sm" variant="ghost" onClick={() => deleteBlackout(b.id)} className="text-red-400 hover:text-red-300">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
