@@ -84,9 +84,17 @@ serve(async (req) => {
       || req.headers.get("x-real-ip")
       || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       || "unknown";
-    const rateKeyMaterial = forwardedFor;
-    const rateKeyDigest = await crypto.subtle.digest(
-      "SHA-256",
+    const rateKeyMaterial = forwardedFor === "unknown" ? `email:${email}` : `ip:${forwardedFor}`;
+    const rateLimitKey = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    const rateKeyDigest = await crypto.subtle.sign(
+      "HMAC",
+      rateLimitKey,
       new TextEncoder().encode(rateKeyMaterial),
     );
     const rateKey = Array.from(new Uint8Array(rateKeyDigest))
@@ -106,8 +114,12 @@ serve(async (req) => {
 
     // Optional Cloudflare Turnstile verification. Once TURNSTILE_SECRET_KEY
     // is configured, a valid captcha_token is required for every public enquiry.
+    const turnstileEnabled = Deno.env.get("TURNSTILE_ENABLED") === "true";
     const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
-    if (turnstileSecret) {
+    if (turnstileEnabled && !turnstileSecret) {
+      return json({ error: "Security check is temporarily unavailable. Please try again shortly." }, 503);
+    }
+    if (turnstileEnabled && turnstileSecret) {
       const captchaToken = String(body?.captcha_token ?? "").trim();
       if (!captchaToken) return json({ error: "Please complete the security check." }, 403);
 
