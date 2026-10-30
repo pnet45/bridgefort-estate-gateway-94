@@ -47,3 +47,15 @@
 A version-only diff overstates the mismatch because some ledger entries were recorded under a different version while retaining the original migration name. Matching by exact migration name resolves several apparent version differences. The remaining 20/6 inventory is not enough to infer whether the SQL effects are absent, manually applied, represented by a differently named migration, or superseded.
 
 **Do not run `supabase db push`, insert/delete migration ledger rows, replay historical SQL, or apply the Stage 1.5 migration until each unmatched item has been reconciled against the live schema/function/policy state and its original SQL source.** The two October 27 HR entries require their source migration SQL and explicit comparison to the local HR workspace migration before any release decision.
+
+## Live schema spot-checks (read-only)
+
+The following catalog checks were run against the live Supabase project after the filename/name inventory:
+
+- The HR tables `hr_staff_directory`, `hr_job_descriptions`, `hr_tasks`, and `hr_daily_reports` exist.
+- The live `public.is_hr_manager(uuid)` definition currently authorises global admins and the roles `super_admin`, `admin_dir`, `admin_acct`, `admin_adm`, `admin_it`, and `admin`. The local-only migration `20261029090000_restrict_hr_management_to_global_and_manager_admin.sql` narrows this to global admins and `admin_acct` (Manager Admin). That intended narrowing is not reflected in the live function. Do not assume the local migration has been applied.
+- The `guard_admin_tab_permission_changes` function and trigger are absent from the live catalog, although the local-only migration `20261020120000_guard_admin_tab_permission_changes.sql` defines them. Existing RLS policies on `role_permissions` remain in place; the missing trigger is a missing additional database guard, not proof that all users can write permissions.
+- `leo_knowledge_versions` and `leo_knowledge_source_sync` exist; the live version increment/snapshot triggers are present, and the `leo-knowledge-source-monitor` cron job is active. These effects are present despite several timestamp/name mismatches in the repository inventory. Do not replay related migrations based on timestamp differences alone.
+- The HR tables show table-level privileges for `anon`, but the inspected HR RLS policy set contains no `anon` policies. RLS currently remains the row-access boundary; the broader grants should still be reviewed for least privilege and reconciled against the original `20261027041927` SQL.
+
+These checks show why migration reconciliation must compare source SQL, ledger names, live function definitions, triggers, policies and grants. A filename mismatch alone does not prove a migration is missing, and a ledger entry alone does not prove the intended security state is present.
