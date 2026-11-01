@@ -25,7 +25,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 serve(async (req) => {
   const origin = req.headers.get("origin");
-  if (origin && origin !== "https://bridgeforthomes.com" && origin !== "https://www.bridgeforthomes.com") {
+  if (origin && origin !== "https://bridgeforthomes.com") {
     return json({ error: "Origin not allowed" }, 403);
   }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
