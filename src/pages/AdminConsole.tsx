@@ -54,7 +54,7 @@ const AdminConsole = () => {
   const { isGlobalAdmin, loading: globalAdminLoading } = useIsGlobalAdmin();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const canReviewReports = isGlobalAdmin || ['super_admin','admin_dir','admin_acct','admin_adm','admin_it','admin','manager'].includes(userRole || '');
+  const canReviewReports = isGlobalAdmin || userRole === 'admin_acct';
   const canManageHR = isGlobalAdmin || userRole === 'admin_acct';
   const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isGlobalAdmin) { tabs.add('overview'); tabs.add('permissions'); tabs.add('travels'); tabs.add('documentation'); } if (canReviewReports) tabs.add('reports'); if (canManageHR) tabs.add('hr-workspace'); return Array.from(tabs); }, [permissions, isGlobalAdmin, canReviewReports]);
   const [loading, setLoading] = useState(true);
