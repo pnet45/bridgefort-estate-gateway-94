@@ -45,7 +45,40 @@ serve(async (req) => {
       }
     }
 
-    const body = await req.json();
+    // Bound public traffic before parsing or writing to the database.
+    const contentLength = Number(req.headers.get("content-length") ?? "0");
+    if (Number.isFinite(contentLength) && contentLength > 16_384) return json({ error: "Request body is too large" }, 413);
+    if (!(req.headers.get("content-type") ?? "").toLowerCase().includes("application/json")) {
+      return json({ error: "Content-Type must be application/json" }, 415);
+    }
+
+    // Atomic server-side rate limit using the existing protected RPC; no schema change.
+    // Only use platform-provided IP headers, not arbitrary X-Forwarded-For.
+    const clientIp = req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "";
+    const rateIdentity = clientIp.trim() ? `ip:${clientIp.trim().slice(0, 128)}` : "ip:unavailable";
+    const rateDigest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rateIdentity));
+    const rateKey = `travel-booking:${Array.from(new Uint8Array(rateDigest), (b) => b.toString(16).padStart(2, "0")).join("")}`;
+    const { data: rateAllowed, error: rateError } = await supabase.rpc("consume_leo_public_rate_limit", {
+      p_rate_key: rateKey,
+      p_limit: 5,
+      p_window_seconds: 900,
+    });
+    if (rateError) {
+      console.error("travel booking rate limit check failed:", rateError);
+      return json({ error: "Travel enquiries are temporarily unavailable. Please try again shortly." }, 503);
+    }
+    if (rateAllowed !== true) return json({ error: "Too many travel enquiries. Please wait 15 minutes before trying again." }, 429);
+
+    let body: any;
+    try {
+      const rawBody = await req.text();
+      if (rawBody.length > 16_384) return json({ error: "Request body is too large" }, 413);
+      body = JSON.parse(rawBody);
+    } catch {
+      return json({ error: "Invalid JSON request body" }, 400);
+    }
+    if (!body || typeof body !== "object" || Array.isArray(body)) return json({ error: "Invalid request body" }, 400);
+
     const name = String(body?.name ?? "").trim();
     const email = String(body?.email ?? "").trim().toLowerCase();
     const phone = String(body?.phone ?? "").trim();
@@ -59,8 +92,13 @@ serve(async (req) => {
     if (!name || name.length < 2 || name.length > 100) return json({ error: "Valid full name is required" }, 400);
     if (!/^\S+@\S+\.\S+$/.test(email) || email.length > 255) return json({ error: "Valid email is required" }, 400);
     if (phone.length < 7 || phone.length > 20) return json({ error: "Valid phone number is required" }, 400);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(departureDate) || !/^\d{4}-\d{2}-\d{2}$/.test(returnDate)) return json({ error: "Valid travel dates are required" }, 400);
-    if (returnDate < departureDate) return json({ error: "Return date must be after departure date" }, 400);
+    const isRealDate = (value: string) => {
+      if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+      const parsed = new Date(`${value}T00:00:00.000Z`);
+      return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+    };
+    if (!isRealDate(departureDate) || !isRealDate(returnDate)) return json({ error: "Valid travel dates are required" }, 400);
+    if (returnDate <= departureDate) return json({ error: "Return date must be after departure date" }, 400);
     if (!Number.isInteger(travelers) || travelers < 1 || travelers > 50) return json({ error: "Travelers must be between 1 and 50" }, 400);
     if (!packageName || packageName.length > 100) return json({ error: "Travel package is required" }, 400);
     if (destination && destination.length > 120) return json({ error: "Destination is too long" }, 400);
