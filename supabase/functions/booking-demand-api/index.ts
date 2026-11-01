@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "https://bridgeforthomes.com",
@@ -29,6 +30,18 @@ serve(async (req) => {
   }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceRoleKey) return json({ error: "Travel search is not configured" }, 503);
+  const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const clientIp = req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "";
+  const rateIdentity = clientIp.trim() ? "ip:" + clientIp.trim().slice(0, 128) : "ip:unavailable";
+  const rateDigest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rateIdentity));
+  const rateKey = "booking-demand:" + Array.from(new Uint8Array(rateDigest), (b) => b.toString(16).padStart(2, "0")).join("");
+  const { data: rateAllowed, error: rateError } = await supabase.rpc("consume_leo_public_rate_limit", { p_rate_key: rateKey, p_limit: 20, p_window_seconds: 900 });
+  if (rateError) { console.error("Booking.com search rate-limit check failed", rateError); return json({ error: "Travel search is temporarily unavailable" }, 503); }
+  if (rateAllowed !== true) return json({ error: "Too many searches. Please try again in 15 minutes." }, 429);
 
   const key = Deno.env.get("BOOKING_DEMAND_API_KEY");
   const affiliateId = Deno.env.get("BOOKING_AFFILIATE_ID");
