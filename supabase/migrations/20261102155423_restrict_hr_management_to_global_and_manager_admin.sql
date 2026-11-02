@@ -1,7 +1,7 @@
+-- Applied to the production Supabase project on 2026-11-02.
+-- Align this migration filename with the recorded remote version 20261102155423.
 -- Restrict HR management authority to Global Admin and Manager Admin (admin_acct).
--- Existing table policies delegate write access through is_hr_manager(auth.uid()),
--- so narrowing this helper protects staff, task, job-description, and report review access.
--- This migration is intentionally reviewed in GitHub first; do not apply manually to production.
+-- Existing table policies delegate management access through is_hr_manager(auth.uid()).
 
 CREATE OR REPLACE FUNCTION public.is_hr_manager(_user_id uuid DEFAULT auth.uid())
 RETURNS boolean

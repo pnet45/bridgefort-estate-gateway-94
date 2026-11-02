@@ -1,15 +1,15 @@
+-- Applied to the production Supabase project on 2026-11-02.
+-- Align this migration filename with the recorded remote version 20261102155427.
 -- Reconcile HR workspace table privileges with the PR #61 access model.
--- This migration is intentionally additive/safe to re-run at the privilege level.
--- It does not alter HR data or RLS policies.
+-- This migration does not alter HR data or RLS policies.
 --
 -- Expected access:
 --   anon: no table privileges
 --   authenticated: existing app CRUD permissions (daily reports exclude DELETE)
 --   service_role: preserve existing service-role access
 --
--- HR manager authorization is restricted by the preceding migration
--- 20261029090000_restrict_hr_management_to_global_and_manager_admin.sql.
--- That migration must be applied before this one.
+-- The HR manager authorization restriction is applied by the immediately
+-- preceding migration: 20261102155423_restrict_hr_management_to_global_and_manager_admin.sql.
 
 BEGIN;
 
