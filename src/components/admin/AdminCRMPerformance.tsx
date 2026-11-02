@@ -106,7 +106,7 @@ const AdminCRMPerformance: React.FC = () => {
       const winRate = closed.length ? Math.round((won.length / closed.length) * 100) : 0;
       const wonValue = won.reduce((sum, lead) => sum + Number(lead.conversion_value || 0), 0);
       // Transparent activity points: 5 per new lead, 20 per won lead, 2 per completed follow-up.
-      const points = created.length * 5 + won.length * 20 + completedFollowUps * 2;
+      const points = created.length * 5 + won.length * 20;
       return { id, name, leads: created.length, won: won.length, lost: closed.length - won.length, winRate, wonValue, completedFollowUps, pendingFollowUps, points };
     }).sort((a, b) => b.points - a.points || b.wonValue - a.wonValue || b.leads - a.leads);
   }, [leads, followUps, members]);
@@ -156,7 +156,7 @@ const AdminCRMPerformance: React.FC = () => {
       <Card className="border-border bg-card shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base text-foreground"><Trophy className="h-5 w-5 text-[#B89A55]" />Team leaderboard</CardTitle>
-          <p className="text-xs text-muted-foreground">Momentum points reward new leads, completed follow-ups and successful conversions.</p>
+          <p className="text-xs text-muted-foreground">Momentum points reward assigned lead growth and successful conversions.</p>
         </CardHeader>
         <CardContent className="space-y-4">
           {loading ? <p className="py-6 text-center text-sm text-muted-foreground">Loading team performance…</p> :
@@ -168,7 +168,7 @@ const AdminCRMPerformance: React.FC = () => {
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F4EEDC] font-bold text-[#80652F] dark:bg-[#3A3325] dark:text-[#E5CD91]">{index + 1}</div>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2"><p className="truncate text-sm font-semibold text-foreground">{row.name}</p>{index === 0 && <Badge className="border-[#D6BD7B] bg-[#F4EEDC] text-[#5C4720] dark:bg-[#3A3325] dark:text-[#F0DCA9]">Top performer</Badge>}</div>
-                        <p className="mt-1 text-xs text-muted-foreground">{row.leads} leads · {row.won} won · {row.completedFollowUps} follow-ups completed</p>
+                        <p className="mt-1 text-xs text-muted-foreground">{row.leads} leads · {row.won} won · {row.completedFollowUps} follow-ups completed on owned leads</p>
                         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border"><div className="h-full rounded-full bg-[#B89A55]" style={{ width: (Math.round((row.points / topValue) * 100)) + '%' }} /></div>
                       </div>
                       <div className="shrink-0 text-right"><p className="text-sm font-bold tabular-nums text-foreground">{row.points}</p><p className="text-[10px] text-muted-foreground">points</p></div>
@@ -178,7 +178,7 @@ const AdminCRMPerformance: React.FC = () => {
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   {topCloser && <div className="rounded-xl border border-border p-3"><div className="flex items-center gap-2 text-[#B89A55]"><Award className="h-4 w-4" /><span className="text-xs font-semibold uppercase tracking-wide">Top closer</span></div><p className="mt-1 text-sm font-semibold text-foreground">{topCloser.name}</p><p className="text-xs text-muted-foreground">{topCloser.won} conversions · {naira(topCloser.wonValue)}</p></div>}
-                  {topFollowThrough && <div className="rounded-xl border border-border p-3"><div className="flex items-center gap-2 text-[#B89A55]"><CalendarCheck className="h-4 w-4" /><span className="text-xs font-semibold uppercase tracking-wide">Follow-through champion</span></div><p className="mt-1 text-sm font-semibold text-foreground">{topFollowThrough.name}</p><p className="text-xs text-muted-foreground">{topFollowThrough.completedFollowUps} follow-ups completed</p></div>}
+                  {topFollowThrough && <div className="rounded-xl border border-border p-3"><div className="flex items-center gap-2 text-[#B89A55]"><CalendarCheck className="h-4 w-4" /><span className="text-xs font-semibold uppercase tracking-wide">Most follow-ups completed on owned leads</span></div><p className="mt-1 text-sm font-semibold text-foreground">{topFollowThrough.name}</p><p className="text-xs text-muted-foreground">{topFollowThrough.completedFollowUps} follow-ups completed</p></div>}
                 </div>
 
                 <div className="overflow-x-auto rounded-xl border border-border">
@@ -191,7 +191,7 @@ const AdminCRMPerformance: React.FC = () => {
             )}
         </CardContent>
       </Card>
-      <p className="text-xs text-muted-foreground">Points formula: 5 per new lead, 20 per won lead and 2 per completed follow-up. Commission and individual sales targets are not shown because those values are not stored in the current CRM data model.</p>
+      <p className="text-xs text-muted-foreground">Points formula: 5 per new lead and 20 per won lead. Follow-up activity is shown against the assigned lead owner because the current CRM schema does not record a separate person who completed each follow-up. Commission and individual sales targets are not shown because those values are not stored in the current CRM data model.</p>
     </div>
   );
 };
