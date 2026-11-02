@@ -15,7 +15,7 @@ import { toast } from '@/hooks/use-toast';
 import {
   Plus, Search, Phone, Mail, User, Calendar, Clock,
   MessageSquare, Trash2, Pencil, CheckCircle, Filter,
-  PhoneCall, MailPlus, Users as UsersIcon, TrendingUp, Download, Target, CircleDollarSign
+  PhoneCall, MailPlus, Users as UsersIcon, TrendingUp, Download, Target, CircleDollarSign, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -89,6 +89,8 @@ const AdminCRMLeads: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [overdueOnly, setOverdueOnly] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -338,6 +340,10 @@ const AdminCRMLeads: React.FC = () => {
     return matchSearch && matchStatus && matchAssignee && matchPriority && matchSource && matchOverdue;
   });
 
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, assigneeFilter, priorityFilter, sourceFilter, overdueOnly]);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const paginatedLeads = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   const stats = {
     total: leads.length,
     new: leads.filter(l => l.status === 'new').length,
@@ -381,7 +387,7 @@ const AdminCRMLeads: React.FC = () => {
           { label: 'Win Rate', value: `${stats.winRate}%`, icon: Target, color: 'text-cyan-400' },
           { label: 'Won Value', value: `₦${Math.round(stats.value / 1000000)}m`, icon: CircleDollarSign, color: 'text-emerald-400' },
         ].map(s => (
-          <Card key={s.label} className="bg-white/50 border-slate-200">
+          <Card key={s.label} className="bg-card border-slate-200">
             <CardContent className="p-4 flex items-center gap-3">
               <s.icon className={`h-5 w-5 ${s.color}`} />
               <div>
@@ -422,9 +428,9 @@ const AdminCRMLeads: React.FC = () => {
       </div>
 
       {/* Leads List */}
-      <div className="flex gap-4">
-        <div className={`${selectedLead ? 'w-1/2' : 'w-full'} transition-all`}>
-          <ScrollArea className="h-[500px]">
+      <div className="flex min-w-0 flex-col gap-4 lg:flex-row">
+        <div className={`${selectedLead ? 'w-full lg:w-1/2' : 'w-full'} min-w-0 transition-all`}>
+          <ScrollArea className="h-[520px] lg:h-[calc(100dvh-21rem)]">
             <div className="space-y-2">
               {loading ? <p role="status" aria-live="polite" className="text-slate-600 p-4">Loading leads…</p> :
                 filtered.length === 0 ? (
@@ -439,8 +445,8 @@ const AdminCRMLeads: React.FC = () => {
                     )}
                   </div>
                 ) :
-                filtered.map(lead => (
-                  <Card key={lead.id} className={`border-slate-200 cursor-pointer transition-colors ${selectedLead?.id === lead.id ? 'bg-slate-600' : 'bg-white/50 hover:bg-white'}`}
+                paginatedLeads.map(lead => (
+                  <Card key={lead.id} className={`border-slate-200 cursor-pointer transition-colors ${selectedLead?.id === lead.id ? 'bg-[#F4EEDC] dark:bg-[#3A3325]' : 'bg-card hover:bg-muted'}`}
                     onClick={() => handleOpenLead(lead)}>
                     <CardContent className="p-3">
                       <div className="flex items-center justify-between">
@@ -479,12 +485,20 @@ const AdminCRMLeads: React.FC = () => {
                 ))}
             </div>
           </ScrollArea>
+          <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-muted-foreground">Showing {filtered.length ? ((currentPage - 1) * pageSize) + 1 : 0}–{Math.min(currentPage * pageSize, filtered.length)} of {filtered.length} leads</p>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(page => Math.max(1, page - 1))} disabled={currentPage <= 1} aria-label="Previous page"><ChevronLeft className="h-4 w-4" /></Button>
+              <span className="min-w-[5.5rem] text-center text-xs text-muted-foreground">Page {currentPage} of {pageCount}</span>
+              <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(page => Math.min(pageCount, page + 1))} disabled={currentPage >= pageCount} aria-label="Next page"><ChevronRight className="h-4 w-4" /></Button>
+            </div>
+          </div>
         </div>
 
         {/* Lead Detail Panel */}
         {selectedLead && (
-          <div className="w-1/2">
-            <Card className="bg-white/50 border-slate-200 h-[500px]">
+          <div className="w-full min-w-0 lg:w-1/2">
+            <Card className="bg-card border-slate-200 min-h-[420px] h-[520px] lg:h-[calc(100dvh-21rem)]">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-slate-900 text-lg">{selectedLead.name}</CardTitle>
@@ -492,7 +506,7 @@ const AdminCRMLeads: React.FC = () => {
                 </div>
                 <div className="flex gap-2 mt-1">
                   <Select value={selectedLead.status} onValueChange={s => { handleStatusChange(selectedLead, s); setSelectedLead({ ...selectedLead, status: s }); }}>
-                    <SelectTrigger className="w-[120px] h-7 text-xs bg-slate-600 border-slate-300 text-slate-900">
+                    <SelectTrigger className="w-[120px] h-7 text-xs bg-background border-border text-foreground">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
