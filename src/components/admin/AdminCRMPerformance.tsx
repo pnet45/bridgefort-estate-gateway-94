@@ -141,7 +141,7 @@ const AdminCRMPerformance: React.FC = () => {
           { label: 'New leads this month', value: totals.leads, icon: Users },
           { label: 'Won this month', value: totals.won, icon: Target },
           { label: 'Closed value', value: naira(totals.wonValue), icon: Trophy },
-          { label: 'Follow-ups completed', value: totals.completed, icon: CalendarCheck },
+          { label: 'Completed follow-ups (owned leads)', value: totals.completed, icon: CalendarCheck },
         ].map(item => (
           <Card key={item.label} className="border-border bg-card shadow-sm">
             <CardContent className="flex min-w-0 items-center gap-3 p-3 sm:p-4">
@@ -182,8 +182,8 @@ const AdminCRMPerformance: React.FC = () => {
 
                 <div className="overflow-x-auto rounded-xl border border-border">
                   <table className="w-full min-w-[620px] text-left text-sm">
-                    <thead className="bg-muted text-xs text-muted-foreground"><tr><th className="px-3 py-2.5 font-semibold">Team member</th><th className="px-3 py-2.5 font-semibold">New leads</th><th className="px-3 py-2.5 font-semibold">Won</th><th className="px-3 py-2.5 font-semibold">Win rate</th><th className="px-3 py-2.5 font-semibold">Won value</th><th className="px-3 py-2.5 font-semibold">Pending follow-ups</th></tr></thead>
-                    <tbody>{rows.map(row => <tr key={row.id} className="border-t border-border"><td className="px-3 py-2.5 font-medium text-foreground">{row.name}</td><td className="px-3 py-2.5 tabular-nums">{row.leads}</td><td className="px-3 py-2.5 tabular-nums">{row.won}</td><td className="px-3 py-2.5 tabular-nums">{row.winRate}%</td><td className="px-3 py-2.5 tabular-nums">{naira(row.wonValue)}</td><td className="px-3 py-2.5 tabular-nums">{row.pendingFollowUps}</td></tr>)}</tbody>
+                    <thead className="bg-muted text-xs text-muted-foreground"><tr><th className="px-3 py-2.5 font-semibold">Team member</th><th className="px-3 py-2.5 font-semibold">New leads</th><th className="px-3 py-2.5 font-semibold">Won</th><th className="px-3 py-2.5 font-semibold">Lost</th><th className="px-3 py-2.5 font-semibold">Win rate</th><th className="px-3 py-2.5 font-semibold">Won value</th><th className="px-3 py-2.5 font-semibold">Pending follow-ups</th></tr></thead>
+                    <tbody>{rows.map(row => <tr key={row.id} className="border-t border-border"><td className="px-3 py-2.5 font-medium text-foreground">{row.name}</td><td className="px-3 py-2.5 tabular-nums">{row.leads}</td><td className="px-3 py-2.5 tabular-nums">{row.won}</td><td className="px-3 py-2.5 tabular-nums">{row.lost}</td><td className="px-3 py-2.5 tabular-nums">{row.winRate}%</td><td className="px-3 py-2.5 tabular-nums">{naira(row.wonValue)}</td><td className="px-3 py-2.5 tabular-nums">{row.pendingFollowUps}</td></tr>)}</tbody>
                   </table>
                 </div>
               </>
