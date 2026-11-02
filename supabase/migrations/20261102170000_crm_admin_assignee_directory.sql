@@ -65,7 +65,6 @@ begin
 end;
 $$;
 
-revoke all on schema private from public, anon;
 grant usage on schema private to authenticated;
 revoke all on function private.crm_admin_assignees() from public, anon;
 grant execute on function private.crm_admin_assignees() to authenticated;
