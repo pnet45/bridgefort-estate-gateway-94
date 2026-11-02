@@ -81,8 +81,8 @@ security invoker
 set search_path = ''
 as $$
 begin
-  if auth.uid() is null or not coalesce(public.is_admin(auth.uid()), false) then
-    raise exception 'Admin access required' using errcode = '42501';
+  if auth.uid() is null then
+    raise exception 'Authentication required' using errcode = '42501';
   end if;
 
   return query
