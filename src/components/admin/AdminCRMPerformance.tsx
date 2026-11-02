@@ -90,11 +90,10 @@ const AdminCRMPerformance: React.FC = () => {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
     const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const monthLeads = leads.filter(lead => inMonth(lead.created_at, start, end) || inMonth(lead.closed_at, start, end));
-    const memberIds = [...new Set(monthLeads.map(lead => lead.assigned_to).filter((id): id is string => Boolean(id)))];
+    const memberIds = [...new Set(leads.map(lead => lead.assigned_to).filter((id): id is string => Boolean(id)))];
 
     return memberIds.map(id => {
-      const assigned = monthLeads.filter(lead => lead.assigned_to === id);
+      const assigned = leads.filter(lead => lead.assigned_to === id);
       const created = assigned.filter(lead => inMonth(lead.created_at, start, end));
       const closed = assigned.filter(lead => inMonth(lead.closed_at, start, end) && ['won', 'lost'].includes(lead.status));
       const won = closed.filter(lead => lead.status === 'won');
