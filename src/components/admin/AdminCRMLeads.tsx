@@ -76,7 +76,7 @@ const STATUSES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
 const SOURCES = ['website', 'referral', 'social_media', 'walk_in', 'phone', 'email', 'event', 'other'];
 const ACTION_TYPES = ['call', 'email', 'meeting', 'whatsapp', 'site_visit', 'other'];
 const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
-interface TeamMember { id: string; first_name: string | null; last_name: string | null; email: string | null }
+interface TeamMember { id: string; first_name: string | null; last_name: string | null }
 interface PropertyOption { id: string; name: string; kind: 'estate' | 'listing' }
 
 const AdminCRMLeads: React.FC = () => {
@@ -144,14 +144,26 @@ const AdminCRMLeads: React.FC = () => {
   useEffect(() => {
     const fetchOptions = async () => {
       const [{ data: roleRows }, { data: estates }, { data: listings }] = await Promise.all([
-        supabase.from('user_roles').select('user_id, role').in('role', ['admin', 'staff']),
+        supabase.from('admin_roles')
+          .select('user_id, role_name')
+          .or('role_name.eq.admin,role_name.eq.super_admin,role_name.like.admin_%')
+          .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
         supabase.from('estate').select('id, name').order('name'),
         supabase.from('listings').select('id, title').eq('status', 'approved').order('title'),
       ]);
       const ids = [...new Set((roleRows || []).map(row => row.user_id))];
       if (ids.length) {
-        const { data } = await supabase.from('profiles').select('id, first_name, last_name, email').in('id', ids);
-        setTeamMembers(data || []);
+        const { data } = await supabase.from('profiles').select('id, first_name, last_name').in('id', ids);
+        const namedAdmins = (data || [])
+          .filter(member => Boolean([member.first_name, member.last_name].filter(Boolean).join(' ').trim()))
+          .sort((a, b) => {
+            const nameA = [a.first_name, a.last_name].filter(Boolean).join(' ').trim();
+            const nameB = [b.first_name, b.last_name].filter(Boolean).join(' ').trim();
+            return nameA.localeCompare(nameB);
+          });
+        setTeamMembers(namedAdmins);
+      } else {
+        setTeamMembers([]);
       }
       setProperties([
         ...(estates || []).map(item => ({ id: item.id, name: item.name, kind: 'estate' as const })),
@@ -416,7 +428,7 @@ const AdminCRMLeads: React.FC = () => {
             {STATUSES.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}><SelectTrigger className="w-[160px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Assignee" /></SelectTrigger><SelectContent><SelectItem value="all">All assignees</SelectItem><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select>
+        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}><SelectTrigger className="w-[160px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Assignee" /></SelectTrigger><SelectContent><SelectItem value="all">All assignees</SelectItem><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ')}</SelectItem>)}</SelectContent></Select>
         <Select value={priorityFilter} onValueChange={setPriorityFilter}><SelectTrigger className="w-[130px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Priority" /></SelectTrigger><SelectContent><SelectItem value="all">All priorities</SelectItem>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select>
         <Select value={sourceFilter} onValueChange={setSourceFilter}><SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Source" /></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{[...new Set(leads.map(lead => lead.source).filter(Boolean))].map(source => <SelectItem key={source} value={source}>{source.replace('_', ' ')}</SelectItem>)}</SelectContent></Select>
         <Button variant={overdueOnly ? 'default' : 'outline'} onClick={() => setOverdueOnly(value => !value)}><Clock className="h-4 w-4 mr-1" />Overdue</Button>
@@ -533,7 +545,7 @@ const AdminCRMLeads: React.FC = () => {
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label className="text-xs text-slate-600">Assigned to</Label><Select value={selectedLead.assigned_to || 'unassigned'} onValueChange={async value => { const assigned = value === 'unassigned' ? null : value; await supabase.from('crm_leads').update({ assigned_to: assigned }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, assigned_to: assigned }); fetchLeads(); }}><SelectTrigger className="bg-background border-border text-foreground"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label className="text-xs text-slate-600">Assigned to</Label><Select value={selectedLead.assigned_to || 'unassigned'} onValueChange={async value => { const assigned = value === 'unassigned' ? null : value; await supabase.from('crm_leads').update({ assigned_to: assigned }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, assigned_to: assigned }); fetchLeads(); }}><SelectTrigger className="bg-background border-border text-foreground"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ')}</SelectItem>)}</SelectContent></Select></div>
                     <div><Label className="text-xs text-slate-600">Priority</Label><Select value={selectedLead.priority} onValueChange={async priority => { await supabase.from('crm_leads').update({ priority }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, priority }); fetchLeads(); }}><SelectTrigger className="bg-muted border-border text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div>
                   </div>
 
@@ -638,7 +650,7 @@ const AdminCRMLeads: React.FC = () => {
                 <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="bg-white border-slate-200 text-slate-900" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-700">Assignee</Label><Select value={form.assigned_to || 'unassigned'} onValueChange={value => setForm(current => ({ ...current, assigned_to: value === 'unassigned' ? '' : value }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div><div><Label className="text-slate-700">Priority</Label><Select value={form.priority} onValueChange={priority => setForm(current => ({ ...current, priority }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div></div>
+            <div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-700">Assignee</Label><Select value={form.assigned_to || 'unassigned'} onValueChange={value => setForm(current => ({ ...current, assigned_to: value === 'unassigned' ? '' : value }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ')}</SelectItem>)}</SelectContent></Select></div><div><Label className="text-slate-700">Priority</Label><Select value={form.priority} onValueChange={priority => setForm(current => ({ ...current, priority }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div></div>
             <div><Label className="text-slate-700">Property</Label><Select value={form.property_key || 'none'} onValueChange={property_key => setForm(current => ({ ...current, property_key: property_key === 'none' ? '' : property_key }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Select a property" /></SelectTrigger><SelectContent><SelectItem value="none">No linked property</SelectItem>{properties.map(property => <SelectItem key={`${property.kind}:${property.id}`} value={`${property.kind}:${property.id}`}>{property.name} · {property.kind}</SelectItem>)}</SelectContent></Select></div>
             <div className="grid grid-cols-2 gap-3">
               <div>
