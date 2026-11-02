@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart3, Download, FileText, RefreshCw } from 'lucide-react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { format, subDays } from 'date-fns';
 import jsPDF from 'jspdf';
 
@@ -117,6 +117,21 @@ const AdminInquiryAnalytics: React.FC = () => {
     return [...map.entries()].map(([date, count]) => ({ date, count }));
   }, [filtered, from, to]);
 
+  const pipelineMovement = useMemo(() => {
+    const map = new Map<string, number>();
+    const cursor = new Date(`${from}T00:00:00`);
+    const last = new Date(`${to}T00:00:00`);
+    while (cursor <= last) {
+      map.set(format(cursor, 'yyyy-MM-dd'), 0);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    fActs.filter(activity => activity.activity_type === 'status_change' || activity.activity_type === 'conversion').forEach(activity => {
+      const day = format(new Date(activity.created_at), 'yyyy-MM-dd');
+      map.set(day, (map.get(day) || 0) + 1);
+    });
+    return [...map.entries()].map(([date, changes]) => ({ date, changes }));
+  }, [fActs, from, to]);
+
   const breakdown = useCallback((keyFn: (l: Lead) => string) => {
     const map = new Map<string, { key: string; total: number; won: number; lost: number; value: number; statusChanges: number; followUps: number }>();
     filtered.forEach(l => {
@@ -134,6 +149,7 @@ const AdminInquiryAnalytics: React.FC = () => {
 
   const byProperty = useMemo(() => breakdown(propertyOf), [breakdown]);
   const byAgent = useMemo(() => breakdown(l => agentName(l.assigned_to)), [breakdown, agentName]);
+  const bySource = useMemo(() => breakdown(l => l.source || 'other'), [breakdown]);
 
   const historyOf = (id: string) => activities.filter(a => a.lead_id === id && (a.activity_type === 'status_change' || a.activity_type === 'conversion'))
     .map(a => `${format(new Date(a.created_at), 'yyyy-MM-dd')}: ${a.description}`).join(' | ');
@@ -264,8 +280,22 @@ const AdminInquiryAnalytics: React.FC = () => {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <BreakdownTable title="By property" rows={byProperty} />
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-slate-900">Pipeline movement</CardTitle><p className="text-xs text-slate-600">Recorded status changes and conversions over the selected period.</p></CardHeader>
+          <CardContent className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={pipelineMovement}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                <YAxis allowDecimals={false} stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                <Tooltip /><Line type="monotone" dataKey="changes" name="Stage changes" stroke="#B89A55" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <BreakdownTable title="By lead source" rows={bySource} />
+          <BreakdownTable title="By property" rows={byProperty} />
           <BreakdownTable title="By agent" rows={byAgent} />
         </div>
       </CardContent>
