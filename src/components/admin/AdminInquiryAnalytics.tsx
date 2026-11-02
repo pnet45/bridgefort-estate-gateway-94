@@ -25,7 +25,7 @@ const UNASSIGNED = '__none';
 const naira = (v: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(v);
 const propertyOf = (l: Lead) => l.estate_interest || l.estate_id || l.listing_id || 'Unspecified';
 const strip = (s: string | null) => (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-const displayBreakdownKey = (value: string) => value.replace(/[_-]/g, ' ').replace(/\\b\\w/g, char => char.toUpperCase());
+const displayBreakdownKey = (value: string) => value.replace(/[_-]/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
 const AdminInquiryAnalytics: React.FC = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
