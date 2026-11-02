@@ -25,6 +25,7 @@ const UNASSIGNED = '__none';
 const naira = (v: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(v);
 const propertyOf = (l: Lead) => l.estate_interest || l.estate_id || l.listing_id || 'Unspecified';
 const strip = (s: string | null) => (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+const displayBreakdownKey = (value: string) => value.replace(/[_-]/g, ' ').replace(/\\b\\w/g, char => char.toUpperCase());
 
 const AdminInquiryAnalytics: React.FC = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -214,7 +215,7 @@ const AdminInquiryAnalytics: React.FC = () => {
           <TableBody>
             {rows.map(r => { const c = r.won + r.lost; return (
               <TableRow key={r.key}>
-                <TableCell className="py-1.5 pr-2">{r.key}</TableCell><TableCell>{r.total}</TableCell><TableCell>{r.statusChanges}</TableCell><TableCell>{r.followUps}</TableCell><TableCell>{r.won}</TableCell><TableCell>{r.lost}</TableCell>
+                <TableCell className="py-1.5 pr-2">{displayBreakdownKey(r.key)}</TableCell><TableCell>{r.total}</TableCell><TableCell>{r.statusChanges}</TableCell><TableCell>{r.followUps}</TableCell><TableCell>{r.won}</TableCell><TableCell>{r.lost}</TableCell>
                 <TableCell>{c ? `${Math.round((r.won / c) * 100)}%` : '—'}</TableCell><TableCell>{naira(r.value)}</TableCell>
               </TableRow>); })}
             {!rows.length && <TableRow><TableCell colSpan={8} className="py-4 text-center text-slate-500">No data</TableCell></TableRow>}
