@@ -19,7 +19,7 @@ type FollowUp = {
   completed_at: string | null;
   cancelled_at: string | null;
 };
-type Member = { id: string; first_name: string | null; last_name: string | null; email: string | null };
+type Member = { id: string; first_name: string | null; last_name: string | null };
 type PerformanceRow = {
   id: string;
   name: string;
@@ -69,7 +69,7 @@ const AdminCRMPerformance: React.FC = () => {
     let memberRows: Member[] = [];
     if (ids.length) {
       const { data, error: memberError } = await supabase
-        .from('profiles').select('id,first_name,last_name,email').in('id', ids);
+        .from('profiles').select('id,first_name,last_name').in('id', ids);
       if (memberError) {
         setError(memberError.message);
         setLoading(false);
@@ -101,7 +101,7 @@ const AdminCRMPerformance: React.FC = () => {
       const completedFollowUps = followUps.filter(item => leadIds.has(item.lead_id) && inMonth(item.completed_at, start, end)).length;
       const pendingFollowUps = followUps.filter(item => leadIds.has(item.lead_id) && !item.completed_at && !item.cancelled_at).length;
       const member = members.find(item => item.id === id);
-      const name = member ? ([member.first_name, member.last_name].filter(Boolean).join(' ') || member.email || 'Team member') : 'Team member';
+      const name = member ? ([member.first_name, member.last_name].filter(Boolean).join(' ') || 'Team member') : 'Team member';
       const winRate = closed.length ? Math.round((won.length / closed.length) * 100) : 0;
       const wonValue = won.reduce((sum, lead) => sum + Number(lead.conversion_value || 0), 0);
       // Transparent activity points: 5 per new lead and 20 per won lead.
