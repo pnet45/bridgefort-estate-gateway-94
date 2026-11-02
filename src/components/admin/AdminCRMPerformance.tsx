@@ -105,7 +105,7 @@ const AdminCRMPerformance: React.FC = () => {
       const name = member ? ([member.first_name, member.last_name].filter(Boolean).join(' ') || member.email || 'Team member') : 'Team member';
       const winRate = closed.length ? Math.round((won.length / closed.length) * 100) : 0;
       const wonValue = won.reduce((sum, lead) => sum + Number(lead.conversion_value || 0), 0);
-      // Transparent activity points: 5 per new lead, 20 per won lead, 2 per completed follow-up.
+      // Transparent activity points: 5 per new lead and 20 per won lead.
       const points = created.length * 5 + won.length * 20;
       return { id, name, leads: created.length, won: won.length, lost: closed.length - won.length, winRate, wonValue, completedFollowUps, pendingFollowUps, points };
     }).sort((a, b) => b.points - a.points || b.wonValue - a.wonValue || b.leads - a.leads);
