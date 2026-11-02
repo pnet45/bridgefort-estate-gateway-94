@@ -18,6 +18,24 @@ const DarkModeToggle: React.FC = () => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    const syncTheme = (event: Event) => {
+      const value = (event as CustomEvent<Theme>).detail;
+      if (value === 'light' || value === 'dark' || value === 'system') setTheme(value);
+    };
+    const syncStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY && (event.newValue === 'light' || event.newValue === 'dark' || event.newValue === 'system')) {
+        setTheme(event.newValue);
+      }
+    };
+    window.addEventListener('bf-theme-change', syncTheme);
+    window.addEventListener('storage', syncStorage);
+    return () => {
+      window.removeEventListener('bf-theme-change', syncTheme);
+      window.removeEventListener('storage', syncStorage);
+    };
+  }, []);
+
+  useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const apply = () => {
       const dark = isDarkTheme(theme, media.matches);
@@ -64,7 +82,7 @@ const DarkModeToggle: React.FC = () => {
                 type="button"
                 role="menuitemradio"
                 aria-checked={selected}
-                onClick={() => { setTheme(option.value); setOpen(false); }}
+                onClick={() => { setTheme(option.value); window.dispatchEvent(new CustomEvent('bf-theme-change', { detail: option.value })); setOpen(false); }}
                 className={'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B89A55] ' + (selected ? 'bg-[#F4EEDC] font-semibold text-[#5C4720] dark:bg-[#3A3325] dark:text-[#F0DCA9]' : 'text-foreground hover:bg-muted')}
               >
                 <OptionIcon size={16} aria-hidden="true" />
