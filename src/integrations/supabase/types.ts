@@ -5568,6 +5568,14 @@ export type Database = {
         Args: { _permission: string; _user_id?: string }
         Returns: boolean
       }
+      get_crm_admin_assignees: {
+        Args: never
+        Returns: {
+          first_name: string | null
+          last_name: string | null
+          user_id: string
+        }[]
+      }
       admin_set_user_role: {
         Args: { _role: string; _target_user_id: string }
         Returns: undefined
