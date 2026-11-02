@@ -126,7 +126,7 @@ const AdminLeadAIAssistant: React.FC = () => {
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
             <div className="rounded-xl border border-[#D6BD7B] bg-[#FAF7EF] p-3 dark:bg-[#302B20]">
               <div className="flex items-center justify-between gap-3">
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#80652F] dark:text-[#E5CD91]">AI readiness score</p><p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{readinessLabel} · based on priority and captured budget, timeline and location details.</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#80652F] dark:text-[#E5CD91]">AI-assisted readiness score</p><p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{readinessLabel} · advisory signal based on AI priority and captured budget, timeline and location; not a guaranteed conversion prediction.</p></div>
                 <p className="shrink-0 text-2xl font-bold tabular-nums text-[#80652F] dark:text-[#E5CD91]">{readinessScore}<span className="text-xs font-medium">/100</span></p>
               </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E6DDC8] dark:bg-[#51462F]"><div className="h-full rounded-full bg-[#B89A55]" style={{ width: readinessScore + '%' }} /></div>
