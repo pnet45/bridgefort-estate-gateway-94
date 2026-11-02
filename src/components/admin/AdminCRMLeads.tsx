@@ -146,7 +146,7 @@ const AdminCRMLeads: React.FC = () => {
       const [{ data: roleRows }, { data: estates }, { data: listings }] = await Promise.all([
         supabase.from('admin_roles')
           .select('user_id, role_name')
-          .or('role_name.eq.admin,role_name.eq.super_admin,role_name.like.admin_%')
+          .in('role_name', ['admin', 'super_admin', 'admin_dir', 'admin_adm', 'admin_acct', 'admin_sales', 'admin_cs', 'admin_legal', 'admin_it'])
           .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
         supabase.from('estate').select('id, name').order('name'),
         supabase.from('listings').select('id, title').eq('status', 'approved').order('title'),
