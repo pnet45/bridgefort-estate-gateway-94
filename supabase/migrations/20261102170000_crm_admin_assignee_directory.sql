@@ -16,7 +16,24 @@ security definer
 set search_path = ''
 as $$
 begin
-  if auth.uid() is null or not coalesce(public.is_admin(auth.uid()), false) then
+  if auth.uid() is null or not exists (
+    select 1
+    from public.admin_roles caller_role
+    where caller_role.user_id = auth.uid()
+      and caller_role.role_name in (
+        'admin',
+        'super_admin',
+        'admin_dir',
+        'admin_adm',
+        'admin_acct',
+        'admin_sales',
+        'admin_cs',
+        'admin_legal',
+        'admin_it',
+        'manager'
+      )
+      and (caller_role.expires_at is null or caller_role.expires_at > now())
+  ) then
     raise exception 'Admin access required' using errcode = '42501';
   end if;
 
@@ -36,7 +53,8 @@ begin
       'admin_sales',
       'admin_cs',
       'admin_legal',
-      'admin_it'
+      'admin_it',
+      'manager'
     )
     and (ar.expires_at is null or ar.expires_at > now())
     and (
