@@ -143,27 +143,20 @@ const AdminCRMLeads: React.FC = () => {
 
   useEffect(() => {
     const fetchOptions = async () => {
-      const [{ data: roleRows }, { data: estates }, { data: listings }] = await Promise.all([
-        supabase.from('admin_roles')
-          .select('user_id, role_name')
-          .in('role_name', ['admin', 'super_admin', 'admin_dir', 'admin_adm', 'admin_acct', 'admin_sales', 'admin_cs', 'admin_legal', 'admin_it'])
-          .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
+      const [{ data: adminRows, error: adminError }, { data: estates }, { data: listings }] = await Promise.all([
+        supabase.rpc('get_crm_admin_assignees'),
         supabase.from('estate').select('id, name').order('name'),
         supabase.from('listings').select('id, title').eq('status', 'approved').order('title'),
       ]);
-      const ids = [...new Set((roleRows || []).map(row => row.user_id))];
-      if (ids.length) {
-        const { data } = await supabase.from('profiles').select('id, first_name, last_name').in('id', ids);
-        const namedAdmins = (data || [])
-          .filter(member => Boolean([member.first_name, member.last_name].filter(Boolean).join(' ').trim()))
-          .sort((a, b) => {
-            const nameA = [a.first_name, a.last_name].filter(Boolean).join(' ').trim();
-            const nameB = [b.first_name, b.last_name].filter(Boolean).join(' ').trim();
-            return nameA.localeCompare(nameB);
-          });
-        setTeamMembers(namedAdmins);
-      } else {
+      if (adminError) {
         setTeamMembers([]);
+        toast({ title: 'Unable to load admin assignees', description: adminError.message, variant: 'destructive' });
+      } else {
+        setTeamMembers((adminRows || []).map(member => ({
+          id: member.user_id,
+          first_name: member.first_name,
+          last_name: member.last_name,
+        })));
       }
       setProperties([
         ...(estates || []).map(item => ({ id: item.id, name: item.name, kind: 'estate' as const })),
