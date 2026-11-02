@@ -28,7 +28,7 @@ const AdminCRMWorkspace: React.FC = () => {
   const { userRole, hasPermission } = useAuth();
   const canManagePeople = ['super_admin', 'admin_dir', 'admin_acct', 'admin_adm', 'admin_it', 'admin'].includes(userRole || '') || hasPermission('admin:manage_departments');
   const { isGlobalAdmin } = useIsGlobalAdmin();
-  const canViewPerformance = isGlobalAdmin || userRole === 'manager' || canManagePeople;
+  const canViewPerformance = isGlobalAdmin || canManagePeople;
   const [leads, setLeads] = useState<Lead[]>([]);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [journeys, setJourneys] = useState<Journey[]>([]);
