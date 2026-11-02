@@ -342,6 +342,7 @@ const AdminCRMLeads: React.FC = () => {
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, assigneeFilter, priorityFilter, sourceFilter, overdueOnly]);
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  useEffect(() => { setCurrentPage(page => Math.min(page, pageCount)); }, [pageCount]);
   const paginatedLeads = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const stats = {
