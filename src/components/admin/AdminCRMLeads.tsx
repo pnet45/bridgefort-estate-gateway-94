@@ -64,12 +64,12 @@ interface Activity {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  new: 'bg-blue-500/20 text-blue-400',
-  contacted: 'bg-yellow-500/20 text-yellow-400',
-  qualified: 'bg-purple-500/20 text-purple-400',
-  proposal: 'bg-orange-500/20 text-orange-400',
-  won: 'bg-green-500/20 text-green-400',
-  lost: 'bg-red-500/20 text-red-400',
+  new: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300',
+  contacted: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300',
+  qualified: 'bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300',
+  proposal: 'bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-300',
+  won: 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300',
+  lost: 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300',
 };
 
 const STATUSES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
@@ -314,10 +314,10 @@ const AdminCRMLeads: React.FC = () => {
     const isToday = scheduled.toDateString() === now.toDateString();
 
     const colorClass = isOverdue
-      ? 'bg-red-500/20 text-red-400'
+      ? 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300'
       : isToday
-        ? 'bg-amber-500/20 text-amber-400'
-        : 'bg-slate-500/20 text-slate-700';
+        ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300'
+        : 'bg-muted text-muted-foreground';
 
     return (
       <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded ${colorClass}`}>
@@ -464,7 +464,7 @@ const AdminCRMLeads: React.FC = () => {
                           <div className="flex flex-wrap gap-2 mt-2">
                             {renderNextAction(lead.id)}
                             {lead.last_contacted_at && (
-                              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-white/60 text-slate-600">
+                              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
                                 <PhoneCall className="h-3 w-3" /> Last contact: {format(new Date(lead.last_contacted_at), 'MMM d')}
                               </span>
                             )}
@@ -527,14 +527,14 @@ const AdminCRMLeads: React.FC = () => {
                     {selectedLead.estate_interest && <p className="flex items-center gap-2"><User className="h-3.5 w-3.5" /> {selectedLead.estate_interest}</p>}
                     {selectedLead.notes && (
                       <div
-                        className="text-slate-600 mt-2 prose prose-sm prose-invert max-w-none"
+                        className="text-slate-600 mt-2 prose prose-sm max-w-none dark:prose-invert"
                         dangerouslySetInnerHTML={{ __html: sanitizeRichText(selectedLead.notes) }}
                       />
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label className="text-xs text-slate-600">Assigned to</Label><Select value={selectedLead.assigned_to || 'unassigned'} onValueChange={async value => { const assigned = value === 'unassigned' ? null : value; await supabase.from('crm_leads').update({ assigned_to: assigned }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, assigned_to: assigned }); fetchLeads(); }}><SelectTrigger className="bg-slate-600 border-slate-300 text-slate-900"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div>
-                    <div><Label className="text-xs text-slate-600">Priority</Label><Select value={selectedLead.priority} onValueChange={async priority => { await supabase.from('crm_leads').update({ priority }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, priority }); fetchLeads(); }}><SelectTrigger className="bg-slate-600 border-slate-300 text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label className="text-xs text-slate-600">Assigned to</Label><Select value={selectedLead.assigned_to || 'unassigned'} onValueChange={async value => { const assigned = value === 'unassigned' ? null : value; await supabase.from('crm_leads').update({ assigned_to: assigned }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, assigned_to: assigned }); fetchLeads(); }}><SelectTrigger className="bg-background border-border text-foreground"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label className="text-xs text-slate-600">Priority</Label><Select value={selectedLead.priority} onValueChange={async priority => { await supabase.from('crm_leads').update({ priority }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, priority }); fetchLeads(); }}><SelectTrigger className="bg-muted border-border text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div>
                   </div>
 
                   {/* Quick Actions */}
@@ -582,7 +582,7 @@ const AdminCRMLeads: React.FC = () => {
                       <h4 className="text-sm font-semibold text-slate-900 mb-2 flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Follow-ups</h4>
                       <div className="space-y-1">
                         {followUps.map(f => (
-                          <div key={f.id} className={`flex items-center justify-between text-xs p-2 rounded ${f.completed_at ? 'bg-green-900/20' : f.cancelled_at ? 'bg-red-900/20' : 'bg-slate-600'}`}>
+                          <div key={f.id} className={`flex items-center justify-between text-xs p-2 rounded ${f.completed_at ? 'bg-green-900/20' : f.cancelled_at ? 'bg-red-900/20' : 'bg-muted'}`}>
                             <div>
                               <span className="text-slate-900">{f.action_type}</span>
                               <span className="text-slate-600 ml-2">{format(new Date(f.scheduled_at), 'MMM d, h:mm a')}</span>
@@ -602,7 +602,7 @@ const AdminCRMLeads: React.FC = () => {
                       <h4 className="text-sm font-semibold text-slate-900 mb-2 flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" /> Activity Log</h4>
                       <div className="space-y-1">
                         {activities.map(a => (
-                          <div key={a.id} className="text-xs p-2 bg-slate-600/50 rounded">
+                          <div key={a.id} className="text-xs p-2 bg-muted rounded">
                             <span className="text-slate-600">{format(new Date(a.created_at), 'MMM d, h:mm a')}</span>
                             <span className="text-slate-900 ml-2">{a.description}</span>
                           </div>
