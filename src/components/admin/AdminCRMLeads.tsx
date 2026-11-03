@@ -458,15 +458,15 @@ const AdminCRMLeads: React.FC = () => {
                   <Card key={lead.id} className={`border-slate-200 cursor-pointer transition-colors ${selectedLead?.id === lead.id ? 'bg-[#F4EEDC] dark:bg-[#3A3325]' : 'bg-card hover:bg-muted'}`}
                     onClick={() => handleOpenLead(lead)}>
                     <CardContent className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-900 truncate">{lead.name}</span>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="min-w-0 break-words font-semibold text-slate-900">{lead.name}</span>
                             <Badge className={`text-xs ${STATUS_COLORS[lead.status] || ''}`}>{lead.status}</Badge>
                           </div>
-                          <div className="flex gap-3 mt-1 text-xs text-slate-600">
-                            {lead.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{lead.email}</span>}
-                            {lead.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{lead.phone}</span>}
+                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600">
+                            {lead.email && <span className="flex min-w-0 items-center gap-1 break-all"><Mail className="h-3 w-3 shrink-0" />{lead.email}</span>}
+                            {lead.phone && <span className="flex min-w-0 items-center gap-1 break-words"><Phone className="h-3 w-3 shrink-0" />{lead.phone}</span>}
                           </div>
                           {lead.estate_interest && <p className="text-xs text-slate-500 mt-1">Interest: {lead.estate_interest}</p>}
                           <div className="flex flex-wrap gap-2 mt-2">
@@ -478,7 +478,7 @@ const AdminCRMLeads: React.FC = () => {
                             )}
                           </div>
                         </div>
-                        <div className="flex gap-1 shrink-0">
+                        <div className="flex shrink-0 self-end sm:self-start gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-600"
                             onClick={e => { e.stopPropagation(); setEditingLead(lead); setForm({ name: lead.name, email: lead.email || '', phone: lead.phone || '', source: lead.source, status: lead.status, estate_interest: lead.estate_interest || '', notes: lead.notes || '', assigned_to: lead.assigned_to || '', priority: lead.priority, property_key: lead.estate_id ? `estate:${lead.estate_id}` : lead.listing_id ? `listing:${lead.listing_id}` : '' }); setIsFormOpen(true); }}>
                             <Pencil className="h-3.5 w-3.5" />
@@ -518,11 +518,11 @@ const AdminCRMLeads: React.FC = () => {
           <div className="w-full min-w-0 lg:w-1/2">
             <Card className="bg-card border-slate-200 min-h-[420px] h-[520px] lg:h-[calc(100dvh-21rem)]">
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-slate-900 text-lg">{selectedLead.name}</CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedLead(null)} className="text-slate-600">✕</Button>
+                <div className="flex min-w-0 items-start justify-between gap-2">
+                  <CardTitle className="min-w-0 break-words text-slate-900 text-lg">{selectedLead.name}</CardTitle>
+                  <Button variant="ghost" size="sm" aria-label="Close lead details" onClick={() => setSelectedLead(null)} className="shrink-0 text-slate-600">Close</Button>
                 </div>
-                <div className="flex gap-2 mt-1">
+                <div className="mt-1 flex flex-wrap gap-2">
                   <Select value={selectedLead.status} onValueChange={s => { handleStatusChange(selectedLead, s); setSelectedLead({ ...selectedLead, status: s }); }}>
                     <SelectTrigger className="w-[120px] h-7 text-xs bg-background border-border text-foreground">
                       <SelectValue />
@@ -538,10 +538,10 @@ const AdminCRMLeads: React.FC = () => {
               <ScrollArea className="h-[400px] px-4 pb-4">
                 <div className="space-y-4">
                   {/* Contact Info */}
-                  <div className="space-y-1 text-sm text-slate-700">
-                    {selectedLead.email && <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> {selectedLead.email}</p>}
-                    {selectedLead.phone && <p className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> {selectedLead.phone}</p>}
-                    {selectedLead.estate_interest && <p className="flex items-center gap-2"><User className="h-3.5 w-3.5" /> {selectedLead.estate_interest}</p>}
+                  <div className="min-w-0 space-y-1 text-sm text-slate-700">
+                    {selectedLead.email && <p className="flex min-w-0 items-start gap-2 break-all"><Mail className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {selectedLead.email}</p>}
+                    {selectedLead.phone && <p className="flex min-w-0 items-start gap-2 break-words"><Phone className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {selectedLead.phone}</p>}
+                    {selectedLead.estate_interest && <p className="flex min-w-0 items-start gap-2 break-words"><User className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {selectedLead.estate_interest}</p>}
                     {selectedLead.notes && (
                       <div
                         className="text-slate-600 mt-2 prose prose-sm max-w-none dark:prose-invert"
