@@ -52,31 +52,29 @@ const AdminCRMPerformance: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    const [leadResult, followUpResult] = await Promise.all([
+    const [leadResult, followUpResult, assigneeResult] = await Promise.all([
       supabase.from('crm_leads').select('id,assigned_to,status,conversion_value,created_at,closed_at'),
       supabase.from('crm_follow_ups').select('lead_id,scheduled_at,completed_at,cancelled_at'),
+      supabase.rpc('get_crm_admin_assignees'),
     ]);
 
-    if (leadResult.error || followUpResult.error) {
-      setError(leadResult.error?.message || followUpResult.error?.message || 'Could not load CRM performance.');
+    if (leadResult.error || followUpResult.error || assigneeResult.error) {
+      setError(leadResult.error?.message || followUpResult.error?.message || assigneeResult.error?.message || 'Could not load CRM performance.');
       setLoading(false);
       return;
     }
 
-    const leadRows = (leadResult.data || []) as Lead[];
+    // Limit the leaderboard to currently active administrator accounts.
+    // The protected directory returns names only and excludes expired/non-admin accounts.
+    const memberRows: Member[] = (assigneeResult.data || []).map(member => ({
+      id: member.user_id,
+      first_name: member.first_name,
+      last_name: member.last_name,
+    }));
+    const activeAdminIds = new Set(memberRows.map(member => member.id));
+    const leadRows = ((leadResult.data || []) as Lead[])
+      .filter(lead => Boolean(lead.assigned_to && activeAdminIds.has(lead.assigned_to)));
     const followUpRows = (followUpResult.data || []) as FollowUp[];
-    const ids = [...new Set(leadRows.map(lead => lead.assigned_to).filter((id): id is string => Boolean(id)))];
-    let memberRows: Member[] = [];
-    if (ids.length) {
-      const { data, error: memberError } = await supabase
-        .from('profiles').select('id,first_name,last_name').in('id', ids);
-      if (memberError) {
-        setError(memberError.message);
-        setLoading(false);
-        return;
-      }
-      memberRows = (data || []) as Member[];
-    }
 
     setLeads(leadRows);
     setFollowUps(followUpRows);
