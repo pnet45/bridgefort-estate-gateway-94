@@ -5576,6 +5576,20 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_crm_lead_page: {
+        Args: {
+          p_assignee?: string | null
+          p_overdue_only?: boolean
+          p_page?: number
+          p_page_size?: number
+          p_priority?: string | null
+          p_search?: string | null
+          p_source?: string | null
+          p_status?: string | null
+          p_unassigned?: boolean
+        }
+        Returns: Json
+      }
       admin_set_user_role: {
         Args: { _role: string; _target_user_id: string }
         Returns: undefined
