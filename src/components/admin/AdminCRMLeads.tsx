@@ -90,7 +90,7 @@ const AdminCRMLeads: React.FC = () => {
   const [sourceFilter, setSourceFilter] = useState('all');
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -348,7 +348,7 @@ const AdminCRMLeads: React.FC = () => {
     return matchSearch && matchStatus && matchAssignee && matchPriority && matchSource && matchOverdue;
   });
 
-  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, assigneeFilter, priorityFilter, sourceFilter, overdueOnly]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, assigneeFilter, priorityFilter, sourceFilter, overdueOnly, pageSize]);
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   useEffect(() => { setCurrentPage(page => Math.min(page, pageCount)); }, [pageCount]);
   const paginatedLeads = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -496,7 +496,16 @@ const AdminCRMLeads: React.FC = () => {
           </ScrollArea>
           <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-muted-foreground">Showing {filtered.length ? ((currentPage - 1) * pageSize) + 1 : 0}–{Math.min(currentPage * pageSize, filtered.length)} of {filtered.length} leads</p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Label htmlFor="crm-page-size" className="text-xs text-muted-foreground">Rows</Label>
+              <Select value={String(pageSize)} onValueChange={value => setPageSize(Number(value))}>
+                <SelectTrigger id="crm-page-size" className="h-8 w-[76px] bg-background text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
               <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(page => Math.max(1, page - 1))} disabled={currentPage <= 1} aria-label="Previous page"><ChevronLeft className="h-4 w-4" /></Button>
               <span className="min-w-[5.5rem] text-center text-xs text-muted-foreground">Page {currentPage} of {pageCount}</span>
               <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(page => Math.min(pageCount, page + 1))} disabled={currentPage >= pageCount} aria-label="Next page"><ChevronRight className="h-4 w-4" /></Button>
