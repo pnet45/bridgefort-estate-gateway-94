@@ -123,6 +123,7 @@ const AdminCRMLeads: React.FC = () => {
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [sourceOptions, setSourceOptions] = useState<string[]>(SOURCES);
   const [properties, setProperties] = useState<PropertyOption[]>([]);
   const [showOutcomeForm, setShowOutcomeForm] = useState(false);
   const [showFollowUpForm, setShowFollowUpForm] = useState(false);
@@ -176,10 +177,11 @@ const AdminCRMLeads: React.FC = () => {
 
   useEffect(() => {
     const fetchOptions = async () => {
-      const [{ data: assignees, error: assigneesError }, { data: estates }, { data: listings }] = await Promise.all([
+      const [{ data: assignees, error: assigneesError }, { data: estates }, { data: listings }, { data: leadSources }] = await Promise.all([
         supabase.rpc('get_crm_admin_assignees'),
         supabase.from('estate').select('id, name').order('name'),
         supabase.from('listings').select('id, title').eq('status', 'approved').order('title'),
+        supabase.from('crm_leads').select('source').not('source', 'is', null),
       ]);
 
       if (assigneesError) {
@@ -198,6 +200,10 @@ const AdminCRMLeads: React.FC = () => {
         ...(estates || []).map(item => ({ id: item.id, name: item.name, kind: 'estate' as const })),
         ...(listings || []).map(item => ({ id: item.id, name: item.title, kind: 'listing' as const })),
       ]);
+      setSourceOptions([...new Set([
+        ...SOURCES,
+        ...(leadSources || []).map(item => item.source).filter((source): source is string => typeof source === 'string' && source.length > 0),
+      ])].sort());
     };
     void fetchOptions();
   }, []);
@@ -466,7 +472,7 @@ const AdminCRMLeads: React.FC = () => {
         </Select>
         <Select value={assigneeFilter} onValueChange={setAssigneeFilter}><SelectTrigger className="w-[160px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Assignee" /></SelectTrigger><SelectContent><SelectItem value="all">All assignees</SelectItem><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ')}</SelectItem>)}</SelectContent></Select>
         <Select value={priorityFilter} onValueChange={setPriorityFilter}><SelectTrigger className="w-[130px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Priority" /></SelectTrigger><SelectContent><SelectItem value="all">All priorities</SelectItem>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select>
-        <Select value={sourceFilter} onValueChange={setSourceFilter}><SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Source" /></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{SOURCES.map(source => <SelectItem key={source} value={source}>{source.replace('_', ' ')}</SelectItem>)}</SelectContent></Select>
+        <Select value={sourceFilter} onValueChange={setSourceFilter}><SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Source" /></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{sourceOptions.map(source => <SelectItem key={source} value={source}>{source.replace('_', ' ')}</SelectItem>)}</SelectContent></Select>
         <Button variant={overdueOnly ? 'default' : 'outline'} onClick={() => setOverdueOnly(value => !value)}><Clock className="h-4 w-4 mr-1" />Overdue</Button>
         <Button onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' }); setIsFormOpen(true); }} className="gap-1">
           <Plus className="h-4 w-4" /> Add Lead
