@@ -143,20 +143,41 @@ const AdminCRMLeads: React.FC = () => {
 
   useEffect(() => {
     const fetchOptions = async () => {
-      const [{ data: adminRows, error: adminError }, { data: estates }, { data: listings }] = await Promise.all([
-        supabase.rpc('get_crm_admin_assignees'),
+      const [{ data: roleRows, error: rolesError }, { data: estates }, { data: listings }] = await Promise.all([
+        supabase.from('admin_roles').select('user_id, role_name, expires_at'),
         supabase.from('estate').select('id, name').order('name'),
         supabase.from('listings').select('id, title').eq('status', 'approved').order('title'),
       ]);
-      if (adminError) {
+
+      if (rolesError) {
         setTeamMembers([]);
-        toast({ title: 'Unable to load admin assignees', description: adminError.message, variant: 'destructive' });
+        toast({ title: 'Unable to load admin assignees', description: rolesError.message, variant: 'destructive' });
       } else {
-        setTeamMembers((adminRows || []).map(member => ({
-          id: member.user_id,
-          first_name: member.first_name,
-          last_name: member.last_name,
-        })));
+        // admin_roles is the canonical source of administrator accounts.
+        // Ignore expired role grants and never include ordinary user accounts.
+        const now = Date.now();
+        const adminIds = [...new Set((roleRows || [])
+          .filter(role => !role.expires_at || new Date(role.expires_at).getTime() > now)
+          .map(role => role.user_id)
+          .filter(Boolean))];
+        if (adminIds.length) {
+          const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name')
+            .in('id', adminIds);
+          if (profilesError) {
+            setTeamMembers([]);
+            toast({ title: 'Unable to load admin names', description: profilesError.message, variant: 'destructive' });
+          } else {
+            setTeamMembers((profiles || []).map(profile => ({
+              id: profile.id,
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+            })));
+          }
+        } else {
+          setTeamMembers([]);
+        }
       }
       setProperties([
         ...(estates || []).map(item => ({ id: item.id, name: item.name, kind: 'estate' as const })),
