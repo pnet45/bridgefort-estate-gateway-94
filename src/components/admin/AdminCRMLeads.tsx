@@ -92,6 +92,11 @@ interface CRMLeadPageResponse {
   total_count: number;
   metrics: CRMLeadMetrics;
 }
+const stripNextAction = (row: CRMLeadPageRow): Lead => {
+  const lead = { ...row } as Lead & { next_action?: FollowUp | null };
+  delete lead.next_action;
+  return lead;
+};
 const EMPTY_CRM_METRICS: CRMLeadMetrics = {
   total: 0, new: 0, qualified: 0, won: 0, overdue: 0, won_value: 0, closed: 0, win_rate: 0,
 };
@@ -156,7 +161,7 @@ const AdminCRMLeads: React.FC = () => {
 
     const response = data as unknown as CRMLeadPageResponse;
     const rows = response?.rows || [];
-    setLeads(rows.map(({ next_action: _nextAction, ...lead }) => lead));
+    setLeads(rows.map(stripNextAction));
     const nextByLead: Record<string, FollowUp> = {};
     rows.forEach(row => {
       if (row.next_action) nextByLead[row.id] = row.next_action;
@@ -391,7 +396,7 @@ const AdminCRMLeads: React.FC = () => {
         if (error) throw error;
         const response = data as unknown as CRMLeadPageResponse;
         expectedCount = Number(response?.total_count || 0);
-        exportRows.push(...(response?.rows || []).map(({ next_action: _nextAction, ...lead }) => lead));
+        exportRows.push(...(response?.rows || []).map(stripNextAction));
         exportPage += 1;
       } while (exportRows.length < expectedCount && exportRows.length > 0);
 
