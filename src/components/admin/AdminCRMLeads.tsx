@@ -76,12 +76,33 @@ const STATUSES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
 const SOURCES = ['website', 'referral', 'social_media', 'walk_in', 'phone', 'email', 'event', 'other'];
 const ACTION_TYPES = ['call', 'email', 'meeting', 'whatsapp', 'site_visit', 'other'];
 const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
+interface CRMLeadMetrics {
+  total: number;
+  new: number;
+  qualified: number;
+  won: number;
+  overdue: number;
+  won_value: number;
+  closed: number;
+  win_rate: number;
+}
+type CRMLeadPageRow = Lead & { next_action: FollowUp | null };
+interface CRMLeadPageResponse {
+  rows: CRMLeadPageRow[];
+  total_count: number;
+  metrics: CRMLeadMetrics;
+}
+const EMPTY_CRM_METRICS: CRMLeadMetrics = {
+  total: 0, new: 0, qualified: 0, won: 0, overdue: 0, won_value: 0, closed: 0, win_rate: 0,
+};
 interface TeamMember { id: string; first_name: string | null; last_name: string | null }
 interface PropertyOption { id: string; name: string; kind: 'estate' | 'listing' }
 
 const AdminCRMLeads: React.FC = () => {
   const { user } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [stats, setStats] = useState<CRMLeadMetrics>(EMPTY_CRM_METRICS);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -115,29 +136,36 @@ const AdminCRMLeads: React.FC = () => {
   const [outcomeForm, setOutcomeForm] = useState({ status: 'won', conversion_value: '', closed_at: new Date().toISOString().slice(0, 10), outcome_reason: '', closing_notes: '', order_id: '', payment_id: '' });
 
   const fetchLeads = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('crm_leads')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error) setLeads(data || []);
+    setLoading(true);
+    const { data, error } = await supabase.rpc('get_crm_lead_page', {
+      p_search: searchTerm.trim() || null,
+      p_status: statusFilter === 'all' ? null : statusFilter,
+      p_assignee: assigneeFilter !== 'all' && assigneeFilter !== 'unassigned' ? assigneeFilter : null,
+      p_unassigned: assigneeFilter === 'unassigned',
+      p_priority: priorityFilter === 'all' ? null : priorityFilter,
+      p_source: sourceFilter === 'all' ? null : sourceFilter,
+      p_overdue_only: overdueOnly,
+      p_page: currentPage,
+      p_page_size: pageSize,
+    });
+    if (error) {
+      toast({ title: 'Unable to load CRM leads', description: error.message, variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
 
-    // Pull every pending follow-up (across all leads) in one query, then keep
-    // only the earliest one per lead - that's each lead's "next action".
-    const { data: pendingFollowUps } = await supabase
-      .from('crm_follow_ups')
-      .select('*')
-      .is('completed_at', null)
-      .is('cancelled_at', null)
-      .order('scheduled_at', { ascending: true });
-
+    const response = data as unknown as CRMLeadPageResponse;
+    const rows = response?.rows || [];
+    setLeads(rows.map(({ next_action: _nextAction, ...lead }) => lead));
     const nextByLead: Record<string, FollowUp> = {};
-    (pendingFollowUps || []).forEach((fup: FollowUp) => {
-      if (!nextByLead[fup.lead_id]) nextByLead[fup.lead_id] = fup;
+    rows.forEach(row => {
+      if (row.next_action) nextByLead[row.id] = row.next_action;
     });
     setNextActionByLead(nextByLead);
-
+    setTotalCount(Number(response?.total_count || 0));
+    setStats(response?.metrics || EMPTY_CRM_METRICS);
     setLoading(false);
-  }, []);
+  }, [searchTerm, statusFilter, assigneeFilter, priorityFilter, sourceFilter, overdueOnly, currentPage, pageSize]);
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
 
@@ -336,51 +364,58 @@ const AdminCRMLeads: React.FC = () => {
     );
   };
 
-  const filtered = leads.filter(l => {
-    const matchSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (l.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (l.phone?.includes(searchTerm));
-    const matchStatus = statusFilter === 'all' || l.status === statusFilter;
-    const matchAssignee = assigneeFilter === 'all' || (assigneeFilter === 'unassigned' ? !l.assigned_to : l.assigned_to === assigneeFilter);
-    const matchPriority = priorityFilter === 'all' || l.priority === priorityFilter;
-    const matchSource = sourceFilter === 'all' || l.source === sourceFilter;
-    const matchOverdue = !overdueOnly || Boolean(nextActionByLead[l.id] && new Date(nextActionByLead[l.id].scheduled_at) < new Date());
-    return matchSearch && matchStatus && matchAssignee && matchPriority && matchSource && matchOverdue;
-  });
-
   useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, assigneeFilter, priorityFilter, sourceFilter, overdueOnly, pageSize]);
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
   useEffect(() => { setCurrentPage(page => Math.min(page, pageCount)); }, [pageCount]);
-  const paginatedLeads = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedLeads = leads;
 
-  const stats = {
-    total: leads.length,
-    new: leads.filter(l => l.status === 'new').length,
-    qualified: leads.filter(l => l.status === 'qualified').length,
-    won: leads.filter(l => l.status === 'won').length,
-    overdue: Object.values(nextActionByLead).filter(f => new Date(f.scheduled_at) < new Date()).length,
-    value: leads.filter(l => l.status === 'won').reduce((sum, lead) => sum + (lead.conversion_value || 0), 0),
-    winRate: leads.filter(l => l.status === 'won' || l.status === 'lost').length ? Math.round(leads.filter(l => l.status === 'won').length / leads.filter(l => l.status === 'won' || l.status === 'lost').length * 100) : 0,
-  };
+  const handleExportCsv = async () => {
+    const exportPageSize = 1000;
+    const exportRows: Lead[] = [];
+    let exportPage = 1;
+    let expectedCount = 0;
 
-  const handleExportCsv = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Source', 'Status', 'Estate Interest', 'Last Contacted', 'Created'];
-    const rows = filtered.map(l => [
-      l.name, l.email || '', l.phone || '', l.source, l.status,
-      l.estate_interest || '', l.last_contacted_at || '', l.created_at,
-    ]);
-    const csv = [headers, ...rows]
-      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `crm-leads-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      do {
+        const { data, error } = await supabase.rpc('get_crm_lead_page', {
+          p_search: searchTerm.trim() || null,
+          p_status: statusFilter === 'all' ? null : statusFilter,
+          p_assignee: assigneeFilter !== 'all' && assigneeFilter !== 'unassigned' ? assigneeFilter : null,
+          p_unassigned: assigneeFilter === 'unassigned',
+          p_priority: priorityFilter === 'all' ? null : priorityFilter,
+          p_source: sourceFilter === 'all' ? null : sourceFilter,
+          p_overdue_only: overdueOnly,
+          p_page: exportPage,
+          p_page_size: exportPageSize,
+        });
+        if (error) throw error;
+        const response = data as unknown as CRMLeadPageResponse;
+        expectedCount = Number(response?.total_count || 0);
+        exportRows.push(...(response?.rows || []).map(({ next_action: _nextAction, ...lead }) => lead));
+        exportPage += 1;
+      } while (exportRows.length < expectedCount && exportRows.length > 0);
+
+      const headers = ['Name', 'Email', 'Phone', 'Source', 'Status', 'Estate Interest', 'Last Contacted', 'Created'];
+      const rows = exportRows.map(l => [
+        l.name, l.email || '', l.phone || '', l.source, l.status,
+        l.estate_interest || '', l.last_contacted_at || '', l.created_at,
+      ]);
+      const csv = [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+        .join('\\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `crm-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({ title: 'CSV export ready', description: `Exported ${exportRows.length} matching leads.` });
+    } catch (error) {
+      toast({ title: 'CSV export failed', description: error instanceof Error ? error.message : 'Unable to export matching leads.', variant: 'destructive' });
+    }
   };
 
   return (
@@ -393,8 +428,8 @@ const AdminCRMLeads: React.FC = () => {
           { label: 'Qualified', value: stats.qualified, icon: TrendingUp, color: 'text-purple-400' },
           { label: 'Won', value: stats.won, icon: CheckCircle, color: 'text-emerald-400' },
           { label: 'Overdue', value: stats.overdue, icon: Clock, color: 'text-red-400' },
-          { label: 'Win Rate', value: `${stats.winRate}%`, icon: Target, color: 'text-cyan-400' },
-          { label: 'Won Value', value: `₦${Math.round(stats.value / 1000000)}m`, icon: CircleDollarSign, color: 'text-emerald-400' },
+          { label: 'Win Rate', value: `${stats.win_rate}%`, icon: Target, color: 'text-cyan-400' },
+          { label: 'Won Value', value: `₦${Math.round(stats.won_value / 1000000)}m`, icon: CircleDollarSign, color: 'text-emerald-400' },
         ].map(s => (
           <Card key={s.label} className="bg-card border-slate-200">
             <CardContent className="p-4 flex items-center gap-3">
@@ -426,7 +461,7 @@ const AdminCRMLeads: React.FC = () => {
         </Select>
         <Select value={assigneeFilter} onValueChange={setAssigneeFilter}><SelectTrigger className="w-[160px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Assignee" /></SelectTrigger><SelectContent><SelectItem value="all">All assignees</SelectItem><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ')}</SelectItem>)}</SelectContent></Select>
         <Select value={priorityFilter} onValueChange={setPriorityFilter}><SelectTrigger className="w-[130px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Priority" /></SelectTrigger><SelectContent><SelectItem value="all">All priorities</SelectItem>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select>
-        <Select value={sourceFilter} onValueChange={setSourceFilter}><SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Source" /></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{[...new Set(leads.map(lead => lead.source).filter(Boolean))].map(source => <SelectItem key={source} value={source}>{source.replace('_', ' ')}</SelectItem>)}</SelectContent></Select>
+        <Select value={sourceFilter} onValueChange={setSourceFilter}><SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Source" /></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{SOURCES.map(source => <SelectItem key={source} value={source}>{source.replace('_', ' ')}</SelectItem>)}</SelectContent></Select>
         <Button variant={overdueOnly ? 'default' : 'outline'} onClick={() => setOverdueOnly(value => !value)}><Clock className="h-4 w-4 mr-1" />Overdue</Button>
         <Button onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' }); setIsFormOpen(true); }} className="gap-1">
           <Plus className="h-4 w-4" /> Add Lead
@@ -442,12 +477,12 @@ const AdminCRMLeads: React.FC = () => {
           <ScrollArea className="h-[520px] lg:h-[calc(100dvh-21rem)]">
             <div className="space-y-2">
               {loading ? <p role="status" aria-live="polite" className="text-slate-600 p-4">Loading leads…</p> :
-                filtered.length === 0 ? (
+                totalCount === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center" role="status">
                     <UsersIcon className="mx-auto h-9 w-9 text-slate-400" aria-hidden="true" />
-                    <h3 className="mt-3 text-sm font-semibold text-slate-900">{leads.length === 0 ? 'No leads yet' : 'No leads match these filters'}</h3>
-                    <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">{leads.length === 0 ? 'Add your first lead to start tracking inquiries, follow-ups and conversions.' : 'Try a different search term or adjust the status, assignee, priority or source filters.'}</p>
-                    {leads.length === 0 && (
+                    <h3 className="mt-3 text-sm font-semibold text-slate-900">{totalCount === 0 ? 'No leads yet' : 'No leads match these filters'}</h3>
+                    <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">{totalCount === 0 ? 'Add your first lead to start tracking inquiries, follow-ups and conversions.' : 'Try a different search term or adjust the status, assignee, priority or source filters.'}</p>
+                    {totalCount === 0 && (
                       <Button className="mt-4 gap-2" onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' }); setIsFormOpen(true); }}>
                         <Plus className="h-4 w-4" /> Add your first lead
                       </Button>
@@ -495,7 +530,7 @@ const AdminCRMLeads: React.FC = () => {
             </div>
           </ScrollArea>
           <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-muted-foreground">Showing {filtered.length ? ((currentPage - 1) * pageSize) + 1 : 0}–{Math.min(currentPage * pageSize, filtered.length)} of {filtered.length} leads</p>
+            <p className="text-xs text-muted-foreground">Showing {totalCount ? ((currentPage - 1) * pageSize) + 1 : 0}–{Math.min(currentPage * pageSize, totalCount)} of {totalCount} leads</p>
             <div className="flex flex-wrap items-center gap-2">
               <Label htmlFor="crm-page-size" className="text-xs text-muted-foreground">Rows</Label>
               <Select value={String(pageSize)} onValueChange={value => setPageSize(Number(value))}>
