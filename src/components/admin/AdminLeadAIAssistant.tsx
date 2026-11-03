@@ -20,10 +20,18 @@ type Analysis = {
 type LeadOption = { id: string; name: string; estate_interest: string | null; notes: string | null };
 
 const PRIORITY_STYLE: Record<string, string> = {
-  low: 'bg-slate-500/20 text-slate-700', medium: 'bg-blue-500/20 text-blue-300',
-  high: 'bg-orange-500/20 text-orange-300', urgent: 'bg-red-500/20 text-red-300',
+  low: 'bg-slate-100 text-slate-700 dark:bg-slate-500/20 dark:text-slate-300', medium: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300',
+  high: 'bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-300', urgent: 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300',
 };
 const label = (v: string) => v.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+const getReadinessScore = (analysis: Analysis) => {
+  const priorityPoints: Record<string, number> = { urgent: 35, high: 25, medium: 15, low: 5 };
+  const details = analysis.key_details;
+  return Math.min(100, 20 + (priorityPoints[analysis.recommended_priority] || 0)
+    + (details.budget ? 15 : 0)
+    + (details.timeline ? 15 : 0)
+    + (details.location ? 10 : 0));
+};
 
 const AdminLeadAIAssistant: React.FC = () => {
   const { user } = useAuth();
@@ -81,6 +89,9 @@ const AdminLeadAIAssistant: React.FC = () => {
     toast({ title: 'Follow-up scheduled' });
   };
 
+  const readinessScore = analysis ? getReadinessScore(analysis) : 0;
+  const readinessLabel = readinessScore >= 75 ? 'High readiness' : readinessScore >= 55 ? 'Promising' : 'Needs qualification';
+
   return (
     <Card className="bg-slate-50 border-slate-200">
       <CardHeader className="pb-3">
@@ -113,6 +124,14 @@ const AdminLeadAIAssistant: React.FC = () => {
         {error && <p className="text-sm text-destructive">{error}</p>}
         {analysis && (
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
+            <div className="rounded-xl border border-[#D6BD7B] bg-[#FAF7EF] p-3 dark:bg-[#302B20]">
+              <div className="flex items-center justify-between gap-3">
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#80652F] dark:text-[#E5CD91]">AI-assisted readiness score</p><p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{readinessLabel} · advisory signal based on AI priority and captured budget, timeline and location; not a guaranteed conversion prediction.</p></div>
+                <p className="shrink-0 text-2xl font-bold tabular-nums text-[#80652F] dark:text-[#E5CD91]">{readinessScore}<span className="text-xs font-medium">/100</span></p>
+              </div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#E6DDC8] dark:bg-[#51462F]"><div className="h-full rounded-full bg-[#B89A55]" style={{ width: readinessScore + '%' }} /></div>
+            </div>
+
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{label(analysis.intent_category)}</Badge>
               <Badge className={PRIORITY_STYLE[analysis.recommended_priority]}>Priority: {label(analysis.recommended_priority)}</Badge>

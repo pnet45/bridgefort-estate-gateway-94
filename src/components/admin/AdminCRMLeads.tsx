@@ -15,7 +15,7 @@ import { toast } from '@/hooks/use-toast';
 import {
   Plus, Search, Phone, Mail, User, Calendar, Clock,
   MessageSquare, Trash2, Pencil, CheckCircle, Filter,
-  PhoneCall, MailPlus, Users as UsersIcon, TrendingUp, Download, Target, CircleDollarSign
+  PhoneCall, MailPlus, Users as UsersIcon, TrendingUp, Download, Target, CircleDollarSign, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -64,24 +64,50 @@ interface Activity {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  new: 'bg-blue-500/20 text-blue-400',
-  contacted: 'bg-yellow-500/20 text-yellow-400',
-  qualified: 'bg-purple-500/20 text-purple-400',
-  proposal: 'bg-orange-500/20 text-orange-400',
-  won: 'bg-green-500/20 text-green-400',
-  lost: 'bg-red-500/20 text-red-400',
+  new: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300',
+  contacted: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300',
+  qualified: 'bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300',
+  proposal: 'bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-300',
+  won: 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300',
+  lost: 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300',
 };
 
 const STATUSES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'];
 const SOURCES = ['website', 'referral', 'social_media', 'walk_in', 'phone', 'email', 'event', 'other'];
 const ACTION_TYPES = ['call', 'email', 'meeting', 'whatsapp', 'site_visit', 'other'];
 const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
-interface TeamMember { id: string; first_name: string | null; last_name: string | null; email: string | null }
+interface CRMLeadMetrics {
+  total: number;
+  new: number;
+  qualified: number;
+  won: number;
+  overdue: number;
+  won_value: number;
+  closed: number;
+  win_rate: number;
+}
+type CRMLeadPageRow = Lead & { next_action: FollowUp | null };
+interface CRMLeadPageResponse {
+  rows: CRMLeadPageRow[];
+  total_count: number;
+  metrics: CRMLeadMetrics;
+}
+const stripNextAction = (row: CRMLeadPageRow): Lead => {
+  const lead = { ...row } as Lead & { next_action?: FollowUp | null };
+  delete lead.next_action;
+  return lead;
+};
+const EMPTY_CRM_METRICS: CRMLeadMetrics = {
+  total: 0, new: 0, qualified: 0, won: 0, overdue: 0, won_value: 0, closed: 0, win_rate: 0,
+};
+interface TeamMember { id: string; first_name: string | null; last_name: string | null }
 interface PropertyOption { id: string; name: string; kind: 'estate' | 'listing' }
 
 const AdminCRMLeads: React.FC = () => {
   const { user } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [stats, setStats] = useState<CRMLeadMetrics>(EMPTY_CRM_METRICS);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -89,12 +115,15 @@ const AdminCRMLeads: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [overdueOnly, setOverdueOnly] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [sourceOptions, setSourceOptions] = useState<string[]>(SOURCES);
   const [properties, setProperties] = useState<PropertyOption[]>([]);
   const [showOutcomeForm, setShowOutcomeForm] = useState(false);
   const [showFollowUpForm, setShowFollowUpForm] = useState(false);
@@ -113,48 +142,68 @@ const AdminCRMLeads: React.FC = () => {
   const [outcomeForm, setOutcomeForm] = useState({ status: 'won', conversion_value: '', closed_at: new Date().toISOString().slice(0, 10), outcome_reason: '', closing_notes: '', order_id: '', payment_id: '' });
 
   const fetchLeads = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('crm_leads')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error) setLeads(data || []);
+    setLoading(true);
+    const { data, error } = await supabase.rpc('get_crm_lead_page', {
+      p_search: searchTerm.trim() || null,
+      p_status: statusFilter === 'all' ? null : statusFilter,
+      p_assignee: assigneeFilter !== 'all' && assigneeFilter !== 'unassigned' ? assigneeFilter : null,
+      p_unassigned: assigneeFilter === 'unassigned',
+      p_priority: priorityFilter === 'all' ? null : priorityFilter,
+      p_source: sourceFilter === 'all' ? null : sourceFilter,
+      p_overdue_only: overdueOnly,
+      p_page: currentPage,
+      p_page_size: pageSize,
+    });
+    if (error) {
+      toast({ title: 'Unable to load CRM leads', description: error.message, variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
 
-    // Pull every pending follow-up (across all leads) in one query, then keep
-    // only the earliest one per lead - that's each lead's "next action".
-    const { data: pendingFollowUps } = await supabase
-      .from('crm_follow_ups')
-      .select('*')
-      .is('completed_at', null)
-      .is('cancelled_at', null)
-      .order('scheduled_at', { ascending: true });
-
+    const response = data as unknown as CRMLeadPageResponse;
+    const rows = response?.rows || [];
+    setLeads(rows.map(stripNextAction));
     const nextByLead: Record<string, FollowUp> = {};
-    (pendingFollowUps || []).forEach((fup: FollowUp) => {
-      if (!nextByLead[fup.lead_id]) nextByLead[fup.lead_id] = fup;
+    rows.forEach(row => {
+      if (row.next_action) nextByLead[row.id] = row.next_action;
     });
     setNextActionByLead(nextByLead);
-
+    setTotalCount(Number(response?.total_count || 0));
+    setStats(response?.metrics || EMPTY_CRM_METRICS);
     setLoading(false);
-  }, []);
+  }, [searchTerm, statusFilter, assigneeFilter, priorityFilter, sourceFilter, overdueOnly, currentPage, pageSize]);
 
   useEffect(() => { fetchLeads(); }, [fetchLeads]);
 
   useEffect(() => {
     const fetchOptions = async () => {
-      const [{ data: roleRows }, { data: estates }, { data: listings }] = await Promise.all([
-        supabase.from('user_roles').select('user_id, role').in('role', ['admin', 'staff']),
+      const [{ data: assignees, error: assigneesError }, { data: estates }, { data: listings }, { data: leadSources }] = await Promise.all([
+        supabase.rpc('get_crm_admin_assignees'),
         supabase.from('estate').select('id, name').order('name'),
         supabase.from('listings').select('id, title').eq('status', 'approved').order('title'),
+        supabase.from('crm_leads').select('source').not('source', 'is', null),
       ]);
-      const ids = [...new Set((roleRows || []).map(row => row.user_id))];
-      if (ids.length) {
-        const { data } = await supabase.from('profiles').select('id, first_name, last_name, email').in('id', ids);
-        setTeamMembers(data || []);
+
+      if (assigneesError) {
+        setTeamMembers([]);
+        toast({ title: 'Unable to load admin assignees', description: assigneesError.message, variant: 'destructive' });
+      } else {
+        // The protected RPC applies the canonical active-admin filter server-side
+        // and returns names only, without exposing admin_roles to ordinary admins.
+        setTeamMembers((assignees || []).map(member => ({
+          id: member.user_id,
+          first_name: member.first_name,
+          last_name: member.last_name,
+        })));
       }
       setProperties([
         ...(estates || []).map(item => ({ id: item.id, name: item.name, kind: 'estate' as const })),
         ...(listings || []).map(item => ({ id: item.id, name: item.title, kind: 'listing' as const })),
       ]);
+      setSourceOptions([...new Set([
+        ...SOURCES,
+        ...(leadSources || []).map(item => item.source).filter((source): source is string => typeof source === 'string' && source.length > 0),
+      ])].sort());
     };
     void fetchOptions();
   }, []);
@@ -312,10 +361,10 @@ const AdminCRMLeads: React.FC = () => {
     const isToday = scheduled.toDateString() === now.toDateString();
 
     const colorClass = isOverdue
-      ? 'bg-red-500/20 text-red-400'
+      ? 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300'
       : isToday
-        ? 'bg-amber-500/20 text-amber-400'
-        : 'bg-slate-500/20 text-slate-700';
+        ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300'
+        : 'bg-muted text-muted-foreground';
 
     return (
       <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded ${colorClass}`}>
@@ -326,46 +375,58 @@ const AdminCRMLeads: React.FC = () => {
     );
   };
 
-  const filtered = leads.filter(l => {
-    const matchSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (l.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (l.phone?.includes(searchTerm));
-    const matchStatus = statusFilter === 'all' || l.status === statusFilter;
-    const matchAssignee = assigneeFilter === 'all' || (assigneeFilter === 'unassigned' ? !l.assigned_to : l.assigned_to === assigneeFilter);
-    const matchPriority = priorityFilter === 'all' || l.priority === priorityFilter;
-    const matchSource = sourceFilter === 'all' || l.source === sourceFilter;
-    const matchOverdue = !overdueOnly || Boolean(nextActionByLead[l.id] && new Date(nextActionByLead[l.id].scheduled_at) < new Date());
-    return matchSearch && matchStatus && matchAssignee && matchPriority && matchSource && matchOverdue;
-  });
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter, assigneeFilter, priorityFilter, sourceFilter, overdueOnly, pageSize]);
+  const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
+  useEffect(() => { setCurrentPage(page => Math.min(page, pageCount)); }, [pageCount]);
+  const paginatedLeads = leads;
 
-  const stats = {
-    total: leads.length,
-    new: leads.filter(l => l.status === 'new').length,
-    qualified: leads.filter(l => l.status === 'qualified').length,
-    won: leads.filter(l => l.status === 'won').length,
-    overdue: Object.values(nextActionByLead).filter(f => new Date(f.scheduled_at) < new Date()).length,
-    value: leads.filter(l => l.status === 'won').reduce((sum, lead) => sum + (lead.conversion_value || 0), 0),
-    winRate: leads.filter(l => l.status === 'won' || l.status === 'lost').length ? Math.round(leads.filter(l => l.status === 'won').length / leads.filter(l => l.status === 'won' || l.status === 'lost').length * 100) : 0,
-  };
+  const handleExportCsv = async () => {
+    const exportPageSize = 1000;
+    const exportRows: Lead[] = [];
+    let exportPage = 1;
+    let expectedCount = 0;
 
-  const handleExportCsv = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Source', 'Status', 'Estate Interest', 'Last Contacted', 'Created'];
-    const rows = filtered.map(l => [
-      l.name, l.email || '', l.phone || '', l.source, l.status,
-      l.estate_interest || '', l.last_contacted_at || '', l.created_at,
-    ]);
-    const csv = [headers, ...rows]
-      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `crm-leads-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      do {
+        const { data, error } = await supabase.rpc('get_crm_lead_page', {
+          p_search: searchTerm.trim() || null,
+          p_status: statusFilter === 'all' ? null : statusFilter,
+          p_assignee: assigneeFilter !== 'all' && assigneeFilter !== 'unassigned' ? assigneeFilter : null,
+          p_unassigned: assigneeFilter === 'unassigned',
+          p_priority: priorityFilter === 'all' ? null : priorityFilter,
+          p_source: sourceFilter === 'all' ? null : sourceFilter,
+          p_overdue_only: overdueOnly,
+          p_page: exportPage,
+          p_page_size: exportPageSize,
+        });
+        if (error) throw error;
+        const response = data as unknown as CRMLeadPageResponse;
+        expectedCount = Number(response?.total_count || 0);
+        exportRows.push(...(response?.rows || []).map(stripNextAction));
+        exportPage += 1;
+      } while (exportRows.length < expectedCount && exportRows.length > 0);
+
+      const headers = ['Name', 'Email', 'Phone', 'Source', 'Status', 'Estate Interest', 'Last Contacted', 'Created'];
+      const rows = exportRows.map(l => [
+        l.name, l.email || '', l.phone || '', l.source, l.status,
+        l.estate_interest || '', l.last_contacted_at || '', l.created_at,
+      ]);
+      const csv = [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `crm-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({ title: 'CSV export ready', description: `Exported ${exportRows.length} matching leads.` });
+    } catch (error) {
+      toast({ title: 'CSV export failed', description: error instanceof Error ? error.message : 'Unable to export matching leads.', variant: 'destructive' });
+    }
   };
 
   return (
@@ -378,10 +439,10 @@ const AdminCRMLeads: React.FC = () => {
           { label: 'Qualified', value: stats.qualified, icon: TrendingUp, color: 'text-purple-400' },
           { label: 'Won', value: stats.won, icon: CheckCircle, color: 'text-emerald-400' },
           { label: 'Overdue', value: stats.overdue, icon: Clock, color: 'text-red-400' },
-          { label: 'Win Rate', value: `${stats.winRate}%`, icon: Target, color: 'text-cyan-400' },
-          { label: 'Won Value', value: `₦${Math.round(stats.value / 1000000)}m`, icon: CircleDollarSign, color: 'text-emerald-400' },
+          { label: 'Win Rate', value: `${stats.win_rate}%`, icon: Target, color: 'text-cyan-400' },
+          { label: 'Won Value', value: `₦${Math.round(stats.won_value / 1000000)}m`, icon: CircleDollarSign, color: 'text-emerald-400' },
         ].map(s => (
-          <Card key={s.label} className="bg-white/50 border-slate-200">
+          <Card key={s.label} className="bg-card border-slate-200">
             <CardContent className="p-4 flex items-center gap-3">
               <s.icon className={`h-5 w-5 ${s.color}`} />
               <div>
@@ -409,9 +470,9 @@ const AdminCRMLeads: React.FC = () => {
             {STATUSES.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}><SelectTrigger className="w-[160px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Assignee" /></SelectTrigger><SelectContent><SelectItem value="all">All assignees</SelectItem><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select>
+        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}><SelectTrigger className="w-[160px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Assignee" /></SelectTrigger><SelectContent><SelectItem value="all">All assignees</SelectItem><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ')}</SelectItem>)}</SelectContent></Select>
         <Select value={priorityFilter} onValueChange={setPriorityFilter}><SelectTrigger className="w-[130px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Priority" /></SelectTrigger><SelectContent><SelectItem value="all">All priorities</SelectItem>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select>
-        <Select value={sourceFilter} onValueChange={setSourceFilter}><SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Source" /></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{[...new Set(leads.map(lead => lead.source).filter(Boolean))].map(source => <SelectItem key={source} value={source}>{source.replace('_', ' ')}</SelectItem>)}</SelectContent></Select>
+        <Select value={sourceFilter} onValueChange={setSourceFilter}><SelectTrigger className="w-[140px] bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Source" /></SelectTrigger><SelectContent><SelectItem value="all">All sources</SelectItem>{sourceOptions.map(source => <SelectItem key={source} value={source}>{source.replace('_', ' ')}</SelectItem>)}</SelectContent></Select>
         <Button variant={overdueOnly ? 'default' : 'outline'} onClick={() => setOverdueOnly(value => !value)}><Clock className="h-4 w-4 mr-1" />Overdue</Button>
         <Button onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' }); setIsFormOpen(true); }} className="gap-1">
           <Plus className="h-4 w-4" /> Add Lead
@@ -422,48 +483,48 @@ const AdminCRMLeads: React.FC = () => {
       </div>
 
       {/* Leads List */}
-      <div className="flex gap-4">
-        <div className={`${selectedLead ? 'w-1/2' : 'w-full'} transition-all`}>
-          <ScrollArea className="h-[500px]">
+      <div className="flex min-w-0 flex-col gap-4 lg:flex-row">
+        <div className={`${selectedLead ? 'w-full lg:w-1/2' : 'w-full'} min-w-0 transition-all`}>
+          <ScrollArea className="h-[520px] lg:h-[calc(100dvh-21rem)]">
             <div className="space-y-2">
               {loading ? <p role="status" aria-live="polite" className="text-slate-600 p-4">Loading leads…</p> :
-                filtered.length === 0 ? (
+                totalCount === 0 ? (
                   <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center" role="status">
                     <UsersIcon className="mx-auto h-9 w-9 text-slate-400" aria-hidden="true" />
-                    <h3 className="mt-3 text-sm font-semibold text-slate-900">{leads.length === 0 ? 'No leads yet' : 'No leads match these filters'}</h3>
-                    <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">{leads.length === 0 ? 'Add your first lead to start tracking inquiries, follow-ups and conversions.' : 'Try a different search term or adjust the status, assignee, priority or source filters.'}</p>
-                    {leads.length === 0 && (
+                    <h3 className="mt-3 text-sm font-semibold text-slate-900">{totalCount === 0 ? 'No leads yet' : 'No leads match these filters'}</h3>
+                    <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">{totalCount === 0 ? 'Add your first lead to start tracking inquiries, follow-ups and conversions.' : 'Try a different search term or adjust the status, assignee, priority or source filters.'}</p>
+                    {totalCount === 0 && (
                       <Button className="mt-4 gap-2" onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' }); setIsFormOpen(true); }}>
                         <Plus className="h-4 w-4" /> Add your first lead
                       </Button>
                     )}
                   </div>
                 ) :
-                filtered.map(lead => (
-                  <Card key={lead.id} className={`border-slate-200 cursor-pointer transition-colors ${selectedLead?.id === lead.id ? 'bg-slate-600' : 'bg-white/50 hover:bg-white'}`}
+                paginatedLeads.map(lead => (
+                  <Card key={lead.id} className={`border-slate-200 cursor-pointer transition-colors ${selectedLead?.id === lead.id ? 'bg-[#F4EEDC] dark:bg-[#3A3325]' : 'bg-card hover:bg-muted'}`}
                     onClick={() => handleOpenLead(lead)}>
                     <CardContent className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-900 truncate">{lead.name}</span>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="min-w-0 break-words font-semibold text-slate-900">{lead.name}</span>
                             <Badge className={`text-xs ${STATUS_COLORS[lead.status] || ''}`}>{lead.status}</Badge>
                           </div>
-                          <div className="flex gap-3 mt-1 text-xs text-slate-600">
-                            {lead.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{lead.email}</span>}
-                            {lead.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{lead.phone}</span>}
+                          <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600">
+                            {lead.email && <span className="flex min-w-0 items-center gap-1 break-all"><Mail className="h-3 w-3 shrink-0" />{lead.email}</span>}
+                            {lead.phone && <span className="flex min-w-0 items-center gap-1 break-words"><Phone className="h-3 w-3 shrink-0" />{lead.phone}</span>}
                           </div>
                           {lead.estate_interest && <p className="text-xs text-slate-500 mt-1">Interest: {lead.estate_interest}</p>}
                           <div className="flex flex-wrap gap-2 mt-2">
                             {renderNextAction(lead.id)}
                             {lead.last_contacted_at && (
-                              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-white/60 text-slate-600">
+                              <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
                                 <PhoneCall className="h-3 w-3" /> Last contact: {format(new Date(lead.last_contacted_at), 'MMM d')}
                               </span>
                             )}
                           </div>
                         </div>
-                        <div className="flex gap-1 shrink-0">
+                        <div className="flex shrink-0 self-end sm:self-start gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-600"
                             onClick={e => { e.stopPropagation(); setEditingLead(lead); setForm({ name: lead.name, email: lead.email || '', phone: lead.phone || '', source: lead.source, status: lead.status, estate_interest: lead.estate_interest || '', notes: lead.notes || '', assigned_to: lead.assigned_to || '', priority: lead.priority, property_key: lead.estate_id ? `estate:${lead.estate_id}` : lead.listing_id ? `listing:${lead.listing_id}` : '' }); setIsFormOpen(true); }}>
                             <Pencil className="h-3.5 w-3.5" />
@@ -479,20 +540,37 @@ const AdminCRMLeads: React.FC = () => {
                 ))}
             </div>
           </ScrollArea>
+          <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-muted-foreground">Showing {totalCount ? ((currentPage - 1) * pageSize) + 1 : 0}–{Math.min(currentPage * pageSize, totalCount)} of {totalCount} leads</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Label htmlFor="crm-page-size" className="text-xs text-muted-foreground">Rows</Label>
+              <Select value={String(pageSize)} onValueChange={value => setPageSize(Number(value))}>
+                <SelectTrigger id="crm-page-size" className="h-8 w-[76px] bg-background text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(page => Math.max(1, page - 1))} disabled={currentPage <= 1} aria-label="Previous page"><ChevronLeft className="h-4 w-4" /></Button>
+              <span className="min-w-[5.5rem] text-center text-xs text-muted-foreground">Page {currentPage} of {pageCount}</span>
+              <Button type="button" variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentPage(page => Math.min(pageCount, page + 1))} disabled={currentPage >= pageCount} aria-label="Next page"><ChevronRight className="h-4 w-4" /></Button>
+            </div>
+          </div>
         </div>
 
         {/* Lead Detail Panel */}
         {selectedLead && (
-          <div className="w-1/2">
-            <Card className="bg-white/50 border-slate-200 h-[500px]">
+          <div className="w-full min-w-0 lg:w-1/2">
+            <Card className="bg-card border-slate-200 min-h-[420px] h-[520px] lg:h-[calc(100dvh-21rem)]">
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-slate-900 text-lg">{selectedLead.name}</CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedLead(null)} className="text-slate-600">✕</Button>
+                <div className="flex min-w-0 items-start justify-between gap-2">
+                  <CardTitle className="min-w-0 break-words text-slate-900 text-lg">{selectedLead.name}</CardTitle>
+                  <Button variant="ghost" size="sm" aria-label="Close lead details" onClick={() => setSelectedLead(null)} className="shrink-0 text-slate-600">Close</Button>
                 </div>
-                <div className="flex gap-2 mt-1">
+                <div className="mt-1 flex flex-wrap gap-2">
                   <Select value={selectedLead.status} onValueChange={s => { handleStatusChange(selectedLead, s); setSelectedLead({ ...selectedLead, status: s }); }}>
-                    <SelectTrigger className="w-[120px] h-7 text-xs bg-slate-600 border-slate-300 text-slate-900">
+                    <SelectTrigger className="w-[120px] h-7 text-xs bg-background border-border text-foreground">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -506,20 +584,20 @@ const AdminCRMLeads: React.FC = () => {
               <ScrollArea className="h-[400px] px-4 pb-4">
                 <div className="space-y-4">
                   {/* Contact Info */}
-                  <div className="space-y-1 text-sm text-slate-700">
-                    {selectedLead.email && <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> {selectedLead.email}</p>}
-                    {selectedLead.phone && <p className="flex items-center gap-2"><Phone className="h-3.5 w-3.5" /> {selectedLead.phone}</p>}
-                    {selectedLead.estate_interest && <p className="flex items-center gap-2"><User className="h-3.5 w-3.5" /> {selectedLead.estate_interest}</p>}
+                  <div className="min-w-0 space-y-1 text-sm text-slate-700">
+                    {selectedLead.email && <p className="flex min-w-0 items-start gap-2 break-all"><Mail className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {selectedLead.email}</p>}
+                    {selectedLead.phone && <p className="flex min-w-0 items-start gap-2 break-words"><Phone className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {selectedLead.phone}</p>}
+                    {selectedLead.estate_interest && <p className="flex min-w-0 items-start gap-2 break-words"><User className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {selectedLead.estate_interest}</p>}
                     {selectedLead.notes && (
                       <div
-                        className="text-slate-600 mt-2 prose prose-sm prose-invert max-w-none"
+                        className="text-slate-600 mt-2 prose prose-sm max-w-none dark:prose-invert"
                         dangerouslySetInnerHTML={{ __html: sanitizeRichText(selectedLead.notes) }}
                       />
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><Label className="text-xs text-slate-600">Assigned to</Label><Select value={selectedLead.assigned_to || 'unassigned'} onValueChange={async value => { const assigned = value === 'unassigned' ? null : value; await supabase.from('crm_leads').update({ assigned_to: assigned }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, assigned_to: assigned }); fetchLeads(); }}><SelectTrigger className="bg-slate-600 border-slate-300 text-slate-900"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div>
-                    <div><Label className="text-xs text-slate-600">Priority</Label><Select value={selectedLead.priority} onValueChange={async priority => { await supabase.from('crm_leads').update({ priority }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, priority }); fetchLeads(); }}><SelectTrigger className="bg-slate-600 border-slate-300 text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label className="text-xs text-slate-600">Assigned to</Label><Select value={selectedLead.assigned_to || 'unassigned'} onValueChange={async value => { const assigned = value === 'unassigned' ? null : value; await supabase.from('crm_leads').update({ assigned_to: assigned }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, assigned_to: assigned }); fetchLeads(); }}><SelectTrigger className="bg-background border-border text-foreground"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ')}</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label className="text-xs text-slate-600">Priority</Label><Select value={selectedLead.priority} onValueChange={async priority => { await supabase.from('crm_leads').update({ priority }).eq('id', selectedLead.id); setSelectedLead({ ...selectedLead, priority }); fetchLeads(); }}><SelectTrigger className="bg-muted border-border text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div>
                   </div>
 
                   {/* Quick Actions */}
@@ -567,7 +645,7 @@ const AdminCRMLeads: React.FC = () => {
                       <h4 className="text-sm font-semibold text-slate-900 mb-2 flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Follow-ups</h4>
                       <div className="space-y-1">
                         {followUps.map(f => (
-                          <div key={f.id} className={`flex items-center justify-between text-xs p-2 rounded ${f.completed_at ? 'bg-green-900/20' : f.cancelled_at ? 'bg-red-900/20' : 'bg-slate-600'}`}>
+                          <div key={f.id} className={`flex items-center justify-between text-xs p-2 rounded ${f.completed_at ? 'bg-green-900/20' : f.cancelled_at ? 'bg-red-900/20' : 'bg-muted'}`}>
                             <div>
                               <span className="text-slate-900">{f.action_type}</span>
                               <span className="text-slate-600 ml-2">{format(new Date(f.scheduled_at), 'MMM d, h:mm a')}</span>
@@ -587,7 +665,7 @@ const AdminCRMLeads: React.FC = () => {
                       <h4 className="text-sm font-semibold text-slate-900 mb-2 flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" /> Activity Log</h4>
                       <div className="space-y-1">
                         {activities.map(a => (
-                          <div key={a.id} className="text-xs p-2 bg-slate-600/50 rounded">
+                          <div key={a.id} className="text-xs p-2 bg-muted rounded">
                             <span className="text-slate-600">{format(new Date(a.created_at), 'MMM d, h:mm a')}</span>
                             <span className="text-slate-900 ml-2">{a.description}</span>
                           </div>
@@ -623,7 +701,7 @@ const AdminCRMLeads: React.FC = () => {
                 <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="bg-white border-slate-200 text-slate-900" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-700">Assignee</Label><Select value={form.assigned_to || 'unassigned'} onValueChange={value => setForm(current => ({ ...current, assigned_to: value === 'unassigned' ? '' : value }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ') || member.email}</SelectItem>)}</SelectContent></Select></div><div><Label className="text-slate-700">Priority</Label><Select value={form.priority} onValueChange={priority => setForm(current => ({ ...current, priority }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div></div>
+            <div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-700">Assignee</Label><Select value={form.assigned_to || 'unassigned'} onValueChange={value => setForm(current => ({ ...current, assigned_to: value === 'unassigned' ? '' : value }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ')}</SelectItem>)}</SelectContent></Select></div><div><Label className="text-slate-700">Priority</Label><Select value={form.priority} onValueChange={priority => setForm(current => ({ ...current, priority }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div></div>
             <div><Label className="text-slate-700">Property</Label><Select value={form.property_key || 'none'} onValueChange={property_key => setForm(current => ({ ...current, property_key: property_key === 'none' ? '' : property_key }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Select a property" /></SelectTrigger><SelectContent><SelectItem value="none">No linked property</SelectItem>{properties.map(property => <SelectItem key={`${property.kind}:${property.id}`} value={`${property.kind}:${property.id}`}>{property.name} · {property.kind}</SelectItem>)}</SelectContent></Select></div>
             <div className="grid grid-cols-2 gap-3">
               <div>

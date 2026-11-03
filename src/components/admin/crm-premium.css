@@ -1,0 +1,31 @@
+/* Premium Bridgefort CRM surface — scoped so public-site styling is unchanged. */
+.crm-premium {
+  --crm-gold: #b89a55;
+  --crm-gold-soft: #f4eedc;
+  min-width: 0;
+}
+.crm-premium .bg-white { background-color: hsl(var(--card)) !important; }
+.crm-premium .bg-slate-50 { background-color: hsl(var(--muted)) !important; }
+.crm-premium .border-slate-200 { border-color: hsl(var(--border)) !important; }
+.crm-premium .text-slate-900,
+.crm-premium .text-slate-800,
+.crm-premium .text-slate-700 { color: hsl(var(--foreground)) !important; }
+.crm-premium .text-slate-600,
+.crm-premium .text-slate-500 { color: hsl(var(--muted-foreground)) !important; }
+.crm-premium .text-slate-200 { color: hsl(var(--foreground)) !important; }
+.crm-premium .bg-violet-100 { background-color: var(--crm-gold-soft) !important; }
+.crm-premium .text-violet-950 { color: #5c4720 !important; }
+.crm-premium .ring-violet-200 { --tw-ring-color: #d6bd7b !important; }
+.crm-premium .hover\:bg-violet-50:hover { background-color: #f8f4e9 !important; }
+.crm-premium .hover\:text-violet-900:hover { color: #6a5428 !important; }
+.dark .crm-premium .bg-violet-100 { background-color: #3a3325 !important; }
+.dark .crm-premium .text-violet-950 { color: #f0dca9 !important; }
+.dark .crm-premium .ring-violet-200 { --tw-ring-color: #806b3d !important; }
+.dark .crm-premium .hover\:bg-violet-50:hover { background-color: #302b20 !important; }
+.dark .crm-premium .hover\:text-violet-900:hover { color: #f0dca9 !important; }
+.crm-premium .crm-workspace-header {
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+}

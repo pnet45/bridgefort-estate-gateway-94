@@ -4,13 +4,17 @@ import { useAuth } from '@/contexts/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Activity, AlertCircle, ArrowRight, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, Phone, RefreshCw, Target, TrendingUp, Users, BriefcaseBusiness, PanelLeftClose, PanelLeftOpen, ListChecks, BrainCircuit, BarChart3, UserRoundSearch } from 'lucide-react';
+import { Activity, AlertCircle, ArrowRight, CalendarClock, CheckCircle2, CircleDollarSign, Clock3, Phone, RefreshCw, Target, TrendingUp, Users, BriefcaseBusiness, PanelLeftClose, PanelLeftOpen, ListChecks, BrainCircuit, BarChart3, UserRoundSearch, Trophy } from 'lucide-react';
 import { format } from 'date-fns';
 import AdminCRMLeads from '@/components/admin/AdminCRMLeads';
 import AdminCustomer360 from '@/components/admin/AdminCustomer360';
 import AdminLeadAIAssistant from '@/components/admin/AdminLeadAIAssistant';
 import AdminInquiryAnalytics from '@/components/admin/AdminInquiryAnalytics';
 import AdminHRITWorkspace from '@/components/admin/AdminHRITWorkspace';
+import AdminCRMPerformance from '@/components/admin/AdminCRMPerformance';
+import DarkModeToggle from '@/components/navbar/DarkModeToggle';
+import { useIsGlobalAdmin } from '@/hooks/useIsGlobalAdmin';
+import './crm-premium.css';
 
 type Lead = { id: string; name: string; phone: string | null; status: string; source: string; priority: string; conversion_value: number | null; estate_interest: string | null; assigned_to: string | null; created_at: string };
 type FollowUp = { id: string; lead_id: string; scheduled_at: string; action_type: string; notes: string | null; completed_at: string | null; cancelled_at: string | null };
@@ -23,6 +27,8 @@ const titleCase = (value: string) => value.replace(/[_-]/g, ' ').replace(/\b\w/g
 const AdminCRMWorkspace: React.FC = () => {
   const { userRole, hasPermission } = useAuth();
   const canManagePeople = ['super_admin', 'admin_dir', 'admin_acct', 'admin_adm', 'admin_it', 'admin'].includes(userRole || '') || hasPermission('admin:manage_departments');
+  const { isGlobalAdmin } = useIsGlobalAdmin();
+  const canViewPerformance = isGlobalAdmin || userRole === 'admin_acct';
   const [leads, setLeads] = useState<Lead[]>([]);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
   const [journeys, setJourneys] = useState<Journey[]>([]);
@@ -72,15 +78,22 @@ const AdminCRMWorkspace: React.FC = () => {
 
   const attention = useMemo(() => {
     const leadMap = new Map(leads.map(lead => [lead.id, lead]));
-    return followUps.filter(item => new Date(item.scheduled_at).getTime() <= Date.now()).slice(0, 8)
+    return followUps.slice(0, 10)
       .map(item => ({ followUp: item, lead: leadMap.get(item.lead_id) })).filter(item => item.lead);
   }, [leads, followUps]);
 
   return (
-    <div className={`grid grid-cols-1 gap-5 lg:items-start ${crmNavCollapsed ? "lg:grid-cols-[4.25rem_minmax(0,1fr)]" : "lg:grid-cols-[14rem_minmax(0,1fr)]"}`}>
+    <div className="crm-premium space-y-4">
+      <div className="crm-workspace-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div><p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#B89A55]">Bridgefort Homes</p><h2 className="mt-1 text-xl font-semibold text-foreground">Premium CRM workspace</h2><p className="mt-1 text-xs text-muted-foreground">Leads, relationships, follow-through and sales performance in one place.</p></div>
+        <div className="flex items-center gap-2 self-end sm:self-auto"><span className="text-xs text-muted-foreground">Appearance</span><DarkModeToggle /></div>
+      </div>
+      <div className={`grid grid-cols-1 gap-5 lg:items-start ${crmNavCollapsed ? "lg:grid-cols-[4.25rem_minmax(0,1fr)]" : "lg:grid-cols-[14rem_minmax(0,1fr)]"}`}>
       <aside className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto">
         <div className="flex items-center justify-between gap-2 mb-3"><p className={`text-xs font-bold uppercase tracking-wider text-slate-500 ${crmNavCollapsed ? "lg:hidden" : ""}`}>CRM workspace</p><Button type="button" variant="ghost" size="icon" className="hidden lg:inline-flex text-slate-600 hover:bg-slate-100" onClick={() => setCrmNavCollapsed(value => !value)} aria-label={crmNavCollapsed ? "Expand CRM submenu" : "Collapse CRM submenu"}>{crmNavCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}</Button></div>
-        {[{ id: "crm-overview", label: "Overview", icon: Target }, { id: "crm-pipeline", label: "Sales pipeline", icon: ListChecks }, { id: "crm-journeys", label: "Service journeys", icon: BriefcaseBusiness }, { id: "crm-followups", label: "Follow-ups", icon: CalendarClock }, { id: "crm-ai", label: "Leo AI assistant", icon: BrainCircuit }, { id: "crm-analytics", label: "Inquiry analytics", icon: BarChart3 }, { id: "crm-leads", label: "Lead management", icon: Users }, { id: "crm-customer360", label: "Customer 360", icon: UserRoundSearch }, ...(canManagePeople ? [{ id: "crm-admin-hrit", label: "Administration, HR & IT", icon: BriefcaseBusiness }] : [])].map(item => <button key={item.id} type="button" onClick={() => setActiveSection(item.id)} title={crmNavCollapsed ? item.label : undefined} className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 mb-1 text-left text-sm font-medium transition-colors ${activeSection === item.id ? "bg-violet-100 text-violet-950 ring-1 ring-violet-200" : "text-slate-700 hover:bg-violet-50 hover:text-violet-900"} ${crmNavCollapsed ? "lg:justify-center lg:px-2" : ""}`}><item.icon className="h-4 w-4 shrink-0" /><span className={crmNavCollapsed ? "lg:hidden" : ""}>{item.label}</span></button>)}
+        <div className="flex min-w-0 gap-1 overflow-x-auto pb-1 lg:block lg:overflow-visible">
+        {[{ id: "crm-overview", label: "Overview", icon: Target }, { id: "crm-pipeline", label: "Sales pipeline", icon: ListChecks }, { id: "crm-journeys", label: "Service journeys", icon: BriefcaseBusiness }, { id: "crm-followups", label: "Follow-ups", icon: CalendarClock }, { id: "crm-ai", label: "AI lead intelligence", icon: BrainCircuit }, { id: "crm-analytics", label: "Inquiry analytics", icon: BarChart3 }, { id: "crm-leads", label: "Lead management", icon: Users }, { id: "crm-customer360", label: "Customer 360", icon: UserRoundSearch }, ...(canViewPerformance ? [{ id: "crm-performance", label: "Staff performance", icon: Trophy }] : []), ...(canManagePeople ? [{ id: "crm-admin-hrit", label: "Administration, HR & IT", icon: BriefcaseBusiness }] : [])].map(item => <button key={item.id} type="button" onClick={() => setActiveSection(item.id)} title={crmNavCollapsed ? item.label : undefined} className={`w-auto shrink-0 whitespace-nowrap flex items-center gap-3 rounded-xl px-3 py-2.5 mb-1 text-left text-sm font-medium transition-colors ${activeSection === item.id ? "bg-violet-100 text-violet-950 ring-1 ring-violet-200" : "text-slate-700 hover:bg-violet-50 hover:text-violet-900"} lg:w-full ${crmNavCollapsed ? "lg:justify-center lg:px-2" : ""}`}><item.icon className="h-4 w-4 shrink-0" /><span className={crmNavCollapsed ? "lg:hidden" : ""}>{item.label}</span></button>)}
+        </div>
       </aside>
       <div className="min-w-0 space-y-5">
       {activeSection === "crm-overview" && <Card id="crm-overview" className="bg-white border-slate-200 shadow-sm scroll-mt-28">
@@ -163,13 +176,15 @@ const AdminCRMWorkspace: React.FC = () => {
               </div>
             </CardHeader>
             <CardContent>
-              {attention.length === 0 ? <div className="py-5 text-center text-sm text-slate-500">No overdue or due-today follow-ups.</div> : (
+              {attention.length === 0 ? <div className="py-5 text-center text-sm text-slate-500">No pending follow-ups.</div> : (
                 <div className="divide-y divide-slate-200">
                   {attention.map(({ followUp, lead }) => {
-                    const overdue = new Date(followUp.scheduled_at).getTime() < Date.now();
+                    const dueTime = new Date(followUp.scheduled_at).getTime();
+                    const overdue = dueTime < Date.now();
+                    const dueToday = new Date(followUp.scheduled_at).toDateString() === new Date().toDateString();
                     return <div key={followUp.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 py-3">
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900 truncate">{lead?.name}</span><Badge className={overdue ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-amber-100 text-amber-900 border border-amber-200'}>{overdue ? 'Overdue' : 'Today'}</Badge></div>
+                        <div className="flex items-center gap-2"><span className="font-medium text-slate-900 truncate">{lead?.name}</span><Badge className={overdue ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-amber-100 text-amber-900 border border-amber-200'}>{overdue ? 'Overdue' : dueToday ? 'Today' : 'Upcoming'}</Badge></div>
                         <p className="text-xs text-slate-600 mt-1">{titleCase(followUp.action_type)} · {format(new Date(followUp.scheduled_at), 'MMM d, h:mm a')}{lead?.estate_interest ? ` · ${lead.estate_interest}` : ''}</p>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-slate-500">{lead?.phone && <Phone className="h-3.5 w-3.5" />}<ArrowRight className="h-3.5 w-3.5" /></div>
@@ -183,14 +198,16 @@ const AdminCRMWorkspace: React.FC = () => {
       </Card>}
       {activeSection === "crm-pipeline" && <Card id="crm-pipeline-view" className="bg-white border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-slate-900">Sales pipeline</CardTitle><p className="text-sm text-slate-600">Lead distribution across each sales stage.</p></CardHeader><CardContent><div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">{pipeline.map(item => <div key={item.status} className="rounded-xl border border-slate-200 bg-slate-50 p-4"><p className="text-xs text-slate-600">{titleCase(item.status)}</p><p className="text-2xl font-semibold text-slate-900 mt-1">{item.count}</p></div>)}</div></CardContent></Card>}
       {activeSection === "crm-journeys" && <Card id="crm-journeys-view" className="bg-white border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-slate-900">Service journeys</CardTitle><p className="text-sm text-slate-600">{metrics.journeys} linked service records</p></CardHeader><CardContent><div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">{Array.from(new Set(journeys.map(j => j.service_type))).map(type => { const matching = journeys.filter(j => j.service_type === type); const active = matching.filter(j => !["CONVERTED","LOST","CLOSED","COMPLETED","CANCELLED","DECLINED","EXPIRED"].includes(j.status)).length; return <div key={type} className="rounded-xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-medium text-slate-800">{titleCase(type)}</p><p className="text-2xl font-semibold text-slate-900 mt-1">{matching.length}</p><p className="text-xs text-slate-600">{active} active</p></div>; })}{journeys.length === 0 && <p className="text-sm text-slate-500">Service journeys will appear here as customers interact with Bridgefort services.</p>}</div></CardContent></Card>}
-      {activeSection === "crm-followups" && <Card id="crm-followups-view" className="bg-white border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-slate-900">Follow-ups</CardTitle><p className="text-sm text-slate-600">Overdue and due-today follow-ups requiring attention.</p></CardHeader><CardContent>{attention.length === 0 ? <p className="py-5 text-center text-sm text-slate-500">No overdue or due-today follow-ups.</p> : <div className="divide-y divide-slate-200">{attention.map(({followUp, lead}) => { const overdue = new Date(followUp.scheduled_at).getTime() < Date.now(); return <div key={followUp.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><div className="flex items-center gap-2"><span className="font-medium text-slate-900 truncate">{lead?.name}</span><Badge className={overdue ? "bg-red-100 text-red-800 border border-red-200" : "bg-amber-100 text-amber-900 border border-amber-200"}>{overdue ? "Overdue" : "Today"}</Badge></div><p className="text-xs text-slate-600 mt-1">{titleCase(followUp.action_type)} · {format(new Date(followUp.scheduled_at), "MMM d, h:mm a")}{lead?.estate_interest ? ` · ${lead.estate_interest}` : ""}</p></div>{lead?.phone && <span className="text-xs text-slate-600">{lead.phone}</span>}</div>; })}</div>}</CardContent></Card>}
+      {activeSection === "crm-followups" && <Card id="crm-followups-view" className="bg-white border-slate-200 shadow-sm"><CardHeader><CardTitle className="text-slate-900">Follow-ups</CardTitle><p className="text-sm text-slate-600">Overdue, due-today and upcoming follow-ups.</p></CardHeader><CardContent>{attention.length === 0 ? <p className="py-5 text-center text-sm text-slate-500">No pending follow-ups.</p> : <div className="divide-y divide-slate-200">{attention.map(({followUp, lead}) => { const dueTime = new Date(followUp.scheduled_at).getTime(); const overdue = dueTime < Date.now(); const dueToday = new Date(followUp.scheduled_at).toDateString() === new Date().toDateString(); return <div key={followUp.id} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><div className="flex items-center gap-2"><span className="font-medium text-slate-900 truncate">{lead?.name}</span><Badge className={overdue ? "bg-red-100 text-red-800 border border-red-200" : "bg-amber-100 text-amber-900 border border-amber-200"}>{overdue ? "Overdue" : dueToday ? "Today" : "Upcoming"}</Badge></div><p className="text-xs text-slate-600 mt-1">{titleCase(followUp.action_type)} · {format(new Date(followUp.scheduled_at), "MMM d, h:mm a")}{lead?.estate_interest ? ` · ${lead.estate_interest}` : ""}</p></div>{lead?.phone && <span className="text-xs text-slate-600">{lead.phone}</span>}</div>; })}</div>}</CardContent></Card>}
       {activeSection === "crm-ai" && <div id="crm-ai" className="min-w-0"><AdminLeadAIAssistant /></div>}
+      {canViewPerformance && activeSection === "crm-performance" && <div id="crm-performance" className="min-w-0"><AdminCRMPerformance /></div>}
       {activeSection === "crm-analytics" && <div id="crm-analytics" className="min-w-0"><AdminInquiryAnalytics /></div>}
       {activeSection === "crm-leads" && <div id="crm-leads" className="min-w-0"><AdminCRMLeads /></div>}
       {activeSection === "crm-customer360" && <div id="crm-customer360" className="min-w-0"><AdminCustomer360 /></div>}
       {canManagePeople && activeSection === "crm-admin-hrit" && <div id="crm-admin-hrit" className="min-w-0"><AdminHRITWorkspace /></div>}
       </div>
     </div>
+      </div>
   );
 };
 
