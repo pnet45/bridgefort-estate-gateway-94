@@ -68,7 +68,9 @@ serve(async (req) => {
       .select("amount").eq("related_payment_id", plan.id).eq("status", "pending");
     if (pendingError) return json({ error: "Could not verify existing payment submissions" }, 500);
 
-    const outstanding = Math.max(0, Number(order.balance ?? (Number(order.total_amount) - Number(order.amount_paid))));
+    // orders.balance has a legacy default of 0 on newly created checkout orders;
+    // compute the authoritative outstanding amount from total_amount and amount_paid.
+    const outstanding = Math.max(0, Number(order.total_amount) - Number(order.amount_paid ?? 0));
     const pendingAmount = (pending ?? []).reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
     const available = Math.max(0, outstanding - pendingAmount);
     if (amount > available + 0.01) {
