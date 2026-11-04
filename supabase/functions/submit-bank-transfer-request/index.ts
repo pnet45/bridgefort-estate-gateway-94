@@ -64,41 +64,19 @@ serve(async (req) => {
       return json({ error: "Receipt upload was not found. Please upload it again." }, 400);
     }
 
-    const { data: pending, error: pendingError } = await admin.from("payment_requests")
-      .select("amount").eq("related_payment_id", plan.id).eq("status", "pending");
-    if (pendingError) return json({ error: "Could not verify existing payment submissions" }, 500);
-
-    // orders.balance has a legacy default of 0 on newly created checkout orders;
-    // compute the authoritative outstanding amount from total_amount and amount_paid.
-    const outstanding = Math.max(0, Number(order.total_amount) - Number(order.amount_paid ?? 0));
-    const pendingAmount = (pending ?? []).reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
-    const available = Math.max(0, outstanding - pendingAmount);
-    if (amount > available + 0.01) {
-      return json({ error: `Amount exceeds the available balance of ₦${available.toLocaleString("en-NG")}` }, 400);
-    }
-
-    const { data: duplicate } = await admin.from("payment_requests")
-      .select("id").eq("transfer_reference", transferReference).maybeSingle();
-    if (duplicate) return json({ error: "This transfer reference has already been submitted" }, 409);
-
-    const description = `Property payment via Bank Transfer — Order ${order.id}`;
-    const { data: request, error: insertError } = await admin.from("payment_requests").insert({
-      user_id: userId,
-      type: "property",
-      amount,
-      reference: transferReference,
-      transfer_reference: transferReference,
-      transfer_date: transferDate,
-      receipt_path: receiptPath,
-      order_id: order.id,
-      related_payment_id: plan.id,
-      description,
-      status: "pending",
-    }).select("id,amount,status,created_at").single();
-
-    if (insertError || !request) {
+    // The database function locks the order and performs the pending-amount
+    // check plus insert atomically, preventing concurrent over-submissions.
+    const { data: request, error: insertError } = await admin.rpc("submit_bank_transfer_request", {
+      _user_id: userId,
+      _order_id: order.id,
+      _amount: amount,
+      _transfer_date: transferDate,
+      _transfer_reference: transferReference,
+      _receipt_path: receiptPath,
+    });
+    if (insertError || !request?.request_id) {
       console.error("Bank transfer request insert failed", insertError);
-      return json({ error: "Could not submit your transfer for verification" }, 500);
+      return json({ error: insertError?.message || "Could not submit your transfer for verification" }, 400);
     }
 
     const { error: notificationError } = await admin.from("notifications").insert({
@@ -111,7 +89,7 @@ serve(async (req) => {
     });
     if (notificationError) console.warn("Customer notification failed", notificationError);
 
-    return json({ success: true, request_id: request.id, status: request.status, submitted_at: request.created_at });
+    return json({ success: true, request_id: request.request_id, status: request.status, submitted_at: request.created_at });
   } catch (error) {
     console.error("submit-bank-transfer-request error", error);
     return json({ error: "Could not submit bank transfer" }, 500);
