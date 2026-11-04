@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import OrderSummary from './OrderSummary';
 import CustomerInfoForm from './CustomerInfoForm';
+import BankTransferSubmission from './BankTransferSubmission';
 import PaymentPlanSelector from './PaymentPlanSelector';
 import { calculatePaymentBreakdown, PaymentPlanType } from "@/utils/paymentPlan";
 import { useRecaptchaV3 } from '@/hooks/useRecaptchaV3';
@@ -25,6 +26,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   const navigate = useNavigate();
   const { execute: executeRecaptcha } = useRecaptchaV3();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [bankTransferOrder, setBankTransferOrder] = useState<{ orderId: string; amount: number; reference: string } | null>(null);
   const [customerInfo, setCustomerInfo] = useState<Customer>({
     firstName: '',
     lastName: '',
@@ -65,7 +67,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
            customerInfo.email && customerInfo.phone && customerInfo.address;
   };
 
-  const handlePayment = async (method: 'paystack' | 'stripe' = 'paystack') => {
+  const handlePayment = async (method: 'paystack' | 'bank-transfer' | 'stripe' = 'paystack') => {
     console.log(`[Checkout] handlePayment triggered. Method: ${method}`);
     if (!validateStep1()) {
       toast({
@@ -132,6 +134,11 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         currency: 'NGN',
       });
 
+      if (method === 'bank-transfer') {
+        setBankTransferOrder({ orderId: orderData.order_id, amount: payAmount, reference });
+        return;
+      }
+
       if (method === 'stripe') {
         const { data: stripeData, error: stripeError } = await supabase.functions.invoke('stripe-initialize', {
           body: {
@@ -197,6 +204,20 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   };
 
   if (!user) return null;
+
+  if (bankTransferOrder) {
+    return (
+      <div className="min-h-screen bg-white">
+        <BankTransferSubmission
+          orderId={bankTransferOrder.orderId}
+          amountDue={bankTransferOrder.amount}
+          orderReference={bankTransferOrder.reference}
+          onComplete={() => undefined}
+          onBack={() => setBankTransferOrder(null)}
+        />
+      </div>
+    );
+  }
 
   // Main full-page checkout layout
   return (
