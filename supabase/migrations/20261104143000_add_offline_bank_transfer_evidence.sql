@@ -117,9 +117,7 @@ declare
   already_pending numeric;
   request_row public.payment_requests;
 begin
-  if coalesce(auth.role(),'') <> 'service_role' then
-    raise exception using errcode='42501', message='Service role required';
-  end if;
+  -- EXECUTE is revoked from PUBLIC/anon/authenticated and granted only to service_role.
   if _user_id is null or _order_id is null or _amount is null or _amount <= 0 then
     raise exception using errcode='22023', message='Invalid payment submission';
   end if;
