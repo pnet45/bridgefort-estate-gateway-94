@@ -26,7 +26,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   const navigate = useNavigate();
   const { execute: executeRecaptcha } = useRecaptchaV3();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [bankTransferOrder, setBankTransferOrder] = useState<{ orderId: string; amount: number; reference: string } | null>(null);
+  const [bankTransferOrder, setBankTransferOrder] = useState<{ orderId: string; amount: number; reference: string; propertyDescription: string; paymentPlan: string } | null>(null);
   const [customerInfo, setCustomerInfo] = useState<Customer>({
     firstName: '',
     lastName: '',
@@ -135,7 +135,15 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
       });
 
       if (method === 'bank-transfer') {
-        setBankTransferOrder({ orderId: orderData.order_id, amount: payAmount, reference });
+        setBankTransferOrder({
+          orderId: orderData.order_id,
+          amount: payAmount,
+          reference,
+          propertyDescription: cart.map(item => item.plot.propertyName).filter(Boolean).join(', '),
+          paymentPlan: selectedPlan.type === 'outright'
+            ? 'Outright payment'
+            : `${selectedPlan.type} · ${selectedPlan.monthsToPay || 1} month(s) selected of ${selectedPlan.months} months`,
+        });
         return;
       }
 
@@ -212,6 +220,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
           orderId={bankTransferOrder.orderId}
           amountDue={bankTransferOrder.amount}
           orderReference={bankTransferOrder.reference}
+          propertyDescription={bankTransferOrder.propertyDescription}
+          paymentPlan={bankTransferOrder.paymentPlan}
           onComplete={() => undefined}
           onBack={() => setBankTransferOrder(null)}
         />
