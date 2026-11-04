@@ -5576,6 +5576,20 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_crm_staff_performance: {
+        Args: { p_month_end: string; p_month_start: string }
+        Returns: {
+          completed_follow_ups: number
+          first_name: string | null
+          last_name: string | null
+          lost_leads: number
+          new_leads: number
+          pending_follow_ups: number
+          user_id: string
+          won_leads: number
+          won_value: number
+        }[]
+      }
       get_crm_lead_page: {
         Args: {
           p_assignee?: string | null

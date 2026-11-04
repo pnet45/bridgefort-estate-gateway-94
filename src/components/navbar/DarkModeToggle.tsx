@@ -6,8 +6,12 @@ const STORAGE_KEY = 'bf-theme';
 
 const getInitialTheme = (): Theme => {
   if (typeof window === 'undefined') return 'system';
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+  } catch {
+    return 'system';
+  }
 };
 
 const isDarkTheme = (theme: Theme, systemPrefersDark: boolean) =>
@@ -23,9 +27,9 @@ const DarkModeToggle: React.FC = () => {
       if (value === 'light' || value === 'dark' || value === 'system') setTheme(value);
     };
     const syncStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEY && (event.newValue === 'light' || event.newValue === 'dark' || event.newValue === 'system')) {
-        setTheme(event.newValue);
-      }
+      if (event.key !== STORAGE_KEY) return;
+      const value = event.newValue;
+      setTheme(value === 'light' || value === 'dark' || value === 'system' ? value : 'system');
     };
     window.addEventListener('bf-theme-change', syncTheme);
     window.addEventListener('storage', syncStorage);
@@ -43,7 +47,11 @@ const DarkModeToggle: React.FC = () => {
       document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
     };
 
-    window.localStorage.setItem(STORAGE_KEY, theme);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, theme);
+    } catch {
+      // Theme still applies for this session when storage is unavailable.
+    }
     apply();
     if (theme === 'system') media.addEventListener('change', apply);
     return () => media.removeEventListener('change', apply);
