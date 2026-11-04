@@ -5,20 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Award, CalendarCheck, RefreshCw, Target, Trophy, Users } from 'lucide-react';
 
-type Lead = {
-  id: string;
-  assigned_to: string | null;
-  status: string;
-  conversion_value: number | null;
-  created_at: string;
-  closed_at: string | null;
-};
-type FollowUp = {
-  lead_id: string;
-  scheduled_at: string;
-  completed_at: string | null;
-  cancelled_at: string | null;
-};
 type Member = { id: string; first_name: string | null; last_name: string | null };
 type PerformanceRow = {
   id: string;
@@ -43,9 +29,6 @@ const inMonth = (value: string | null, start: Date, end: Date) => {
 };
 
 const AdminCRMPerformance: React.FC = () => {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [followUps, setFollowUps] = useState<FollowUp[]>([]);
-  const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -53,63 +36,44 @@ const AdminCRMPerformance: React.FC = () => {
     setLoading(true);
     setError('');
     const [leadResult, followUpResult, assigneeResult] = await Promise.all([
-      supabase.from('crm_leads').select('id,assigned_to,status,conversion_value,created_at,closed_at'),
-      supabase.from('crm_follow_ups').select('lead_id,scheduled_at,completed_at,cancelled_at'),
-      supabase.rpc('get_crm_admin_assignees'),
-    ]);
+      supa  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const { data, error: resultError } = await supabase.rpc('get_crm_staff_performance', {
+      p_month_start: monthStart.toISOString(),
+      p_month_end: monthEnd.toISOString(),
+    });
 
-    if (leadResult.error || followUpResult.error || assigneeResult.error) {
-      setError(leadResult.error?.message || followUpResult.error?.message || assigneeResult.error?.message || 'Could not load CRM performance.');
+    if (resultError) {
+      setError(resultError.message || 'Could not load CRM performance.');
       setLoading(false);
       return;
     }
 
-    // Limit the leaderboard to currently active administrator accounts.
-    // The protected directory returns names only and excludes expired/non-admin accounts.
-    const memberRows: Member[] = (assigneeResult.data || []).map(member => ({
-      id: member.user_id,
-      first_name: member.first_name,
-      last_name: member.last_name,
-    }));
-    const activeAdminIds = new Set(memberRows.map(member => member.id));
-    const leadRows = ((leadResult.data || []) as Lead[])
-      .filter(lead => Boolean(lead.assigned_to && activeAdminIds.has(lead.assigned_to)));
-    const followUpRows = (followUpResult.data || []) as FollowUp[];
-
-    setLeads(leadRows);
-    setFollowUps(followUpRows);
-    setMembers(memberRows);
+    const nextRows: PerformanceRow[] = (data || []).map(member => {
+      const leads = Number(member.new_leads || 0);
+      const won = Number(member.won_leads || 0);
+      const lost = Number(member.lost_leads || 0);
+      const completedFollowUps = Number(member.completed_follow_ups || 0);
+      return {
+        id: member.user_id,
+        name: [member.first_name, member.last_name].filter(Boolean).join(' ') || 'Team member',
+        leads,
+        won,
+        lost,
+        winRate: won + lost ? Math.round((won / (won + lost)) * 100) : 0,
+        wonValue: Number(member.won_value || 0),
+        completedFollowUps,
+        pendingFollowUps: Number(member.pending_follow_ups || 0),
+        points: leads * 5 + won * 20,
+      };
+    });
+    setRows(nextRows);
     setLoading(false);
-  }, []);
-
-  useEffect(() => { void load(); }, [load]);
-
-  const rows = useMemo(() => {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const memberIds = [...new Set(leads.map(lead => lead.assigned_to).filter((id): id is string => Boolean(id)))];
-
-    return memberIds.map(id => {
-      const assigned = leads.filter(lead => lead.assigned_to === id);
-      const created = assigned.filter(lead => inMonth(lead.created_at, start, end));
-      const closed = assigned.filter(lead => inMonth(lead.closed_at, start, end) && ['won', 'lost'].includes(lead.status));
-      const won = closed.filter(lead => lead.status === 'won');
-      const leadIds = new Set(assigned.map(lead => lead.id));
-      const completedFollowUps = followUps.filter(item => leadIds.has(item.lead_id) && inMonth(item.completed_at, start, end)).length;
-      const pendingFollowUps = followUps.filter(item => leadIds.has(item.lead_id) && !item.completed_at && !item.cancelled_at).length;
-      const member = members.find(item => item.id === id);
-      const name = member ? ([member.first_name, member.last_name].filter(Boolean).join(' ') || 'Team member') : 'Team member';
-      const winRate = closed.length ? Math.round((won.length / closed.length) * 100) : 0;
-      const wonValue = won.reduce((sum, lead) => sum + Number(lead.conversion_value || 0), 0);
-      // Transparent activity points: 5 per new lead and 20 per won lead.
-      const points = created.length * 5 + won.length * 20;
-      return { id, name, leads: created.length, won: won.length, lost: closed.length - won.length, winRate, wonValue, completedFollowUps, pendingFollowUps, points };
-    }).sort((a, b) => b.points - a.points || b.wonValue - a.wonValue || b.leads - a.leads);
-  }, [leads, followUps, members]);
-
-  const totals = useMemo(() => rows.reduce((sum, row) => ({
-    leads: sum.leads + row.leads,
+  }, []);   leads: sum.leads + row.leads,
     won: sum.won + row.won,
     wonValue: sum.wonValue + row.wonValue,
     completed: sum.completed + row.completedFollowUps,
