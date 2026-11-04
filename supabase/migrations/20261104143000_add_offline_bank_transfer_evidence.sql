@@ -161,7 +161,7 @@ begin
     user_id,type,amount,reference,transfer_reference,transfer_date,
     receipt_path,order_id,related_payment_id,description,status
   ) values (
-    _user_id,'property',_amount,_transfer_reference,_transfer_reference,_transfer_date,
+    _user_id,'property',_amount,o.payment_reference,_transfer_reference,_transfer_date,
     _receipt_path,_order_id,payment_plan_id,
     'Property payment via Bank Transfer — Order ' || _order_id::text,'pending'
   )
