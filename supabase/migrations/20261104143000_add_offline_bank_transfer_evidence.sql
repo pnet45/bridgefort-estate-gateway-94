@@ -94,3 +94,84 @@ $$;
 
 revoke all on function public.get_admin_payment_request_details(uuid) from public;
 grant execute on function public.get_admin_payment_request_details(uuid) to authenticated;
+
+-- Atomic, service-role-only submission prevents concurrent requests from
+-- exceeding an order's outstanding balance.
+create or replace function public.submit_bank_transfer_request(
+  _user_id uuid,
+  _order_id uuid,
+  _amount numeric,
+  _transfer_date date,
+  _transfer_reference text,
+  _receipt_path text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path=public
+as $$
+declare
+  o public.orders;
+  payment_plan_id uuid;
+  outstanding numeric;
+  already_pending numeric;
+  request_row public.payment_requests;
+begin
+  if coalesce(auth.role(),'') <> 'service_role' then
+    raise exception using errcode='42501', message='Service role required';
+  end if;
+  if _user_id is null or _order_id is null or _amount is null or _amount <= 0 then
+    raise exception using errcode='22023', message='Invalid payment submission';
+  end if;
+  if length(trim(coalesce(_transfer_reference,''))) < 3 then
+    raise exception using errcode='22023', message='Transfer reference is required';
+  end if;
+  if _receipt_path not like _user_id::text || '/' || _order_id::text || '/%' then
+    raise exception using errcode='22023', message='Invalid receipt path';
+  end if;
+
+  select * into o from public.orders
+  where id=_order_id and user_id=_user_id
+  for update;
+  if o.id is null then
+    raise exception using errcode='P0002', message='Order not found for this customer';
+  end if;
+  if lower(coalesce(o.payment_status,'')) in ('paid','cancelled','rejected') then
+    raise exception using errcode='55000', message='Order is not accepting payments';
+  end if;
+
+  select id into payment_plan_id from public.payments
+  where reference=o.payment_reference limit 1;
+  if payment_plan_id is null then
+    raise exception using errcode='55000', message='Order payment plan could not be resolved';
+  end if;
+
+  outstanding := greatest(0,coalesce(o.total_amount,0)-coalesce(o.amount_paid,0));
+  select coalesce(sum(amount),0) into already_pending
+  from public.payment_requests
+  where related_payment_id=payment_plan_id and status='pending';
+  if _amount > greatest(0,outstanding-already_pending)+0.01 then
+    raise exception using errcode='22023', message='Transfer amount exceeds the available order balance';
+  end if;
+
+  insert into public.payment_requests(
+    user_id,type,amount,reference,transfer_reference,transfer_date,
+    receipt_path,order_id,related_payment_id,description,status
+  ) values (
+    _user_id,'property',_amount,_transfer_reference,_transfer_reference,_transfer_date,
+    _receipt_path,_order_id,payment_plan_id,
+    'Property payment via Bank Transfer — Order ' || _order_id::text,'pending'
+  )
+  returning * into request_row;
+
+  return jsonb_build_object(
+    'request_id',request_row.id,
+    'status',request_row.status,
+    'amount',request_row.amount,
+    'created_at',request_row.created_at
+  );
+end;
+$$;
+
+revoke all on function public.submit_bank_transfer_request(uuid,uuid,numeric,date,text,text) from public, anon, authenticated;
+grant execute on function public.submit_bank_transfer_request(uuid,uuid,numeric,date,text,text) to service_role;
