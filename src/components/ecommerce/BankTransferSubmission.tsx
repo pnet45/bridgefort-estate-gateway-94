@@ -11,13 +11,15 @@ interface Props {
   orderId: string;
   amountDue: number;
   orderReference: string;
+  propertyDescription: string;
+  paymentPlan: string;
   onComplete: (requestId: string) => void;
   onBack: () => void;
 }
 
 const BANK = { name: 'Zenith Bank', accountName: 'Bridgefort Homes Development Ltd', accountNumber: '1312214947' };
 
-const BankTransferSubmission: React.FC<Props> = ({ orderId, amountDue, orderReference, onComplete, onBack }) => {
+const BankTransferSubmission: React.FC<Props> = ({ orderId, amountDue, orderReference, propertyDescription, paymentPlan, onComplete, onBack }) => {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [amount, setAmount] = useState(String(amountDue));
   const [transferDate, setTransferDate] = useState(today);
@@ -98,7 +100,7 @@ const BankTransferSubmission: React.FC<Props> = ({ orderId, amountDue, orderRefe
           <div><p className="text-xs text-muted-foreground">Account number</p><p className="text-xl font-bold tracking-wider">{BANK.accountNumber}</p></div>
           <Button type="button" variant="outline" onClick={copyAccount}><Copy className="h-4 w-4 mr-2"/>Copy number</Button>
         </div>
-        <p className="text-sm text-muted-foreground">Use your order reference as the transfer narration where your banking app allows it. After transferring, complete the form below. Payments are confirmed only after administrator verification.</p>
+        <div className="grid gap-3 sm:grid-cols-2"><div><p className="text-xs text-muted-foreground">Property / purchase</p><p className="text-sm font-medium">{propertyDescription || 'Bridgefort property order'}</p></div><div><p className="text-xs text-muted-foreground">Payment plan</p><p className="text-sm font-medium">{paymentPlan || 'Selected checkout plan'}</p></div></div><p className="text-sm text-muted-foreground">Use your order reference as the transfer narration where your banking app allows it. After transferring, complete the form below. Payments are confirmed only after administrator verification.</p>
       </CardContent>
     </Card>
     <Card>
