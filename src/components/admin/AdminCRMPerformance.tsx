@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Award, CalendarCheck, RefreshCw, Target, Trophy, Users } from 'lucide-react';
 
-type Member = { id: string; first_name: string | null; last_name: string | null };
 type PerformanceRow = {
   id: string;
   name: string;
@@ -22,21 +21,12 @@ type PerformanceRow = {
 const naira = (value: number) => new Intl.NumberFormat('en-NG', {
   style: 'currency', currency: 'NGN', maximumFractionDigits: 0,
 }).format(value);
-const inMonth = (value: string | null, start: Date, end: Date) => {
-  if (!value) return false;
-  const time = new Date(value).getTime();
-  return time >= start.getTime() && time < end.getTime();
-};
-
 const AdminCRMPerformance: React.FC = () => {
+  const [rows, setRows] = useState<PerformanceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    const [leadResult, followUpResult, assigneeResult] = await Promise.all([
-      supa  const load = useCallback(async () => {
     setLoading(true);
     setError('');
     const now = new Date();
@@ -73,7 +63,12 @@ const AdminCRMPerformance: React.FC = () => {
     });
     setRows(nextRows);
     setLoading(false);
-  }, []);   leads: sum.leads + row.leads,
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const totals = useMemo(() => rows.reduce((sum, row) => ({
+    leads: sum.leads + row.leads,
     won: sum.won + row.won,
     wonValue: sum.wonValue + row.wonValue,
     completed: sum.completed + row.completedFollowUps,
