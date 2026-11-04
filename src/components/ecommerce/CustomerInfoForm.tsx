@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Customer } from '@/contexts/ecommerce/types';
 
-export type PaymentMethod = 'paystack' | 'stripe';
+export type PaymentMethod = 'paystack' | 'bank-transfer' | 'stripe';
 
 interface CustomerInfoFormProps {
   user: any;
@@ -123,7 +123,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
             <h4 className="font-semibold text-estate-blue flex items-center gap-2">
               <CreditCard size={16} /> Choose Payment Method
             </h4>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => setMethod('paystack')}
@@ -131,6 +131,14 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
               >
                 <div className="font-semibold text-estate-blue">Paystack</div>
                 <div className="text-xs text-gray-600">Pay in ₦ (Naira) — cards, transfer, USSD</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMethod('bank-transfer')}
+                className={`p-3 rounded-lg border-2 text-left transition ${method === 'bank-transfer' ? 'border-estate-blue bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+              >
+                <div className="font-semibold text-estate-blue">Bank Transfer</div>
+                <div className="text-xs text-gray-600">Transfer to Bridgefort and upload receipt</div>
               </button>
               <button
                 type="button"
@@ -144,7 +152,9 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
             <p className="text-xs text-gray-500">
               {method === 'stripe'
                 ? 'Amount will be converted from Naira to USD using the current exchange rate at checkout.'
-                : 'You will be redirected to Paystack to complete your payment securely.'}
+                : method === 'bank-transfer'
+                  ? 'You will receive Bridgefort’s bank details and submit your transfer receipt for administrator verification.'
+                  : 'You will be redirected to Paystack to complete your payment securely.'}
             </p>
           </div>
           <Button
@@ -153,7 +163,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
             className="w-full bg-estate-blue hover:bg-estate-darkBlue text-white py-3"
             type="button"
           >
-            {isProcessing ? 'Processing...' : method === 'stripe' ? 'Pay with Stripe (USD)' : 'Pay with Paystack (₦)'}
+            {isProcessing ? 'Processing...' : method === 'stripe' ? 'Pay with Stripe (USD)' : method === 'bank-transfer' ? 'Continue to Bank Transfer' : 'Pay with Paystack (₦)'}
           </Button>
         </div>
       </ScrollArea>
