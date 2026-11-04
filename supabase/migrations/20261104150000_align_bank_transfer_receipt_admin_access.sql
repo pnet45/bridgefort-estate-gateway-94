@@ -39,12 +39,15 @@ begin
     'payment_request', to_jsonb(pr),
     'payment', case when p.id is null then null else to_jsonb(p) end,
     'order', case when o.id is null then null else to_jsonb(o) end,
-    'customer', case when prof.id is null then null else
+    'customer', case when prof.id is null and o.id is null then null else
       jsonb_build_object(
-        'id', prof.id,
-        'name', concat_ws(' ', prof.first_name, prof.last_name),
-        'email', prof.email,
-        'phone', prof.phone
+        'id', coalesce(prof.id, o.user_id),
+        'name', coalesce(
+          nullif(concat_ws(' ', prof.first_name, prof.last_name), ''),
+          o.customer_name
+        ),
+        'email', o.customer_email,
+        'phone', prof.phone_number
       )
     end,
     'items', coalesce(o.items, '[]'::jsonb),
@@ -53,15 +56,16 @@ begin
         jsonb_build_object(
           'id', pt.id,
           'amount', pt.amount,
-          'status', pt.status,
-          'reference', pt.reference,
-          'gateway', pt.gateway,
-          'payment_date', pt.payment_date
+          'status', null,
+          'reference', null,
+          'gateway', pt.channel,
+          'payment_date', pt.payment_date,
+          'notes', pt.notes
         )
         order by pt.payment_date desc
       )
       from public.payment_transactions pt
-      where pt.payment_request_id = pr.id
+      where pt.payment_id = p.id
     ), '[]'::jsonb)
   )
   into r
