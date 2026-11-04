@@ -48,6 +48,7 @@ const AdminCRMPerformance: React.FC = () => {
       const won = Number(member.won_leads || 0);
       const lost = Number(member.lost_leads || 0);
       const completedFollowUps = Number(member.completed_follow_ups || 0);
+      const pendingFollowUps = Number(member.pending_follow_ups || 0);
       return {
         id: member.user_id,
         name: [member.first_name, member.last_name].filter(Boolean).join(' ') || 'Team member',
@@ -57,10 +58,11 @@ const AdminCRMPerformance: React.FC = () => {
         winRate: won + lost ? Math.round((won / (won + lost)) * 100) : 0,
         wonValue: Number(member.won_value || 0),
         completedFollowUps,
-        pendingFollowUps: Number(member.pending_follow_ups || 0),
+        pendingFollowUps,
         points: leads * 5 + won * 20,
       };
-    });
+    }).filter(row => row.leads || row.won || row.lost || row.completedFollowUps || row.pendingFollowUps)
+      .sort((a, b) => b.points - a.points || b.wonValue - a.wonValue || b.leads - a.leads);
     setRows(nextRows);
     setLoading(false);
   }, []);
