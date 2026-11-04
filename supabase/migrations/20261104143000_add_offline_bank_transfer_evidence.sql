@@ -149,7 +149,12 @@ begin
   outstanding := greatest(0,coalesce(o.total_amount,0)-coalesce(o.amount_paid,0));
   select coalesce(sum(amount),0) into already_pending
   from public.payment_requests
-  where related_payment_id=payment_plan_id and status='pending';
+  where status='pending'
+    and (
+      related_payment_id=payment_plan_id
+      or order_id=_order_id
+      or reference=o.payment_reference
+    );
   if _amount > greatest(0,outstanding-already_pending)+0.01 then
     raise exception using errcode='22023', message='Transfer amount exceeds the available order balance';
   end if;
