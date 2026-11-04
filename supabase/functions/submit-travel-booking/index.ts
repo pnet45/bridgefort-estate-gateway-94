@@ -45,7 +45,40 @@ serve(async (req) => {
       }
     }
 
-    const body = await req.json();
+    // Bound public traffic before parsing or writing to the database.
+    const contentLength = Number(req.headers.get("content-length") ?? "0");
+    if (Number.isFinite(contentLength) && contentLength > 16_384) return json({ error: "Request body is too large" }, 413);
+    if (!(req.headers.get("content-type") ?? "").toLowerCase().includes("application/json")) {
+      return json({ error: "Content-Type must be application/json" }, 415);
+    }
+
+    // Atomic server-side rate limit using the existing protected RPC; no schema change.
+    // Only use platform-provided IP headers, not arbitrary X-Forwarded-For.
+    const clientIp = req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "";
+    const rateIdentity = clientIp.trim() ? `ip:${clientIp.trim().slice(0, 128)}` : "ip:unavailable";
+    const rateDigest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rateIdentity));
+    const rateKey = `travel-booking:${Array.from(new Uint8Array(rateDigest), (b) => b.toString(16).padStart(2, "0")).join("")}`;
+    const { data: rateAllowed, error: rateError } = await supabase.rpc("consume_leo_public_rate_limit", {
+      p_rate_key: rateKey,
+      p_limit: 5,
+      p_window_seconds: 900,
+    });
+    if (rateError) {
+      console.error("travel booking rate limit check failed:", rateError);
+      return json({ error: "Travel enquiries are temporarily unavailable. Please try again shortly." }, 503);
+    }
+    if (rateAllowed !== true) return json({ error: "Too many travel enquiries. Please wait 15 minutes before trying again." }, 429);
+
+    let body: any;
+    try {
+      const rawBody = await req.text();
+      if (rawBody.length > 16_384) return json({ error: "Request body is too large" }, 413);
+      body = JSON.parse(rawBody);
+    } catch {
+      return json({ error: "Invalid JSON request body" }, 400);
+    }
+    if (!body || typeof body !== "object" || Array.isArray(body)) return json({ error: "Invalid request body" }, 400);
+
     const name = String(body?.name ?? "").trim();
     const email = String(body?.email ?? "").trim().toLowerCase();
     const phone = String(body?.phone ?? "").trim();
@@ -59,8 +92,13 @@ serve(async (req) => {
     if (!name || name.length < 2 || name.length > 100) return json({ error: "Valid full name is required" }, 400);
     if (!/^\S+@\S+\.\S+$/.test(email) || email.length > 255) return json({ error: "Valid email is required" }, 400);
     if (phone.length < 7 || phone.length > 20) return json({ error: "Valid phone number is required" }, 400);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(departureDate) || !/^\d{4}-\d{2}-\d{2}$/.test(returnDate)) return json({ error: "Valid travel dates are required" }, 400);
-    if (returnDate < departureDate) return json({ error: "Return date must be after departure date" }, 400);
+    const isRealDate = (value: string) => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+      const parsed = new Date(`${value}T00:00:00.000Z`);
+      return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+    };
+    if (!isRealDate(departureDate) || !isRealDate(returnDate)) return json({ error: "Valid travel dates are required" }, 400);
+    if (returnDate <= departureDate) return json({ error: "Return date must be after departure date" }, 400);
     if (!Number.isInteger(travelers) || travelers < 1 || travelers > 50) return json({ error: "Travelers must be between 1 and 50" }, 400);
     if (!packageName || packageName.length > 100) return json({ error: "Travel package is required" }, 400);
     if (destination && destination.length > 120) return json({ error: "Destination is too long" }, 400);
@@ -104,103 +142,12 @@ serve(async (req) => {
 
     if (insertError) throw insertError;
 
-    // Link every travel booking into the existing CRM. This is deliberately
-    // non-blocking: a CRM failure must never lose a valid booking.
-    let crmLeadId: string | null = null;
-    let serviceJourneyId: string | null = null;
-    try {
-      if (customerId) {
-        const { data: existingLead, error: existingLeadError } = await supabase
-          .from("crm_leads")
-          .select("id")
-          .eq("customer_id", customerId)
-          .eq("source", "travel_booking")
-          .eq("source_record_type", "travel_booking")
-          .eq("source_record_id", booking.id)
-          .maybeSingle();
-        if (existingLeadError) throw existingLeadError;
-        crmLeadId = existingLead?.id ?? null;
-      }
-
-      const leadPayload = {
-        name,
-        email,
-        phone,
-        customer_id: customerId,
-        source: "travel_booking",
-        source_record_type: "travel_booking",
-        source_record_id: booking.id,
-        estate_interest: destination || packageName,
-        notes: notes || `Travel enquiry for ${packageName}${destination ? ` to ${destination}` : ""}.`,
-        priority: "medium",
-        updated_at: new Date().toISOString(),
-      };
-
-      if (crmLeadId) {
-        const { error } = await supabase.from("crm_leads").update(leadPayload).eq("id", crmLeadId);
-        if (error) throw error;
-      } else {
-        const { data: createdLead, error } = await supabase
-          .from("crm_leads")
-          .insert({ ...leadPayload, status: "new" })
-          .select("id")
-          .single();
-        if (error) throw error;
-        crmLeadId = createdLead.id;
-        const { error: activityError } = await supabase.from("crm_lead_activities").insert({
-          lead_id: crmLeadId,
-          activity_type: "travel_booking_created",
-          description: `Travel booking received: ${packageName}${destination ? ` — ${destination}` : ""}.`,
-          created_by: null,
-        });
-        if (activityError) console.error("travel booking CRM activity:", activityError);
-      }
-
-      const { data: existingJourney, error: journeyLookupError } = await supabase
-        .from("service_journeys")
-        .select("id")
-        .eq("source", "travel_booking")
-        .eq("source_record_type", "travel_booking")
-        .eq("source_record_id", booking.id)
-        .maybeSingle();
-      if (journeyLookupError) throw journeyLookupError;
-      serviceJourneyId = existingJourney?.id ?? null;
-
-      const journeyPayload = {
-        customer_id: customerId,
-        lead_id: crmLeadId,
-        service_type: "TRAVEL",
-        status: "NEW",
-        priority: "NORMAL",
-        source: "travel_booking",
-        source_record_type: "travel_booking",
-        source_record_id: booking.id,
-        travel_booking_id: booking.id,
-        notes: `Package: ${packageName}; Destination: ${destination || "not specified"}; ${departureDate} to ${returnDate}; Travelers: ${travelers}.`,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (serviceJourneyId) {
-        const { error } = await supabase.from("service_journeys").update(journeyPayload).eq("id", serviceJourneyId);
-        if (error) throw error;
-      } else {
-        const { data: createdJourney, error } = await supabase
-          .from("service_journeys")
-          .insert(journeyPayload)
-          .select("id")
-          .single();
-        if (error) throw error;
-        serviceJourneyId = createdJourney.id;
-      }
-
-      const { error: bookingLinkError } = await supabase
-        .from("travel_bookings")
-        .update({ customer_id: customerId, crm_lead_id: crmLeadId, service_journey_id: serviceJourneyId })
-        .eq("id", booking.id);
-      if (bookingLinkError) throw bookingLinkError;
-    } catch (crmError) {
-      console.error("travel booking CRM sync failed; booking remains valid", crmError);
-    }
+    // The database trigger trg_sync_travel_booking_to_crm is the single
+    // owner of CRM synchronisation. It fills these foreign keys before the
+    // INSERT ... RETURNING response, so do not create duplicate leads,
+    // service journeys, or activities here.
+    const crmLeadId: string | null = booking.crm_lead_id ?? null;
+    const serviceJourneyId: string | null = booking.service_journey_id ?? null;
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resend = resendKey ? new Resend(resendKey) : null;
