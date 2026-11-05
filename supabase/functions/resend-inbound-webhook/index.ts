@@ -32,7 +32,40 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, svix-id, svix-timestamp, svix-signature',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
+
+async function readBodyWithLimit(req: Request, maxBytes = 1024 * 1024): Promise<string> {
+  const declaredLength = Number(req.headers.get('content-length') || 0);
+  if (declaredLength > maxBytes) throw new Error('Webhook payload too large');
+  if (!req.body) return '';
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      throw new Error('Webhook payload too large');
+    }
+    chunks.push(value);
+  }
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { body.set(chunk, offset); offset += chunk.byteLength; }
+  return new TextDecoder().decode(body);
+}
+
+function constantTimeEqual(left: string, right: string): boolean {
+  const a = new TextEncoder().encode(left);
+  const b = new TextEncoder().encode(right);
+  if (a.length !== b.length) return false;
+  let difference = 0;
+  for (let index = 0; index < a.length; index += 1) difference |= a[index] ^ b[index];
+  return difference === 0;
+}
 
 async function verifySvixSignature(
   payload: string,
@@ -54,17 +87,25 @@ async function verifySvixSignature(
   const sigBuffer = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signedContent));
   const expected = btoa(String.fromCharCode(...new Uint8Array(sigBuffer)));
 
-  const candidates = svixSignature.split(' ').map((s) => s.split(',')[1]).filter(Boolean);
-  return candidates.includes(expected);
+  return svixSignature.split(' ').some((part) => {
+    const [version, value] = part.split(',', 2);
+    return version === 'v1' && Boolean(value) && constantTimeEqual(value, expected);
+  });
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
   try {
-    const rawBody = await req.text();
+    const rawBody = await readBodyWithLimit(req);
 
     const webhookSecret = Deno.env.get('RESEND_WEBHOOK_SECRET');
     const svixId = req.headers.get('svix-id') || '';
@@ -358,8 +399,9 @@ serve(async (req) => {
   } catch (error: unknown) {
     console.error('Error in resend-inbound-webhook:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ received: true, error: message }), {
-      status: 200,
+    const status = message === 'Webhook payload too large' ? 413 : 500;
+    return new Response(JSON.stringify({ error: message }), {
+      status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
