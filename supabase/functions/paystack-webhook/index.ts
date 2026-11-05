@@ -6,6 +6,29 @@ import { captureServerEvent } from "../_shared/posthog.ts";
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
+async function readBodyWithLimit(req: Request, maxBytes = 1024 * 1024) {
+  const declaredLength = Number(req.headers.get("content-length") || 0);
+  if (declaredLength > maxBytes) throw new Error("Webhook payload too large");
+  if (!req.body) return "";
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      throw new Error("Webhook payload too large");
+    }
+    chunks.push(value);
+  }
+  const body = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { body.set(chunk, offset); offset += chunk.byteLength; }
+  return new TextDecoder().decode(body);
+}
+
 function toHex(bytes: ArrayBuffer) {
   return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -30,7 +53,13 @@ serve(async (req) => {
 
   const secret = Deno.env.get("PAYSTACK_SECRET_KEY");
   const signature = req.headers.get("x-paystack-signature") ?? "";
-  const rawPayload = await req.text();
+  if (!secret || !signature) return json({ error: "Invalid webhook signature" }, 401);
+  let rawPayload: string;
+  try {
+    rawPayload = await readBodyWithLimit(req);
+  } catch {
+    return json({ error: "Webhook payload too large" }, 413);
+  }
   if (!secret || !signature || !(await validSignature(rawPayload, signature, secret))) {
     return json({ error: "Invalid webhook signature" }, 401);
   }
