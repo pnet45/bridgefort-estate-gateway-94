@@ -17,11 +17,19 @@ It intentionally preserves ordinary DML grants because the application's workflo
 ## RLS review findings
 
 - All public base tables observed in the connected production project had RLS enabled.
-- Twelve RLS-enabled tables had no policies. This is fail-closed for API roles, but each table must be classified as server-only or given a narrowly scoped policy only after its callers are traced.
-- Existing unrestricted SELECT policies were observed on reference/public catalogue tables (for example estates, property reviews, training events and travel blackout dates). These should remain public only if the frontend genuinely needs them.
+- Twelve RLS-enabled tables had no policies: `welcome_email_deliveries`, `email_delivery_webhook_events`, `leo_knowledge_source_sync`, `automation_secrets`, `inactive_account_reminders`, `leo_conversations`, `leo_messages`, `leo_public_rate_limits`, `leo_knowledge_documents`, `leo_knowledge_versions`, `leo_knowledge_chunks`, and `transaction_document_auto_send_claims`. These are consistent with server-managed/internal data by name and remain fail-closed to API roles; no permissive policy should be added without a demonstrated client use case.
+- Existing broad SELECT policies were confirmed on catalogue/reference tables. However, `estate_other_payments` and `review_reactions` also expose payment configuration fields or user identifiers under broad authenticated/public SELECT policies; these are higher-priority candidates for column minimization or narrower policy design. Do not remove access until the UI/API callers are traced.
+- The live database has 95 SECURITY DEFINER functions in `public`; the read-only ACL inspection found zero with EXECUTE granted to `PUBLIC` or `anon`. Many are explicitly granted to `authenticated` and/or `service_role`; trigger-only functions are separately identifiable. This is more precise than the Security Advisor's count of notices and still requires review of authenticated RPC authorization, search_path, argument validation and business logic. Do not mass-revoke EXECUTE.
+- Current public-schema default table ACLs were confirmed for both `postgres` and `supabase_admin`, and both grant broad table privileges to API roles. The migration's two `ALTER DEFAULT PRIVILEGES` owner targets therefore match the live public-schema defaults observed. Existing public tables inspected are owned by `postgres`.
+- `pg_trgm` is installed in the `public` schema; moving an extension is a separate compatibility change and is not included in this migration.
 - Do not add broad `USING (true)` write policies as a generic fix.
-- The 36 SECURITY DEFINER functions flagged by the Supabase Security Advisor require per-function review. Do not mass-revoke EXECUTE: some are legitimate RPCs and others are trigger-only functions. Review each function's caller authorization, fixed search_path, argument validation, and EXECUTE grants before altering it.
 
+## Expanded read-only database review
+
+- The twelve no-policy tables are listed above; no RLS policy was added because the current posture is fail-closed.
+- Broad SELECT policies need targeted review, particularly `estate_other_payments` (payment configuration) and `review_reactions` (contains user identifiers). Public catalogue reads should use minimal views or selected columns where practical.
+- The live inventory found 95 public-schema SECURITY DEFINER functions, with zero EXECUTE grants to PUBLIC or anon at inspection time. Authenticated-executable RPCs still require authorization and argument-validation review.
+- The migration's default-privilege targets were checked against live `pg_default_acl`: both `postgres` and `supabase_admin` have public-schema default table grants to anon/authenticated, so both are necessary targets for this project.
 ## Webhook code review
 
 - Paystack: the handler verifies the raw request body with HMAC-SHA512 and `x-paystack-signature`. This branch adds a 1 MiB request-body ceiling and preserves signature verification before JSON parsing.
