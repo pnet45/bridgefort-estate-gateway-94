@@ -22,6 +22,21 @@ It intentionally preserves ordinary DML grants because the application's workflo
 - Do not add broad `USING (true)` write policies as a generic fix.
 - The 36 SECURITY DEFINER functions flagged by the Supabase Security Advisor require per-function review. Do not mass-revoke EXECUTE: some are legitimate RPCs and others are trigger-only functions. Review each function's caller authorization, fixed search_path, argument validation, and EXECUTE grants before altering it.
 
+## Webhook code review
+
+- Paystack: the handler verifies the raw request body with HMAC-SHA512 and `x-paystack-signature`. This branch adds a 1 MiB request-body ceiling and preserves signature verification before JSON parsing.
+- Resend inbound: the handler already validates the Svix signature and a five-minute timestamp window. This branch additionally requires POST, limits the body to 1 MiB, accepts only the documented `v1` signature version, and compares signatures in constant time.
+- Resend delivery events: the separate delivery webhook already verifies Svix v1 signatures, enforces the five-minute timestamp window, and records provider event IDs against a unique key for replay/idempotency protection.
+- Paystack event idempotency is supported by the unique `(gateway, reference)` payment event key and payment-request reference lookup. Verify this behavior with provider retry tests before release.
+- No provider secrets were read, rotated, or changed.
+
+## Sign-up rate limiting
+
+- reCAPTCHA remains disabled exactly as requested.
+- The web and mobile clients call Supabase Auth `signUp` directly. A browser-only IP counter cannot protect this path, and a new proxy would require carefully preserving both registration flows and the PBO/referral metadata.
+- Supabase Auth's built-in per-IP Auth API limits are the appropriate immediate control for direct Auth sign-up. The connected project tools do not expose Auth rate-limit configuration, so this setting still requires a Dashboard review/change. Do not claim the IP limit is active until the Auth rate-limit settings are confirmed and an IP-based test is performed.
+- Do not trust `X-Forwarded-For` supplied directly by the browser. Any custom limiter must use the trusted proxy's client-IP metadata at the edge.
+
 ## Remaining security work
 
 1. Build an inventory of all public tables, RLS policies, storage policies, views and exposed RPCs, with an explicit owner/role/access rationale.
