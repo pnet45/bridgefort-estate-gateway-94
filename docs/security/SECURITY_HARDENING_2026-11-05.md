@@ -30,6 +30,16 @@ It intentionally preserves ordinary DML grants because the application's workflo
 - Broad SELECT policies need targeted review, particularly `estate_other_payments` (payment configuration) and `review_reactions` (contains user identifiers). Public catalogue reads should use minimal views or selected columns where practical.
 - The live inventory found 95 public-schema SECURITY DEFINER functions, with zero EXECUTE grants to PUBLIC or anon at inspection time. Authenticated-executable RPCs still require authorization and argument-validation review.
 - The migration's default-privilege targets were checked against live `pg_default_acl`: both `postgres` and `supabase_admin` have public-schema default table grants to anon/authenticated, so both are necessary targets for this project.
+## Production transaction validation — 5 November 2026
+
+A controlled transaction was run against the connected production database and explicitly rolled back. It did not leave persistent changes.
+
+- The executor was `postgres`. It is a member of `postgres` but not `supabase_admin`.
+- Within the transaction, revoking `TRUNCATE`, `REFERENCES` and `TRIGGER` from `anon` and `authenticated` across all 116 public base/partitioned tables, plus revoking those privileges from the `postgres` public-schema default table ACL, passed an effective-privilege assertion.
+- After rollback, the live database again showed 99 public tables with one or more of those effective privileges for API roles. This is the expected confirmation that the test was rolled back, not a persistent fix.
+- The `supabase_admin` default-privilege change could not be executed by this database role. Do not remove that statement, skip it, or claim full migration validation. The migration remains blocked until the deployment execution role is confirmed to have the required membership/authority, or an approved owner-controlled remediation is prepared.
+- No production data, policies, or persistent privileges were changed by this test.
+
 ## Webhook code review
 
 - Paystack: the handler verifies the raw request body with HMAC-SHA512 and `x-paystack-signature`. This branch adds a 1 MiB request-body ceiling and preserves signature verification before JSON parsing.
