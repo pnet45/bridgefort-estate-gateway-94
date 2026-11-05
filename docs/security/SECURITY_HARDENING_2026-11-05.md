@@ -42,7 +42,7 @@ It intentionally preserves ordinary DML grants because the application's workflo
 
 - reCAPTCHA remains disabled exactly as requested.
 - The web and mobile clients call Supabase Auth `signUp` directly. A browser-only IP counter cannot protect this path, and a new proxy would require carefully preserving both registration flows and the PBO/referral metadata.
-- Supabase Auth's built-in per-IP Auth API limits are the appropriate immediate control for direct Auth sign-up. The connected project tools do not expose Auth rate-limit configuration, so this setting still requires a Dashboard review/change. Do not claim the IP limit is active until the Auth rate-limit settings are confirmed and an IP-based test is performed.
+- Supabase's current Auth rate-limit documentation does **not** provide a general per-IP quota for ordinary email/phone `/auth/v1/signup`; email confirmation sends are project-wide, while IP-based limits apply to specific endpoints such as anonymous sign-ins, verification, token refresh and MFA. Therefore the requested per-IP restriction for normal Bridgefort registrations needs a trusted server-side registration gateway or upstream WAF/proxy, not just the standard Auth dashboard quota. The connected project tools cannot configure that gateway. Do not claim ordinary sign-ups are IP-limited until it is implemented and tested.
 - Do not trust `X-Forwarded-For` supplied directly by the browser. Any custom limiter must use the trusted proxy's client-IP metadata at the edge.
 
 ## Remaining security work
@@ -51,7 +51,7 @@ It intentionally preserves ordinary DML grants because the application's workflo
 2. Audit all SECURITY DEFINER functions, including exact grants to PUBLIC, anon and authenticated; restrict only after tracing frontend and Edge Function callers.
 3. Review payment and email webhook handlers for provider signature verification, replay windows, idempotency and duplicate-event handling.
 4. Implement IP-based signup throttling at a trusted server/Auth boundary. Keep CAPTCHA disabled. Do not rely on browser counters or spoofable client-supplied IP headers.
-5. Confirm Supabase Auth's built-in per-IP limits and project settings without changing them in this branch.
+5. Design a trusted per-IP registration gateway that preserves both web and mobile sign-up flows, email/phone confirmation, and existing PBO/referral metadata. Use only platform-verified client-IP metadata; do not accept browser-supplied forwarding headers. Keep CAPTCHA disabled.
 6. Validate the migration against an approved non-production database, then run RLS role-matrix tests before seeking production approval.
 
 ## Validation queries
