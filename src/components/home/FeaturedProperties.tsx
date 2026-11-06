@@ -21,7 +21,18 @@ const FeaturedProperties = () => {
           </p>
         </div>
         {loading ? (
-          <div className="text-center py-12 text-gray-500 text-lg">Loading properties...</div>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3" aria-label="Loading featured properties" aria-busy="true">
+            {[0, 1, 2].map((item) => (
+              <div key={item} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="h-56 animate-pulse bg-slate-200" />
+                <div className="space-y-3 p-5">
+                  <div className="h-5 w-3/4 animate-pulse rounded bg-slate-200" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-slate-100" />
+                  <div className="h-8 w-2/5 animate-pulse rounded bg-slate-200" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featured.map((property, index) => (
