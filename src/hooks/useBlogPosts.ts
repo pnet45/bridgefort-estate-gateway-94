@@ -90,7 +90,22 @@ export function useBlogPosts(limit = 20) {
         if (previous?.published === true || next?.published === true) void fetchBlogPosts();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    // The posts table may not be in the project's Realtime publication.
+    // Refresh this dataset only while its page is active as a safe fallback.
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible" && navigator.onLine) void fetchBlogPosts();
+    };
+    window.addEventListener("focus", refreshWhenVisible);
+    window.addEventListener("online", refreshWhenVisible);
+    const interval = window.setInterval(refreshWhenVisible, 120000);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refreshWhenVisible);
+      window.removeEventListener("online", refreshWhenVisible);
+      void supabase.removeChannel(channel);
+    };
   }, [fetchBlogPosts, limit]);
 
   return { posts, loading, refresh: fetchBlogPosts };
