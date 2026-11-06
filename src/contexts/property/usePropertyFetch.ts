@@ -3,18 +3,23 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Property, Filters } from "./types";
 import { applyFilters } from "./propertyUtils";
+import { readPublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
+
+const ESTATE_CACHE_KEY = "public-estate-catalogue";
 
 // Handles fetching properties from Supabase and fallback to sample data
 export function usePropertyFetch(
   searchQuery: string,
   filters: Filters
 ) {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const [properties, setProperties] = useState<Property[]>(() => readPublicDataCache<Property[]>(ESTATE_CACHE_KEY) || []);
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>(() => {
+    const cached = readPublicDataCache<Property[]>(ESTATE_CACHE_KEY) || [];
+    return applyFilters(cached, searchQuery, filters);
+  });
+  const [loading, setLoading] = useState(() => readPublicDataCache<Property[]>(ESTATE_CACHE_KEY) === null);
   const fetchProperties = useCallback(async () => {
-    setLoading(true);
+    if (readPublicDataCache<Property[]>(ESTATE_CACHE_KEY) === null) setLoading(true);
     try {
       const { data: estates, error } = await supabase
         .from("estate")
@@ -73,18 +78,20 @@ export function usePropertyFetch(
           };
         });
 
+        // Keep the last good public catalogue available across reloads, then
+        // replace it only when the live database response arrives.
+        writePublicDataCache(ESTATE_CACHE_KEY, propertyData);
         setProperties(propertyData);
-        setFilteredProperties(applyFilters(propertyData, searchQuery, filters));
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
-      // No fallback to sample data - show empty state
-      setProperties([]);
-      setFilteredProperties([]);
+      // Preserve the last successful database snapshot during transient
+      // network/API failures instead of blanking the whole catalogue.
+      // Keep the current browser snapshot (if any) visible until a successful refresh.
     } finally {
       setLoading(false);
     }
-  }, [filters, searchQuery]);
+  }, []);
 
   return {
     properties,
