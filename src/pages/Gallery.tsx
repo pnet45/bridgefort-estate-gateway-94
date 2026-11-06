@@ -6,9 +6,12 @@ import Footer from '@/components/Footer';
 import CircularGallery3D from '@/components/gallery/CircularGallery3D';
 import GalleryLightbox from '@/components/gallery/GalleryLightbox';
 import { supabase } from '@/integrations/supabase/client';
+import { readPublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 import type { GalleryMediaItem, GalleryMediaType } from '@/types/gallery';
 
 type GalleryFilter = 'all' | GalleryMediaType;
+
+const GALLERY_CACHE_KEY = 'public-gallery-media';
 
 const filters: { id: GalleryFilter; label: string }[] = [
   { id: 'all', label: 'All moments' },
@@ -17,24 +20,56 @@ const filters: { id: GalleryFilter; label: string }[] = [
 ];
 
 const GalleryPage = () => {
-  const [mediaItems, setMediaItems] = useState<GalleryMediaItem[]>([]);
-  const [loadingMedia, setLoadingMedia] = useState(true);
+  const [mediaItems, setMediaItems] = useState<GalleryMediaItem[]>(() => readPublicDataCache<GalleryMediaItem[]>(GALLERY_CACHE_KEY) || []);
+  const [loadingMedia, setLoadingMedia] = useState(() => readPublicDataCache<GalleryMediaItem[]>(GALLERY_CACHE_KEY) === null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<GalleryFilter>('all');
 
   useEffect(() => {
+    let active = true;
     const load = async () => {
-      const { data, error } = await (supabase as any)
-        .from('gallery_media_items')
-        .select('*')
-        .eq('is_published', true)
-        .order('display_order');
+      try {
+        const { data, error } = await (supabase as any)
+          .from('gallery_media_items')
+          .select('*')
+          .eq('is_published', true)
+          .order('display_order');
 
-      if (!error && data) setMediaItems(data as GalleryMediaItem[]);
-      setLoadingMedia(false);
+        if (error) throw error;
+        if (active && data) {
+          const nextItems = data as GalleryMediaItem[];
+          writePublicDataCache(GALLERY_CACHE_KEY, nextItems);
+          setMediaItems(nextItems);
+        }
+      } catch (error) {
+        console.error('Gallery content refresh failed; keeping cached content.', error);
+      } finally {
+        if (active) setLoadingMedia(false);
+      }
     };
 
-    load();
+    void load();
+    const channel = supabase
+      .channel('public-gallery-media-refresh')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'gallery_media_items' }, () => {
+        void load();
+      })
+      .subscribe();
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible' && navigator.onLine) void load();
+    };
+    window.addEventListener('focus', refreshWhenVisible);
+    window.addEventListener('online', refreshWhenVisible);
+    const interval = window.setInterval(refreshWhenVisible, 120000);
+
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refreshWhenVisible);
+      window.removeEventListener('online', refreshWhenVisible);
+      void supabase.removeChannel(channel);
+    };
   }, []);
 
   const filteredItems = useMemo(
