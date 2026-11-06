@@ -1,5 +1,6 @@
 import {
   constantTimeEqual,
+  isFreshWebhookTimestamp,
   readBodyWithLimit,
   verifyPaystackSignature,
   verifySvixSignature,
@@ -106,4 +107,14 @@ Deno.test("Svix rejects unsupported signature versions and malformed secrets", a
   if (await verifySvixSignature(payload, id, timestamp, "v1,invalid", "whsec_not-base64!!!")) {
     throw new Error("Malformed Svix secret was accepted");
   }
+});
+
+
+Deno.test("Svix timestamp freshness enforces the five-minute replay window", () => {
+  const now = 1_800_000_000_000;
+  const currentSeconds = Math.floor(now / 1000);
+  if (!isFreshWebhookTimestamp(String(currentSeconds), now)) throw new Error("Current timestamp was rejected");
+  if (!isFreshWebhookTimestamp(String(currentSeconds - 300), now)) throw new Error("Timestamp at tolerance boundary was rejected");
+  if (isFreshWebhookTimestamp(String(currentSeconds - 301), now)) throw new Error("Stale timestamp was accepted");
+  if (isFreshWebhookTimestamp("not-a-timestamp", now)) throw new Error("Malformed timestamp was accepted");
 });
