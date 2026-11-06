@@ -109,7 +109,22 @@ export function useContentItems(opts: Options = {}) {
         if (matchesCurrentFilter(previous) || matchesCurrentFilter(next)) void fetchItems();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    // Keep the currently displayed CMS section in sync even when the table
+    // has not been added to supabase_realtime for this project.
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible' && navigator.onLine) void fetchItems();
+    };
+    window.addEventListener('focus', refreshWhenVisible);
+    window.addEventListener('online', refreshWhenVisible);
+    const interval = window.setInterval(refreshWhenVisible, 120000);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refreshWhenVisible);
+      window.removeEventListener('online', refreshWhenVisible);
+      void supabase.removeChannel(channel);
+    };
   }, [channelId, fetchItems, opts.page, contentTypeKey, opts.includeUnpublished, opts.featuredOnly]);
 
   return { items, loading, error, refresh: fetchItems };
