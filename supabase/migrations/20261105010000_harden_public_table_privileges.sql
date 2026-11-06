@@ -1,21 +1,16 @@
--- Security hardening: remove table capabilities that bypass RLS.
--- Fail before changing any ACL if the migration executor cannot update both
--- owner-specific default ACLs observed in this project's live public schema.
+-- Remove table capabilities that bypass RLS from existing public tables.
+-- This migration only changes ACLs the postgres migration executor owns.
+-- The supabase_admin default ACL is handled by a separate privileged migration.
 DO $$
 BEGIN
   IF NOT pg_has_role(current_user, 'postgres', 'MEMBER') THEN
-    RAISE EXCEPTION 'Migration requires membership in postgres to update its public-schema default privileges';
-  END IF;
-  IF NOT pg_has_role(current_user, 'supabase_admin', 'MEMBER') THEN
-    RAISE EXCEPTION 'Migration requires membership in supabase_admin to update its public-schema default privileges; no ACL changes were attempted';
+    RAISE EXCEPTION 'Migration requires membership in postgres; no ACL changes were attempted';
   END IF;
 END
 $$;
 
--- This migration intentionally preserves SELECT/INSERT/UPDATE/DELETE grants.
--- Row access remains governed by each table's existing RLS policies.
--- Do not apply to production until the migration has been reviewed and tested.
-
+-- Preserve SELECT/INSERT/UPDATE/DELETE grants. Existing RLS policies remain
+-- authoritative for row access.
 DO $$
 DECLARE
   target record;
@@ -36,15 +31,6 @@ BEGIN
 END
 $$;
 
--- Prevent the same dangerous privileges from being inherited by newly
--- created public tables. Apply to both roles used as object owners in this
--- project's current default-privilege configuration.
+-- Prevent future tables created by postgres from inheriting these grants.
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
   REVOKE TRUNCATE, REFERENCES, TRIGGER ON TABLES FROM anon, authenticated;
-
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
-  REVOKE TRUNCATE, REFERENCES, TRIGGER ON TABLES FROM anon, authenticated;
-
--- Deliberately do not mass-revoke EXECUTE on existing SECURITY DEFINER
--- functions here: several are legitimate client RPCs and require individual
--- authorization review before changing their grants.
