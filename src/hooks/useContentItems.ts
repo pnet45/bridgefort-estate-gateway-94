@@ -55,8 +55,6 @@ export function useContentItems(opts: Options = {}) {
       const cached = readContentCache(cacheKey);
       if (cached.length) setItems(cached);
     }
-    setLoading((current) => current && items.length === 0);
-
     let query = (supabase as any).from('content_items').select('*');
     if (opts.page) query = query.eq('page', opts.page);
     if (opts.contentType) {
@@ -77,7 +75,7 @@ export function useContentItems(opts: Options = {}) {
       if (canCache) writeContentCache(cacheKey, nextItems);
     }
     setLoading(false);
-  }, [cacheKey, canCache, opts.page, contentTypeKey, opts.includeUnpublished, opts.featuredOnly, items.length]);
+  }, [cacheKey, canCache, opts.page, contentTypeKey, opts.includeUnpublished, opts.featuredOnly]);
 
   // When the content filter changes, show that filter's cached content immediately,
   // then refresh only this content_items query from Supabase.
