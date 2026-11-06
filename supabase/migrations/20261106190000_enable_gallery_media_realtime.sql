@@ -33,7 +33,7 @@ BEGIN
       AND schemaname = 'public'
       AND tablename = 'gallery_media_items'
   ) THEN
-    ALTER PUBLICATION supabase_realtime ADD TABLE public.gallery_media_items;
+    EXECUTE 'ALTER PUBLICATION supabase_realtime ADD TABLE public.gallery_media_items';
   END IF;
 END
 $$;
