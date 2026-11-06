@@ -2,7 +2,7 @@
 
 ## Scope and release status
 
-This branch contains a reviewed proposal only. It has not been applied to any Supabase project and does not change production.
+This document tracks the security hardening release. The public-content Realtime publication migration is applied in production. Paystack and Resend inbound webhook hardening is deployed. The public-table privilege migration is split: existing table ACLs and postgres defaults are ready for application; the supabase_admin default ACL remains blocked by the current migration executor's role authority.
 
 ## CAPTCHA
 
@@ -10,7 +10,7 @@ The existing reCAPTCHA integration remains disabled as requested. This work must
 
 ## Database privilege change
 
-Migration `20261105010000_harden_public_table_privileges.sql` removes only `TRUNCATE`, `REFERENCES`, and `TRIGGER` privileges from `anon` and `authenticated` on existing public tables, and prevents those privileges from being granted by the current postgres and supabase_admin default table privileges.
+Migration `20261105010000_harden_public_table_privileges.sql` removes only `TRUNCATE`, `REFERENCES`, and `TRIGGER` privileges from `anon` and `authenticated` on existing public tables, and prevents those privileges from being granted by the `postgres` default table privileges. A separate migration, `20261106030000_harden_supabase_admin_default_privileges.sql`, handles the `supabase_admin` default ACL under an executor with that role membership.
 
 It intentionally preserves ordinary DML grants because the application's workflows still depend on table-specific RLS policies. RLS remains the row-level authorization boundary. The migration does not modify service_role privileges, table data, policies, or production state.
 
@@ -20,7 +20,7 @@ It intentionally preserves ordinary DML grants because the application's workflo
 - Twelve RLS-enabled tables had no policies: `welcome_email_deliveries`, `email_delivery_webhook_events`, `leo_knowledge_source_sync`, `automation_secrets`, `inactive_account_reminders`, `leo_conversations`, `leo_messages`, `leo_public_rate_limits`, `leo_knowledge_documents`, `leo_knowledge_versions`, `leo_knowledge_chunks`, and `transaction_document_auto_send_claims`. These are consistent with server-managed/internal data by name and remain fail-closed to API roles; no permissive policy should be added without a demonstrated client use case.
 - Existing broad SELECT policies were confirmed on catalogue/reference tables. However, `estate_other_payments` and `review_reactions` also expose payment configuration fields or user identifiers under broad authenticated/public SELECT policies; these are higher-priority candidates for column minimization or narrower policy design. Do not remove access until the UI/API callers are traced.
 - The live database has 95 SECURITY DEFINER functions in `public`; the read-only ACL inspection found zero with EXECUTE granted to `PUBLIC` or `anon`. Many are explicitly granted to `authenticated` and/or `service_role`; trigger-only functions are separately identifiable. This is more precise than the Security Advisor's count of notices and still requires review of authenticated RPC authorization, search_path, argument validation and business logic. Do not mass-revoke EXECUTE.
-- Current public-schema default table ACLs were confirmed for both `postgres` and `supabase_admin`, and both grant broad table privileges to API roles. The migration's two `ALTER DEFAULT PRIVILEGES` owner targets therefore match the live public-schema defaults observed. Existing public tables inspected are owned by `postgres`.
+- Current public-schema default table ACLs were confirmed for both `postgres` and `supabase_admin`, and both grant broad table privileges to API roles. The two `ALTER DEFAULT PRIVILEGES` owner targets were confirmed to match the live public-schema defaults observed. The `postgres` owner change is executable by the current role; the `supabase_admin` owner change is not. Existing public tables inspected are owned by `postgres`.
 - `pg_trgm` is installed in the `public` schema; moving an extension is a separate compatibility change and is not included in this migration.
 - Do not add broad `USING (true)` write policies as a generic fix.
 
@@ -32,12 +32,12 @@ It intentionally preserves ordinary DML grants because the application's workflo
 - The migration's default-privilege targets were checked against live `pg_default_acl`: both `postgres` and `supabase_admin` have public-schema default table grants to anon/authenticated, so both are necessary targets for this project.
 ## Production transaction validation — 5 November 2026
 
-A controlled transaction was run against the connected production database and explicitly rolled back. It did not leave persistent changes.
+A controlled transaction was run against the connected production database and explicitly rolled back. It did not leave persistent changes. A later `apply_migration` attempt of the combined migration failed at its preflight before any ACL changes, confirming the same role limitation.
 
 - The executor was `postgres`. It is a member of `postgres` but not `supabase_admin`.
 - Within the transaction, revoking `TRUNCATE`, `REFERENCES` and `TRIGGER` from `anon` and `authenticated` across all 116 public base/partitioned tables, plus revoking those privileges from the `postgres` public-schema default table ACL, passed an effective-privilege assertion.
 - After rollback, the live database again showed 99 public tables with one or more of those effective privileges for API roles. This is the expected confirmation that the test was rolled back, not a persistent fix.
-- The `supabase_admin` default-privilege change could not be executed by this database role. Do not remove that statement, skip it, or claim full migration validation. The migration remains blocked until the deployment execution role is confirmed to have the required membership/authority, or an approved owner-controlled remediation is prepared.
+- The `supabase_admin` default-privilege change could not be executed by this database role. The migration has been split so the existing-table revokes and postgres default ACL can be applied independently; the separate supabase_admin migration remains blocked until the deployment execution role is confirmed to have the required membership/authority, or an approved owner-controlled remediation is prepared.
 - No production data, policies, or persistent privileges were changed by this test.
 
 ## Webhook code review
@@ -47,6 +47,7 @@ A controlled transaction was run against the connected production database and e
 - Resend delivery events: the separate delivery webhook already verifies Svix v1 signatures, enforces the five-minute timestamp window, and records provider event IDs against a unique key for replay/idempotency protection.
 - Paystack event idempotency is supported by the unique `(gateway, reference)` payment event key and payment-request reference lookup. Verify this behavior with provider retry tests before release.
 - No provider secrets were read, rotated, or changed.
+- Production Edge Function deployments completed: `paystack-webhook` version 98 and `resend-inbound-webhook` version 122, both retaining `verify_jwt=false` as required for provider-signed webhooks. Deno helper tests passed; real provider event/idempotency tests remain outstanding.
 
 ## Sign-up rate limiting
 
@@ -103,6 +104,6 @@ order by c.relname;
 ## Explicit exclusions
 
 - reCAPTCHA remains disabled.
-- No production database migration or SQL write.
-- No production Auth configuration, secret, Edge Function or domain change.
+- No destructive production data change or Auth configuration change.
+- No provider secret or domain change.
 - No feature PR merged as part of this security branch.
