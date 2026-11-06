@@ -40,6 +40,7 @@ function toHex(bytes: ArrayBuffer): string {
 }
 
 export async function verifyPaystackSignature(payload: string, signature: string, secret: string): Promise<boolean> {
+  if (!signature || !secret) return false;
   try {
     const key = await crypto.subtle.importKey(
       "raw",
@@ -49,7 +50,7 @@ export async function verifyPaystackSignature(payload: string, signature: string
       ["sign"],
     );
     const digest = toHex(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload)));
-    return constantTimeEqual(digest, signature);
+    return constantTimeEqual(digest, signature.toLowerCase());
   } catch {
     return false;
   }
@@ -62,6 +63,7 @@ export async function verifySvixSignature(
   svixSignature: string,
   secret: string,
 ): Promise<boolean> {
+  if (!svixId || !svixTimestamp || !svixSignature || !secret) return false;
   try {
     const encodedSecret = secret.replace(/^whsec_/, "");
     const secretBytes = Uint8Array.from(atob(encodedSecret), (character) => character.charCodeAt(0));
@@ -86,4 +88,11 @@ export async function verifySvixSignature(
   } catch {
     return false;
   }
+}
+
+export function isFreshWebhookTimestamp(timestamp: string, nowMs = Date.now(), toleranceSeconds = 300): boolean {
+  const timestampSeconds = Number(timestamp);
+  if (!Number.isFinite(timestampSeconds)) return false;
+  const nowSeconds = Math.floor(nowMs / 1000);
+  return Math.abs(nowSeconds - timestampSeconds) <= toleranceSeconds;
 }
