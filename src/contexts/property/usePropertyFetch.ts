@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Property, Filters } from "./types";
 import { applyFilters } from "./propertyUtils";
@@ -18,9 +18,17 @@ export function usePropertyFetch(
     return applyFilters(cached, searchQuery, filters);
   });
   const [loading, setLoading] = useState(() => readPublicDataCache<Property[]>(ESTATE_CACHE_KEY) === null);
+  const filtersRef = useRef(filters);
+  const searchQueryRef = useRef(searchQuery);
+
+  useEffect(() => {
+    filtersRef.current = filters;
+    searchQueryRef.current = searchQuery;
+    setFilteredProperties(applyFilters(properties, searchQuery, filters));
+  }, [filters, searchQuery, properties]);
 
   const fetchProperties = useCallback(async () => {
-    if (properties.length === 0) setLoading(true);
+    if (readPublicDataCache<Property[]>(ESTATE_CACHE_KEY) === null) setLoading(true);
     try {
       const { data: estates, error } = await supabase
         .from("estate")
@@ -83,7 +91,7 @@ export function usePropertyFetch(
         // replace it only when the live database response arrives.
         writePublicDataCache(ESTATE_CACHE_KEY, propertyData);
         setProperties(propertyData);
-        setFilteredProperties(applyFilters(propertyData, searchQuery, filters));
+        setFilteredProperties(applyFilters(propertyData, searchQueryRef.current, filtersRef.current));
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -93,7 +101,7 @@ export function usePropertyFetch(
     } finally {
       setLoading(false);
     }
-  }, [filters, searchQuery]);
+  }, []);
 
   return {
     properties,
