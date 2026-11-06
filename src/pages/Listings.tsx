@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useId } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
@@ -8,8 +8,25 @@ import Footer from '@/components/Footer';
 import ListingCard from '@/components/listings/ListingCard';
 import ListingFilters, { ListingFilterState } from '@/components/listings/ListingFilters';
 import RegionSpotlightCards from '@/components/listings/RegionSpotlightCards';
-import { LayoutGrid, List, Loader2, Plus, ClipboardList } from 'lucide-react';
+import { LayoutGrid, List, Plus, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+const PUBLIC_LISTINGS_CACHE_KEY = 'bridgefort:published-listings:v1';
+
+const readPublishedListings = (): Listing[] => {
+  try {
+    const raw = typeof window !== 'undefined' ? window.localStorage.getItem(PUBLIC_LISTINGS_CACHE_KEY) : null;
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed?.listings) ? parsed.listings as Listing[] : [];
+  } catch { return []; }
+};
+
+const writePublishedListings = (listings: Listing[]) => {
+  try {
+    if (typeof window !== 'undefined') window.localStorage.setItem(PUBLIC_LISTINGS_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), listings }));
+  } catch { /* Browser storage is optional; keep the live data in React state. */ }
+};
 
 const defaultFilters: ListingFilterState = {
   region: 'all',
@@ -23,18 +40,13 @@ const defaultFilters: ListingFilterState = {
 
 const Listings = () => {
   const { user } = useAuth();
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [listings, setListings] = useState<Listing[]>(readPublishedListings);
+  const [loading, setLoading] = useState(() => readPublishedListings().length === 0);
   const [filters, setFilters] = useState<ListingFilterState>(defaultFilters);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  useEffect(() => {
-    fetchListings();
-  }, []);
-
-  const fetchListings = async () => {
-    setLoading(true);
+  const fetchListings = useCallback(async () => {
     const { data, error } = await supabase
       .from('listings')
       .select('*')
@@ -43,10 +55,28 @@ const Listings = () => {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setListings(data as unknown as Listing[]);
+      const nextListings = data as unknown as Listing[];
+      setListings(nextListings);
+      writePublishedListings(nextListings);
+    } else if (error) {
+      console.error('Error refreshing published listings:', error);
     }
     setLoading(false);
-  };
+  }, []);
+
+  const channelId = useId().replace(/[^a-zA-Z0-9]/g, '');
+  useEffect(() => {
+    void fetchListings();
+    const channel = supabase
+      .channel(`published_listings_${channelId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'listings' }, (payload) => {
+        const previous = payload.old as Record<string, unknown> | undefined;
+        const next = payload.new as Record<string, unknown> | undefined;
+        if (previous?.is_published === true || next?.is_published === true) void fetchListings();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [channelId, fetchListings]);
 
   const regionCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -139,8 +169,18 @@ const Listings = () => {
 
           {/* Listings grid/list */}
           {loading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 8 }, (_, slot) => (
+                <div key={slot} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                  <div className="aspect-[16/10] animate-pulse bg-muted" />
+                  <div className="space-y-3 p-4">
+                    <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+                    <div className="h-5 w-4/5 animate-pulse rounded bg-muted" />
+                    <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+                    <div className="h-9 w-full animate-pulse rounded-lg bg-muted" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20">
