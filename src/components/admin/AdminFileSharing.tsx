@@ -62,7 +62,9 @@ const AdminFileSharing = () => {
   }, [selectedFolder]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    event.preventDefault();
+    event.stopPropagation();
+    const file = event.currentTarget.files?.[0];
     if (!file) return;
 
     setUploading(true);
