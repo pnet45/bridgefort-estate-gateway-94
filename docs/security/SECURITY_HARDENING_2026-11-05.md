@@ -10,7 +10,7 @@ The existing reCAPTCHA integration remains disabled as requested. This work must
 
 ## Database privilege change
 
-Migration `20261105010000_harden_public_table_privileges.sql` removes only `TRUNCATE`, `REFERENCES`, and `TRIGGER` privileges from `anon` and `authenticated` on existing public tables, and prevents those privileges from being granted by the `postgres` default table privileges. A separate migration, `20261106030000_harden_supabase_admin_default_privileges.sql`, handles the `supabase_admin` default ACL under an executor with that role membership.
+Migration `20261106190000_harden_public_table_privileges.sql` removes only `TRUNCATE`, `REFERENCES`, and `TRIGGER` privileges from `anon` and `authenticated` on existing public tables, and prevents those privileges from being granted by the `postgres` default table privileges. A separate migration, `20261106190100_harden_supabase_admin_default_privileges.sql`, handles the `supabase_admin` default ACL under an executor with that role membership.
 
 It intentionally preserves ordinary DML grants because the application's workflows still depend on table-specific RLS policies. RLS remains the row-level authorization boundary. The migration does not modify service_role privileges, table data, policies, or production state.
 
