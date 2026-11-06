@@ -2,51 +2,11 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { queueOrderForApproval } from "../_shared/paymentApproval.ts";
 import { captureServerEvent } from "../_shared/posthog.ts";
+import { readBodyWithLimit, verifyPaystackSignature } from "../_shared/webhookSecurity.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
-async function readBodyWithLimit(req: Request, maxBytes = 1024 * 1024) {
-  const declaredLength = Number(req.headers.get("content-length") || 0);
-  if (declaredLength > maxBytes) throw new Error("Webhook payload too large");
-  if (!req.body) return "";
-  const reader = req.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > maxBytes) {
-      await reader.cancel();
-      throw new Error("Webhook payload too large");
-    }
-    chunks.push(value);
-  }
-  const body = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) { body.set(chunk, offset); offset += chunk.byteLength; }
-  return new TextDecoder().decode(body);
-}
-
-function toHex(bytes: ArrayBuffer) {
-  return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-async function validSignature(payload: string, signature: string, secret: string) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-512" },
-    false,
-    ["sign"],
-  );
-  const digest = toHex(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload)));
-  if (digest.length !== signature.length) return false;
-  let difference = 0;
-  for (let index = 0; index < digest.length; index += 1) difference |= digest.charCodeAt(index) ^ signature.charCodeAt(index);
-  return difference === 0;
-}
 
 serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
@@ -64,7 +24,7 @@ serve(async (req) => {
       tooLarge ? 413 : 400,
     );
   }
-  if (!(await validSignature(rawPayload, signature, secret))) {
+  if (!(await verifyPaystackSignature(rawPayload, signature, secret))) {
     return json({ error: "Invalid webhook signature" }, 401);
   }
 
