@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { constantTimeEqual, readBodyWithLimit, verifySvixSignature } from "../_shared/webhookSecurity.ts";
 
 // ─────────────────────────────────────────────────────────────────────────
 // WHY INBOUND MAIL WASN'T ARRIVING — the full picture
@@ -35,63 +36,6 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-async function readBodyWithLimit(req: Request, maxBytes = 1024 * 1024): Promise<string> {
-  const declaredLength = Number(req.headers.get('content-length') || 0);
-  if (declaredLength > maxBytes) throw new Error('Webhook payload too large');
-  if (!req.body) return '';
-  const reader = req.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > maxBytes) {
-      await reader.cancel();
-      throw new Error('Webhook payload too large');
-    }
-    chunks.push(value);
-  }
-  const body = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) { body.set(chunk, offset); offset += chunk.byteLength; }
-  return new TextDecoder().decode(body);
-}
-
-function constantTimeEqual(left: string, right: string): boolean {
-  const a = new TextEncoder().encode(left);
-  const b = new TextEncoder().encode(right);
-  if (a.length !== b.length) return false;
-  let difference = 0;
-  for (let index = 0; index < a.length; index += 1) difference |= a[index] ^ b[index];
-  return difference === 0;
-}
-
-async function verifySvixSignature(
-  payload: string,
-  svixId: string,
-  svixTimestamp: string,
-  svixSignature: string,
-  secret: string
-): Promise<boolean> {
-  const secretBytes = Uint8Array.from(atob(secret.replace(/^whsec_/, '')), (c) => c.charCodeAt(0));
-  const signedContent = `${svixId}.${svixTimestamp}.${payload}`;
-
-  const key = await crypto.subtle.importKey(
-    'raw',
-    secretBytes,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const sigBuffer = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signedContent));
-  const expected = btoa(String.fromCharCode(...new Uint8Array(sigBuffer)));
-
-  return svixSignature.split(' ').some((part) => {
-    const [version, value] = part.split(',', 2);
-    return version === 'v1' && Boolean(value) && constantTimeEqual(value, expected);
-  });
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
