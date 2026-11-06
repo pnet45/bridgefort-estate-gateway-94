@@ -20,7 +20,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const inputRef = useRef<HTMLInputElement | null>(null);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.files && e.currentTarget.files[0]) {
       onFileSelect(e.target.files[0]);
     }
   };
