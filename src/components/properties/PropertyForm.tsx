@@ -128,8 +128,11 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files);
+    e.preventDefault();
+    e.stopPropagation();
+    const input = e.currentTarget;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
       
       // Generate preview URLs for selected files
       const filePreviewURLs = newFiles.map(file => URL.createObjectURL(file));
@@ -139,6 +142,9 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         ...prev,
         media_files: [...(prev.media_files || []), ...newFiles]
       }));
+      // The File objects are now held in form state; clearing the native
+      // picker prevents stale selections without discarding the form draft.
+      input.value = '';
     }
   };
 
@@ -606,8 +612,12 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
               <input
                 type="file"
                 accept=".pdf"
+                onClick={(e) => e.stopPropagation()}
                 onChange={(e) => {
-                  if (e.target.files?.[0]) setSubscriptionFile(e.target.files[0]);
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (e.currentTarget.files?.[0]) setSubscriptionFile(e.currentTarget.files[0]);
+                  e.currentTarget.value = '';
                 }}
                 className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
               />
