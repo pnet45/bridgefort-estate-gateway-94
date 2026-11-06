@@ -28,9 +28,18 @@ const PropertyGrid: React.FC<PropertyGridProps> = ({ filterCategory, properties,
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-estate-blue mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading properties...</p>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {[0, 1, 2, 3, 4, 5].map((slot) => (
+          <div key={slot} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="aspect-[16/10] animate-pulse bg-slate-200" />
+            <div className="space-y-3 p-5">
+              <div className="h-3 w-24 animate-pulse rounded bg-slate-200" />
+              <div className="h-5 w-3/4 animate-pulse rounded bg-slate-200" />
+              <div className="h-3 w-1/2 animate-pulse rounded bg-slate-200" />
+              <div className="h-10 w-full animate-pulse rounded-xl bg-slate-200" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
