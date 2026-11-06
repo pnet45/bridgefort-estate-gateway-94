@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useId } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { ContentItem, ContentPage, ContentType } from '@/types/content';
 
@@ -87,13 +87,30 @@ export function useContentItems(opts: Options = {}) {
     void fetchItems();
   }, [cacheKey, canCache, fetchItems]);
 
+  const channelId = useId().replace(/[^a-zA-Z0-9]/g, '');
   useEffect(() => {
+    const matchesCurrentFilter = (row: Record<string, unknown> | undefined) => {
+      if (!row) return true;
+      if (opts.page && row.page !== opts.page) return false;
+      if (opts.contentType) {
+        const acceptedTypes = Array.isArray(opts.contentType) ? opts.contentType : [opts.contentType];
+        if (!acceptedTypes.includes(row.content_type as ContentType)) return false;
+      }
+      if (!opts.includeUnpublished && row.is_published !== true) return false;
+      if (opts.featuredOnly && row.is_featured !== true) return false;
+      return true;
+    };
+
     const channel = supabase
-      .channel('content_items_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, () => { void fetchItems(); })
+      .channel(`content_items_changes_${channelId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, (payload) => {
+        const previous = payload.old as Record<string, unknown> | undefined;
+        const next = payload.new as Record<string, unknown> | undefined;
+        if (matchesCurrentFilter(previous) || matchesCurrentFilter(next)) void fetchItems();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [fetchItems]);
+  }, [channelId, fetchItems, opts.page, contentTypeKey, opts.includeUnpublished, opts.featuredOnly]);
 
   return { items, loading, error, refresh: fetchItems };
 }
