@@ -2,7 +2,7 @@
 
 ## Scope and release status
 
-This document tracks the security hardening release. The public-content Realtime publication migration is applied in production. Paystack and Resend inbound webhook hardening is deployed. The public-table privilege migration is split: existing table ACLs and postgres defaults are ready for application; the supabase_admin default ACL remains blocked by the current migration executor's role authority.
+This document tracks the security hardening release. The public-content Realtime publication migration is applied in production. Paystack and Resend inbound webhook hardening is deployed. The public-table privilege migration is split: existing table ACLs and postgres defaults are applied; the supabase_admin default ACL remains blocked by the current migration executor's role authority.
 
 ## CAPTCHA
 
@@ -10,9 +10,9 @@ The existing reCAPTCHA integration remains disabled as requested. This work must
 
 ## Database privilege change
 
-Migration `20261106190000_harden_public_table_privileges.sql` removes only `TRUNCATE`, `REFERENCES`, and `TRIGGER` privileges from `anon` and `authenticated` on existing public tables, and prevents those privileges from being granted by the `postgres` default table privileges. A separate migration, `20261106190100_harden_supabase_admin_default_privileges.sql`, handles the `supabase_admin` default ACL under an executor with that role membership.
+Migration `20261106182053_harden_public_table_privileges_existing_postgres.sql` removes only `TRUNCATE`, `REFERENCES`, and `TRIGGER` privileges from `anon` and `authenticated` on existing public tables, and prevents those privileges from being granted by the `postgres` default table privileges. A separate migration, `20261106190100_harden_supabase_admin_default_privileges.sql`, handles the `supabase_admin` default ACL under an executor with that role membership.
 
-It intentionally preserves ordinary DML grants because the application's workflows still depend on table-specific RLS policies. RLS remains the row-level authorization boundary. The migration does not modify service_role privileges, table data, policies, or production state.
+It intentionally preserves ordinary DML grants because the application's workflows still depend on table-specific RLS policies. RLS remains the row-level authorization boundary. The migration does not modify service_role privileges, table data, or policies.
 
 ## RLS review findings
 
@@ -30,15 +30,15 @@ It intentionally preserves ordinary DML grants because the application's workflo
 - Broad SELECT policies need targeted review, particularly `estate_other_payments` (payment configuration) and `review_reactions` (contains user identifiers). Public catalogue reads should use minimal views or selected columns where practical.
 - The live inventory found 95 public-schema SECURITY DEFINER functions, with zero EXECUTE grants to PUBLIC or anon at inspection time. Authenticated-executable RPCs still require authorization and argument-validation review.
 - The migration's default-privilege targets were checked against live `pg_default_acl`: both `postgres` and `supabase_admin` have public-schema default table grants to anon/authenticated, so both are necessary targets for this project.
-## Production transaction validation — 5 November 2026
+## Production validation — 6 November 2026
 
-A controlled transaction was run against the connected production database and explicitly rolled back. It did not leave persistent changes. A later `apply_migration` attempt of the combined migration failed at its preflight before any ACL changes, confirming the same role limitation.
+An initial controlled transaction against production was explicitly rolled back. The combined migration then failed at its preflight before any ACL changes. The migration was split and the existing-table/postgres-default portion was subsequently applied successfully as migration version `20261106182053`.
 
 - The executor was `postgres`. It is a member of `postgres` but not `supabase_admin`.
 - Within the transaction, revoking `TRUNCATE`, `REFERENCES` and `TRIGGER` from `anon` and `authenticated` across all 116 public base/partitioned tables, plus revoking those privileges from the `postgres` public-schema default table ACL, passed an effective-privilege assertion.
-- After rollback, the live database again showed 99 public tables with one or more of those effective privileges for API roles. This is the expected confirmation that the test was rolled back, not a persistent fix.
-- The `supabase_admin` default-privilege change could not be executed by this database role. The migration has been split so the existing-table revokes and postgres default ACL can be applied independently; the separate supabase_admin migration remains blocked until the deployment execution role is confirmed to have the required membership/authority, or an approved owner-controlled remediation is prepared.
-- No production data, policies, or persistent privileges were changed by this test.
+- After the rollback test, the live database showed 99 public tables with one or more of those effective privileges. After the split migration was applied, a fresh effective-privilege audit reported **zero** public tables with `TRUNCATE`, `REFERENCES` or `TRIGGER` privileges for `anon` or `authenticated`.
+- The `postgres` public-schema default table ACL is now hardened. The `supabase_admin` default ACL still contains six dangerous grants (three privileges each to `anon` and `authenticated`). Its separate migration remains blocked until the deployment execution role has `supabase_admin` membership/authority, or an approved owner-controlled remediation is prepared.
+- No production data or RLS policies were changed. The ACL revokes are the intended persistent security change.
 
 ## Webhook code review
 
@@ -67,7 +67,7 @@ A controlled transaction was run against the connected production database and e
 
 ## Validation queries
 
-Use these read-only checks after applying the migration in a disposable/approved development database:
+Use these read-only checks to verify the production ACL result and review the remaining owner-specific default ACL:
 
 ```sql
 -- No dangerous table privileges for API roles.
@@ -106,4 +106,4 @@ order by c.relname;
 - reCAPTCHA remains disabled.
 - No destructive production data change or Auth configuration change.
 - No provider secret or domain change.
-- No feature PR merged as part of this security branch.
+- No feature data migrations or RLS policy changes were included.
