@@ -47,7 +47,7 @@ An initial controlled transaction against production was explicitly rolled back.
 - Resend delivery events: the separate delivery webhook already verifies Svix v1 signatures, enforces the five-minute timestamp window, and records provider event IDs against a unique key for replay/idempotency protection.
 - Paystack event idempotency is supported by the unique `(gateway, reference)` payment event key and payment-request reference lookup. Verify this behavior with provider retry tests before release.
 - No provider secrets were read, rotated, or changed.
-- Production Edge Function deployments completed: `paystack-webhook` version 98 and `resend-inbound-webhook` version 122, both retaining `verify_jwt=false` as required for provider-signed webhooks. Deno helper tests passed; real provider event/idempotency tests remain outstanding.
+- Production Edge Function deployments completed: `paystack-webhook` version 99 and `resend-inbound-webhook` version 123, both retaining `verify_jwt=false` as required for provider-signed webhooks. Deno tests now cover bounded request bodies, Paystack HMAC-SHA512, Svix v1, constant-time comparison, malformed secrets and the five-minute replay window. Real provider event/idempotency tests remain outstanding.
 
 ## Sign-up rate limiting
 
@@ -63,7 +63,7 @@ An initial controlled transaction against production was explicitly rolled back.
 3. Review payment and email webhook handlers for provider signature verification, replay windows, idempotency and duplicate-event handling.
 4. Implement IP-based signup throttling at a trusted server/Auth boundary. Keep CAPTCHA disabled. Do not rely on browser counters or spoofable client-supplied IP headers.
 5. Design a trusted per-IP registration gateway that preserves both web and mobile sign-up flows, email/phone confirmation, and existing PBO/referral metadata. Use only platform-verified client-IP metadata; do not accept browser-supplied forwarding headers. Keep CAPTCHA disabled.
-6. Validate the migration against an approved non-production database, then run RLS role-matrix tests before seeking production approval.
+6. Resolve the remaining `supabase_admin` default-ACL grants through an authorized owner/superuser execution path; the current executor cannot change that role's defaults. Continue targeted RLS/RPC caller review and provider retry tests.
 
 ## Validation queries
 
