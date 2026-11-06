@@ -57,10 +57,14 @@ serve(async (req) => {
   let rawPayload: string;
   try {
     rawPayload = await readBodyWithLimit(req);
-  } catch {
-    return json({ error: "Webhook payload too large" }, 413);
+  } catch (error) {
+    const tooLarge = error instanceof Error && error.message === "Webhook payload too large";
+    return json(
+      { error: tooLarge ? "Webhook payload too large" : "Unable to read webhook payload" },
+      tooLarge ? 413 : 400,
+    );
   }
-  if (!secret || !signature || !(await validSignature(rawPayload, signature, secret))) {
+  if (!(await validSignature(rawPayload, signature, secret))) {
     return json({ error: "Invalid webhook signature" }, 401);
   }
 
