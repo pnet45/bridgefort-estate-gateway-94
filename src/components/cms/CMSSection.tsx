@@ -16,7 +16,32 @@ interface Props {
 const CMSSection: React.FC<Props> = ({ page, contentType, title, emptyHidden = true, className }) => {
   const { items, loading } = useContentItems({ page, contentType });
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <section className={`py-12 ${className || ''}`} aria-label={title || 'Loading content'}>
+        <div className="container-custom">
+          {title && <div className="mx-auto mb-8 h-8 w-56 animate-pulse rounded-lg bg-muted" />}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[0, 1, 2].map((slot) => (
+              <Card key={slot} className="overflow-hidden">
+                <div className="aspect-video animate-pulse bg-muted" />
+                <CardHeader className="space-y-3">
+                  <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+                  <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
+                  <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="h-3 w-full animate-pulse rounded bg-muted" />
+                  <div className="h-3 w-5/6 animate-pulse rounded bg-muted" />
+                  <div className="h-8 w-28 animate-pulse rounded bg-muted" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
   if (emptyHidden && items.length === 0) return null;
 
   return (
