@@ -107,7 +107,7 @@ const ListingForm = ({ listingId, initialData }: Props) => {
       for (const file of files) {
         if (!file.type.startsWith('image/')) continue;
         const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-        const path = `${user.id}/${crypto.randomUUID()'}-${safeName}`;
+        const path = `${user.id}/${crypto.randomUUID()}-${safeName}`;
         const { error } = await supabase.storage.from('media-files').upload(path, file, {
           cacheControl: '3600',
           upsert: false,
