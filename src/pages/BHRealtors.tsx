@@ -294,7 +294,7 @@ const BHRealtors: React.FC = () => {
             </div>
           </section>
 
-          {isRealtor && referralCode && (
+          {isPbo && referralCode && (
             <>
               <section className={`${glass} overflow-hidden rounded-3xl p-5 sm:p-7`}>
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
