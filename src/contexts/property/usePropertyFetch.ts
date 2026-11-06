@@ -94,7 +94,6 @@ export function usePropertyFetch(searchQuery: string, filters: Filters) {
       });
 
       setProperties(propertyData);
-      setFilteredProperties(applyFilters(propertyData, searchQuery, filters));
       writeEstateCache(propertyData);
     } catch (error) {
       console.error("Error fetching properties:", error);
@@ -102,7 +101,7 @@ export function usePropertyFetch(searchQuery: string, filters: Filters) {
     } finally {
       setLoading(false);
     }
-  }, [filters, searchQuery]);
+  }, []);
 
   // Keep the derived list current when a visitor changes filters/search without
   // re-reading the estate table.
