@@ -89,14 +89,11 @@ export function usePropertyFetch(
       console.error('Error fetching properties:', error);
       // Preserve the last successful database snapshot during transient
       // network/API failures instead of blanking the whole catalogue.
-      if (properties.length === 0) {
-        setProperties([]);
-        setFilteredProperties([]);
-      }
+      // Keep the current browser snapshot (if any) visible until a successful refresh.
     } finally {
       setLoading(false);
     }
-  }, [filters, searchQuery, properties.length]);
+  }, [filters, searchQuery]);
 
   return {
     properties,
