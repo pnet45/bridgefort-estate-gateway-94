@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Property, PropertyContextType } from "./types";
 import { applyFilters, applyCustomFilters } from "./propertyUtils";
 import { useAuth } from "@/contexts/auth";
 import { usePropertyFilters } from "./usePropertyFilters";
 import { usePropertyFetch } from "./usePropertyFetch";
+import { supabase } from "@/integrations/supabase/client";
 import { PropertyContext } from "./PropertyContext";
 
 export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -32,6 +33,36 @@ export const PropertyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [hiddenProperties, setHiddenProperties] = useState<string[]>([]);
+
+  const fetchPropertiesRef = useRef(fetchProperties);
+  useEffect(() => { fetchPropertiesRef.current = fetchProperties; }, [fetchProperties]);
+
+  // The estate catalogue is public content. Realtime updates refresh only this
+  // dataset; focus/online refreshes cover browsers where Realtime is unavailable.
+  useEffect(() => {
+    const channel = supabase
+      .channel("public-estate-catalogue-refresh")
+      .on("postgres_changes", { event: "*", schema: "public", table: "estate" }, () => {
+        void fetchPropertiesRef.current();
+      })
+      .subscribe();
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        void fetchPropertiesRef.current();
+      }
+    };
+    window.addEventListener("focus", refreshWhenVisible);
+    window.addEventListener("online", refreshWhenVisible);
+    const interval = window.setInterval(refreshWhenVisible, 120000);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refreshWhenVisible);
+      window.removeEventListener("online", refreshWhenVisible);
+      void supabase.removeChannel(channel);
+    };
+  }, []);
 
   // Sync filtered properties if filters/search change
   useEffect(() => {
