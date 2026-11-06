@@ -2,36 +2,29 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { queueOrderForApproval } from "../_shared/paymentApproval.ts";
 import { captureServerEvent } from "../_shared/posthog.ts";
+import { readBodyWithLimit, verifyPaystackSignature } from "../_shared/webhookSecurity.ts";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
-function toHex(bytes: ArrayBuffer) {
-  return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-async function validSignature(payload: string, signature: string, secret: string) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-512" },
-    false,
-    ["sign"],
-  );
-  const digest = toHex(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload)));
-  if (digest.length !== signature.length) return false;
-  let difference = 0;
-  for (let index = 0; index < digest.length; index += 1) difference |= digest.charCodeAt(index) ^ signature.charCodeAt(index);
-  return difference === 0;
-}
 
 serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   const secret = Deno.env.get("PAYSTACK_SECRET_KEY");
   const signature = req.headers.get("x-paystack-signature") ?? "";
-  const rawPayload = await req.text();
-  if (!secret || !signature || !(await validSignature(rawPayload, signature, secret))) {
+  if (!secret || !signature) return json({ error: "Invalid webhook signature" }, 401);
+  let rawPayload: string;
+  try {
+    rawPayload = await readBodyWithLimit(req);
+  } catch (error) {
+    const tooLarge = error instanceof Error && error.message === "Webhook payload too large";
+    return json(
+      { error: tooLarge ? "Webhook payload too large" : "Unable to read webhook payload" },
+      tooLarge ? 413 : 400,
+    );
+  }
+  if (!(await verifyPaystackSignature(rawPayload, signature, secret))) {
     return json({ error: "Invalid webhook signature" }, 401);
   }
 

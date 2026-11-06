@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { constantTimeEqual, readBodyWithLimit, verifySvixSignature } from "../_shared/webhookSecurity.ts";
 
 // ─────────────────────────────────────────────────────────────────────────
 // WHY INBOUND MAIL WASN'T ARRIVING — the full picture
@@ -32,39 +33,23 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, svix-id, svix-timestamp, svix-signature',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-async function verifySvixSignature(
-  payload: string,
-  svixId: string,
-  svixTimestamp: string,
-  svixSignature: string,
-  secret: string
-): Promise<boolean> {
-  const secretBytes = Uint8Array.from(atob(secret.replace(/^whsec_/, '')), (c) => c.charCodeAt(0));
-  const signedContent = `${svixId}.${svixTimestamp}.${payload}`;
-
-  const key = await crypto.subtle.importKey(
-    'raw',
-    secretBytes,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-  const sigBuffer = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(signedContent));
-  const expected = btoa(String.fromCharCode(...new Uint8Array(sigBuffer)));
-
-  const candidates = svixSignature.split(' ').map((s) => s.split(',')[1]).filter(Boolean);
-  return candidates.includes(expected);
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
   try {
-    const rawBody = await req.text();
+    const rawBody = await readBodyWithLimit(req);
 
     const webhookSecret = Deno.env.get('RESEND_WEBHOOK_SECRET');
     const svixId = req.headers.get('svix-id') || '';
@@ -358,8 +343,9 @@ serve(async (req) => {
   } catch (error: unknown) {
     console.error('Error in resend-inbound-webhook:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ received: true, error: message }), {
-      status: 200,
+    const status = message === 'Webhook payload too large' ? 413 : 500;
+    return new Response(JSON.stringify({ error: message }), {
+      status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
