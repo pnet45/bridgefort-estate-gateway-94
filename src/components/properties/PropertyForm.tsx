@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,6 +34,8 @@ interface PropertyFormProps {
 export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, onSuccess, initialCategory }) => {
   const isEditing = !!estate;
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const subscriptionFileInputRef = useRef<HTMLInputElement>(null);
+  const mediaFileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<EstateFormData>({
     name: '',
     location: '',
@@ -608,23 +610,24 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
             </div>
           )}
           <div className="flex items-center gap-3">
-            <div className="flex-1 border-2 border-dashed border-muted-foreground/30 rounded-md p-3 relative hover:border-primary transition-colors">
+            <div className="flex flex-1 flex-wrap items-center gap-3 rounded-md border-2 border-dashed border-muted-foreground/30 p-3 transition-colors hover:border-primary">
               <input
+                ref={subscriptionFileInputRef}
                 type="file"
-                accept=".pdf"
-                onClick={(e) => e.stopPropagation()}
+                accept=".pdf,application/pdf"
                 onChange={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   if (e.currentTarget.files?.[0]) setSubscriptionFile(e.currentTarget.files[0]);
                   e.currentTarget.value = '';
                 }}
-                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                className="sr-only"
+                aria-label="Choose estate subscription PDF"
               />
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Upload size={16} />
-                <span className="text-sm">{subscriptionFile ? subscriptionFile.name : 'Choose PDF file from your computer'}</span>
-              </div>
+              <Button type="button" variant="outline" onClick={() => subscriptionFileInputRef.current?.click()}>
+                <Upload className="mr-2 h-4 w-4" /> Choose PDF
+              </Button>
+              <span className="min-w-0 break-all text-sm text-muted-foreground">{subscriptionFile ? subscriptionFile.name : 'No new PDF selected'}</span>
             </div>
           </div>
           <p className="text-xs text-muted-foreground">Upload a PDF subscription form for this estate. Users will be able to download it.</p>
@@ -698,16 +701,19 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                 </button>
               </div>
             ))}
-            <div className="w-24 h-24 border-2 border-dashed border-muted-foreground/30 flex items-center justify-center rounded-md cursor-pointer hover:border-primary relative">
-              <input 
-                type="file" 
-                accept="image/*,video/*" 
-                multiple
-                onChange={handleFileChange}
-                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-              />
-              <Upload size={24} className="text-muted-foreground" />
-            </div>
+            <input
+              ref={mediaFileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              multiple
+              onChange={handleFileChange}
+              className="sr-only"
+              aria-label="Choose property images and videos"
+            />
+            <Button type="button" variant="outline" className="h-24 w-24 flex-col gap-2 rounded-md border-2 border-dashed" onClick={() => mediaFileInputRef.current?.click()}>
+              <Upload size={22} />
+              <span className="text-xs">Add media</span>
+            </Button>
           </div>
           <p className="text-sm text-muted-foreground">Upload images and videos of the property</p>
         </div>
