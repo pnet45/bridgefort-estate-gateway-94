@@ -24,8 +24,10 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
   const [uploadedUrl, setUploadedUrl] = useState(existingUrl || "");
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
+    e.preventDefault();
+    e.stopPropagation();
+    if (!e.currentTarget.files || e.currentTarget.files.length === 0) return;
+    const file = e.currentTarget.files[0];
     if (file.size > 4 * 1024 * 1024) {
       toast({ title: "File too large", description: "File < 4MB", variant: "destructive" });
       return;
