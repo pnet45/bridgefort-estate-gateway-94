@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth';
@@ -68,6 +68,7 @@ const ListingForm = ({ listingId, initialData }: Props) => {
   const [amenityInput, setAmenityInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (initialData) setForm({ ...empty, ...initialData });
@@ -265,8 +266,9 @@ const ListingForm = ({ listingId, initialData }: Props) => {
         <SectionHeading icon={ImagePlus} title="Property photos" description="Good photos make a big difference. Add clear, well-lit images." />
         <div className="rounded-2xl border border-dashed border-primary/25 bg-primary/[0.03] p-5">
           <Label>Upload from device</Label>
-          <Input
-            className="mt-2 bg-white/70 dark:bg-white/[0.05] border-0 shadow-none"
+          <input
+            ref={photoInputRef}
+            className="sr-only"
             type="file"
             accept="image/*"
             multiple
@@ -275,6 +277,10 @@ const ListingForm = ({ listingId, initialData }: Props) => {
             disabled={uploading}
             aria-label="Upload property photos from device"
           />
+          <Button type="button" variant="outline" className="mt-2 rounded-2xl" onClick={() => photoInputRef.current?.click()} disabled={uploading}>
+            {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImagePlus className="mr-2 h-4 w-4" />}
+            {uploading ? 'Uploading photos…' : 'Choose photos'}
+          </Button>
           {uploading && <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2"><Loader2 className="w-4 h-4 animate-spin" /> Uploading photos...</div>}
         </div>
         <div><Label>Or paste image URL</Label><div className="flex gap-2 mt-1"><Input className={fieldClass} value={photoInput} onChange={e => setPhotoInput(e.target.value)} placeholder="https://..." onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addPhoto(); }}} /><Button type="button" onClick={addPhoto} variant="outline" className="rounded-2xl h-12 w-12 shrink-0"><Plus className="w-4 h-4" /></Button></div></div>
