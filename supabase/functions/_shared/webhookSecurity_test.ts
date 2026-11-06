@@ -87,14 +87,12 @@ Deno.test("Svix accepts a valid v1 HMAC-SHA256 signature", async () => {
   const secretBytes = crypto.getRandomValues(new Uint8Array(32));
   const secret = `whsec_${toBase64(secretBytes)}`;
   const signed = `${id}.${timestamp}.${payload}`;
-  const signature = toBase64(new Uint8Array(await hmac(signed, new TextDecoder().decode(secretBytes), "SHA-256")));
-  // Build the expected signature using the raw secret bytes (not a text conversion).
+  // Build the expected signature using the raw secret bytes.
   const key = await crypto.subtle.importKey("raw", secretBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const expected = toBase64(new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(signed))));
   if (!await verifySvixSignature(payload, id, timestamp, `v1,${expected}`, secret)) {
     throw new Error("Valid Svix signature was rejected");
   }
-  if (signature.length === 0) throw new Error("Signature helper did not produce a value");
 });
 
 Deno.test("Svix rejects unsupported signature versions and malformed secrets", async () => {
