@@ -33,7 +33,9 @@ const MediaUploadField: React.FC<MediaUploadFieldProps> = ({
   const isVideo = accept === 'video/*';
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.currentTarget.files?.[0];
     if (!file) return;
 
     if (file.size > maxSizeMB * 1024 * 1024) {
