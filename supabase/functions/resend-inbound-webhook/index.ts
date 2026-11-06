@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { constantTimeEqual, readBodyWithLimit, verifySvixSignature } from "../_shared/webhookSecurity.ts";
+import { isFreshWebhookTimestamp, readBodyWithLimit, verifySvixSignature } from "../_shared/webhookSecurity.ts";
 
 // ─────────────────────────────────────────────────────────────────────────
 // WHY INBOUND MAIL WASN'T ARRIVING — the full picture
@@ -71,9 +71,7 @@ serve(async (req) => {
       });
     }
 
-    const timestampSeconds = Number(svixTimestamp);
-    const nowSeconds = Math.floor(Date.now() / 1000);
-    if (!Number.isFinite(timestampSeconds) || Math.abs(nowSeconds - timestampSeconds) > 300) {
+    if (!isFreshWebhookTimestamp(svixTimestamp)) {
       return new Response(JSON.stringify({ error: 'Stale webhook timestamp' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
