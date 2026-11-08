@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { readPublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
 
 interface HeroSlide {
   id: string;
@@ -61,16 +61,16 @@ const HomeHeroImage = () => {
       })
       .subscribe();
 
-    const refreshWhenVisible = () => {
-      if (document.visibilityState === 'visible' && navigator.onLine) void fetchSlides();
-    };
-    window.addEventListener('focus', refreshWhenVisible);
-    window.addEventListener('online', refreshWhenVisible);
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchSlides());
+    const stopCacheSync = subscribePublicDataCache<HeroSlide[]>(HERO_SLIDES_CACHE_KEY, (nextSlides) => {
+      setSlides(nextSlides);
+      setCurrentSlide((current) => Math.min(current, Math.max(0, nextSlides.length - 1)));
+    });
 
     return () => {
       active = false;
-      window.removeEventListener('focus', refreshWhenVisible);
-      window.removeEventListener('online', refreshWhenVisible);
+      stopRevalidation();
+      stopCacheSync();
       void supabase.removeChannel(channel);
     };
   }, []);
