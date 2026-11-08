@@ -32,26 +32,6 @@ const UpcomingTrainingEvents = () => {
     setFilteredEvents(filtered);
   };
 
-  const applyFilters = () => {
-    let filtered = [...events];
-
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(event => event.category === selectedCategory);
-    }
-
-    // Filter by date range
-    if (startDate) {
-      filtered = filtered.filter(event => new Date(event.date) >= new Date(startDate));
-    }
-
-    if (endDate) {
-      filtered = filtered.filter(event => new Date(event.date) <= new Date(endDate));
-    }
-
-    setFilteredEvents(filtered);
-  };
-
   if (loading && allEvents.length === 0) {
     return (
       <section className="py-16 bg-gray-50" aria-label="Loading upcoming training">
