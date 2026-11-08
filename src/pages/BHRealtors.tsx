@@ -18,6 +18,7 @@ import ReferralLeaderboard from '@/components/bhRealtors/ReferralLeaderboard';
 import DownlineTree from '@/components/bhRealtors/DownlineTree';
 import CommissionHistory, { type CommissionRow } from '@/components/bhRealtors/CommissionHistory';
 import ReferralShareCard from '@/components/bhRealtors/ReferralShareCard';
+import { usePublicMlmPackages } from '@/hooks/usePublicMlmPackages';
 
 const rank: Record<string, number> = { associate: 1, gold: 2, classic_gold: 3 };
 const naira = (n: number) => `₦${Number(n || 0).toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
@@ -63,9 +64,15 @@ type DashboardData = {
 };
 
 const BHRealtors: React.FC = () => {
+  const { packages } = usePublicMlmPackages();
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
-  const [packages, setPackages] = useState<BhRealtorsPackage[]>(bhRealtorsPackages);
   const [selectedPackage, setSelectedPackage] = useState<BhRealtorsPackage>(bhRealtorsPackages[0]);
+
+  useEffect(() => {
+    if (packages.length > 0) {
+      setSelectedPackage((previous) => packages.find((item) => item.package_code === previous.package_code) || packages[0]);
+    }
+  }, [packages]);
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [downlineCount, setDownlineCount] = useState(0);
   const [activeDownlineCount, setActiveDownlineCount] = useState(0);
@@ -94,19 +101,10 @@ const BHRealtors: React.FC = () => {
     setBusy(true);
     setDashboardError(false);
 
-    const [pkgResult, dashboardResult, salesResult] = await Promise.all([
-      supabase.from('mlm_packages').select('package_code, package_name, price, direct_commission_pct, indirect_commission_pct, withdrawable, description, sales_commission_pct, sales_commission_locked, first_level_sales_commission_pct').order('price'),
+    const [dashboardResult, salesResult] = await Promise.all([
       supabase.rpc('get_my_bhrealtor_dashboard'),
       supabase.rpc('get_my_bhrealtor_sales' as never) as unknown as Promise<{ data: RealtorSale[] | null; error: { message: string } | null }>,
     ]);
-
-    if (pkgResult.data?.length) {
-      const dbPackages = pkgResult.data as BhRealtorsPackage[];
-      setPackages(dbPackages);
-      setSelectedPackage((prev) => dbPackages.find((item) => item.package_code === prev.package_code) || dbPackages[0]);
-    } else if (pkgResult.error) {
-      console.warn('BHRealtors package read failed:', pkgResult.error.message);
-    }
 
     if (dashboardResult.error) {
       console.error('BHRealtors dashboard error:', dashboardResult.error);
