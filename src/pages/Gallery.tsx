@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import CircularGallery3D from '@/components/gallery/CircularGallery3D';
 import GalleryLightbox from '@/components/gallery/GalleryLightbox';
 import { supabase } from '@/integrations/supabase/client';
-import { readPublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 import type { GalleryMediaItem, GalleryMediaType } from '@/types/gallery';
 
 type GalleryFilter = 'all' | GalleryMediaType;
@@ -56,18 +56,16 @@ const GalleryPage = () => {
       })
       .subscribe();
 
-    const refreshWhenVisible = () => {
-      if (document.visibilityState === 'visible' && navigator.onLine) void load();
-    };
-    window.addEventListener('focus', refreshWhenVisible);
-    window.addEventListener('online', refreshWhenVisible);
-    const interval = window.setInterval(refreshWhenVisible, 120000);
+    const stopRevalidation = listenForPublicDataRevalidation(() => void load());
+    const stopCacheSync = subscribePublicDataCache<GalleryMediaItem[]>(GALLERY_CACHE_KEY, (nextItems) => {
+      setMediaItems(nextItems);
+      setLoadingMedia(false);
+    });
 
     return () => {
       active = false;
-      window.clearInterval(interval);
-      window.removeEventListener('focus', refreshWhenVisible);
-      window.removeEventListener('online', refreshWhenVisible);
+      stopRevalidation();
+      stopCacheSync();
       void supabase.removeChannel(channel);
     };
   }, []);
