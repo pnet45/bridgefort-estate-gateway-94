@@ -12,7 +12,7 @@ export interface PublicTrainingEvent {
   image: string | null;
   capacity: string;
   category: string;
-  featured: boolean;
+  featured: boolean | null;
 }
 
 const CACHE_KEY = 'public-training-events';
@@ -34,7 +34,7 @@ export function refreshPublicTrainingEvents(): Promise<PublicTrainingEvent[]> {
   pendingRequest = (async () => {
     const { data, error } = await supabase
       .from('training_events')
-      .select('*')
+      .select('id, title, description, date, time, location, image, capacity, category, featured')
       .order('date', { ascending: true });
 
     if (error) throw error;
