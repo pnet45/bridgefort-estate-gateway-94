@@ -36,6 +36,13 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
   const [isSubmitting, setIsSubmitting] = useState(false);
   const subscriptionFileInputRef = useRef<HTMLInputElement>(null);
   const mediaFileInputRef = useRef<HTMLInputElement>(null);
+  // Parent admin screens may recreate the estate object during unrelated renders.
+  // Hydrate only when the selected estate identity changes, never on file selection.
+  const estateRef = useRef(estate);
+  estateRef.current = estate;
+  const initialCategoryRef = useRef(initialCategory);
+  initialCategoryRef.current = initialCategory;
+  const initializedFormKey = useRef<string | null>(null);
   const [formData, setFormData] = useState<EstateFormData>({
     name: '',
     location: '',
@@ -75,25 +82,36 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
   });
 
   useEffect(() => {
-    if (estate) {
+    const currentEstate = estateRef.current;
+    const currentCategory = initialCategoryRef.current;
+
+    if (currentEstate) {
+      if (initializedFormKey.current === currentEstate.id) return;
+      initializedFormKey.current = currentEstate.id;
       setFormData({
-        ...estate,
+        ...currentEstate,
         media_files: []
       });
-      setPreviewImages(estate.media || []);
-      setExistingSubFormUrl(estate.sub_form || '');
-      setSizeUnit((estate as any).size_unit || 'sqm');
-      setIsSoldOut((estate as any).is_sold_out || false);
-      fetchDocPricing(estate.id);
-    } else if (initialCategory) {
+      setPreviewImages(currentEstate.media || []);
+      setExistingSubFormUrl(currentEstate.sub_form || '');
+      setSizeUnit((currentEstate as any).size_unit || 'sqm');
+      setIsSoldOut((currentEstate as any).is_sold_out || false);
+      void fetchDocPricing(currentEstate.id);
+      return;
+    }
+
+    const newFormKey = `new:${currentCategory?.property_category || 'default'}`;
+    if (initializedFormKey.current === newFormKey) return;
+    initializedFormKey.current = newFormKey;
+    if (currentCategory) {
       setFormData(prev => ({
         ...prev,
-        property_category: initialCategory.property_category,
-        is_for_sale: initialCategory.is_for_sale ?? prev.is_for_sale,
-        is_for_rent: initialCategory.is_for_rent ?? prev.is_for_rent,
+        property_category: currentCategory.property_category,
+        is_for_sale: currentCategory.is_for_sale ?? prev.is_for_sale,
+        is_for_rent: currentCategory.is_for_rent ?? prev.is_for_rent,
       }));
     }
-  }, [estate, initialCategory]);
+  }, [estate?.id, initialCategory?.property_category, initialCategory?.is_for_sale, initialCategory?.is_for_rent]);
 
   const fetchDocPricing = async (estateId: string) => {
     try {
@@ -615,10 +633,12 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                 ref={subscriptionFileInputRef}
                 type="file"
                 accept=".pdf,application/pdf"
+                onClick={(e) => e.stopPropagation()}
                 onChange={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  if (e.currentTarget.files?.[0]) setSubscriptionFile(e.currentTarget.files[0]);
+                  const selectedFile = e.currentTarget.files?.[0] || null;
+                  if (selectedFile) setSubscriptionFile(selectedFile);
                   e.currentTarget.value = '';
                 }}
                 className="sr-only"
@@ -706,6 +726,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
               type="file"
               accept="image/*,video/*"
               multiple
+              onClick={(event) => event.stopPropagation()}
               onChange={handleFileChange}
               className="sr-only"
               aria-label="Choose property images and videos"
