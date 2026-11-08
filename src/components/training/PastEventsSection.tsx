@@ -1,52 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
+import { usePublicTrainingEvents } from '@/hooks/usePublicTrainingEvents';
 import TrainingEventCard from './TrainingEventCard';
-import { Loader2 } from 'lucide-react';
 
-interface PastEvent {
-  id: string;
-  title: string;
-  description: string | null;
-  date: string;
-  time: string;
-  location: string;
-  capacity: string;
-  category: string;
-  image: string | null;
-}
 
 const PastEventsSection = () => {
-  const [pastEvents, setPastEvents] = useState<PastEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { events, loading } = usePublicTrainingEvents();
+  const today = new Date().toISOString().split('T')[0];
+  const pastEvents = events.filter(event => event.date < today).sort((a, b) => b.date.localeCompare(a.date));
 
-  useEffect(() => {
-    fetchPastEvents();
-  }, []);
-
-  const fetchPastEvents = async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      const { data, error } = await supabase
-        .from('training_events')
-        .select('*')
-        .lt('date', today)
-        .order('date', { ascending: false });
-
-      if (error) throw error;
-      setPastEvents(data || []);
-    } catch (error) {
-      console.error('Error fetching past events:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (loading && events.length === 0) {
     return (
-      <section className="py-16 bg-background">
-        <div className="container-custom flex justify-center items-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <section className="py-16 bg-background" aria-label="Loading past events">
+        <div className="container-custom">
+          <div className="mb-12 h-8 w-64 animate-pulse rounded bg-slate-200" />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }, (_, index) => (
+              <div key={index} className="h-72 animate-pulse rounded-xl bg-slate-200" />
+            ))}
+          </div>
         </div>
       </section>
     );
