@@ -187,12 +187,19 @@ const AdminFileSharing = () => {
             <input
               type="file"
               ref={fileInputRef}
+              onClick={(event) => event.stopPropagation()}
               onChange={handleFileUpload}
               className="hidden"
+              aria-label="Choose a file to upload"
             />
             <Button
+              type="button"
               size="sm"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                fileInputRef.current?.click();
+              }}
               disabled={uploading}
             >
               <Upload className="h-4 w-4 mr-2" />
