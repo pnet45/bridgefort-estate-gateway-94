@@ -47,7 +47,8 @@ const ListingDetails = () => {
         const nextListing = data as unknown as Listing;
         writePublicDataCache(cacheKey, nextListing);
         setListing(nextListing);
-      } else if (!cached) {
+      } else if (!error || !cached) {
+        if (!error) window.localStorage.removeItem(`bridgefort:public-data:v1:${cacheKey}`);
         setListing(null);
       }
       setLoading(false);
