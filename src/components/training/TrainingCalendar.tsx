@@ -9,8 +9,7 @@ import { Calendar as CalendarIcon, MapPin, Users, Clock } from 'lucide-react';
 
 const TrainingCalendar = () => {
   const { events, loading } = usePublicTrainingEvents();
-  const selectedDateRef = useState<Date | undefined>(new Date());
-  const [selectedDate, setSelectedDate] = selectedDateRef;
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const eventDates = events.map(event => parseISO(event.date));
   const [selectedDayEvents, setSelectedDayEvents] = useState<typeof events>([]);
   const [selectedEvent, setSelectedEvent] = useState<(typeof events)[number] | null>(null);
