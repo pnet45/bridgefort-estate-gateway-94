@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import BlogDetail from '@/components/blog/BlogDetail';
@@ -235,8 +235,17 @@ const BlogPost = () => {
 
       <main className="flex-grow pt-28 pb-12">
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <Loader2 className="w-10 h-10 text-estate-blue animate-spin" />
+          <div className="container-custom space-y-6 py-10" aria-label="Loading article">
+            <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+            <div className="aspect-[16/9] animate-pulse rounded-3xl bg-muted" />
+            <div className="h-9 w-4/5 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-1/3 animate-pulse rounded bg-muted" />
+            <div className="space-y-3 pt-4">
+              <div className="h-4 w-full animate-pulse rounded bg-muted" />
+              <div className="h-4 w-full animate-pulse rounded bg-muted" />
+              <div className="h-4 w-5/6 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
+            </div>
           </div>
         ) : error ? (
           <div className="container-custom">
