@@ -89,6 +89,14 @@ const NewProfileForm = () => {
       setLoading(true);
       try {
         const draft = readProfileDraft(user.id);
+        // Restore the current tab draft immediately, even if the database
+        // request below fails while the device is coming back from file storage.
+        if (draft) {
+          setForm(prev => ({ ...prev, ...draft.form }));
+          setKycDocs(draft.kycDocs || {});
+          setTermsAccepted(draft.termsAccepted);
+          setActiveStep(draft.activeStep || 'personal');
+        }
         const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
         if (error) throw error;
         if (data) {
