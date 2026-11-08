@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import type { ContentItem, ContentPage, ContentType } from '@/types/content';
 import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
+const CACHE_PREFIX = 'public-content-items:';
+
 interface Options {
   page?: ContentPage;
   contentType?: ContentType | ContentType[];
