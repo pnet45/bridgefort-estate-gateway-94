@@ -5,18 +5,6 @@ import TrainingRegistrationForm from './TrainingRegistrationForm';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface TrainingEvent {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  image: string | null;
-  capacity: string;
-  category: string;
-  featured?: boolean;
-}
-
 const FeaturedEventsCarousel = () => {
   const { events, loading } = usePublicTrainingEvents();
   const featuredEvents = events.filter(event => event.featured);
