@@ -45,6 +45,21 @@ const empty = {
   price_negotiable: false,
 };
 
+const readListingFormDraft = (key: string) => {
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    const draft = JSON.parse(raw);
+    if (!draft.savedAt || Date.now() - draft.savedAt > 4 * 60 * 60 * 1000) {
+      window.sessionStorage.removeItem(key);
+      return null;
+    }
+    return draft;
+  } catch {
+    return null;
+  }
+};
+
 const glassCard = 'rounded-3xl border border-white/50 bg-white/70 dark:bg-slate-950/65 backdrop-blur-2xl shadow-[0_20px_70px_-30px_rgba(15,23,42,0.45)]';
 const fieldClass = 'bg-white/65 dark:bg-white/[0.06] border-white/60 dark:border-white/10 rounded-2xl h-12 shadow-sm focus-visible:ring-2 focus-visible:ring-primary/30';
 
@@ -66,6 +81,8 @@ const ListingForm = ({ listingId, initialData }: Props) => {
   const [form, setForm] = useState<any>({ ...empty, ...(initialData || {}) });
   const [photoInput, setPhotoInput] = useState('');
   const [amenityInput, setAmenityInput] = useState('');
+  const formDraftKey = `bridgefort:listing-form-draft:v1:${user?.id || 'guest'}:${listingId || 'new'}`;
+  const [hydratedDraftKey, setHydratedDraftKey] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -74,13 +91,32 @@ const ListingForm = ({ listingId, initialData }: Props) => {
   const initializedListingKey = useRef<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
     const currentInitialData = initialDataRef.current;
-    if (!currentInitialData) return;
-    const key = listingId || currentInitialData.id || 'initial-listing';
+    const identity = listingId || currentInitialData?.id || 'new-listing';
+    const key = `${user.id}:${identity}`;
     if (initializedListingKey.current === key) return;
     initializedListingKey.current = key;
-    setForm({ ...empty, ...currentInitialData });
-  }, [listingId, initialData?.id]);
+    const draft = readListingFormDraft(formDraftKey);
+    setForm({ ...empty, ...(currentInitialData || {}), ...(draft?.form || {}) });
+    setPhotoInput(draft?.photoInput || '');
+    setAmenityInput(draft?.amenityInput || '');
+    setHydratedDraftKey(formDraftKey);
+  }, [user?.id, listingId, initialData?.id, formDraftKey]);
+
+  useEffect(() => {
+    if (!user || hydratedDraftKey !== formDraftKey) return;
+    try {
+      window.sessionStorage.setItem(formDraftKey, JSON.stringify({
+        savedAt: Date.now(),
+        form,
+        photoInput,
+        amenityInput,
+      }));
+    } catch (error) {
+      console.warn('Unable to preserve listing form draft.', error);
+    }
+  }, [user, hydratedDraftKey, formDraftKey, form, photoInput, amenityInput]);
 
   const update = (k: string, v: any) => setForm((p: any) => ({ ...p, [k]: v }));
 
@@ -198,6 +234,7 @@ const ListingForm = ({ listingId, initialData }: Props) => {
       photo_count: form.photos?.length || 0,
     });
     toast.success(listingId ? 'Listing updated — pending admin re-approval' : 'Listing submitted for admin approval');
+    window.sessionStorage.removeItem(formDraftKey);
     navigate('/listings/my');
   };
 
