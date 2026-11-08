@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { readPublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
 
 interface HeroSlide {
   id: string;
@@ -14,6 +15,7 @@ const FALLBACK_SLIDES = [
   '/lovable-uploads/Homeheroimage2222.png',
   '/lovable-uploads/PropertyHero.png',
 ];
+const HERO_SLIDES_CACHE_KEY = 'public-home-hero-slides';
 
 const FALLBACK_TITLE = "Bridgefort Homes Development Ltd. ...Bringing your dreams home!";
 const FALLBACK_SUBTITLE = "At Bridgefort Homes Development Ltd, we're not just selling properties—we're building legacies.";
@@ -27,22 +29,50 @@ const TEXT_EFFECTS = [
 
 const HomeHeroImage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [slides, setSlides] = useState<HeroSlide[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [slides, setSlides] = useState<HeroSlide[]>(() => readPublicDataCache<HeroSlide[]>(HERO_SLIDES_CACHE_KEY) || []);
   const [textEffect, setTextEffect] = useState(TEXT_EFFECTS[0]);
   const [textKey, setTextKey] = useState(0);
 
   useEffect(() => {
+    let active = true;
     const fetchSlides = async () => {
       const { data, error } = await supabase
         .from('hero_slides')
-        .select('*')
+        .select('id, image_url, title, subtitle, display_order')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
-      if (!error && data && data.length > 0) setSlides(data);
-      setLoading(false);
+
+      if (!error && data && active) {
+        const nextSlides = data as HeroSlide[];
+        writePublicDataCache(HERO_SLIDES_CACHE_KEY, nextSlides);
+        setSlides(nextSlides);
+        setCurrentSlide((current) => Math.min(current, Math.max(0, nextSlides.length - 1)));
+      } else if (error) {
+        // Keep the last successful public hero snapshot visible during outages.
+        console.warn('Hero slides refresh failed; keeping cached slides.', error.message);
+      }
     };
-    fetchSlides();
+
+    void fetchSlides();
+    const channel = supabase
+      .channel('public-home-hero-slides')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'hero_slides' }, () => {
+        void fetchSlides();
+      })
+      .subscribe();
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible' && navigator.onLine) void fetchSlides();
+    };
+    window.addEventListener('focus', refreshWhenVisible);
+    window.addEventListener('online', refreshWhenVisible);
+
+    return () => {
+      active = false;
+      window.removeEventListener('focus', refreshWhenVisible);
+      window.removeEventListener('online', refreshWhenVisible);
+      void supabase.removeChannel(channel);
+    };
   }, []);
 
   const sanitizeBrand = (s: string | null | undefined) =>

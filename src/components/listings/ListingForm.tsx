@@ -69,10 +69,18 @@ const ListingForm = ({ listingId, initialData }: Props) => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const initialDataRef = useRef(initialData);
+  initialDataRef.current = initialData;
+  const initializedListingKey = useRef<string | null>(null);
 
   useEffect(() => {
-    if (initialData) setForm({ ...empty, ...initialData });
-  }, [initialData]);
+    const currentInitialData = initialDataRef.current;
+    if (!currentInitialData) return;
+    const key = listingId || currentInitialData.id || 'initial-listing';
+    if (initializedListingKey.current === key) return;
+    initializedListingKey.current = key;
+    setForm({ ...empty, ...currentInitialData });
+  }, [listingId, initialData?.id]);
 
   const update = (k: string, v: any) => setForm((p: any) => ({ ...p, [k]: v }));
 
