@@ -10,7 +10,7 @@ import ListingFilters, { ListingFilterState } from '@/components/listings/Listin
 import RegionSpotlightCards from '@/components/listings/RegionSpotlightCards';
 import { LayoutGrid, List, Plus, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { readPublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 const PUBLIC_LISTINGS_CACHE_KEY = 'public-listings';
 const readPublishedListings = (): Listing[] => readPublicDataCache<Listing[]>(PUBLIC_LISTINGS_CACHE_KEY) || [];
@@ -63,7 +63,13 @@ const Listings = () => {
         if (previous?.is_published === true || next?.is_published === true) void fetchListings();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchListings());
+    const stopCacheSync = subscribePublicDataCache<Listing[]>(PUBLIC_LISTINGS_CACHE_KEY, setListings);
+    return () => {
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
   }, [channelId, fetchListings]);
 
   const regionCounts = useMemo(() => {
