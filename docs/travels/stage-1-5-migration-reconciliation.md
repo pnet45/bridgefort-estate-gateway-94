@@ -1,16 +1,20 @@
-# Bridgefort Travels Stage 1.5 — Supabase migration reconciliation
+# Bridgefort Travels Stage 1.5 — live migration and security reconciliation
 
-**Scope:** read-only comparison of GitHub `main` migration files with the live Supabase migration ledger for project `xyvspvtdaacqfmfocvhw`.
+**Audit date:** 2026-11-08  
+**Supabase project:** `xyvspvtdaacqfmfocvhw`  
+**Repository:** `pnet45/bridgefort-estate-gateway-94`
 
-**Observed inventory**
-- GitHub `main`: 286 timestamped SQL migration files.
-- Live Supabase ledger: 301 entries.
-- 281 ledger entries map to a local migration file by exact version or exact migration name.
-- 20 ledger entries have no exact matching filename/name in the repository inventory.
-- 6 local migration files have no exact matching ledger version/name.
-- Two ledger versions (`20261016020017` and `20261016020023`) both refer to `20261015215000_grant_manager_documentation_management.sql`; this is a duplicate-name mapping that needs provenance review, not an instruction to delete or rewrite ledger rows.
+## Migration inventory
 
-## Ledger entries without an exact local file/name match
+A fresh comparison of the current `main` branch and the live Supabase migration ledger found:
+
+- GitHub `main`: **297** timestamped SQL migration files.
+- Live Supabase ledger: **312** entries.
+- **20** ledger entries have no exact matching local version or migration filename/name.
+- **6** local migration files have no exact matching ledger version/name.
+- Two ledger versions (`20261016020017` and `20261016020023`) both refer to `20261015215000_grant_manager_documentation_management`; this duplicate-name mapping needs provenance review, not deletion or rewriting.
+
+### Ledger entries without an exact local file/name match
 
 - `20261007164836 leo_knowledge_base_rag`
 - `20261007164939 leo_knowledge_source_unique`
@@ -33,29 +37,63 @@
 - `20261027041852 production_repair_hr_admin_it_workspace_20261027`
 - `20261027041927 tighten_hr_workspace_table_grants_20261027`
 
-## Local migration files without an exact ledger version/name match
+### Local migration files without an exact ledger version/name match
 
 - `20261007193000_leo_knowledge_role_filtered_search.sql`
 - `20261007194500_leo_knowledge_version_history.sql`
 - `20261007195600_leo_knowledge_source_monitor_cron.sql`
 - `20261019160000_crm_admin_hr_it_workspace.sql`
 - `20261020120000_guard_admin_tab_permission_changes.sql`
-- `20261029090000_restrict_hr_management_to_global_and_manager_admin.sql`
+- `20261106190100_harden_supabase_admin_default_privileges.sql`
 
-## Interpretation and release gate
+## HR reconciliation results
 
-A version-only diff overstates the mismatch because some ledger entries were recorded under a different version while retaining the original migration name. Matching by exact migration name resolves several apparent version differences. The remaining 20/6 inventory is not enough to infer whether the SQL effects are absent, manually applied, represented by a differently named migration, or superseded.
+Read-only inspection of the live database confirms:
 
-**Do not run `supabase db push`, insert/delete migration ledger rows, replay historical SQL, or apply the Stage 1.5 migration until each unmatched item has been reconciled against the live schema/function/policy state and its original SQL source.** The two October 27 HR entries require their source migration SQL and explicit comparison to the local HR workspace migration before any release decision.
+- `public.is_hr_manager(uuid)` now permits only Global Admin or `admin_acct` (Manager Admin), with the user-id check bound to `auth.uid()`.
+- The four HR tables (`hr_staff_directory`, `hr_job_descriptions`, `hr_tasks`, `hr_daily_reports`) have RLS enabled.
+- `anon` has no SELECT or INSERT table privilege on those four tables.
+- Authenticated users retain table-level privileges, with RLS remaining the row-access boundary.
+- The `guard_admin_tab_permission_changes()` function and its trigger are still absent. The local-only migration `20261020120000_guard_admin_tab_permission_changes.sql` remains a separate review item; it has not been replayed.
 
-## Live schema spot-checks (read-only)
+The two October 27 ledger entries remain unmatched to local source files. Their exact historical SQL/deployment provenance is still a record-reconciliation gap. Do not replay either repair based on its ledger name alone.
 
-The following catalog checks were run against the live Supabase project after the filename/name inventory:
+## Travels Stage 1.5 — live schema findings
 
-- The HR tables `hr_staff_directory`, `hr_job_descriptions`, `hr_tasks`, and `hr_daily_reports` exist.
-- The live `public.is_hr_manager(uuid)` definition currently authorises global admins and the roles `super_admin`, `admin_dir`, `admin_acct`, `admin_adm`, `admin_it`, and `admin`. The local-only migration `20261029090000_restrict_hr_management_to_global_and_manager_admin.sql` narrows this to global admins and `admin_acct` (Manager Admin). That intended narrowing is not reflected in the live function. Do not assume the local migration has been applied.
-- The `guard_admin_tab_permission_changes` function and trigger are absent from the live catalog, although the local-only migration `20261020120000_guard_admin_tab_permission_changes.sql` defines them. Existing RLS policies on `role_permissions` remain in place; the missing trigger is a missing additional database guard, not proof that all users can write permissions.
-- `leo_knowledge_versions` and `leo_knowledge_source_sync` exist; the live version increment/snapshot triggers are present, and the `leo-knowledge-source-monitor` cron job is active. These effects are present despite several timestamp/name mismatches in the repository inventory. Do not replay related migrations based on timestamp differences alone.
-- The HR tables show table-level privileges for `anon`, but the inspected HR RLS policy set contains no `anon` policies. RLS currently remains the row-access boundary; the broader grants should still be reviewed for least privilege and reconciled against the original `20261027041927` SQL.
+The current production database was inspected directly:
 
-These checks show why migration reconciliation must compare source SQL, ledger names, live function definitions, triggers, policies and grants. A filename mismatch alone does not prove a migration is missing, and a ledger entry alone does not prove the intended security state is present.
+- `public.travel_bookings` has RLS enabled, but `anon` still has explicit INSERT, SELECT, UPDATE and DELETE table privileges.
+- The permissive policy `Anyone can submit a travel booking` still applies to both `anon` and `authenticated` for INSERT.
+- Authenticated users retain table CRUD grants; their access is subject to RLS policies.
+- The newer migration `20261106182053_harden_public_table_privileges_existing_postgres` revokes TRUNCATE, REFERENCES and TRIGGER capabilities; it does **not** revoke CRUD privileges. It therefore does not close the direct anonymous booking-insert path.
+- `travel_enquiry_rate_limits` and `consume_travel_enquiry_rate_limit(text,integer,integer)` do not yet exist in production.
+- The role permission `admin:manage_travels` for `admin_acct` does not yet exist.
+- `public.user_has_permission(_user_id uuid, _permission_key text)` and `public.is_global_admin(_user_id uuid)` match the named arguments used by the Stage 1.5 Edge Function and UI changes.
+- The existing `trg_sync_travel_booking_to_crm` BEFORE INSERT/UPDATE trigger calls `sync_travel_booking_to_crm()`, which creates/links the CRM lead and service journey and writes `customer_id`, `crm_lead_id` and `service_journey_id` onto the booking. Removing the duplicate Edge Function CRM writes therefore uses the existing authoritative trigger path.
+- The manager-admin permission row is required before the new management permission checks can succeed for `admin_acct`.
+
+## Migration version reconciliation
+
+The earlier review-branch filename `20261030010000_travel_enquiry_security_and_permissions.sql` is absent from the live ledger, while later migrations are already applied. It must not be replayed under that historical version.
+
+The reviewed corrective migration has therefore been re-versioned as:
+
+`20261108221500_travel_enquiry_security_and_permissions.sql`
+
+This is a new forward corrective migration, not a replay or rewrite of a historical ledger entry. It will:
+
+1. Create the private rate-limit table and service-role-only rate-limit function.
+2. Remove all direct `PUBLIC`/`anon` table privileges from `travel_bookings`.
+3. Remove the permissive public INSERT policy and replace it with manager/global-admin staff policies.
+4. Add the explicit `admin:manage_travels` permission for `admin_acct`.
+5. Correct booking update and package-blackout management policies.
+
+The existing CRM trigger and its customer/booking data are preserved. No customer or booking records are deleted or rewritten.
+
+## Release gate
+
+- Apply the new migration only after the revised PR passes GitHub Quality Gate, Deno security tests, documentation checks and Vercel preview.
+- Verify anonymous CRUD privileges are false after application, the permissive public INSERT policy is absent, the rate-limit function is executable only by `service_role`, and the manager permission is present.
+- Deploy the two reviewed Travel Edge Functions with the merged source and verify the public enquiry path end-to-end.
+- Do not run `supabase db push`, insert/delete migration ledger rows, or replay unmatched historical SQL.
+- Keep the separate `supabase_admin` default-ACL migration unapplied unless the executor has the required role authority and the change is independently reviewed.
