@@ -11,33 +11,70 @@ import { Loader2 } from 'lucide-react';
 import PropertyReviews from '@/components/reviews/PropertyReviews';
 import { usePropertyView } from '@/hooks/usePropertyViews';
 import ListingInquiryActions from '@/components/listings/ListingInquiryActions';
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 const ListingDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [listing, setListing] = useState<Listing | null>(() => id ? readPublicDataCache<Listing>(`public-listing-detail:${id}`) : null);
+  const [loading, setLoading] = useState(() => !id || !readPublicDataCache<Listing>(`public-listing-detail:${id}`));
   const [activePhoto, setActivePhoto] = useState(0);
 
   // Track view
   usePropertyView(id || '', 'listing');
 
   useEffect(() => {
-    if (id) fetchListing(id);
-  }, [id]);
-
-  const fetchListing = async (listingId: string) => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('listings')
-      .select('*')
-      .eq('id', listingId)
-      .single();
-
-    if (!error && data) {
-      setListing(data as unknown as Listing);
+    if (!id) return;
+    let active = true;
+    const cacheKey = `public-listing-detail:${id}`;
+    const cached = readPublicDataCache<Listing>(cacheKey);
+    if (cached) {
+      setListing(cached);
+      setLoading(false);
+    } else {
+      setLoading(true);
     }
-    setLoading(false);
-  };
+
+    const fetchListing = async () => {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('id', id)
+        .eq('is_published', true)
+        .maybeSingle();
+
+      if (!active) return;
+      if (!error && data) {
+        const nextListing = data as unknown as Listing;
+        writePublicDataCache(cacheKey, nextListing);
+        setListing(nextListing);
+      } else if (!cached) {
+        setListing(null);
+      }
+      setLoading(false);
+    };
+
+    void fetchListing();
+    const channel = supabase
+      .channel(`public_listing_detail_${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'listings' }, (payload) => {
+        const previous = payload.old as Record<string, unknown> | undefined;
+        const next = payload.new as Record<string, unknown> | undefined;
+        if (previous?.id === id || next?.id === id) void fetchListing();
+      })
+      .subscribe();
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchListing());
+    const stopCacheSync = subscribePublicDataCache<Listing>(cacheKey, (nextListing) => {
+      setListing(nextListing);
+      setLoading(false);
+    });
+
+    return () => {
+      active = false;
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
+  }, [id]);
 
   const formatPrice = (amount: number) =>
     new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(amount);
