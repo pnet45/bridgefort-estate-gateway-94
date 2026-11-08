@@ -19,14 +19,43 @@ interface Props {
 
 const BANK = { name: 'Zenith Bank', accountName: 'Bridgefort Homes Development Ltd', accountNumber: '1312214947' };
 
+const readTransferDraft = (key: string) => {
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    const draft = JSON.parse(raw);
+    if (!draft.savedAt || Date.now() - draft.savedAt > 2 * 60 * 60 * 1000) {
+      window.sessionStorage.removeItem(key);
+      return null;
+    }
+    return draft;
+  } catch {
+    return null;
+  }
+};
+
 const BankTransferSubmission: React.FC<Props> = ({ orderId, amountDue, orderReference, propertyDescription, paymentPlan, onComplete, onBack }) => {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  const [amount, setAmount] = useState(String(amountDue));
-  const [transferDate, setTransferDate] = useState(today);
-  const [transferReference, setTransferReference] = useState('');
+  const draftKey = `bridgefort:bank-transfer-draft:v1:${orderId}`;
+  const [amount, setAmount] = useState(() => readTransferDraft(draftKey)?.amount || String(amountDue));
+  const [transferDate, setTransferDate] = useState(() => readTransferDraft(draftKey)?.transferDate || today);
+  const [transferReference, setTransferReference] = useState(() => readTransferDraft(draftKey)?.transferReference || '');
   const [receipt, setReceipt] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [submittedId, setSubmittedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(draftKey, JSON.stringify({
+        savedAt: Date.now(),
+        amount,
+        transferDate,
+        transferReference,
+      }));
+    } catch (error) {
+      console.warn('Unable to preserve bank transfer form draft.', error);
+    }
+  }, [draftKey, amount, transferDate, transferReference]);
 
   const copyAccount = async () => {
     try {
@@ -66,6 +95,7 @@ const BankTransferSubmission: React.FC<Props> = ({ orderId, amountDue, orderRefe
         await supabase.storage.from('bank-transfer-receipts').remove([path]);
         throw new Error(data?.error || error?.message || 'Could not submit transfer');
       }
+      window.sessionStorage.removeItem(draftKey);
       setSubmittedId(data.request_id);
       onComplete(data.request_id);
     } catch (error: any) {
@@ -84,7 +114,7 @@ const BankTransferSubmission: React.FC<Props> = ({ orderId, amountDue, orderRefe
 
   return <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-5">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <Button variant="outline" onClick={onBack}>Back to checkout</Button>
+      <Button type="button" variant="outline" onClick={onBack}>Back to checkout</Button>
       <span className="text-sm text-muted-foreground">Order {orderReference}</span>
     </div>
     <Card>
@@ -109,8 +139,8 @@ const BankTransferSubmission: React.FC<Props> = ({ orderId, amountDue, orderRefe
         <div className="space-y-2"><Label htmlFor="transfer-amount">Amount transferred (₦)</Label><Input id="transfer-amount" type="number" min="1" max={amountDue} step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} /></div>
         <div className="space-y-2"><Label htmlFor="transfer-date">Transfer date</Label><Input id="transfer-date" type="date" max={today} value={transferDate} onChange={e=>setTransferDate(e.target.value)} /></div>
         <div className="space-y-2"><Label htmlFor="transfer-reference">Bank narration / transaction reference</Label><Input id="transfer-reference" value={transferReference} onChange={e=>setTransferReference(e.target.value)} maxLength={120} placeholder="Enter the reference shown by your bank" /></div>
-        <div className="space-y-2"><Label htmlFor="transfer-receipt">Receipt (JPG, PNG, WebP or PDF; max 5 MB)</Label><Input id="transfer-receipt" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={e=>{const f=e.target.files?.[0]||null; if(f&&(f.size>5*1024*1024||!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))){toast({title:'Unsupported receipt',description:'Use JPG, PNG, WebP or PDF up to 5 MB.',variant:'destructive'});e.target.value='';setReceipt(null);}else setReceipt(f);}} /></div>
-        <Button className="w-full" onClick={submit} disabled={busy}>{busy?<><Loader2 className="h-4 w-4 mr-2 animate-spin"/>Submitting…</>:<><FileUp className="h-4 w-4 mr-2"/>Submit for verification</>}</Button>
+        <div className="space-y-2"><Label htmlFor="transfer-receipt">Receipt (JPG, PNG, WebP or PDF; max 5 MB)</Label><Input id="transfer-receipt" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={e=>{const f=e.currentTarget.files?.[0]||null; e.currentTarget.value=''; if(f&&(f.size>5*1024*1024||!['image/jpeg','image/png','image/webp','application/pdf'].includes(f.type))){toast({title:'Unsupported receipt',description:'Use JPG, PNG, WebP or PDF up to 5 MB.',variant:'destructive'});setReceipt(null);}else setReceipt(f);}} /></div>
+        <Button type="button" className="w-full" onClick={submit} disabled={busy}>{busy?<><Loader2 className="h-4 w-4 mr-2 animate-spin"/>Submitting…</>:<><FileUp className="h-4 w-4 mr-2"/>Submit for verification</>}</Button>
       </CardContent>
     </Card>
   </div>;
