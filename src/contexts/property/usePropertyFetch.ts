@@ -2,32 +2,11 @@ import { useState, useCallback, useEffect, useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Property, Filters } from "./types";
 import { applyFilters } from "./propertyUtils";
+import { readPublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
 
-const PUBLIC_ESTATE_CACHE_KEY = "bridgefort:public-estates:v1";
-
-const readEstateCache = (): Property[] => {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(PUBLIC_ESTATE_CACHE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed?.properties) ? parsed.properties as Property[] : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeEstateCache = (properties: Property[]) => {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(PUBLIC_ESTATE_CACHE_KEY, JSON.stringify({
-      savedAt: Date.now(),
-      properties,
-    }));
-  } catch {
-    // Storage may be unavailable/full; the live database response still renders.
-  }
-};
+const PUBLIC_ESTATE_CACHE_KEY = "public-estates";
+const readEstateCache = (): Property[] => readPublicDataCache<Property[]>(PUBLIC_ESTATE_CACHE_KEY) || [];
+const writeEstateCache = (properties: Property[]) => writePublicDataCache(PUBLIC_ESTATE_CACHE_KEY, properties);
 
 // Handles public estate data with instant browser hydration and table-scoped refresh.
 export function usePropertyFetch(searchQuery: string, filters: Filters) {
