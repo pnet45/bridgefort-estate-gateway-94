@@ -81,7 +81,45 @@ const NewProfileForm = () => {
   const index = steps.findIndex(s => s.key === activeStep);
   const isLast = index === steps.length - 1;
   const progress = Math.round(((index + 1) / steps.length) * 100);
-  const update = useCallback((field: string, value: any) => setForm(prev => ({ ...prev, [field]: value })), []);
+  const saveKycDocument = useCallback((docKey: string, url: string, name: string, type: string) => {
+    setKycDocs((previous) => {
+      const next = { ...previous, [docKey]: { url, name, type } };
+      if (user) {
+        try {
+          window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify({
+            savedAt: Date.now(),
+            form: formRef.current,
+            kycDocs: next,
+            activeStep,
+            termsAccepted,
+          } satisfies ProfileDraft));
+        } catch (error) {
+          console.warn('Unable to immediately preserve uploaded KYC document metadata.', error);
+        }
+      }
+      return next;
+    });
+  }, [user, activeStep, termsAccepted]);
+
+  const update = useCallback((field: string, value: any) => {
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+      if (user) {
+        try {
+          window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify({
+            savedAt: Date.now(),
+            form: next,
+            kycDocs,
+            activeStep,
+            termsAccepted,
+          } satisfies ProfileDraft));
+        } catch (error) {
+          console.warn('Unable to immediately preserve profile changes.', error);
+        }
+      }
+      return next;
+    });
+  }, [user, kycDocs, activeStep, termsAccepted]);
 
   useEffect(() => {
     const load = async () => {
@@ -101,6 +139,9 @@ const NewProfileForm = () => {
         if (error) throw error;
         if (data) {
           setExistingReferralId(data.referred_by_id || null);
+          // A browser file picker can suspend/recreate the page. A locally saved draft
+          // is newer than the last database save, so never overwrite it with stale DB data.
+          if (draft) return;
           const banking = (data.banking_details || '').split(' - ');
           setForm(prev => ({ ...prev,
             firstName: data.first_name || '', lastName: data.last_name || '', dateOfBirth: data.date_of_birth || '', gender: data.gender || '', maritalStatus: data.marital_status || '', spouseName: data.spouse_name || '', nationality: data.nationality || '', languagesSpoken: data.languages_spoken || [], phoneNumber: data.phone_number || '', stateOfOrigin: data.state_of_origin || '', localGovernment: data.local_government || '', address: data.address || '', currentResidence: data.current_residence || '',
@@ -109,7 +150,7 @@ const NewProfileForm = () => {
           }));
           setKycDocs((data.kyc_docs as any) || {}); setTermsAccepted(!!data.terms_accepted);
         }
-      } catch (error) { console.error('Profile load error:', error); toast({ title: 'Could not load profile', description: 'Please refresh and try again.', variant: 'destructive' }); }
+      } catch (error) { console.error('Profile load error:', error); toast({ title: 'Could not load profile', description: 'Your saved browser draft is still available. Please retry the database load.', variant: 'destructive' }); }
       finally { setLoading(false); }
     };
     load();
@@ -240,7 +281,7 @@ const NewProfileForm = () => {
   const section = () => {
     switch (activeStep) {
       case 'personal': return <div className="grid gap-5 md:grid-cols-2"><Field label="First name" name="firstName" required /><Field label="Last name" name="lastName" required /><Field label="Date of birth" name="dateOfBirth" type="date" required /><SelectField label="Gender" name="gender" options={['Male', 'Female', 'Other']} required /><SelectField label="Marital status" name="maritalStatus" options={['Single', 'Married', 'Divorced', 'Widowed']} /><Field label="Spouse name" name="spouseName" /><Field label="Nationality" name="nationality" /><Field label="Phone number" name="phoneNumber" required /><Field label="State of origin" name="stateOfOrigin" /><Field label="Local government" name="localGovernment" /><TextAreaField label="Residential address" name="address" /><TextAreaField label="Current residence" name="currentResidence" /></div>;
-      case 'identity': return <div className="grid gap-5 md:grid-cols-2"><SelectField label="ID type" name="idType" options={['International Passport', 'National ID Card', 'NIN Slip', "Voter's Card", "Driver's Licence", 'Work Permit', 'Resident Permit', 'Others']} required /><Field label="ID number" name="idNumber" required /><Field label="Country of issue" name="idCountryOfIssue" /><Field label="Date of issue" name="idDateOfIssue" type="date" /><Field label="Expiry date" name="idExpiry" type="date" /><Field label="Issuing authority" name="idIssuingAuthority" /><div className="md:col-span-2 grid gap-4 md:grid-cols-2"><KYCUploadField label="Passport photograph" bucket="kyc-documents" userId={user?.id || ''} docKey="passport_photo" existingUrl={kycDocs.passport_photo?.url} onUploaded={(url, name, type) => setKycDocs(p => ({ ...p, passport_photo: { url, name, type } }))} /><KYCUploadField label="Identification document" bucket="kyc-documents" userId={user?.id || ''} docKey="identity_document" existingUrl={kycDocs.identity_document?.url} onUploaded={(url, name, type) => setKycDocs(p => ({ ...p, identity_document: { url, name, type } }))} /></div></div>;
+      case 'identity': return <div className="grid gap-5 md:grid-cols-2"><SelectField label="ID type" name="idType" options={['International Passport', 'National ID Card', 'NIN Slip', "Voter's Card", "Driver's Licence", 'Work Permit', 'Resident Permit', 'Others']} required /><Field label="ID number" name="idNumber" required /><Field label="Country of issue" name="idCountryOfIssue" /><Field label="Date of issue" name="idDateOfIssue" type="date" /><Field label="Expiry date" name="idExpiry" type="date" /><Field label="Issuing authority" name="idIssuingAuthority" /><div className="md:col-span-2 grid gap-4 md:grid-cols-2"><KYCUploadField label="Passport photograph" bucket="kyc-documents" userId={user?.id || ''} docKey="passport_photo" existingUrl={kycDocs.passport_photo?.url} onUploaded={(url, name, type) => saveKycDocument('passport_photo', url, name, type)} /><KYCUploadField label="Identification document" bucket="kyc-documents" userId={user?.id || ''} docKey="identity_document" existingUrl={kycDocs.identity_document?.url} onUploaded={(url, name, type) => saveKycDocument('identity_document', url, name, type)} /></div></div>;
       case 'employment': return <div className="grid gap-5 md:grid-cols-2"><Field label="Occupation" name="occupation" required /><SelectField label="Employment status" name="employmentStatus" options={['Employed', 'Self-employed', 'Business owner', 'Student', 'Retired', 'Unemployed']} /><Field label="Employer / business name" name="employerName" /><Field label="Role / position" name="employmentRole" /><Field label="Employer country" name="employerCountry" /><TextAreaField label="Employer / business address" name="employerAddress" /><TextAreaField label="Nature of business" name="natureOfBusiness" /><div className="md:col-span-2 flex items-center gap-3 rounded-lg border p-4"><Checkbox checked={!!form.isOrganization} onCheckedChange={v => update('isOrganization', !!v)} /><Label>Buying / registering as an organisation</Label></div>{form.isOrganization && <><Field label="Company name" name="companyName" /><Field label="Company registration number" name="companyRegistrationNumber" /><TextAreaField label="Company address" name="companyAddress" /><Field label="Country of incorporation" name="incorporationCountry" /><Field label="Date of incorporation" name="incorporationDate" type="date" /><TextAreaField label="Nature of corporate business" name="natureOfCorporateBusiness" /><Field label="Sales status" name="salesStatus" /></>}<div className="md:col-span-2 border-t pt-5"><h3 className="font-semibold mb-4">Next of kin</h3><div className="grid gap-5 md:grid-cols-2"><Field label="Full name" name="nextOfKinName" /><Field label="Relationship" name="nextOfKinRelationship" /><Field label="Phone" name="nextOfKinPhone" /><Field label="Email" name="nextOfKinEmail" /><TextAreaField label="Address" name="nextOfKinAddress" /></div></div></div>;
       case 'financial': return <div className="grid gap-5 md:grid-cols-2"><SelectField label="Source of income / funds" name="sourceOfIncome" options={['Salary', 'Business Income', 'Gift', 'Bank Loan', 'Other Loan', 'Inheritance', 'Investment Return', 'Others']} required /><SelectField label="Annual income range" name="annualIncome" options={['Below ₦1M', '₦1M - ₦5M', '₦6M - ₦20M', 'Above ₦20M']} required /><Field label="TIN number" name="tinNumber" /><Field label="NIN number" name="ninNumber" /><Field label="Bank name" name="bankName" /><Field label="Account number" name="accountNumber" /><Field label="Account name" name="accountName" /><div className="md:col-span-2 flex items-center gap-3 rounded-lg border p-4"><Checkbox checked={!!form.isForeigner} onCheckedChange={v => update('isForeigner', !!v)} /><Label>I am a foreign national</Label></div>{form.isForeigner && <><Field label="Residence permit" name="residencePermit" /><Field label="Visa status" name="visaStatus" /></>}</div>;
       case 'aml': return <div className="space-y-5"><div className="rounded-xl border p-5 space-y-4"><div className="flex items-center gap-3"><ShieldCheck className="h-5 w-5" /><div><h3 className="font-semibold">AML / CFT declaration</h3><p className="text-sm text-muted-foreground">Provide accurate compliance information.</p></div></div><div className="flex items-center gap-3"><Checkbox checked={!!form.isPoliticallyExposed} onCheckedChange={v => update('isPoliticallyExposed', !!v)} /><Label>I am a politically exposed person (PEP)</Label></div>{form.isPoliticallyExposed && <TextAreaField label="PEP details" name="politicalExposureDetails" placeholder="Provide relevant position, country and relationship details." />}<div className="flex items-center gap-3"><Checkbox checked={!!form.hasFinancialCrimesHistory} onCheckedChange={v => update('hasFinancialCrimesHistory', !!v)} /><Label>I have a financial crimes history</Label></div>{form.hasFinancialCrimesHistory && <TextAreaField label="Financial crimes details" name="financialCrimesDetails" />}</div></div>;
