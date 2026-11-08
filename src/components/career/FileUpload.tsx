@@ -58,7 +58,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               </div>
               <div className="text-sm text-gray-600">
                 <label
-                  htmlFor="resume"
+                  htmlFor={inputId}
                   className="cursor-pointer text-estate-blue hover:text-estate-darkBlue font-medium"
                 >
                   Click to upload
