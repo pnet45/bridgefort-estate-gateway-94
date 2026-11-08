@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, useId } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { ContentItem, ContentPage, ContentType } from '@/types/content';
-import { readPublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 interface Options {
   page?: ContentPage;
@@ -89,7 +89,15 @@ export function useContentItems(opts: Options = {}) {
         if (matchesCurrentFilter(previous) || matchesCurrentFilter(next)) void fetchItems();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchItems());
+    const stopCacheSync = canCache
+      ? subscribePublicDataCache<ContentItem[]>(cacheKey, setItems)
+      : () => undefined;
+    return () => {
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
   }, [channelId, fetchItems, opts.page, contentTypeKey, opts.includeUnpublished, opts.featuredOnly]);
 
   return { items, loading, error, refresh: fetchItems };
