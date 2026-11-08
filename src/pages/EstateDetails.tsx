@@ -207,9 +207,18 @@ const EstateDetails: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center pt-[88px] lg:pt-[104px]">
-          <Loader2 className="h-8 w-8 animate-spin text-estate-blue" />
-        </div>
+        <main className="container-custom flex-1 space-y-8 px-4 pb-16 pt-[112px]">
+          <div className="h-8 w-40 animate-pulse rounded bg-muted" />
+          <div className="grid gap-8 lg:grid-cols-[1.4fr_.6fr]">
+            <div className="space-y-4">
+              <div className="aspect-[16/9] animate-pulse rounded-3xl bg-muted" />
+              <div className="h-8 w-3/4 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+              <div className="space-y-2 pt-3"><div className="h-4 w-full animate-pulse rounded bg-muted" /><div className="h-4 w-5/6 animate-pulse rounded bg-muted" /><div className="h-4 w-2/3 animate-pulse rounded bg-muted" /></div>
+            </div>
+            <div className="h-80 animate-pulse rounded-3xl bg-muted" />
+          </div>
+        </main>
         <Footer />
       </div>
     );
