@@ -78,7 +78,9 @@ create policy "travel_bookings_staff_insert"
     or public.user_has_permission(auth.uid(), 'admin:manage_travels')
   );
 
-revoke insert on table public.travel_bookings from anon;
+-- Remove every direct anonymous table privilege, not only INSERT. The public
+-- enquiry Edge Function uses service_role and remains the sole public write path.
+revoke all privileges on table public.travel_bookings from public, anon;
 grant insert on table public.travel_bookings to authenticated, service_role;
 
 -- A view permission is not a management permission. Only manager admins receive
