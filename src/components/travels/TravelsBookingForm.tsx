@@ -62,6 +62,7 @@ const TravelsBookingForm: React.FC<Props> = ({
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [blackouts, setBlackouts] = useState<Blackout[]>([]);
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   // ============================================================
   // reCAPTCHA TEMPORARILY DISABLED
@@ -278,6 +279,7 @@ const TravelsBookingForm: React.FC<Props> = ({
             package: result.data.package,
             destination: result.data.destination || null,
             notes: result.data.notes || null,
+            website: honeypotRef.current?.value ?? "",
 
             // ==================================================
             // reCAPTCHA TEMPORARILY DISABLED
@@ -474,6 +476,20 @@ const TravelsBookingForm: React.FC<Props> = ({
               onSubmit={handleSubmit}
               className="grid grid-cols-1 md:grid-cols-2 gap-5"
             >
+              <div
+                aria-hidden="true"
+                className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden"
+              >
+                <Label htmlFor="travel-website">Leave this field empty</Label>
+                <Input
+                  ref={honeypotRef}
+                  id="travel-website"
+                  name="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+              </div>
 
               {/* =================================================
                   FULL NAME

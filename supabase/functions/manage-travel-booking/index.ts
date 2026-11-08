@@ -44,13 +44,23 @@ serve(async (req) => {
     if (userErr || !userData.user) return response({ error: "Invalid session" }, 401);
 
     const userId = userData.user.id;
-    const { data: canManageBookings } = await supabase.rpc("user_has_permission", {
+    const { data: canManageBookings, error: permissionError } = await supabase.rpc("user_has_permission", {
       _user_id: userId,
-      _permission: "booking.manage",
+      _permission_key: "admin:manage_travels",
     });
-    const { data: isGlobalAdmin } = await supabase.rpc("is_global_admin", { _user_id: userId });
+    if (permissionError) {
+      console.error("travel booking permission check failed", permissionError);
+      return response({ error: "Unable to verify travel-management permissions" }, 503);
+    }
+
+    const { data: isGlobalAdmin, error: globalAdminError } = await supabase.rpc("is_global_admin", { _user_id: userId });
+    if (globalAdminError) {
+      console.error("global-admin permission check failed", globalAdminError);
+      return response({ error: "Unable to verify travel-management permissions" }, 503);
+    }
+
     if (!canManageBookings && !isGlobalAdmin) {
-      return response({ error: "Forbidden — booking.manage permission required" }, 403);
+      return response({ error: "Forbidden — travel-management permission required" }, 403);
     }
 
     const body = await req.json();
@@ -66,8 +76,7 @@ serve(async (req) => {
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resend = resendKey ? new Resend(resendKey) : null;
-    const origin = req.headers.get("origin") || "https://bridgeforthomes.com";
-    const statusUrl = `${origin}/travels/booking/${booking.confirmation_token}`;
+    const statusUrl = `https://bridgeforthomes.com/travels/booking/${booking.confirmation_token}`;
 
     if (action === "update_status") {
       const status = String(body.status ?? "");
@@ -94,7 +103,7 @@ serve(async (req) => {
           resend,
           eventKey: `travel_booking_status:${booking.id}:${status}`,
           recipientEmail: booking.email,
-          recipientUserId: booking.user_id ?? null,
+          recipientUserId: booking.customer_id ?? null,
           recipientName: booking.name,
           templateKey: "travel_booking_status",
           sourceFunction: "manage-travel-booking",
@@ -120,7 +129,7 @@ serve(async (req) => {
         resend,
         eventKey: `travel_booking_message:${booking.id}:${userId}:${Date.now()}`,
         recipientEmail: booking.email,
-        recipientUserId: booking.user_id ?? null,
+        recipientUserId: booking.customer_id ?? null,
         recipientName: booking.name,
         templateKey: "travel_booking_message",
         sourceFunction: "manage-travel-booking",
@@ -168,7 +177,7 @@ serve(async (req) => {
         resend,
         eventKey: `travel_booking_confirmation_resend:${booking.id}:${new Date().toISOString().slice(0, 10)}`,
         recipientEmail: booking.email,
-        recipientUserId: booking.user_id ?? null,
+        recipientUserId: booking.customer_id ?? null,
         recipientName: booking.name,
         templateKey: "travel_booking_confirmation_resend",
         sourceFunction: "manage-travel-booking",

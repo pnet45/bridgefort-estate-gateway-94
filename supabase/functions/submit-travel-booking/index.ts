@@ -45,7 +45,31 @@ serve(async (req) => {
       }
     }
 
-    const body = await req.json();
+    const contentLength = Number(req.headers.get("content-length") || 0);
+    if (contentLength > 16_384) return json({ error: "Enquiry is too large" }, 413);
+
+    // Enforce the limit on the actual body as well; Content-Length may be absent.
+    const rawBody = await req.text();
+    if (new TextEncoder().encode(rawBody).byteLength > 16_384) {
+      return json({ error: "Enquiry is too large" }, 413);
+    }
+
+    let body: Record<string, unknown>;
+    try {
+      const parsed = JSON.parse(rawBody);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return json({ error: "Invalid enquiry payload" }, 400);
+      }
+      body = parsed as Record<string, unknown>;
+    } catch {
+      return json({ error: "Invalid JSON payload" }, 400);
+    }
+
+    // Honeypot: real visitors never see or fill this field.
+    if (String(body?.website ?? body?.company_website ?? "").trim()) {
+      return json({ success: true }, 202);
+    }
+
     const name = String(body?.name ?? "").trim();
     const email = String(body?.email ?? "").trim().toLowerCase();
     const phone = String(body?.phone ?? "").trim();
@@ -65,6 +89,76 @@ serve(async (req) => {
     if (!packageName || packageName.length > 100) return json({ error: "Travel package is required" }, 400);
     if (destination && destination.length > 120) return json({ error: "Destination is too long" }, 400);
     if (notes && notes.length > 1000) return json({ error: "Notes are too long" }, 400);
+
+    // Persistent per-IP throttling (15-minute window, 5 attempts). The IP is
+    // hashed before storage; raw addresses are never written to the database.
+    const forwardedFor = req.headers.get("cf-connecting-ip")
+      || req.headers.get("x-real-ip")
+      || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      || "unknown";
+    const hmacKey = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    const makeRateKey = async (material: string) => {
+      const digest = await crypto.subtle.sign(
+        "HMAC",
+        hmacKey,
+        new TextEncoder().encode(material),
+      );
+      return Array.from(new Uint8Array(digest))
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+    };
+
+    // Apply independent IP and email limits. The email limit prevents easy
+    // bypass by rotating/spoofing forwarded-IP headers; only keyed hashes persist.
+    const rateKeyMaterials = forwardedFor === "unknown"
+      ? [`email:${email}`]
+      : [`ip:${forwardedFor}`, `email:${email}`];
+    for (const material of rateKeyMaterials) {
+      const rateKey = await makeRateKey(material);
+      const { data: allowed, error: rateLimitError } = await supabase.rpc(
+        "consume_travel_enquiry_rate_limit",
+        { _client_key: rateKey, _window_seconds: 900, _max_requests: 5 },
+      );
+      if (rateLimitError) {
+        console.error("travel enquiry rate-limit check failed", rateLimitError);
+        return json({ error: "Enquiry service is temporarily unavailable. Please try again shortly." }, 503);
+      }
+      if (allowed !== true) {
+        return json({ error: "Too many enquiries. Please try again in 15 minutes." }, 429);
+      }
+    }
+
+    // Optional Cloudflare Turnstile verification. Enforcement is activated only
+    // when TURNSTILE_ENABLED=true and TURNSTILE_SECRET_KEY is configured.
+    const turnstileEnabled = Deno.env.get("TURNSTILE_ENABLED") === "true";
+    const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
+    if (turnstileEnabled && !turnstileSecret) {
+      return json({ error: "Security check is temporarily unavailable. Please try again shortly." }, 503);
+    }
+    if (turnstileEnabled && turnstileSecret) {
+      const captchaToken = String(body?.captcha_token ?? "").trim();
+      if (!captchaToken) return json({ error: "Please complete the security check." }, 403);
+
+      const verification = new URLSearchParams({
+        secret: turnstileSecret,
+        response: captchaToken,
+      });
+      if (forwardedFor !== "unknown") verification.set("remoteip", forwardedFor);
+      const captchaResponse = await fetch(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        { method: "POST", body: verification },
+      );
+      const captchaResult = await captchaResponse.json().catch(() => null);
+      if (!captchaResponse.ok || captchaResult?.success !== true) {
+        return json({ error: "Security check failed. Please try again." }, 403);
+      }
+    }
 
     const { data: blackout, error: blackoutError } = await supabase
       .from("travel_package_blackouts")
@@ -104,109 +198,16 @@ serve(async (req) => {
 
     if (insertError) throw insertError;
 
-    // Link every travel booking into the existing CRM. This is deliberately
-    // non-blocking: a CRM failure must never lose a valid booking.
-    let crmLeadId: string | null = null;
-    let serviceJourneyId: string | null = null;
-    try {
-      if (customerId) {
-        const { data: existingLead, error: existingLeadError } = await supabase
-          .from("crm_leads")
-          .select("id")
-          .eq("customer_id", customerId)
-          .eq("source", "travel_booking")
-          .eq("source_record_type", "travel_booking")
-          .eq("source_record_id", booking.id)
-          .maybeSingle();
-        if (existingLeadError) throw existingLeadError;
-        crmLeadId = existingLead?.id ?? null;
-      }
-
-      const leadPayload = {
-        name,
-        email,
-        phone,
-        customer_id: customerId,
-        source: "travel_booking",
-        source_record_type: "travel_booking",
-        source_record_id: booking.id,
-        estate_interest: destination || packageName,
-        notes: notes || `Travel enquiry for ${packageName}${destination ? ` to ${destination}` : ""}.`,
-        priority: "medium",
-        updated_at: new Date().toISOString(),
-      };
-
-      if (crmLeadId) {
-        const { error } = await supabase.from("crm_leads").update(leadPayload).eq("id", crmLeadId);
-        if (error) throw error;
-      } else {
-        const { data: createdLead, error } = await supabase
-          .from("crm_leads")
-          .insert({ ...leadPayload, status: "new" })
-          .select("id")
-          .single();
-        if (error) throw error;
-        crmLeadId = createdLead.id;
-        const { error: activityError } = await supabase.from("crm_lead_activities").insert({
-          lead_id: crmLeadId,
-          activity_type: "travel_booking_created",
-          description: `Travel booking received: ${packageName}${destination ? ` — ${destination}` : ""}.`,
-          created_by: null,
-        });
-        if (activityError) console.error("travel booking CRM activity:", activityError);
-      }
-
-      const { data: existingJourney, error: journeyLookupError } = await supabase
-        .from("service_journeys")
-        .select("id")
-        .eq("source", "travel_booking")
-        .eq("source_record_type", "travel_booking")
-        .eq("source_record_id", booking.id)
-        .maybeSingle();
-      if (journeyLookupError) throw journeyLookupError;
-      serviceJourneyId = existingJourney?.id ?? null;
-
-      const journeyPayload = {
-        customer_id: customerId,
-        lead_id: crmLeadId,
-        service_type: "TRAVEL",
-        status: "NEW",
-        priority: "NORMAL",
-        source: "travel_booking",
-        source_record_type: "travel_booking",
-        source_record_id: booking.id,
-        travel_booking_id: booking.id,
-        notes: `Package: ${packageName}; Destination: ${destination || "not specified"}; ${departureDate} to ${returnDate}; Travelers: ${travelers}.`,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (serviceJourneyId) {
-        const { error } = await supabase.from("service_journeys").update(journeyPayload).eq("id", serviceJourneyId);
-        if (error) throw error;
-      } else {
-        const { data: createdJourney, error } = await supabase
-          .from("service_journeys")
-          .insert(journeyPayload)
-          .select("id")
-          .single();
-        if (error) throw error;
-        serviceJourneyId = createdJourney.id;
-      }
-
-      const { error: bookingLinkError } = await supabase
-        .from("travel_bookings")
-        .update({ customer_id: customerId, crm_lead_id: crmLeadId, service_journey_id: serviceJourneyId })
-        .eq("id", booking.id);
-      if (bookingLinkError) throw bookingLinkError;
-    } catch (crmError) {
-      console.error("travel booking CRM sync failed; booking remains valid", crmError);
-    }
+    // The database BEFORE INSERT trigger is the single authoritative CRM
+    // synchronisation path. It creates/links the lead and service journey and
+    // writes their IDs onto this booking. Do not repeat those writes here.
+    const crmLeadId: string | null = booking.crm_lead_id ?? null;
+    const serviceJourneyId: string | null = booking.service_journey_id ?? null;
 
     const resendKey = Deno.env.get("RESEND_API_KEY");
     const resend = resendKey ? new Resend(resendKey) : null;
     const from = "Bridgefort Travels <travels@bridgeforthomes.com>";
-    const origin = req.headers.get("origin") || "https://bridgeforthomes.com";
-    const statusUrl = `${origin}/travels/booking/${booking.confirmation_token}`;
+    const statusUrl = `https://bridgeforthomes.com/travels/booking/${booking.confirmation_token}`;
 
     // Put the booking directly into the admin mail centre so the request is
     // visible even when external mailbox sync is delayed.
