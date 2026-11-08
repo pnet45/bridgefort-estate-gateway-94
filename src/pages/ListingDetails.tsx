@@ -84,9 +84,14 @@ const ListingDetails = () => {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center pt-20">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
+        <main className="container-custom flex-1 space-y-6 px-4 pb-16 pt-[112px]">
+          <div className="h-5 w-36 animate-pulse rounded bg-muted" />
+          <div className="h-64 animate-pulse rounded-2xl bg-muted sm:h-96 lg:h-[500px]" />
+          <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+            <div className="space-y-4"><div className="h-8 w-3/4 animate-pulse rounded bg-muted" /><div className="h-4 w-1/2 animate-pulse rounded bg-muted" /><div className="h-4 w-full animate-pulse rounded bg-muted" /><div className="h-4 w-5/6 animate-pulse rounded bg-muted" /></div>
+            <div className="h-64 animate-pulse rounded-2xl bg-muted" />
+          </div>
+        </main>
         <Footer />
       </div>
     );
