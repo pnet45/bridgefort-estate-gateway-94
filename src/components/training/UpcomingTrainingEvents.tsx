@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { usePublicTrainingEvents } from '@/hooks/usePublicTrainingEvents';
 import TrainingEventCard from './TrainingEventCard';
 import TrainingEventFilters from './TrainingEventFilters';
@@ -8,29 +8,15 @@ const UpcomingTrainingEvents = () => {
   const { events: allEvents, loading } = usePublicTrainingEvents();
   const today = new Date().toISOString().split('T')[0];
   const events = allEvents.filter(event => event.date >= today);
-  const [filteredEvents, setFilteredEvents] = useState<typeof events>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-
-  useEffect(() => {
-    applyFilters();
-  }, [allEvents, selectedCategory, startDate, endDate]);
-
-  const applyFilters = () => {
-    let filtered = [...events];
-
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(event => event.category === selectedCategory);
-    }
-    if (startDate) {
-      filtered = filtered.filter(event => new Date(event.date) >= new Date(startDate));
-    }
-    if (endDate) {
-      filtered = filtered.filter(event => new Date(event.date) <= new Date(endDate));
-    }
-    setFilteredEvents(filtered);
-  };
+  const filteredEvents = events.filter((event) => {
+    if (selectedCategory !== 'all' && event.category !== selectedCategory) return false;
+    if (startDate && new Date(event.date) < new Date(startDate)) return false;
+    if (endDate && new Date(event.date) > new Date(endDate)) return false;
+    return true;
+  });
 
   if (loading && allEvents.length === 0) {
     return (
