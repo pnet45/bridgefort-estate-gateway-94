@@ -85,7 +85,22 @@ const Gallery = lazy(() => import('@/pages/Gallery'));
 
 import './App.css';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Keep database-backed page data visible during navigation and brief
+      // network interruptions; table-specific Realtime listeners invalidate
+      // only the dataset that actually changed.
+      staleTime: 60 * 1000,
+      gcTime: 24 * 60 * 60 * 1000,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchOnMount: true,
+      retry: 1,
+      networkMode: 'online',
+    },
+  },
+});
 
 function AppLayout() {
   const location = useLocation();
