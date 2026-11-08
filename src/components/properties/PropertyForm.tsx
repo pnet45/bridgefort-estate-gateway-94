@@ -31,6 +31,21 @@ interface PropertyFormProps {
   };
 }
 
+const readEstateFormDraft = (key: string) => {
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) return null;
+    const draft = JSON.parse(raw);
+    if (!draft.savedAt || Date.now() - draft.savedAt > 4 * 60 * 60 * 1000) {
+      window.sessionStorage.removeItem(key);
+      return null;
+    }
+    return draft;
+  } catch {
+    return null;
+  }
+};
+
 export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, onSuccess, initialCategory }) => {
   const isEditing = !!estate;
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,6 +58,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
   const initialCategoryRef = useRef(initialCategory);
   initialCategoryRef.current = initialCategory;
   const initializedFormKey = useRef<string | null>(null);
+  const [hydratedFormKey, setHydratedFormKey] = useState<string | null>(null);
+  const formDraftKey = `bridgefort:estate-form-draft:v1:${estate?.id || `new-${initialCategory?.property_category || 'default'}`}`;
   const [formData, setFormData] = useState<EstateFormData>({
     name: '',
     location: '',
@@ -84,34 +101,63 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
   useEffect(() => {
     const currentEstate = estateRef.current;
     const currentCategory = initialCategoryRef.current;
+    const formKey = currentEstate
+      ? currentEstate.id
+      : `new:${currentCategory?.property_category || 'default'}`;
+    if (initializedFormKey.current === formKey) return;
+    initializedFormKey.current = formKey;
+
+    const draftKey = `bridgefort:estate-form-draft:v1:${currentEstate?.id || `new-${currentCategory?.property_category || 'default'}`}`;
+    const draft = readEstateFormDraft(draftKey);
 
     if (currentEstate) {
-      if (initializedFormKey.current === currentEstate.id) return;
-      initializedFormKey.current = currentEstate.id;
-      setFormData({
-        ...currentEstate,
-        media_files: []
-      });
-      setPreviewImages(currentEstate.media || []);
-      setExistingSubFormUrl(currentEstate.sub_form || '');
-      setSizeUnit((currentEstate as any).size_unit || 'sqm');
-      setIsSoldOut((currentEstate as any).is_sold_out || false);
+      const base = { ...currentEstate, media_files: [] };
+      const restored = { ...base, ...(draft?.formData || {}), media_files: [] };
+      setFormData(restored);
+      setPreviewImages(restored.media || []);
+      setExistingSubFormUrl(draft?.existingSubFormUrl ?? restored.sub_form ?? '');
+      setSizeUnit(draft?.sizeUnit || (currentEstate as any).size_unit || 'sqm');
+      setIsSoldOut(draft?.isSoldOut ?? (currentEstate as any).is_sold_out ?? false);
+      if (draft?.docPricing) setDocPricing(draft.docPricing);
       void fetchDocPricing(currentEstate.id);
-      return;
-    }
-
-    const newFormKey = `new:${currentCategory?.property_category || 'default'}`;
-    if (initializedFormKey.current === newFormKey) return;
-    initializedFormKey.current = newFormKey;
-    if (currentCategory) {
+    } else {
       setFormData(prev => ({
         ...prev,
-        property_category: currentCategory.property_category,
-        is_for_sale: currentCategory.is_for_sale ?? prev.is_for_sale,
-        is_for_rent: currentCategory.is_for_rent ?? prev.is_for_rent,
+        ...(currentCategory ? {
+          property_category: currentCategory.property_category,
+          is_for_sale: currentCategory.is_for_sale ?? prev.is_for_sale,
+          is_for_rent: currentCategory.is_for_rent ?? prev.is_for_rent,
+        } : {}),
+        ...(draft?.formData || {}),
+        media_files: [],
       }));
+      setPreviewImages(draft?.formData?.media || []);
+      setExistingSubFormUrl(draft?.existingSubFormUrl || '');
+      setSizeUnit(draft?.sizeUnit || 'sqm');
+      setIsSoldOut(Boolean(draft?.isSoldOut));
+      if (draft?.docPricing) setDocPricing(draft.docPricing);
     }
+    setHydratedFormKey(draftKey);
   }, [estate?.id, initialCategory?.property_category, initialCategory?.is_for_sale, initialCategory?.is_for_rent]);
+
+  // Persist the editable fields and completed uploads for this tab session.
+  // Native File objects cannot survive a browser reload, so they are excluded;
+  // users can reselect any file that was still uploading when the tab restarted.
+  useEffect(() => {
+    if (hydratedFormKey !== formDraftKey) return;
+    try {
+      window.sessionStorage.setItem(formDraftKey, JSON.stringify({
+        savedAt: Date.now(),
+        formData: { ...formData, media_files: [] },
+        sizeUnit,
+        isSoldOut,
+        existingSubFormUrl,
+        docPricing,
+      }));
+    } catch (error) {
+      console.warn('Unable to preserve estate form draft.', error);
+    }
+  }, [hydratedFormKey, formDraftKey, formData, sizeUnit, isSoldOut, existingSubFormUrl, docPricing]);
 
   const fetchDocPricing = async (estateId: string) => {
     try {
@@ -346,6 +392,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         if (pricingError) console.error('Error saving doc pricing:', pricingError);
       }
       
+      window.sessionStorage.removeItem(formDraftKey);
       onSuccess();
       
     } catch (error: any) {
