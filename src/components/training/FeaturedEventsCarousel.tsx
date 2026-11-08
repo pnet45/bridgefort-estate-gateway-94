@@ -1,38 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Clock, Users } from 'lucide-react';
-import { getUpcomingEvents } from './UpcomingEvents';
+import { usePublicTrainingEvents } from '@/hooks/usePublicTrainingEvents';
 import TrainingRegistrationForm from './TrainingRegistrationForm';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface TrainingEvent {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  image: string | null;
-  capacity: string;
-  category: string;
-  featured?: boolean;
-}
-
 const FeaturedEventsCarousel = () => {
-  const [featuredEvents, setFeaturedEvents] = useState<TrainingEvent[]>([]);
+  const { events, loading } = usePublicTrainingEvents();
+  const featuredEvents = events.filter(event => event.featured);
   const [registrationEvent, setRegistrationEvent] = useState<null | {
     id: string;
     title: string;
     date: string;
   }>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      const events = await getUpcomingEvents();
-      setFeaturedEvents(events.filter(event => event.featured));
-    };
-    fetchEvents();
-  }, []);
 
   const openRegistration = (event: {
     id: string;
@@ -54,6 +35,16 @@ const FeaturedEventsCarousel = () => {
 
     return () => clearInterval(interval);
   }, [featuredEvents.length]);
+  if (loading && events.length === 0) {
+    return (
+      <section className="py-16 bg-white" aria-label="Loading featured events">
+        <div className="container-custom">
+          <div className="mb-10 h-8 w-64 mx-auto animate-pulse rounded bg-slate-200" />
+          <div className="h-72 animate-pulse rounded-2xl bg-slate-200" />
+        </div>
+      </section>
+    );
+  }
   if (featuredEvents.length === 0) return null;
   return <section className="py-16 bg-white">
       <div className="container-custom">

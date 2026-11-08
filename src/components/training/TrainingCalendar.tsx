@@ -1,35 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { usePublicTrainingEvents } from '@/hooks/usePublicTrainingEvents';
 import { Badge } from '@/components/ui/badge';
 import { format, parseISO } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Calendar as CalendarIcon, MapPin, Users, Clock } from 'lucide-react';
 
-interface TrainingEvent {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  category: string;
-  image: string | null;
-  capacity: string;
-  description?: string | null;
-}
-
 const TrainingCalendar = () => {
-  const [events, setEvents] = useState<TrainingEvent[]>([]);
+  const { events, loading } = usePublicTrainingEvents();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [eventDates, setEventDates] = useState<Date[]>([]);
-  const [selectedDayEvents, setSelectedDayEvents] = useState<TrainingEvent[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<TrainingEvent | null>(null);
+  const eventDates = events.map(event => parseISO(event.date));
+  const [selectedDayEvents, setSelectedDayEvents] = useState<typeof events>([]);
+  const [selectedEvent, setSelectedEvent] = useState<(typeof events)[number] | null>(null);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
   useEffect(() => {
     if (selectedDate) {
@@ -38,19 +22,6 @@ const TrainingCalendar = () => {
       setSelectedDayEvents(dayEvents);
     }
   }, [selectedDate, events]);
-
-  const fetchEvents = async () => {
-    const { data, error } = await supabase
-      .from('training_events')
-      .select('*')
-      .order('date', { ascending: true });
-
-    if (!error && data) {
-      setEvents(data);
-      const dates = data.map(event => parseISO(event.date));
-      setEventDates(dates);
-    }
-  };
 
   const modifiers = {
     eventDay: eventDates
@@ -64,6 +35,18 @@ const TrainingCalendar = () => {
       borderRadius: '50%'
     }
   };
+
+  if (loading && events.length === 0) {
+    return (
+      <div className="container-custom section-padding" aria-label="Loading training calendar">
+        <div className="mb-12 h-8 w-72 mx-auto animate-pulse rounded bg-slate-200" />
+        <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2">
+          <div className="h-80 animate-pulse rounded-xl bg-slate-200" />
+          <div className="h-80 animate-pulse rounded-xl bg-slate-200" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container-custom section-padding">
