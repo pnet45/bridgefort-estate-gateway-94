@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Plot } from '@/contexts/ecommerce/types';
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 interface EstateProperty {
   id: string;
@@ -106,10 +107,13 @@ const EstateDetails: React.FC = () => {
   const { user } = useAuth();
   const { addToCart } = useEcommerce();
 
-  const [loading, setLoading] = useState(true);
+  const [estateRow, setEstateRow] = useState<any>(() => id ? readPublicDataCache<any>(`public-estate-detail:${id}`) : null);
+  const [property, setProperty] = useState<EstateProperty | null>(() => {
+    const cached = id ? readPublicDataCache<any>(`public-estate-detail:${id}`) : null;
+    return cached ? mapEstateRowToProperty(cached) : null;
+  });
+  const [loading, setLoading] = useState(() => !id || !readPublicDataCache<any>(`public-estate-detail:${id}`));
   const [notFound, setNotFound] = useState(false);
-  const [estateRow, setEstateRow] = useState<any>(null);
-  const [property, setProperty] = useState<EstateProperty | null>(null);
   const [relatedEstates, setRelatedEstates] = useState<EstateProperty[]>([]);
   const [profileCompleted, setProfileCompleted] = useState(false);
   const [fullscreenMedia, setFullscreenMedia] = useState<string | null>(null);
@@ -124,31 +128,62 @@ const EstateDetails: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
+    let active = true;
+    const cacheKey = `public-estate-detail:${id}`;
+    const cached = readPublicDataCache<any>(cacheKey);
+    if (cached) {
+      setEstateRow(cached);
+      setProperty(mapEstateRowToProperty(cached));
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     setNotFound(false);
-    supabase.from('estate').select('*').eq('id', id).single().then(({ data, error }) => {
+
+    const loadEstate = async () => {
+      const { data, error } = await supabase.from('estate').select('*').eq('id', id).single();
+      if (!active) return;
       if (error || !data) {
-        setNotFound(true);
+        if (!cached) setNotFound(true);
         setLoading(false);
         return;
       }
+      writePublicDataCache(cacheKey, data);
       setEstateRow(data);
-      const mapped = mapEstateRowToProperty(data);
-      setProperty(mapped);
+      setProperty(mapEstateRowToProperty(data));
 
-      // Related properties: same category, excluding this one
-      supabase
+      const { data: related } = await supabase
         .from('estate')
         .select('*')
         .neq('id', id)
         .eq('property_category', data.property_category || 'land')
-        .limit(4)
-        .then(({ data: related }) => {
-          setRelatedEstates((related || []).map(mapEstateRowToProperty));
-        });
+        .limit(4);
+      if (active) setRelatedEstates((related || []).map(mapEstateRowToProperty));
+      setLoading(false);
+    };
 
+    void loadEstate();
+    const channel = supabase
+      .channel(`public_estate_detail_${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estate' }, (payload) => {
+        const previous = payload.old as Record<string, unknown> | undefined;
+        const next = payload.new as Record<string, unknown> | undefined;
+        if (previous?.id === id || next?.id === id || payload.eventType === 'INSERT' || payload.eventType === 'DELETE') void loadEstate();
+      })
+      .subscribe();
+    const stopRevalidation = listenForPublicDataRevalidation(() => void loadEstate());
+    const stopCacheSync = subscribePublicDataCache<any>(cacheKey, (nextEstate) => {
+      setEstateRow(nextEstate);
+      setProperty(mapEstateRowToProperty(nextEstate));
       setLoading(false);
     });
+
+    return () => {
+      active = false;
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
   }, [id]);
 
   const checkProfileCompletion = async () => {
