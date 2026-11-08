@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BlogPost } from "@/types/blog";
 import { fallbackPosts } from "@/data/fallbackBlogPosts";
 import { sortPostsByDate } from "@/utils/blogUtils";
-import { readPublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
 
 const cacheKey = (limit: number) => `published-blog-posts-${limit}`;
 const readCache = (key: string): BlogPost[] => readPublicDataCache<BlogPost[]>(key) || [];
@@ -71,7 +71,13 @@ export function useBlogPosts(limit = 20) {
         if (previous?.published === true || next?.published === true) void fetchBlogPosts();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchBlogPosts());
+    const stopCacheSync = subscribePublicDataCache<BlogPost[]>(key, setPosts);
+    return () => {
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
   }, [fetchBlogPosts, limit]);
 
   return { posts, loading, refresh: fetchBlogPosts };
