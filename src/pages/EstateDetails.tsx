@@ -144,7 +144,14 @@ const EstateDetails: React.FC = () => {
       const { data, error } = await supabase.from('estate').select('*').eq('id', id).single();
       if (!active) return;
       if (error || !data) {
-        if (!cached) setNotFound(true);
+        if (!error || error.code === 'PGRST116') {
+          window.localStorage.removeItem(`bridgefort:public-data:v1:${cacheKey}`);
+          setEstateRow(null);
+          setProperty(null);
+          setNotFound(true);
+        } else if (!cached) {
+          setNotFound(true);
+        }
         setLoading(false);
         return;
       }
