@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Download, MapPin, ShoppingCart, Building2, Calendar, Phone, Mail, MapIcon,
-  Clock, Shield, Play, ChevronLeft, ChevronRight, X, ArrowLeft, Loader2, CalendarCheck,
+  Clock, Shield, Play, ChevronLeft, ChevronRight, X, ArrowLeft, CalendarCheck,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Plot } from '@/contexts/ecommerce/types';
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 interface EstateProperty {
   id: string;
@@ -106,10 +107,13 @@ const EstateDetails: React.FC = () => {
   const { user } = useAuth();
   const { addToCart } = useEcommerce();
 
-  const [loading, setLoading] = useState(true);
+  const [estateRow, setEstateRow] = useState<any>(() => id ? readPublicDataCache<any>(`public-estate-detail:${id}`) : null);
+  const [property, setProperty] = useState<EstateProperty | null>(() => {
+    const cached = id ? readPublicDataCache<any>(`public-estate-detail:${id}`) : null;
+    return cached ? mapEstateRowToProperty(cached) : null;
+  });
+  const [loading, setLoading] = useState(() => !id || !readPublicDataCache<any>(`public-estate-detail:${id}`));
   const [notFound, setNotFound] = useState(false);
-  const [estateRow, setEstateRow] = useState<any>(null);
-  const [property, setProperty] = useState<EstateProperty | null>(null);
   const [relatedEstates, setRelatedEstates] = useState<EstateProperty[]>([]);
   const [profileCompleted, setProfileCompleted] = useState(false);
   const [fullscreenMedia, setFullscreenMedia] = useState<string | null>(null);
@@ -124,31 +128,69 @@ const EstateDetails: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
+    let active = true;
+    const cacheKey = `public-estate-detail:${id}`;
+    const cached = readPublicDataCache<any>(cacheKey);
+    if (cached) {
+      setEstateRow(cached);
+      setProperty(mapEstateRowToProperty(cached));
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     setNotFound(false);
-    supabase.from('estate').select('*').eq('id', id).single().then(({ data, error }) => {
+
+    const loadEstate = async () => {
+      const { data, error } = await supabase.from('estate').select('*').eq('id', id).single();
+      if (!active) return;
       if (error || !data) {
-        setNotFound(true);
+        if (!error || error.code === 'PGRST116') {
+          window.localStorage.removeItem(`bridgefort:public-data:v1:${cacheKey}`);
+          setEstateRow(null);
+          setProperty(null);
+          setNotFound(true);
+        } else if (!cached) {
+          setNotFound(true);
+        }
         setLoading(false);
         return;
       }
+      writePublicDataCache(cacheKey, data);
       setEstateRow(data);
-      const mapped = mapEstateRowToProperty(data);
-      setProperty(mapped);
+      setProperty(mapEstateRowToProperty(data));
 
-      // Related properties: same category, excluding this one
-      supabase
+      const { data: related } = await supabase
         .from('estate')
         .select('*')
         .neq('id', id)
         .eq('property_category', data.property_category || 'land')
-        .limit(4)
-        .then(({ data: related }) => {
-          setRelatedEstates((related || []).map(mapEstateRowToProperty));
-        });
+        .limit(4);
+      if (active) setRelatedEstates((related || []).map(mapEstateRowToProperty));
+      setLoading(false);
+    };
 
+    void loadEstate();
+    const channel = supabase
+      .channel(`public_estate_detail_${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estate' }, (payload) => {
+        const previous = payload.old as Record<string, unknown> | undefined;
+        const next = payload.new as Record<string, unknown> | undefined;
+        if (previous?.id === id || next?.id === id || payload.eventType === 'INSERT' || payload.eventType === 'DELETE') void loadEstate();
+      })
+      .subscribe();
+    const stopRevalidation = listenForPublicDataRevalidation(() => void loadEstate());
+    const stopCacheSync = subscribePublicDataCache<any>(cacheKey, (nextEstate) => {
+      setEstateRow(nextEstate);
+      setProperty(mapEstateRowToProperty(nextEstate));
       setLoading(false);
     });
+
+    return () => {
+      active = false;
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
   }, [id]);
 
   const checkProfileCompletion = async () => {
@@ -165,9 +207,18 @@ const EstateDetails: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center pt-[88px] lg:pt-[104px]">
-          <Loader2 className="h-8 w-8 animate-spin text-estate-blue" />
-        </div>
+        <main className="container-custom flex-1 space-y-8 px-4 pb-16 pt-[112px]">
+          <div className="h-8 w-40 animate-pulse rounded bg-muted" />
+          <div className="grid gap-8 lg:grid-cols-[1.4fr_.6fr]">
+            <div className="space-y-4">
+              <div className="aspect-[16/9] animate-pulse rounded-3xl bg-muted" />
+              <div className="h-8 w-3/4 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+              <div className="space-y-2 pt-3"><div className="h-4 w-full animate-pulse rounded bg-muted" /><div className="h-4 w-5/6 animate-pulse rounded bg-muted" /><div className="h-4 w-2/3 animate-pulse rounded bg-muted" /></div>
+            </div>
+            <div className="h-80 animate-pulse rounded-3xl bg-muted" />
+          </div>
+        </main>
         <Footer />
       </div>
     );

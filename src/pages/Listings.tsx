@@ -10,23 +10,11 @@ import ListingFilters, { ListingFilterState } from '@/components/listings/Listin
 import RegionSpotlightCards from '@/components/listings/RegionSpotlightCards';
 import { LayoutGrid, List, Plus, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
-const PUBLIC_LISTINGS_CACHE_KEY = 'bridgefort:published-listings:v1';
-
-const readPublishedListings = (): Listing[] => {
-  try {
-    const raw = typeof window !== 'undefined' ? window.localStorage.getItem(PUBLIC_LISTINGS_CACHE_KEY) : null;
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed?.listings) ? parsed.listings as Listing[] : [];
-  } catch { return []; }
-};
-
-const writePublishedListings = (listings: Listing[]) => {
-  try {
-    if (typeof window !== 'undefined') window.localStorage.setItem(PUBLIC_LISTINGS_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), listings }));
-  } catch { /* Browser storage is optional; keep the live data in React state. */ }
-};
+const PUBLIC_LISTINGS_CACHE_KEY = 'public-listings';
+const readPublishedListings = (): Listing[] => readPublicDataCache<Listing[]>(PUBLIC_LISTINGS_CACHE_KEY) || [];
+const writePublishedListings = (listings: Listing[]) => writePublicDataCache(PUBLIC_LISTINGS_CACHE_KEY, listings);
 
 const defaultFilters: ListingFilterState = {
   region: 'all',
@@ -75,7 +63,13 @@ const Listings = () => {
         if (previous?.is_published === true || next?.is_published === true) void fetchListings();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchListings());
+    const stopCacheSync = subscribePublicDataCache<Listing[]>(PUBLIC_LISTINGS_CACHE_KEY, setListings);
+    return () => {
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
   }, [channelId, fetchListings]);
 
   const regionCounts = useMemo(() => {

@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useId, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Upload, X } from 'lucide-react';
@@ -18,13 +18,16 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   acceptedTypes = '.pdf,.doc,.docx'
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  
+  const inputId = useId();
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.currentTarget.files && e.currentTarget.files[0]) {
-      onFileSelect(e.target.files[0]);
-    }
+    const selectedFile = e.currentTarget.files?.[0] || null;
+    // Clear the native input after capturing the File so the same document
+    // can be selected again if an upload needs to be retried.
+    e.currentTarget.value = '';
+    if (selectedFile) onFileSelect(selectedFile);
   };
   
   const handleRemoveFile = () => {
@@ -36,7 +39,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   
   return (
     <div className="space-y-2">
-      <Label htmlFor="resume">{label}</Label>
+      <Label htmlFor={inputId}>{label}</Label>
       
       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
         {!file ? (
@@ -44,7 +47,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             <input
               ref={inputRef}
               type="file"
-              id="resume"
+              id={inputId}
               accept={acceptedTypes}
               onChange={handleFileChange}
               className="hidden"
@@ -55,7 +58,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               </div>
               <div className="text-sm text-gray-600">
                 <label
-                  htmlFor="resume"
+                  htmlFor={inputId}
                   className="cursor-pointer text-estate-blue hover:text-estate-darkBlue font-medium"
                 >
                   Click to upload

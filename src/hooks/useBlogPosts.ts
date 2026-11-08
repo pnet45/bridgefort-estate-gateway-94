@@ -3,30 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { BlogPost } from "@/types/blog";
 import { fallbackPosts } from "@/data/fallbackBlogPosts";
 import { sortPostsByDate } from "@/utils/blogUtils";
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
 
-type BlogCache = { savedAt: number; posts: BlogPost[] };
-const cacheKey = (limit: number) => `bridgefort:published-blog:v1:${limit}`;
-
-const readCache = (key: string): BlogPost[] => {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as BlogCache;
-    return Array.isArray(parsed?.posts) ? parsed.posts : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeCache = (key: string, posts: BlogPost[]) => {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), posts } satisfies BlogCache));
-  } catch {
-    // Keep rendering the live result when browser storage is unavailable.
-  }
-};
+const cacheKey = (limit: number) => `published-blog-posts-${limit}`;
+const readCache = (key: string): BlogPost[] => readPublicDataCache<BlogPost[]>(key) || [];
+const writeCache = (key: string, posts: BlogPost[]) => writePublicDataCache(key, posts);
 
 export function useBlogPosts(limit = 20) {
   const key = cacheKey(limit);
@@ -90,7 +71,13 @@ export function useBlogPosts(limit = 20) {
         if (previous?.published === true || next?.published === true) void fetchBlogPosts();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchBlogPosts());
+    const stopCacheSync = subscribePublicDataCache<BlogPost[]>(key, setPosts);
+    return () => {
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
   }, [fetchBlogPosts, limit]);
 
   return { posts, loading, refresh: fetchBlogPosts };

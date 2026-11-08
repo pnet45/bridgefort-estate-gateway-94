@@ -1,6 +1,9 @@
 import { useEffect, useState, useCallback, useMemo, useId } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { ContentItem, ContentPage, ContentType } from '@/types/content';
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
+
+const CACHE_PREFIX = 'public-content-items:';
 
 interface Options {
   page?: ContentPage;
@@ -9,29 +12,8 @@ interface Options {
   featuredOnly?: boolean;
 }
 
-type ContentCache = { savedAt: number; items: ContentItem[] };
-const CACHE_PREFIX = 'bridgefort:content-items:v1:';
-
-const readContentCache = (key: string): ContentItem[] => {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as ContentCache;
-    return Array.isArray(parsed?.items) ? parsed.items : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeContentCache = (key: string, items: ContentItem[]) => {
-  if (typeof window === 'undefined') return;
-  try {
-    window.localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), items } satisfies ContentCache));
-  } catch {
-    // Storage may be unavailable or full. The live database response still renders.
-  }
-};
+const readContentCache = (key: string): ContentItem[] => readPublicDataCache<ContentItem[]>(key) || [];
+const writeContentCache = (key: string, items: ContentItem[]) => writePublicDataCache(key, items);
 
 export function useContentItems(opts: Options = {}) {
   const contentTypeKey = Array.isArray(opts.contentType)
@@ -109,7 +91,15 @@ export function useContentItems(opts: Options = {}) {
         if (matchesCurrentFilter(previous) || matchesCurrentFilter(next)) void fetchItems();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchItems());
+    const stopCacheSync = canCache
+      ? subscribePublicDataCache<ContentItem[]>(cacheKey, setItems)
+      : () => undefined;
+    return () => {
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
   }, [channelId, fetchItems, opts.page, contentTypeKey, opts.includeUnpublished, opts.featuredOnly]);
 
   return { items, loading, error, refresh: fetchItems };

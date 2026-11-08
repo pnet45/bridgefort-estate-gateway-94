@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { readPublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
+import { listenForPublicDataRevalidation, readPublicDataCache, refreshPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 export interface PublicTrainingEvent {
   id: string;
@@ -17,7 +17,6 @@ export interface PublicTrainingEvent {
 
 const CACHE_KEY = 'public-training-events';
 let snapshot = readPublicDataCache<PublicTrainingEvent[]>(CACHE_KEY) ?? [];
-let pendingRequest: Promise<PublicTrainingEvent[]> | null = null;
 let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
 const listeners = new Set<(events: PublicTrainingEvent[]) => void>();
 
@@ -29,28 +28,20 @@ function publish(events: PublicTrainingEvent[]) {
 
 /** Fetch one public dataset; concurrent page sections share the same request. */
 export function refreshPublicTrainingEvents(): Promise<PublicTrainingEvent[]> {
-  if (pendingRequest) return pendingRequest;
-
-  pendingRequest = (async () => {
+  return refreshPublicDataCache(CACHE_KEY, async () => {
     const { data, error } = await supabase
       .from('training_events')
-      .select('id, title, description, date, time, location, image, capacity, category, featured')
+      .select('*')
       .order('date', { ascending: true });
 
     if (error) throw error;
     const events = (data ?? []) as PublicTrainingEvent[];
     publish(events);
     return events;
-  })()
-    .catch((error) => {
-      console.error('Unable to refresh public training events; keeping the cached snapshot.', error);
-      return snapshot;
-    })
-    .finally(() => {
-      pendingRequest = null;
-    });
-
-  return pendingRequest;
+  }).catch((error) => {
+    console.error('Unable to refresh public training events; keeping the cached snapshot.', error);
+    return snapshot;
+  });
 }
 
 function ensureRealtimeSubscription() {
@@ -92,17 +83,17 @@ export function usePublicTrainingEvents() {
     };
 
     refresh();
-    const refreshWhenVisible = () => {
-      if (document.visibilityState === 'visible' && navigator.onLine) refresh();
-    };
-    window.addEventListener('focus', refreshWhenVisible);
-    window.addEventListener('online', refreshWhenVisible);
+    const stopRevalidation = listenForPublicDataRevalidation(refresh);
+    const stopCacheSync = subscribePublicDataCache<PublicTrainingEvent[]>(CACHE_KEY, (nextEvents) => {
+      snapshot = nextEvents;
+      listeners.forEach((notify) => notify(nextEvents));
+    });
 
     return () => {
       active = false;
       listeners.delete(listener);
-      window.removeEventListener('focus', refreshWhenVisible);
-      window.removeEventListener('online', refreshWhenVisible);
+      stopRevalidation();
+      stopCacheSync();
 
       if (listeners.size === 0 && realtimeChannel) {
         void supabase.removeChannel(realtimeChannel);

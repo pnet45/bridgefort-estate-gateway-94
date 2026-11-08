@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -20,14 +20,19 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
   label, bucket, userId, docKey, onUploaded, existingUrl
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
   const [uploading, setUploading] = useState(false);
   const [uploadedUrl, setUploadedUrl] = useState(existingUrl || "");
+
+  useEffect(() => {
+    setUploadedUrl(existingUrl || "");
+  }, [existingUrl]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!e.currentTarget.files || e.currentTarget.files.length === 0) return;
-    const file = e.currentTarget.files[0];
+    const file = e.currentTarget.files?.[0];
+    if (!file) return;
     if (file.size > 4 * 1024 * 1024) {
       toast({ title: "File too large", description: "File < 4MB", variant: "destructive" });
       return;
@@ -58,18 +63,24 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
 
   return (
     <div className="my-2">
-      <Label className="block mb-1">{label}</Label>
-      <div className="flex items-center gap-3">
+      <Label htmlFor={inputId} className="mb-1 block">{label}</Label>
+      <div className="flex flex-wrap items-center gap-3">
         <Input
+          id={inputId}
           type="file"
           accept="image/*,application/pdf"
           onChange={handleFileChange}
           ref={fileInputRef}
           disabled={uploading}
+          className="sr-only"
         />
-        <Button type="button" size="icon" disabled>
-          <Upload className="w-5 h-5" />
+        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+          <Upload className="mr-2 h-4 w-4" />
+          {uploading ? "Uploading…" : "Choose file"}
         </Button>
+        <span className="min-w-0 break-all text-xs text-muted-foreground">
+          {uploadedUrl ? "File uploaded successfully" : "PDF or image · Maximum 4MB"}
+        </span>
       </div>
       {uploadedUrl && (
         <a href={uploadedUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm underline mt-1 block">

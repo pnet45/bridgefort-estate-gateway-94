@@ -12,7 +12,7 @@ import { isAdminRole } from '@/lib/rbac';
 const propertiesPerPage = 6;
 
 const PropertyList: React.FC = () => {
-  const { filteredProperties } = usePropertyContext();
+  const { filteredProperties, loading } = usePropertyContext();
   const { user, userRole } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [hiddenProperties, setHiddenProperties] = useState<string[]>([]);
@@ -128,6 +128,24 @@ const PropertyList: React.FC = () => {
       });
     }
   };
+
+  if (loading && filteredProperties.length === 0) {
+    return (
+      <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading properties">
+        {Array.from({ length: propertiesPerPage }, (_, index) => (
+          <div key={index} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-slate-900">
+            <div className="aspect-[16/10] animate-pulse bg-muted" />
+            <div className="space-y-3 p-5">
+              <div className="h-3 w-24 animate-pulse rounded bg-muted" />
+              <div className="h-5 w-4/5 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+              <div className="h-9 w-full animate-pulse rounded-lg bg-muted" />
+            </div>
+          </div>
+        ))}
+      </section>
+    );
+  }
 
   return (
     <>

@@ -19,24 +19,51 @@ interface CareerFormProps {
 
 const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    position: defaultPosition || '',
-    full_name: '',
-    email: '',
-    phone: '',
-    experience: '',
-    address: '',
-    state: '',
-    local_government: '',
-    gender: '',
-    date_of_birth: '',
-    cover_letter: '',
-    resume_url: ''
+  const [formData, setFormData] = useState(() => {
+    const emptyDraft = {
+      position: defaultPosition || '',
+      full_name: '',
+      email: '',
+      phone: '',
+      experience: '',
+      address: '',
+      state: '',
+      local_government: '',
+      gender: '',
+      date_of_birth: '',
+      cover_letter: '',
+      resume_url: ''
+    };
+    try {
+      const raw = window.sessionStorage.getItem('bridgefort:career-application-draft:v1');
+      if (!raw) return emptyDraft;
+      const saved = JSON.parse(raw);
+      if (!saved.savedAt || Date.now() - saved.savedAt > 4 * 60 * 60 * 1000) {
+        window.sessionStorage.removeItem('bridgefort:career-application-draft:v1');
+        return emptyDraft;
+      }
+      return { ...emptyDraft, ...saved.form, position: defaultPosition || saved.form?.position || '' };
+    } catch {
+      return emptyDraft;
+    }
   });
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, position: defaultPosition || '' }));
+    if (defaultPosition) setFormData((prev) => ({ ...prev, position: defaultPosition }));
   }, [defaultPosition]);
+
+  // Keep this application draft for the current tab session so a mobile
+  // browser returning from the device file picker does not erase the form.
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(
+        'bridgefort:career-application-draft:v1',
+        JSON.stringify({ savedAt: Date.now(), form: formData })
+      );
+    } catch (error) {
+      console.warn('Unable to preserve career application draft.', error);
+    }
+  }, [formData]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -81,6 +108,7 @@ const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
         cover_letter: '',
         resume_url: ''
       });
+      window.sessionStorage.removeItem('bridgefort:career-application-draft:v1');
 
     } catch (error) {
       captureException(error, { workflow: 'career_application' });

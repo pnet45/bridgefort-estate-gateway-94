@@ -69,6 +69,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
       toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
     } finally {
       setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
     }
   };
 

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { FileUpload } from "./FileUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -15,17 +15,23 @@ const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
   resumeUrl,
   onFileChange,
 }) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   return (
     <div className="space-y-2">
       <FileUpload
         label="Upload Resume"
         onFileSelect={async (file: File | null) => {
           if (file) {
+            const safeName = (fullName || 'applicant').trim().replace(/[^a-z0-9_-]+/gi, '-').slice(0, 60) || 'applicant';
+            const safeFileName = file.name.replace(/[^a-z0-9._-]+/gi, '-');
+            const storagePath = `${safeName}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName}`;
             const { data, error } = await supabase.storage
               .from('resumes')
-              .upload(`${fullName}-${file.name}`, file, {
+              .upload(storagePath, file, {
                 cacheControl: '3600',
                 upsert: false,
+                contentType: file.type || 'application/octet-stream',
               });
             if (error) {
               console.error('Error uploading file:', error);
@@ -36,6 +42,7 @@ const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
               });
             } else if (data) {
               const resumeURL = `https://xyvspvtdaacqfmfocvhw.supabase.co/storage/v1/object/public/resumes/${data.path}`;
+              setSelectedFile(file);
               onFileChange(resumeURL);
               toast({
                 title: "Resume uploaded successfully!",
@@ -43,10 +50,11 @@ const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
               });
             }
           } else {
+            setSelectedFile(null);
             onFileChange('');
           }
         }}
-        file={resumeUrl ? new File([], resumeUrl.split('/').pop() || 'resume') : null}
+        file={selectedFile || (resumeUrl ? new File([], resumeUrl.split('/').pop() || 'resume') : null)}
       />
     </div>
   );

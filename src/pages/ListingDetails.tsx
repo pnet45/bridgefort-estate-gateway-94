@@ -7,37 +7,75 @@ import Footer from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Bed, Bath, Car, Maximize, Calendar, ArrowLeft, Star, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
+
 import PropertyReviews from '@/components/reviews/PropertyReviews';
 import { usePropertyView } from '@/hooks/usePropertyViews';
 import ListingInquiryActions from '@/components/listings/ListingInquiryActions';
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 const ListingDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [listing, setListing] = useState<Listing | null>(() => id ? readPublicDataCache<Listing>(`public-listing-detail:${id}`) : null);
+  const [loading, setLoading] = useState(() => !id || !readPublicDataCache<Listing>(`public-listing-detail:${id}`));
   const [activePhoto, setActivePhoto] = useState(0);
 
   // Track view
   usePropertyView(id || '', 'listing');
 
   useEffect(() => {
-    if (id) fetchListing(id);
-  }, [id]);
-
-  const fetchListing = async (listingId: string) => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('listings')
-      .select('*')
-      .eq('id', listingId)
-      .single();
-
-    if (!error && data) {
-      setListing(data as unknown as Listing);
+    if (!id) return;
+    let active = true;
+    const cacheKey = `public-listing-detail:${id}`;
+    const cached = readPublicDataCache<Listing>(cacheKey);
+    if (cached) {
+      setListing(cached);
+      setLoading(false);
+    } else {
+      setLoading(true);
     }
-    setLoading(false);
-  };
+
+    const fetchListing = async () => {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('id', id)
+        .eq('is_published', true)
+        .maybeSingle();
+
+      if (!active) return;
+      if (!error && data) {
+        const nextListing = data as unknown as Listing;
+        writePublicDataCache(cacheKey, nextListing);
+        setListing(nextListing);
+      } else if (!error || !cached) {
+        if (!error) window.localStorage.removeItem(`bridgefort:public-data:v1:${cacheKey}`);
+        setListing(null);
+      }
+      setLoading(false);
+    };
+
+    void fetchListing();
+    const channel = supabase
+      .channel(`public_listing_detail_${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'listings' }, (payload) => {
+        const previous = payload.old as Record<string, unknown> | undefined;
+        const next = payload.new as Record<string, unknown> | undefined;
+        if (previous?.id === id || next?.id === id) void fetchListing();
+      })
+      .subscribe();
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchListing());
+    const stopCacheSync = subscribePublicDataCache<Listing>(cacheKey, (nextListing) => {
+      setListing(nextListing);
+      setLoading(false);
+    });
+
+    return () => {
+      active = false;
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
+  }, [id]);
 
   const formatPrice = (amount: number) =>
     new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(amount);
@@ -46,9 +84,14 @@ const ListingDetails = () => {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center pt-20">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
+        <main className="container-custom flex-1 space-y-6 px-4 pb-16 pt-[112px]">
+          <div className="h-5 w-36 animate-pulse rounded bg-muted" />
+          <div className="h-64 animate-pulse rounded-2xl bg-muted sm:h-96 lg:h-[500px]" />
+          <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
+            <div className="space-y-4"><div className="h-8 w-3/4 animate-pulse rounded bg-muted" /><div className="h-4 w-1/2 animate-pulse rounded bg-muted" /><div className="h-4 w-full animate-pulse rounded bg-muted" /><div className="h-4 w-5/6 animate-pulse rounded bg-muted" /></div>
+            <div className="h-64 animate-pulse rounded-2xl bg-muted" />
+          </div>
+        </main>
         <Footer />
       </div>
     );

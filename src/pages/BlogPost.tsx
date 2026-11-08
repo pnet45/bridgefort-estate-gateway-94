@@ -2,13 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import BlogDetail from '@/components/blog/BlogDetail';
 import BlogNewsletter from '@/components/blog/BlogNewsletter';
 import PhoneContactBar from '@/components/PhoneContactBar';
 import { realEstateArticles } from '@/data/realEstateContent';
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 // Convert markdown-ish content to basic HTML for rendering in BlogDetail
 const markdownToHtml = (content: string) =>
@@ -24,35 +25,47 @@ const markdownToHtml = (content: string) =>
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<any>(null);
-  const [authorProfile, setAuthorProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const initialCache = id ? readPublicDataCache<{ post: any; authorProfile: any }>(`public-blog-detail:${id}`) : null;
+  const [post, setPost] = useState<any>(initialCache?.post || null);
+  const [authorProfile, setAuthorProfile] = useState<any>(initialCache?.authorProfile || null);
+  const [loading, setLoading] = useState(!initialCache);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!id) return;
+    let active = true;
+
+    // Static editorial articles are bundled with the application and need no
+    // database round-trip or browser cache.
+    const staticArticle = realEstateArticles.find((article: any) => article.id === id);
+    if (staticArticle) {
+      setPost({
+        id: staticArticle.id,
+        title: staticArticle.title,
+        excerpt: staticArticle.excerpt,
+        content: `<p class="mb-4">${markdownToHtml(staticArticle.content)}</p>`,
+        category: staticArticle.category,
+        image_path: staticArticle.image,
+        created_at: staticArticle.date,
+      });
+      setAuthorProfile({ first_name: 'Bridgefort', last_name: 'Homes' });
+      setError(null);
+      setLoading(false);
+      return () => { active = false; };
+    }
+
+    const cacheKey = `public-blog-detail:${id}`;
+    const cached = readPublicDataCache<{ post: any; authorProfile: any }>(cacheKey);
+    if (cached) {
+      setPost(cached.post);
+      setAuthorProfile(cached.authorProfile);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
     const fetchPost = async () => {
       try {
-        setLoading(true);
-
-        // 1. First check static realEstateArticles by id
-        const staticArticle = realEstateArticles.find((a: any) => a.id === id);
-        if (staticArticle) {
-          setPost({
-            id: staticArticle.id,
-            title: staticArticle.title,
-            excerpt: staticArticle.excerpt,
-            content: `<p class="mb-4">${markdownToHtml(staticArticle.content)}</p>`,
-            category: staticArticle.category,
-            image_path: staticArticle.image,
-            created_at: staticArticle.date,
-          });
-          setAuthorProfile({ first_name: 'Bridgefort', last_name: 'Homes' });
-          setError(null);
-          setLoading(false);
-          return;
-        }
-
-        // 2. Fall back to Supabase posts table
         const { data, error } = await supabase
           .from('posts')
           .select('*')
@@ -61,40 +74,65 @@ const BlogPost = () => {
           .maybeSingle();
 
         if (error) throw error;
-
         if (!data) {
-          setError('Post not found or not published');
-          setPost(null);
-        } else {
-          setPost(data);
-          setError(null);
-          if (data.author_id) {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('first_name, last_name')
-              .eq('id', data.author_id)
-              .maybeSingle();
-            if (!profileError && profile) {
-              setAuthorProfile(profile);
-            } else {
-              setAuthorProfile(null);
-            }
-          } else {
+          window.localStorage.removeItem(`bridgefort:public-data:v1:${cacheKey}`);
+          if (active) {
+            setError('Post not found or not published');
+            setPost(null);
             setAuthorProfile(null);
+            setLoading(false);
           }
+          return;
         }
-      } catch (error) {
-        console.error('Error fetching post:', error);
-        setError('Failed to load the post');
-        setPost(null);
+
+        let nextAuthor: any = null;
+        if (data.author_id) {
+          const { data: author } = await supabase
+            .from('profiles')
+            .select('first_name, last_name')
+            .eq('id', data.author_id)
+            .maybeSingle();
+          nextAuthor = author || null;
+        }
+
+        if (!active) return;
+        writePublicDataCache(cacheKey, { post: data, authorProfile: nextAuthor });
+        setPost(data);
+        setAuthorProfile(nextAuthor);
+        setError(null);
+      } catch (fetchError) {
+        console.error('Error fetching post:', fetchError);
+        if (active && !cached) {
+          setError('Failed to load the post');
+          setPost(null);
+        }
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
-    if (id) {
-      fetchPost();
-    }
+    void fetchPost();
+    const channel = supabase
+      .channel(`public_blog_detail_${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
+        const previous = payload.old as Record<string, unknown> | undefined;
+        const next = payload.new as Record<string, unknown> | undefined;
+        if (previous?.id === id || next?.id === id) void fetchPost();
+      })
+      .subscribe();
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchPost());
+    const stopCacheSync = subscribePublicDataCache<{ post: any; authorProfile: any }>(cacheKey, (next) => {
+      setPost(next.post);
+      setAuthorProfile(next.authorProfile);
+      setLoading(false);
+    });
+
+    return () => {
+      active = false;
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
   }, [id]);
 
   // Pass author profile to BlogDetail as "profiles"
@@ -197,8 +235,17 @@ const BlogPost = () => {
 
       <main className="flex-grow pt-28 pb-12">
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <Loader2 className="w-10 h-10 text-estate-blue animate-spin" />
+          <div className="container-custom space-y-6 py-10" aria-label="Loading article">
+            <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+            <div className="aspect-[16/9] animate-pulse rounded-3xl bg-muted" />
+            <div className="h-9 w-4/5 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-1/3 animate-pulse rounded bg-muted" />
+            <div className="space-y-3 pt-4">
+              <div className="h-4 w-full animate-pulse rounded bg-muted" />
+              <div className="h-4 w-full animate-pulse rounded bg-muted" />
+              <div className="h-4 w-5/6 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
+            </div>
           </div>
         ) : error ? (
           <div className="container-custom">
