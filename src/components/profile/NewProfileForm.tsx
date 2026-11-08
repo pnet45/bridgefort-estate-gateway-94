@@ -35,6 +35,33 @@ const initialForm: FormState = {
   idType: '', idNumber: '', idCountryOfIssue: '', idDateOfIssue: '', idExpiry: '', idIssuingAuthority: '',
 };
 
+const PROFILE_DRAFT_TTL_MS = 4 * 60 * 60 * 1000;
+
+type ProfileDraft = {
+  savedAt: number;
+  form: FormState;
+  kycDocs: Record<string, { url: string; name: string; type: string }>;
+  activeStep: StepKey;
+  termsAccepted: boolean;
+};
+
+const profileDraftKey = (userId: string) => `bridgefort:profile-draft:v1:${userId}`;
+
+function readProfileDraft(userId: string): ProfileDraft | null {
+  try {
+    const raw = window.sessionStorage.getItem(profileDraftKey(userId));
+    if (!raw) return null;
+    const draft = JSON.parse(raw) as ProfileDraft;
+    if (!draft.savedAt || Date.now() - draft.savedAt > PROFILE_DRAFT_TTL_MS) {
+      window.sessionStorage.removeItem(profileDraftKey(userId));
+      return null;
+    }
+    return draft;
+  } catch {
+    return null;
+  }
+}
+
 const incomeValue = (value: string) => ({ 'Below ₦1M': 500000, '₦1M - ₦5M': 3000000, '₦6M - ₦20M': 13000000, 'Above ₦20M': 25000000 }[value] ?? null);
 
 const NewProfileForm = () => {
@@ -59,7 +86,9 @@ const NewProfileForm = () => {
   useEffect(() => {
     const load = async () => {
       if (!user) { setLoading(false); return; }
+      setLoading(true);
       try {
+        const draft = readProfileDraft(user.id);
         const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
         if (error) throw error;
         if (data) {
@@ -77,6 +106,25 @@ const NewProfileForm = () => {
     };
     load();
   }, [user]);
+
+  // Preserve an in-progress profile if a mobile browser reloads after the
+  // device file picker backgrounds or reclaims the page. Drafts stay in this
+  // tab's session storage, are user-scoped, and expire after four hours.
+  useEffect(() => {
+    if (!user || loading) return;
+    try {
+      const draft: ProfileDraft = {
+        savedAt: Date.now(),
+        form,
+        kycDocs,
+        activeStep,
+        termsAccepted,
+      };
+      window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify(draft));
+    } catch (error) {
+      console.warn('Unable to preserve profile draft in this browser session.', error);
+    }
+  }, [user, loading, form, kycDocs, activeStep, termsAccepted]);
 
   const payload = useMemo(() => ({
     id: user?.id || '', referred_by_id: referralLookup?.realtor_id || null, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, first_name: form.firstName || null, last_name: form.lastName || null, date_of_birth: form.dateOfBirth || null, gender: form.gender || null, marital_status: form.maritalStatus || null, spouse_name: form.spouseName || null, nationality: form.nationality || null, languages_spoken: form.languagesSpoken || [], phone_number: form.phoneNumber || null, state_of_origin: form.stateOfOrigin || null, local_government: form.localGovernment || null, address: form.address || null, current_residence: form.currentResidence || null,
@@ -172,7 +220,7 @@ const NewProfileForm = () => {
   const submitProfile = async () => {
     if (!termsAccepted || !user || saving || !validateStep('review')) return;
     setSaving(true);
-    try { const referralId = form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); }
+    try { const referralId = form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(user.id)); }
     catch (error: any) { console.error('Profile submission error:', error); toast({ title: 'Submission failed', description: error?.message || 'Please try again.', variant: 'destructive' }); }
     finally { setSaving(false); }
   };
