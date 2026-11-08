@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Bed, Bath, Car, Maximize, Calendar, ArrowLeft, Star, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
+
 import PropertyReviews from '@/components/reviews/PropertyReviews';
 import { usePropertyView } from '@/hooks/usePropertyViews';
 import ListingInquiryActions from '@/components/listings/ListingInquiryActions';
