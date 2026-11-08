@@ -90,13 +90,16 @@ const BHRealtors: React.FC = () => {
   const [dashboardReferralCode, setDashboardReferralCode] = useState('');
   const [dashboardIsPbo, setDashboardIsPbo] = useState(false);
   const [dashboardIsActive, setDashboardIsActive] = useState(false);
+  const [dashboardLoaded, setDashboardLoaded] = useState(false);
 
   const currentCode = profile?.current_package || 'associate';
   const currentRank = rank[currentCode] || 1;
   // The dashboard RPC is the authoritative fallback when the auth profile
   // snapshot is stale; inactive members remain eligible to share referrals.
-  const isPbo = Boolean(profile?.is_pbo || dashboardIsPbo);
-  const isRealtor = Boolean(isPbo && (profile?.is_active || dashboardIsActive));
+  const isPbo = dashboardLoaded ? dashboardIsPbo : Boolean(profile?.is_pbo);
+  const isRealtor = dashboardLoaded
+    ? Boolean(dashboardIsPbo && dashboardIsActive)
+    : Boolean(profile?.is_pbo && profile?.is_active);
   const referralCode = profile?.pbo_referral_code || dashboardReferralCode || '';
   const referralLink = typeof window !== 'undefined' && referralCode ? `${window.location.origin}/auth?ref=${encodeURIComponent(referralCode)}` : '';
 
@@ -119,6 +122,7 @@ const BHRealtors: React.FC = () => {
       setDashboardReferralCode(String(dashboard.profile?.referral_code || ''));
       setDashboardIsPbo(Boolean(dashboard.profile?.is_pbo));
       setDashboardIsActive(Boolean(dashboard.profile?.is_active));
+      setDashboardLoaded(true);
       setDownlineCount(Number(dashboard.direct_referrals || 0));
       setActiveDownlineCount(Number(dashboard.active_direct_referrals || 0));
       setLocked(Number(dashboard.locked_commissions || 0));
