@@ -32,8 +32,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    const input = e.currentTarget;
-    const file = input.files?.[0];
+    const file = e.currentTarget.files?.[0];
     if (!file) return;
 
     if (file.size > maxSizeMB * 1024 * 1024) {
