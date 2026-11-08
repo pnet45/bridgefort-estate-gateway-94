@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { readPublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 interface Slide {
   image: string;
@@ -48,6 +49,7 @@ const defaultSlides: Slide[] = [
 ];
 
 const AUTO_ROTATE_MS = 5500;
+const AUTH_CAROUSEL_CACHE_KEY = 'public-auth-carousel-slides';
 
 interface AuthCarouselProps {
   /** Set false when the carousel fills its container edge-to-edge (e.g. a
@@ -58,34 +60,59 @@ interface AuthCarouselProps {
 
 const AuthCarousel: React.FC<AuthCarouselProps> = ({ rounded = true }) => {
   const [index, setIndex] = useState(0);
-  const [slides, setSlides] = useState<Slide[]>(defaultSlides);
+  const [slides, setSlides] = useState<Slide[]>(() => readPublicDataCache<Slide[]>(AUTH_CAROUSEL_CACHE_KEY) || defaultSlides);
 
   useEffect(() => {
-    // Admin-managed slides (CMS Hub → Login tab) take over as soon as they
-    // load; the hardcoded list above is only a fallback for the moment
-    // before that fetch resolves, or if the table is empty.
+    let active = true;
+    // Render the last successful public snapshot immediately, then refresh only
+    // login-carousel data when this table changes or the browser reconnects.
     const loadSlides = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('auth_carousel_slides')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order');
-        if (!error && data && data.length > 0) {
-          setSlides(data.map((row: any) => ({
+      const { data, error } = await supabase
+        .from('auth_carousel_slides')
+        .select('image_url, eyebrow, title, subtitle, link')
+        .eq('is_active', true)
+        .order('sort_order');
+
+      if (error) {
+        console.warn('Auth carousel refresh failed; keeping cached slides.', error.message);
+        return;
+      }
+      if (!active) return;
+
+      const nextSlides = data?.length
+        ? data.map((row) => ({
             image: row.image_url,
             eyebrow: row.eyebrow,
             title: row.title,
             subtitle: row.subtitle,
             link: row.link,
-          })));
-          setIndex(0);
-        }
-      } catch (err) {
-        console.error('Error loading auth carousel slides:', err);
-      }
+          }))
+        : defaultSlides;
+      writePublicDataCache(AUTH_CAROUSEL_CACHE_KEY, nextSlides);
+      setSlides(nextSlides);
+      setIndex(0);
     };
-    loadSlides();
+
+    void loadSlides();
+    const channel = supabase
+      .channel('public-auth-carousel-slides')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'auth_carousel_slides' }, () => {
+        void loadSlides();
+      })
+      .subscribe();
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible' && navigator.onLine) void loadSlides();
+    };
+    window.addEventListener('focus', refreshWhenVisible);
+    window.addEventListener('online', refreshWhenVisible);
+
+    return () => {
+      active = false;
+      window.removeEventListener('focus', refreshWhenVisible);
+      window.removeEventListener('online', refreshWhenVisible);
+      void supabase.removeChannel(channel);
+    };
   }, []);
 
   const goTo = useCallback((i: number) => {
