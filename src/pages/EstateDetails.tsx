@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Download, MapPin, ShoppingCart, Building2, Calendar, Phone, Mail, MapIcon,
-  Clock, Shield, Play, ChevronLeft, ChevronRight, X, ArrowLeft, Loader2, CalendarCheck,
+  Clock, Shield, Play, ChevronLeft, ChevronRight, X, ArrowLeft, CalendarCheck,
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
