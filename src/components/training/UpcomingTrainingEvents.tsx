@@ -1,76 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { usePublicTrainingEvents } from '@/hooks/usePublicTrainingEvents';
 import TrainingEventCard from './TrainingEventCard';
 import TrainingEventFilters from './TrainingEventFilters';
-import { Loader2 } from 'lucide-react';
 
-interface TrainingEvent {
-  id: string;
-  title: string;
-  description: string | null;
-  date: string;
-  time: string;
-  location: string;
-  capacity: string;
-  category: string;
-  image: string | null;
-}
 
 const UpcomingTrainingEvents = () => {
-  const [events, setEvents] = useState<TrainingEvent[]>([]);
-  const [filteredEvents, setFilteredEvents] = useState<TrainingEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { events: allEvents, loading } = usePublicTrainingEvents();
+  const today = new Date().toISOString().split('T')[0];
+  const events = allEvents.filter(event => event.date >= today);
+  const [filteredEvents, setFilteredEvents] = useState<typeof events>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  useEffect(() => {
-    // Set up real-time subscription for training events
-    const channel = supabase
-      .channel('training_events_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'training_events',
-        },
-        () => {
-          fetchEvents();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  useEffect(() => {
     applyFilters();
-  }, [events, selectedCategory, startDate, endDate]);
+  }, [allEvents, selectedCategory, startDate, endDate]);
 
-  const fetchEvents = async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      
-      const { data, error } = await supabase
-        .from('training_events')
-        .select('*')
-        .gte('date', today)
-        .order('date', { ascending: true });
+  const applyFilters = () => {
+    let filtered = [...events];
 
-      if (error) throw error;
-      setEvents(data || []);
-    } catch (error) {
-      console.error('Error fetching events:', error);
-    } finally {
-      setLoading(false);
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(event => event.category === selectedCategory);
     }
+    if (startDate) {
+      filtered = filtered.filter(event => new Date(event.date) >= new Date(startDate));
+    }
+    if (endDate) {
+      filtered = filtered.filter(event => new Date(event.date) <= new Date(endDate));
+    }
+    setFilteredEvents(filtered);
   };
 
   const applyFilters = () => {
@@ -93,11 +52,23 @@ const UpcomingTrainingEvents = () => {
     setFilteredEvents(filtered);
   };
 
-  if (loading) {
+  if (loading && allEvents.length === 0) {
     return (
-      <section className="py-16 bg-gray-50">
-        <div className="container-custom flex justify-center items-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <section className="py-16 bg-gray-50" aria-label="Loading upcoming training">
+        <div className="container-custom">
+          <div className="mb-12 h-8 w-64 animate-pulse rounded bg-slate-200" />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }, (_, index) => (
+              <div key={index} className="overflow-hidden rounded-xl bg-white shadow">
+                <div className="h-48 animate-pulse bg-slate-200" />
+                <div className="space-y-3 p-5">
+                  <div className="h-5 w-4/5 animate-pulse rounded bg-slate-200" />
+                  <div className="h-3 w-full animate-pulse rounded bg-slate-200" />
+                  <div className="h-3 w-2/3 animate-pulse rounded bg-slate-200" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     );
