@@ -17,9 +17,9 @@ export function readPublicDataCache<T>(key: string, maxAgeMs = DEFAULT_CACHE_TTL
     if (!raw) return null;
     const parsed = JSON.parse(raw) as CacheEnvelope<T>;
     if (parsed?.version !== 1 || !('data' in parsed)) return null;
-    // Existing v1 entries without savedAt remain readable once; new entries
-    // expire after seven days so stale content cannot persist indefinitely.
-    if (parsed.savedAt && Date.now() - parsed.savedAt > maxAgeMs) {
+    // Drop legacy entries without a timestamp and expire snapshots after
+    // seven days so old database content cannot remain indefinitely.
+    if (!parsed.savedAt || Date.now() - parsed.savedAt > maxAgeMs) {
       window.localStorage.removeItem(CACHE_PREFIX + key);
       return null;
     }
@@ -72,5 +72,21 @@ export function subscribePublicDataCache<T>(key: string, listener: (data: T) => 
   return () => {
     window.removeEventListener(cacheEventName(key), onCustomEvent);
     window.removeEventListener('storage', onStorage);
+  };
+}
+
+/** Revalidate only when the user returns to an online, visible tab. */
+export function listenForPublicDataRevalidation(refresh: () => void): () => void {
+  if (typeof window === 'undefined') return () => undefined;
+  const refreshWhenAvailable = () => {
+    if (document.visibilityState === 'visible' && navigator.onLine) refresh();
+  };
+  window.addEventListener('focus', refreshWhenAvailable);
+  window.addEventListener('online', refreshWhenAvailable);
+  document.addEventListener('visibilitychange', refreshWhenAvailable);
+  return () => {
+    window.removeEventListener('focus', refreshWhenAvailable);
+    window.removeEventListener('online', refreshWhenAvailable);
+    document.removeEventListener('visibilitychange', refreshWhenAvailable);
   };
 }
