@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useId } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Property, Filters } from "./types";
 import { applyFilters } from "./propertyUtils";
-import { readPublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
+import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
 
 const PUBLIC_ESTATE_CACHE_KEY = "public-estates";
 const readEstateCache = (): Property[] => readPublicDataCache<Property[]>(PUBLIC_ESTATE_CACHE_KEY) || [];
@@ -96,7 +96,13 @@ export function usePropertyFetch(searchQuery: string, filters: Filters) {
         void fetchProperties();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchProperties());
+    const stopCacheSync = subscribePublicDataCache<Property[]>(PUBLIC_ESTATE_CACHE_KEY, setProperties);
+    return () => {
+      stopRevalidation();
+      stopCacheSync();
+      void supabase.removeChannel(channel);
+    };
   }, [channelId, fetchProperties]);
 
   return {
