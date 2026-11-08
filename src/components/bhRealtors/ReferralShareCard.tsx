@@ -5,11 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { Copy, Download, Mail, MessageCircle, QrCode, Send, Share2, CheckCircle2, X } from 'lucide-react';
 
-type Props = { referralCode: string; referralLink: string };
+type Props = { referralCode: string; referralLink: string; membershipStatus?: 'active' | 'inactive' };
 
 const qrUrl = (link: string) => `https://quickchart.io/qr?text=${encodeURIComponent(link)}&size=420&margin=2`;
 
-const ReferralShareCard: React.FC<Props> = ({ referralCode, referralLink }) => {
+const ReferralShareCard: React.FC<Props> = ({ referralCode, referralLink, membershipStatus = 'inactive' }) => {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -101,9 +101,14 @@ const ReferralShareCard: React.FC<Props> = ({ referralCode, referralLink }) => {
           <div>
             <div className="flex items-center gap-2"><Share2 className="h-5 w-5" /><p className="text-xs font-bold uppercase tracking-[0.2em] text-white/75">Your BHRealtors referral</p></div>
             <h2 className="mt-2 text-2xl font-black sm:text-3xl">Grow your network with your code</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">Share your personal link, QR code or branded referral image. Anyone who joins through it is connected to your referral.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">Share your personal link, QR code or branded referral image. Active and inactive members can share and receive referral attribution; commission eligibility still depends on active membership.</p>
           </div>
-          <Badge className="w-fit border border-white/20 bg-white/15 px-3 py-1 font-mono text-white">{referralCode}</Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge className="w-fit border border-white/20 bg-white/15 px-3 py-1 font-mono text-white">{referralCode}</Badge>
+            <Badge className={membershipStatus === 'active' ? 'border border-emerald-200/40 bg-emerald-400/15 text-emerald-50' : 'border border-amber-200/40 bg-amber-300/15 text-amber-50'}>
+              {membershipStatus === 'active' ? 'Active member' : 'Inactive member — sharing enabled'}
+            </Badge>
+          </div>
         </div>
       </div>
 
