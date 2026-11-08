@@ -88,11 +88,15 @@ const BHRealtors: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [dashboardError, setDashboardError] = useState(false);
   const [dashboardReferralCode, setDashboardReferralCode] = useState('');
+  const [dashboardIsPbo, setDashboardIsPbo] = useState(false);
+  const [dashboardIsActive, setDashboardIsActive] = useState(false);
 
   const currentCode = profile?.current_package || 'associate';
   const currentRank = rank[currentCode] || 1;
-  const isPbo = Boolean(profile?.is_pbo);
-  const isRealtor = Boolean(profile?.is_pbo && profile?.is_active);
+  // The dashboard RPC is the authoritative fallback when the auth profile
+  // snapshot is stale; inactive members remain eligible to share referrals.
+  const isPbo = Boolean(profile?.is_pbo || dashboardIsPbo);
+  const isRealtor = Boolean(isPbo && (profile?.is_active || dashboardIsActive));
   const referralCode = profile?.pbo_referral_code || dashboardReferralCode || '';
   const referralLink = typeof window !== 'undefined' && referralCode ? `${window.location.origin}/auth?ref=${encodeURIComponent(referralCode)}` : '';
 
@@ -113,6 +117,8 @@ const BHRealtors: React.FC = () => {
     } else {
       const dashboard = (dashboardResult.data || {}) as DashboardData;
       setDashboardReferralCode(String(dashboard.profile?.referral_code || ''));
+      setDashboardIsPbo(Boolean(dashboard.profile?.is_pbo));
+      setDashboardIsActive(Boolean(dashboard.profile?.is_active));
       setDownlineCount(Number(dashboard.direct_referrals || 0));
       setActiveDownlineCount(Number(dashboard.active_direct_referrals || 0));
       setLocked(Number(dashboard.locked_commissions || 0));
@@ -300,7 +306,11 @@ const BHRealtors: React.FC = () => {
                   <div className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-2"><code className="min-w-0 flex-1 truncate px-3 text-base font-black tracking-wider text-estate-purple">{referralCode}</code><Button type="button" onClick={copyReferralCode} variant="outline" className="shrink-0">{copiedCode ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4" />}{copiedCode ? 'Copied' : 'Copy'}</Button></div>
                 </div>
               </section>
-              <ReferralShareCard referralCode={referralCode} referralLink={referralLink} />
+              <ReferralShareCard
+                referralCode={referralCode}
+                referralLink={referralLink}
+                membershipStatus={isRealtor ? 'active' : 'inactive'}
+              />
             </>
           )}
 
