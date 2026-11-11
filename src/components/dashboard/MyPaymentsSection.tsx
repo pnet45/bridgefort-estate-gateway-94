@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/auth";
 import { estimatePayoffPeriods, frequencyMeta } from "@/data/fiveKDailyPromo";
+import BankTransferSubmission from "@/components/dashboard/BankTransferSubmission";
 
 const PLAN_LABELS: Record<string, string> = {
   "outright": "Outright",
@@ -104,12 +105,15 @@ const MyPaymentsSection: React.FC = () => {
   }
 
   if (!payments.length && !docPayments.length) {
-    return <Card>
-      <CardHeader><CardTitle>My Payments</CardTitle></CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground">No payment records found.</p>
-      </CardContent>
-    </Card>;
+    return (
+      <div className="space-y-4">
+        <Card>
+          <CardHeader><CardTitle>My Payments</CardTitle></CardHeader>
+          <CardContent><p className="text-muted-foreground">No payment records found.</p></CardContent>
+        </Card>
+        <BankTransferSubmission />
+      </div>
+    );
   }
 
   const promoPlans = payments.filter((pm) => {
@@ -120,6 +124,7 @@ const MyPaymentsSection: React.FC = () => {
   const standardPayments = payments.filter((pm) => !promoPlans.includes(pm));
 
   return (
+    <div className="space-y-4">
     <Card>
       <CardHeader>
         <CardTitle>My Payments</CardTitle>
@@ -240,6 +245,8 @@ const MyPaymentsSection: React.FC = () => {
         </div>
       </CardContent>
     </Card>
+    <BankTransferSubmission />
+    </div>
   );
 };
 
