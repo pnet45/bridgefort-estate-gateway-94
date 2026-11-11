@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 
-type City = { id: number; name: string | Record<string, string> };
+type City = { id: number | string; name: string | Record<string, string>; type?: string };
 type HotelResult = {
   id: number;
   price?: any;
@@ -112,12 +112,17 @@ const BookingComHotelSearch: React.FC = () => {
   const loadCities = async () => {
     setCitiesLoading(true);
     setSearchError("");
+    if (cityQuery.trim().length < 3) {
+      setSearchError("Enter at least 3 characters to find a city.");
+      setCitiesLoading(false);
+      return;
+    }
     const { data, error } = await supabase.functions.invoke("booking-demand-cities", {
-      body: { country },
+      body: { country, query: cityQuery.trim() },
     });
     setCitiesLoading(false);
     if (error || data?.error) {
-      setSearchError(data?.error || error?.message || "Could not load destination cities.");
+      setSearchError(data?.error || error?.message || "Could not find destination suggestions.");
       return;
     }
     setCities(Array.isArray(data?.data) ? data.data : []);
@@ -144,7 +149,7 @@ const BookingComHotelSearch: React.FC = () => {
     const { data, error } = await supabase.functions.invoke("booking-demand-search", {
       body: {
         country,
-        city: selectedCity?.id,
+        city: selectedCity ? Number(selectedCity.id) : undefined,
         checkin,
         checkout,
         adults: Number(adults),
@@ -234,12 +239,12 @@ const BookingComHotelSearch: React.FC = () => {
                 <datalist id="booking-city-options">
                   {cities.map((city) => <option key={city.id} value={cityName(city)} />)}
                 </datalist>
-                <Button type="button" variant="outline" className="h-11 shrink-0" onClick={loadCities} disabled={citiesLoading}>
-                  {citiesLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Load"}
+                <Button type="button" variant="outline" className="h-11 shrink-0" onClick={loadCities} disabled={citiesLoading || cityQuery.trim().length < 3}>
+                  {citiesLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Find city"}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {citiesLoaded ? `${cities.length} city options loaded` : "Load city options or search the selected country."}
+                {citiesLoaded ? `${cities.length} matching city suggestions` : "Enter at least 3 letters and find a city, or search the selected country."}
               </p>
             </div>
 
