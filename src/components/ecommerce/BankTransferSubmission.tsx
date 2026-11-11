@@ -96,7 +96,12 @@ const BankTransferSubmission: React.FC<Props> = ({ orderId, amountDue, orderRefe
       // Save the durable Storage path before clearing the upload state. If the
       // mobile browser remounts after the picker, the receipt can be submitted
       // without asking the customer to choose the file again.
-      window.sessionStorage.setItem(draftKey, JSON.stringify(nextDraft));
+      try {
+        window.sessionStorage.setItem(draftKey, JSON.stringify(nextDraft));
+      } catch (storageError) {
+        console.warn('Receipt uploaded but browser draft storage is unavailable.', storageError);
+        toast({ title: 'Receipt uploaded', description: 'Keep this page open until you submit the transfer.' });
+      }
       setReceiptPath(path);
       setReceiptName(file.name);
       if (previousPath && previousPath !== path) {
