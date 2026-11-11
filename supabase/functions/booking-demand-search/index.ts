@@ -22,7 +22,7 @@ serve(async (req) => {
 
   const country = String(body.country ?? "").trim().toLowerCase();
   const city = Number(body.city);
-  const hasCity = Number.isSafeInteger(city) && city !== 0;
+  const hasCity = Number.isSafeInteger(city) && city > 0;
   if (!hasCity && !/^[a-z]{2}$/.test(country)) {
     return jsonResponse(req, { error: "Choose a destination country or city." }, 400);
   }
