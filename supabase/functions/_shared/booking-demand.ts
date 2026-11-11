@@ -39,6 +39,7 @@ export function createServiceClient() {
 }
 
 export async function parseJson(req: Request, maxBytes = 8_192): Promise<Record<string, unknown> | null> {
+  if (!(req.headers.get("content-type") || "").toLowerCase().includes("application/json")) return null;
   const raw = await req.text();
   if (new TextEncoder().encode(raw).byteLength > maxBytes) return null;
   try {
