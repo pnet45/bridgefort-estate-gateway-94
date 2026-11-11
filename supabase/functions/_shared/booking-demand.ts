@@ -101,8 +101,8 @@ export async function bookingDemandRequest(path: string, payload: Record<string,
     return { ok: false as const, status: 503, message: "Booking.com integration environment is invalid." };
   }
   const baseUrl = environment === "production"
-    ? "https://demandapi.booking.com/3.2"
-    : "https://demandapi-sandbox.booking.com/3.2";
+    ? "https://demandapi.booking.com/3.3"
+    : "https://demandapi-sandbox.booking.com/3.3";
 
   let response: Response;
   try {
