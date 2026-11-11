@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { bhRealtorsPackages, type BhRealtorsPackage } from '@/data/bhRealtorsPackages';
-import { readPublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
+import { listenForPublicDataRevalidation, readPublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 const CACHE_KEY = 'public-bhrealtor-packages';
 let snapshot = readPublicDataCache<BhRealtorsPackage[]>(CACHE_KEY) ?? bhRealtorsPackages;
@@ -75,17 +75,12 @@ export function usePublicMlmPackages() {
     };
 
     refresh();
-    const refreshWhenVisible = () => {
-      if (document.visibilityState === 'visible' && navigator.onLine) refresh();
-    };
-    window.addEventListener('focus', refreshWhenVisible);
-    window.addEventListener('online', refreshWhenVisible);
+    const stopRevalidation = listenForPublicDataRevalidation(refresh);
 
     return () => {
       active = false;
       listeners.delete(listener);
-      window.removeEventListener('focus', refreshWhenVisible);
-      window.removeEventListener('online', refreshWhenVisible);
+      stopRevalidation();
       if (listeners.size === 0 && realtimeChannel) {
         void supabase.removeChannel(realtimeChannel);
         realtimeChannel = null;
