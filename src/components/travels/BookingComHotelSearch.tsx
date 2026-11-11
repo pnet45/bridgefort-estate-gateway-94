@@ -231,7 +231,11 @@ const BookingComHotelSearch: React.FC = () => {
                   id="booking-city"
                   list="booking-city-options"
                   value={cityQuery}
-                  onChange={(event) => setCityQuery(event.target.value)}
+                  onChange={(event) => {
+                    setCityQuery(event.target.value);
+                    setCities([]);
+                    setCitiesLoaded(false);
+                  }}
                   placeholder="Choose or type a city"
                   className="h-11 min-w-0"
                   maxLength={80}
