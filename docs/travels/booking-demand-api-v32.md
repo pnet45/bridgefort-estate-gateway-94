@@ -1,13 +1,13 @@
-# Bridgefort Travels — Booking.com Demand API 3.2
+# Bridgefort Travels — Booking.com Demand API 3.3
 
 ## Integration model
 
 This branch prepares a **Search, Look and Redirect** accommodation integration. It does not implement Search, Look and Book, create orders, collect payment, or confirm reservations inside Bridgefort.
 
-1. **Destination lookup:** `POST /3.2/common/locations/cities` loads city IDs by country. The browser component retains the returned list in component state for the current page session; there is no new database cache or migration.
-2. **Search:** `POST /3.2/accommodations/search` finds accommodation IDs and available starting prices for the selected dates and guest count.
-3. **Property details:** `POST /3.2/accommodations/details` enriches the first 20 results with names, photos, descriptions, facilities and policies.
-4. **Look:** `POST /3.2/accommodations/availability` retrieves current prices and availability for a selected property.
+1. **Destination lookup:** `POST /3.3/common/autocomplete` returns ranked city suggestions from a free-text query. The UI requests suggestions after the visitor enters at least three characters; the browser component retains results only in page state.
+2. **Search:** `POST /3.3/accommodations/search` finds accommodation IDs and available starting prices for the selected dates and guest count.
+3. **Property details:** `POST /3.3/accommodations/details` enriches the first 20 results with names, photos, descriptions, facilities and policies.
+4. **Look:** `POST /3.3/accommodations/availability` retrieves current prices and availability for a selected property.
 5. **Redirect:** the browser opens only the HTTPS web URL returned by Booking.com availability, after the server validates its hostname.
 
 Live prices and availability are never cached locally. Booking.com completes the reservation, payment (where applicable), and confirmation.
@@ -21,7 +21,7 @@ The Demand API requires both an API key token and an Affiliate ID. Configure the
 - `BOOKING_DEMAND_ENV` — `sandbox` for testing; change to `production` only after partner approval and explicit release approval.
 - `BOOKING_DEMAND_ALLOWED_ORIGINS` — comma-separated approved preview origins if preview testing needs them. Production Bridgefort domains and localhost development are already allow-listed.
 
-The default upstream is `https://demandapi-sandbox.booking.com/3.2`. Production is `https://demandapi.booking.com/3.2`.
+The default upstream is `https://demandapi-sandbox.booking.com/3.3`. Production is `https://demandapi.booking.com/3.3`.
 
 No credentials are committed. This repository review cannot inspect or expose project secrets. Until the authorised partner credentials are configured, the functions return a controlled configuration error.
 
@@ -43,13 +43,13 @@ No new database table, migration, or grant is required by this implementation. T
 
 The accommodation search section is added alongside existing Bridgefort destination cards, travel packages and enquiry form. It does not replace or modify the existing travel enquiry-to-CRM workflow. Customers who prefer a consultant can still use the existing Bridgefort enquiry form.
 
-The destination selector covers destinations already featured on the Travels page. A city must be selected from Booking.com city lookup results; if no city is selected, search is scoped to the selected country.
+The country selector is limited to destinations already featured on the Travels page. Visitors can enter at least three characters to retrieve ranked city autocomplete suggestions, select one, and search by its destination ID. If no city is selected, search is scoped to the selected country.
 
 ## Validation checklist
 
 - Obtain valid sandbox API key and Affiliate ID from the authorised Partner Centre account.
 - Configure secrets in a non-production test environment.
-- Verify cities lookup and API error handling.
+- Verify autocomplete suggestions, empty results and API error handling.
 - Verify Search request validation, property details and empty results.
 - Verify Look returns current availability and a valid HTTPS Booking.com web URL.
 - Verify invalid redirect hosts are rejected and no arbitrary URL is accepted from the browser.
