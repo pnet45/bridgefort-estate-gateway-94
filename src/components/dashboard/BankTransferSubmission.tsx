@@ -228,11 +228,11 @@ export default function BankTransferSubmission() {
                 max={balance}
                 step="0.01"
                 value={amounts[order.id] || ''}
-                onChange={(event) => setAmounts((current) => {
-                  const next = { ...current, [order.id]: event.target.value };
+                onChange={(event) => {
+                  const next = { ...amounts, [order.id]: event.target.value };
+                  setAmounts(next);
                   persistDraft({ amounts: next });
-                  return next;
-                })}
+                }}
                 placeholder="Transfer amount (₦)"
                 aria-label="Transfer amount"
               />
@@ -240,20 +240,20 @@ export default function BankTransferSubmission() {
                 type="date"
                 max={localDate()}
                 value={transferDates[order.id] || localDate()}
-                onChange={(event) => setTransferDates((current) => {
-                  const next = { ...current, [order.id]: event.target.value };
+                onChange={(event) => {
+                  const next = { ...transferDates, [order.id]: event.target.value };
+                  setTransferDates(next);
                   persistDraft({ transferDates: next });
-                  return next;
-                })}
+                }}
                 aria-label="Transfer date"
               />
               <Input
                 value={references[order.id] || ''}
-                onChange={(event) => setReferences((current) => {
-                  const next = { ...current, [order.id]: event.target.value };
+                onChange={(event) => {
+                  const next = { ...references, [order.id]: event.target.value };
+                  setReferences(next);
                   persistDraft({ references: next });
-                  return next;
-                })}
+                }}
                 placeholder="Bank transfer reference"
                 maxLength={120}
                 aria-label="Bank transfer reference"
