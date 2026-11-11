@@ -16,30 +16,51 @@ type HotelResult = {
 type LiveAvailability = { data?: any; redirectUrl?: string | null; redirectAvailable?: boolean };
 
 const COUNTRIES = [
-  { code: "ae", label: "United Arab Emirates" },
-  { code: "gb", label: "United Kingdom" },
-  { code: "tr", label: "Türkiye" },
+  { code: "ng", label: "Nigeria" },
+  { code: "gh", label: "Ghana" },
   { code: "za", label: "South Africa" },
-  { code: "id", label: "Indonesia" },
+  { code: "ke", label: "Kenya" },
+  { code: "eg", label: "Egypt" },
+  { code: "ma", label: "Morocco" },
+  { code: "ae", label: "United Arab Emirates" },
+  { code: "sa", label: "Saudi Arabia" },
+  { code: "qa", label: "Qatar" },
+  { code: "gb", label: "United Kingdom" },
+  { code: "fr", label: "France" },
+  { code: "es", label: "Spain" },
+  { code: "it", label: "Italy" },
+  { code: "de", label: "Germany" },
+  { code: "nl", label: "Netherlands" },
+  { code: "tr", label: "Türkiye" },
   { code: "us", label: "United States" },
+  { code: "ca", label: "Canada" },
+  { code: "au", label: "Australia" },
+  { code: "jp", label: "Japan" },
+  { code: "sg", label: "Singapore" },
+  { code: "th", label: "Thailand" },
+  { code: "id", label: "Indonesia" },
   { code: "pl", label: "Poland" },
-  { code: "cz", label: "Czech Republic" },
-  { code: "rs", label: "Serbia" },
-  { code: "ro", label: "Romania" },
   { code: "pt", label: "Portugal" },
-  { code: "by", label: "Belarus" },
-  { code: "md", label: "Moldova" },
-  { code: "ua", label: "Ukraine" },
 ];
 
-const cityName = (city: City) => typeof city.name === "string"
-  ? city.name
-  : city.name?.["en-gb"] || Object.values(city.name || {})[0] || "";
+const localizedText = (value: unknown): string => {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    const values = value as Record<string, unknown>;
+    const preferred = values["en-gb"] ?? values.en;
+    if (typeof preferred === "string") return preferred;
+    const fallback = Object.values(values).find((item) => typeof item === "string");
+    return typeof fallback === "string" ? fallback : "";
+  }
+  return "";
+};
+
+const cityName = (city: City) => localizedText(city.name);
 
 const getPrice = (value: any): number | null => {
   const product = value?.recommendation?.products?.[0] || value?.products?.[0];
   const candidates = [
-    // Booking.com v3.2 requires the display price in traveller-facing search views.
+    // Prefer the booker-facing display amount returned for the selected traveller market.
     value?.price?.display?.booker_currency,
     value?.price?.display?.accommodation_currency,
     value?.price?.total?.booker_currency,
@@ -89,7 +110,7 @@ const formatMoney = (amount: number | null, currency: string) => {
 
 const BookingComHotelSearch: React.FC = () => {
   const today = new Date().toISOString().slice(0, 10);
-  const [country, setCountry] = useState("ae");
+  const [country, setCountry] = useState("ng");
   const [cityQuery, setCityQuery] = useState("");
   const [cities, setCities] = useState<City[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
@@ -112,16 +133,18 @@ const BookingComHotelSearch: React.FC = () => {
   const loadCities = async () => {
     setCitiesLoading(true);
     setSearchError("");
-    const { data, error } = await supabase.functions.invoke("booking-demand-cities", {
-      body: { country },
-    });
-    setCitiesLoading(false);
-    if (error || data?.error) {
-      setSearchError(data?.error || error?.message || "Could not load destination cities.");
-      return;
+    try {
+      const { data, error } = await supabase.functions.invoke("booking-demand-cities", {
+        body: { country },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message || "Could not load destination cities.");
+      setCities(Array.isArray(data?.data) ? data.data : []);
+      setCitiesLoaded(true);
+    } catch (error: any) {
+      setSearchError(error?.message || "Could not load destination cities. Please try again.");
+    } finally {
+      setCitiesLoading(false);
     }
-    setCities(Array.isArray(data?.data) ? data.data : []);
-    setCitiesLoaded(true);
   };
 
   const searchHotels = async (event: React.FormEvent) => {
@@ -141,49 +164,52 @@ const BookingComHotelSearch: React.FC = () => {
     }
 
     setSearching(true);
-    const { data, error } = await supabase.functions.invoke("booking-demand-search", {
-      body: {
-        country,
-        city: selectedCity?.id,
-        checkin,
-        checkout,
-        adults: Number(adults),
-        rooms: Number(rooms),
-        bookerCountry: "ng",
-        platform: getBookerPlatform(),
-      },
-    });
-    setSearching(false);
-    if (error || data?.error) {
-      setSearchError(data?.error || error?.message || "Hotel search could not be completed.");
-      return;
-    }
-    setResults(Array.isArray(data?.data) ? data.data : []);
-    if (!Array.isArray(data?.data) || data.data.length === 0) {
-      setSearchError("No accommodation matched those dates. Try another date or destination.");
+    try {
+      const { data, error } = await supabase.functions.invoke("booking-demand-search", {
+        body: {
+          country,
+          city: selectedCity?.id,
+          checkin,
+          checkout,
+          adults: Number(adults),
+          rooms: Number(rooms),
+          bookerCountry: "ng",
+          platform: getBookerPlatform(),
+        },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message || "Hotel search could not be completed.");
+      const nextResults = Array.isArray(data?.data) ? data.data : [];
+      setResults(nextResults);
+      if (nextResults.length === 0) setSearchError("No accommodation matched those dates. Try another date or destination.");
+    } catch (error: any) {
+      setSearchError(error?.message || "Hotel search could not be completed. Please try again.");
+    } finally {
+      setSearching(false);
     }
   };
 
   const checkAvailability = async (hotel: HotelResult) => {
     setLookingId(hotel.id);
     setSearchError("");
-    const { data, error } = await supabase.functions.invoke("booking-demand-look", {
-      body: {
-        accommodation: hotel.id,
-        checkin,
-        checkout,
-        adults: Number(adults),
-        rooms: Number(rooms),
-        bookerCountry: "ng",
-        platform: getBookerPlatform(),
-      },
-    });
-    setLookingId(null);
-    if (error || data?.error) {
-      setSearchError(data?.error || error?.message || "Live availability could not be retrieved.");
-      return;
+    try {
+      const { data, error } = await supabase.functions.invoke("booking-demand-look", {
+        body: {
+          accommodation: hotel.id,
+          checkin,
+          checkout,
+          adults: Number(adults),
+          rooms: Number(rooms),
+          bookerCountry: "ng",
+          platform: getBookerPlatform(),
+        },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message || "Live availability could not be retrieved.");
+      setAvailability((current) => ({ ...current, [hotel.id]: data as LiveAvailability }));
+    } catch (error: any) {
+      setSearchError(error?.message || "Live availability could not be retrieved. Please try again.");
+    } finally {
+      setLookingId(null);
     }
-    setAvailability((current) => ({ ...current, [hotel.id]: data as LiveAvailability }));
   };
 
   return (
@@ -283,8 +309,8 @@ const BookingComHotelSearch: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {results.map((hotel) => {
                   const details = hotel.details || {};
-                  const name = details.name?.["en-gb"] || Object.values(details.name || {})[0] || `Accommodation ${hotel.id}`;
-                  const address = details.location?.address?.["en-gb"] || Object.values(details.location?.address || {})[0] || "";
+                  const name = localizedText(details.name) || `Accommodation ${hotel.id}`;
+                  const address = localizedText(details.location?.address);
                   const price = getPrice(hotel);
                   const currency = getCurrency(hotel);
                   const photo = getPhoto(details);
@@ -303,7 +329,7 @@ const BookingComHotelSearch: React.FC = () => {
                           {details.rating?.stars && <span className="shrink-0 text-xs font-semibold">{details.rating.stars}★</span>}
                         </div>
                         <p className="mt-3 text-sm font-semibold">{formatMoney(price, currency)}</p>
-                        {details.description?.text?.["en-gb"] && <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{details.description.text["en-gb"]}</p>}
+                        {localizedText(details.description?.text) && <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{localizedText(details.description?.text)}</p>}
                         {!live ? (
                           <Button type="button" variant="outline" className="mt-4 w-full" onClick={() => checkAvailability(hotel)} disabled={lookingId === hotel.id}>
                             {lookingId === hotel.id ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Checking live price…</> : "Check live availability"}
