@@ -62,6 +62,9 @@ jobs:
       - name: Test webhook security helpers
         run: deno test supabase/functions/_shared/webhookSecurity_test.ts
 
+      - name: Test Booking.com Demand API validation helpers
+        run: deno test supabase/functions/_shared/booking-demand_test.ts
+
       - name: Type-check Booking.com Demand API Edge Functions
         run: |
           deno check \
