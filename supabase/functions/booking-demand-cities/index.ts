@@ -48,7 +48,7 @@ serve(async (req) => {
       upstream.retryAfter ? { "Retry-After": upstream.retryAfter } : {});
   }
 
-  // Demand API v3.2 paginates common/location results through metadata.next_page.
+  // Demand API v3.3 paginates common/location results through metadata.next_page.
   // Follow a bounded number of pages so large countries do not silently lose cities.
   const allCities: unknown[] = Array.isArray(upstream.data?.data) ? [...upstream.data.data] : [];
   let nextPage = upstream.data?.metadata?.next_page;
