@@ -11,6 +11,12 @@ type Order = {
   payment_status: string | null;
 };
 type ReceiptDraft = Record<string, { path: string; name: string }>;
+type BankTransferDraft = {
+  receipts?: ReceiptDraft;
+  amounts?: Record<string, string>;
+  references?: Record<string, string>;
+  transferDates?: Record<string, string>;
+};
 
 const draftKey = (userId: string) => `bridgefort:bank-transfer-receipts:${userId}`;
 const localDate = () => {
@@ -38,8 +44,11 @@ export default function BankTransferSubmission() {
 
     try {
       const saved = window.sessionStorage.getItem(draftKey(user.id));
-      const parsed = saved ? JSON.parse(saved) as ReceiptDraft : {};
-      setReceipts(parsed && typeof parsed === 'object' ? parsed : {});
+      const parsed = saved ? JSON.parse(saved) as BankTransferDraft : {};
+      setReceipts(parsed.receipts && typeof parsed.receipts === 'object' ? parsed.receipts : {});
+      setAmounts(parsed.amounts && typeof parsed.amounts === 'object' ? parsed.amounts : {});
+      setReferences(parsed.references && typeof parsed.references === 'object' ? parsed.references : {});
+      setTransferDates(parsed.transferDates && typeof parsed.transferDates === 'object' ? parsed.transferDates : {});
     } catch (error) {
       console.warn('Could not restore bank-transfer receipt draft.', error);
       setReceipts({});
@@ -63,15 +72,25 @@ export default function BankTransferSubmission() {
       });
   }, [user]);
 
-  const persistReceipts = (next: ReceiptDraft) => {
-    setReceipts(next);
+  const persistDraft = (patch: Partial<BankTransferDraft>) => {
     if (!user) return;
     try {
-      if (Object.keys(next).length) window.sessionStorage.setItem(draftKey(user.id), JSON.stringify(next));
-      else window.sessionStorage.removeItem(draftKey(user.id));
+      const saved = window.sessionStorage.getItem(draftKey(user.id));
+      const previous = saved ? JSON.parse(saved) as BankTransferDraft : {};
+      const next = { ...previous, ...patch };
+      if (Object.values(next).every((value) => !value || Object.keys(value).length === 0)) {
+        window.sessionStorage.removeItem(draftKey(user.id));
+      } else {
+        window.sessionStorage.setItem(draftKey(user.id), JSON.stringify(next));
+      }
     } catch (error) {
-      console.warn('Could not persist bank-transfer receipt draft.', error);
+      console.warn('Could not persist bank-transfer form draft.', error);
     }
+  };
+
+  const persistReceipts = (next: ReceiptDraft) => {
+    setReceipts(next);
+    persistDraft({ receipts: next });
   };
 
   const uploadReceipt = async (order: Order, file?: File) => {
@@ -161,12 +180,19 @@ export default function BankTransferSubmission() {
         throw new Error(data?.error || error?.message || 'Transfer submission could not be completed.');
       }
 
-      const next = { ...receipts };
-      delete next[order.id];
-      persistReceipts(next);
-      setAmounts((current) => ({ ...current, [order.id]: '' }));
-      setReferences((current) => ({ ...current, [order.id]: '' }));
-      setTransferDates((current) => ({ ...current, [order.id]: '' }));
+      const nextReceipts = { ...receipts };
+      delete nextReceipts[order.id];
+      const nextAmounts = { ...amounts };
+      delete nextAmounts[order.id];
+      const nextReferences = { ...references };
+      delete nextReferences[order.id];
+      const nextDates = { ...transferDates };
+      delete nextDates[order.id];
+      setReceipts(nextReceipts);
+      setAmounts(nextAmounts);
+      setReferences(nextReferences);
+      setTransferDates(nextDates);
+      persistDraft({ receipts: nextReceipts, amounts: nextAmounts, references: nextReferences, transferDates: nextDates });
       setMessage('Transfer submitted and pending verification. It will not be marked paid until authorised staff confirm the funds reached Bridgefort’s company account.');
     } catch (error: any) {
       setMessage(error?.message || 'Transfer submission failed. Please try again.');
@@ -202,7 +228,11 @@ export default function BankTransferSubmission() {
                 max={balance}
                 step="0.01"
                 value={amounts[order.id] || ''}
-                onChange={(event) => setAmounts((current) => ({ ...current, [order.id]: event.target.value }))}
+                onChange={(event) => setAmounts((current) => {
+                  const next = { ...current, [order.id]: event.target.value };
+                  persistDraft({ amounts: next });
+                  return next;
+                })}
                 placeholder="Transfer amount (₦)"
                 aria-label="Transfer amount"
               />
@@ -210,12 +240,20 @@ export default function BankTransferSubmission() {
                 type="date"
                 max={localDate()}
                 value={transferDates[order.id] || localDate()}
-                onChange={(event) => setTransferDates((current) => ({ ...current, [order.id]: event.target.value }))}
+                onChange={(event) => setTransferDates((current) => {
+                  const next = { ...current, [order.id]: event.target.value };
+                  persistDraft({ transferDates: next });
+                  return next;
+                })}
                 aria-label="Transfer date"
               />
               <Input
                 value={references[order.id] || ''}
-                onChange={(event) => setReferences((current) => ({ ...current, [order.id]: event.target.value }))}
+                onChange={(event) => setReferences((current) => {
+                  const next = { ...current, [order.id]: event.target.value };
+                  persistDraft({ references: next });
+                  return next;
+                })}
                 placeholder="Bank transfer reference"
                 maxLength={120}
                 aria-label="Bank transfer reference"
@@ -223,7 +261,7 @@ export default function BankTransferSubmission() {
               <Input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,application/pdf"
-                disabled={busy}
+                disabled={busy || uploadingId !== null}
                 onChange={(event) => {
                   const file = event.target.files?.[0];
                   event.target.value = '';
