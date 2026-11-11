@@ -81,45 +81,33 @@ const NewProfileForm = () => {
   const index = steps.findIndex(s => s.key === activeStep);
   const isLast = index === steps.length - 1;
   const progress = Math.round(((index + 1) / steps.length) * 100);
-  const saveKycDocument = useCallback((docKey: string, url: string, name: string, type: string) => {
-    setKycDocs((previous) => {
-      const next = { ...previous, [docKey]: { url, name, type } };
-      if (user) {
-        try {
-          window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify({
-            savedAt: Date.now(),
-            form: formRef.current,
-            kycDocs: next,
-            activeStep,
-            termsAccepted,
-          } satisfies ProfileDraft));
-        } catch (error) {
-          console.warn('Unable to immediately preserve uploaded KYC document metadata.', error);
-        }
-      }
-      return next;
-    });
+  const persistDraft = useCallback((nextForm: FormState, nextKycDocs: Record<string, { url: string; name: string; type: string }>) => {
+    if (!user) return;
+    try {
+      window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify({
+        savedAt: Date.now(),
+        form: nextForm,
+        kycDocs: nextKycDocs,
+        activeStep,
+        termsAccepted,
+      } satisfies ProfileDraft));
+    } catch (error) {
+      console.warn('Unable to preserve profile draft in this browser session.', error);
+    }
   }, [user, activeStep, termsAccepted]);
 
+  const saveKycDocument = useCallback((docKey: string, url: string, name: string, type: string) => {
+    const next = { ...kycDocs, [docKey]: { url, name, type } };
+    setKycDocs(next);
+    persistDraft(formRef.current, next);
+  }, [kycDocs, persistDraft]);
+
   const update = useCallback((field: string, value: any) => {
-    setForm((prev) => {
-      const next = { ...prev, [field]: value };
-      if (user) {
-        try {
-          window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify({
-            savedAt: Date.now(),
-            form: next,
-            kycDocs,
-            activeStep,
-            termsAccepted,
-          } satisfies ProfileDraft));
-        } catch (error) {
-          console.warn('Unable to immediately preserve profile changes.', error);
-        }
-      }
-      return next;
-    });
-  }, [user, kycDocs, activeStep, termsAccepted]);
+    const next = { ...formRef.current, [field]: value };
+    formRef.current = next;
+    setForm(next);
+    persistDraft(next, kycDocs);
+  }, [persistDraft, kycDocs]);
 
   useEffect(() => {
     const load = async () => {

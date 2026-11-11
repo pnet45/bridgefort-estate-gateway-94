@@ -34,7 +34,13 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
     const file = e.currentTarget.files?.[0];
     if (!file) return;
     if (file.size > 4 * 1024 * 1024) {
-      toast({ title: "File too large", description: "File < 4MB", variant: "destructive" });
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      toast({ title: "File too large", description: "File must be smaller than 4MB.", variant: "destructive" });
+      return;
+    }
+    if (!["image/jpeg", "image/png", "image/webp", "application/pdf"].includes(file.type)) {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      toast({ title: "Unsupported file", description: "Choose a JPG, PNG, WebP or PDF file.", variant: "destructive" });
       return;
     }
     setUploading(true);
@@ -68,7 +74,7 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
         <Input
           id={inputId}
           type="file"
-          accept="image/*,application/pdf"
+          accept="image/jpeg,image/png,image/webp,application/pdf"
           onChange={handleFileChange}
           ref={fileInputRef}
           disabled={uploading}
