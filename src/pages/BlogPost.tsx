@@ -189,7 +189,9 @@ const BlogPost = () => {
     const plain = (mergedPost.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
     const wordCount = plain ? plain.split(' ').length : 0;
 
-    document.title = `${mergedPost.title} | Bridgefort Homes Development Ltd`;
+    const seoTitle = mergedPost.metadata?.seo_title || mergedPost.title;
+    const seoDescription = mergedPost.metadata?.seo_description || mergedPost.excerpt || mergedPost.title;
+    document.title = `${seoTitle} | Bridgefort Homes Development Ltd`;
 
     const setMeta = (key: string, value: string, attr: 'name' | 'property' = 'name') => {
       let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
@@ -201,16 +203,16 @@ const BlogPost = () => {
       el.setAttribute('content', value);
     };
 
-    setMeta('description', mergedPost.excerpt || mergedPost.title);
-    setMeta('og:title', mergedPost.title, 'property');
-    setMeta('og:description', mergedPost.excerpt || mergedPost.title, 'property');
+    setMeta('description', seoDescription);
+    setMeta('og:title', seoTitle, 'property');
+    setMeta('og:description', seoDescription, 'property');
     setMeta('og:image', mergedPost.image_path || '', 'property');
     setMeta('og:url', url, 'property');
     setMeta('og:type', 'article', 'property');
     setMeta('article:published_time', mergedPost.created_at, 'property');
     setMeta('twitter:card', 'summary_large_image');
-    setMeta('twitter:title', mergedPost.title);
-    setMeta('twitter:description', mergedPost.excerpt || mergedPost.title);
+    setMeta('twitter:title', seoTitle);
+    setMeta('twitter:description', seoDescription);
     if (mergedPost.image_path) setMeta('twitter:image', mergedPost.image_path);
 
     const setJsonLd = (id: string, data: object) => {
