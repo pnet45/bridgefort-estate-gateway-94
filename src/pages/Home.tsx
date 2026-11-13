@@ -92,7 +92,7 @@ const Home = () => {
       
       {/* Testimonials */}
       <Testimonials />
-      <CMSSection page="home" contentType="page_section" excludeMetadataKey="section_key" title="More from Bridgefort" />
+      <CMSSection page="home" contentType="page_section" excludeMetadata={{ key: "section_key", value: "testimonial" }} title="More from Bridgefort" />
       
       {/* YouTube Section */}
       <YouTubeSection />
