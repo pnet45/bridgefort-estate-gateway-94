@@ -16,7 +16,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   label,
   onFileSelect,
   file,
-  acceptedTypes = ".pdf,.doc,.docx",
+  acceptedTypes = ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   disabled = false,
   uploading = false,
 }) => {
@@ -32,11 +32,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 
     try {
       const result = onFileSelect(selectedFile);
-      void Promise.resolve(result).finally(() => {
-        // Reset after the consumer has finished reading/uploading the File so
-        // the same document can be selected again after either success or failure.
-        if (inputRef.current) inputRef.current.value = "";
-      });
+      const resetInput = () => { if (inputRef.current) inputRef.current.value = ""; };
+      void Promise.resolve(result).then(resetInput, resetInput);
     } catch (error) {
       if (inputRef.current) inputRef.current.value = "";
       throw error;
