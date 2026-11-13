@@ -90,7 +90,7 @@ const AdminContentHub: React.FC = () => {
       toast({ title: 'Motivation slide content incomplete', description: 'Add slide text and choose an image before saving.', variant: 'destructive' });
       return;
     }
-    if (editing.link_url && !/^(https?:\\/\\/|\\/)/i.test(editing.link_url.trim())) {
+    if (editing.link_url && !/^(https?:\/\/|\/)/i.test(editing.link_url.trim())) {
       toast({ title: 'Invalid content link', description: 'Use a full https:// URL or a site-relative path beginning with /.', variant: 'destructive' });
       return;
     }
