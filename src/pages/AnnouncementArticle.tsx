@@ -73,6 +73,8 @@ const AnnouncementArticle = () => {
           fullContent: data.body || data.excerpt || '',
           datePublished: data.created_at?.slice(0, 10),
           dateModified: data.updated_at?.slice(0, 10),
+          seoTitle: data.metadata?.seo_title || data.title,
+          seoDescription: data.metadata?.seo_description || data.excerpt || data.title,
         });
       }
       if (active) setLoading(false);
@@ -93,15 +95,16 @@ const AnnouncementArticle = () => {
     }
     const url = typeof window !== 'undefined' ? window.location.href : '';
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const desc = article.text.slice(0, 158);
+    const seoTitle = article.seoTitle || article.title;
+    const desc = (article.seoDescription || article.text || article.title).slice(0, 158);
     const plainText = stripHtml(article.fullContent);
     const wordCount = plainText ? plainText.split(/\s+/).length : 0;
     const datePublished = article.datePublished || new Date().toISOString().slice(0, 10);
     const dateModified = article.dateModified || datePublished;
 
-    document.title = `${article.title} | Bridgefort Homes Development Ltd`;
+    document.title = `${seoTitle} | Bridgefort Homes Development Ltd`;
     setMeta('description', desc);
-    setMeta('og:title', article.title, 'property');
+    setMeta('og:title', seoTitle, 'property');
     setMeta('og:description', desc, 'property');
     setMeta('og:type', 'article', 'property');
     setMeta('og:image', article.img, 'property');
@@ -110,7 +113,7 @@ const AnnouncementArticle = () => {
     setMeta('article:published_time', datePublished, 'property');
     setMeta('article:modified_time', dateModified, 'property');
     setMeta('twitter:card', 'summary_large_image');
-    setMeta('twitter:title', article.title);
+    setMeta('twitter:title', seoTitle);
     setMeta('twitter:description', desc);
     setMeta('twitter:image', article.img);
 
