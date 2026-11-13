@@ -32,7 +32,10 @@ const localized = (value: unknown): string => {
 };
 
 function getRedirect(item: ResultItem): string | null {
-  const raw = item?.url?.web ?? item?.urls?.web?.search_results ?? item?.urls?.web?.landing_page ?? item?.urls?.web?.detail;
+  const raw = (typeof item?.url === "string" ? item.url : item?.url?.web)
+    ?? item?.urls?.web?.search_results
+    ?? item?.urls?.web?.landing_page
+    ?? item?.urls?.web?.detail;
   if (typeof raw !== "string") return null;
   try {
     const url = new URL(raw);
@@ -45,22 +48,32 @@ function getRedirect(item: ResultItem): string | null {
 }
 
 function getTitle(item: ResultItem, kind: SearchKind): string {
-  const value = item?.name ?? item?.title ?? item?.accommodation?.name ?? item?.id;
+  const value = item?.details?.name ?? item?.name ?? item?.title ?? item?.accommodation?.name ?? item?.id;
   return localized(value) || (kind === "accommodations" ? "Accommodation option" : "Attraction or experience");
 }
 
 function getPrice(item: ResultItem): { amount: number; currency: string } | null {
   const product = item?.products?.[0] ?? item?.recommendation?.products?.[0];
   const candidates = [
-    item?.price?.total?.amount, item?.price?.total, item?.price?.amount,
-    item?.price?.booker_currency, item?.price?.display?.booker_currency,
-    product?.price?.total?.amount, product?.price?.total, product?.price?.amount,
-    product?.price?.booker_currency, product?.price?.display?.booker_currency,
+    item?.price?.total?.booker_currency,
+    item?.price?.display?.booker_currency,
+    item?.price?.booker_currency,
+    item?.price?.book,
+    item?.price?.total?.accommodation_currency,
+    item?.price?.display?.accommodation_currency,
+    item?.price?.total?.amount,
+    item?.price?.amount,
+    product?.price?.total?.booker_currency,
+    product?.price?.booker_currency,
+    product?.price?.book,
+    product?.price?.total?.amount,
+    product?.price?.amount,
   ];
   const amount = candidates.find((value) => typeof value === "number" && Number.isFinite(value));
   if (typeof amount !== "number") return null;
-  const currency = item?.price?.currency ?? item?.price?.total?.currency ?? product?.price?.currency ?? item?.currency ?? "USD";
-  return { amount, currency: typeof currency === "string" ? currency : "USD" };
+  const currencyValue = item?.currency?.booker ?? item?.currency?.accommodation
+    ?? item?.price?.currency ?? product?.price?.currency ?? item?.currency ?? "USD";
+  return { amount, currency: typeof currencyValue === "string" ? currencyValue : "USD" };
 }
 
 function formatPrice(price: { amount: number; currency: string }): string {
