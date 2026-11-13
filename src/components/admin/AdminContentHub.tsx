@@ -78,6 +78,14 @@ const AdminContentHub: React.FC = () => {
 
   const save = async () => {
     if (!editing?.title?.trim()) { toast({ title: 'Title required', variant: 'destructive' }); return; }
+    if (editing.page === 'home' && editing.content_type === 'motivation_slide' && !editing.image_url) {
+      toast({ title: 'Motivation slide image required', description: 'Choose an image so the homepage slider can display this item.', variant: 'destructive' });
+      return;
+    }
+    if (editing.link_url && !/^(https?:\\/\\/|\\/)/i.test(editing.link_url.trim())) {
+      toast({ title: 'Invalid content link', description: 'Use a full https:// URL or a site-relative path beginning with /.', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     const payload: any = {
       ...editing,
