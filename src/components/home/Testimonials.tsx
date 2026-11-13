@@ -35,7 +35,7 @@ const Testimonials = () => {
       role: String(item.metadata?.role || item.category || 'Client'),
       testimonial: item.body || '',
       rating: Math.min(5, Math.max(1, Number(item.metadata?.rating) || 5)),
-      imageUrl: item.image_url || undefined,
+      imageUrl: item.image_url || '/placeholder.svg',
     }))
     .filter(item => item.testimonial.trim().length > 0);
   const testimonials = cmsTestimonials.length ? cmsTestimonials : fallbackTestimonials;
