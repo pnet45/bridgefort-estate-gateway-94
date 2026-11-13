@@ -78,6 +78,8 @@ const NewProfileForm = () => {
   const [existingReferralId, setExistingReferralId] = useState<string | null>(null);
   const formRef = useRef<FormState>(initialForm);
   formRef.current = form;
+  const kycDocsRef = useRef(kycDocs);
+  kycDocsRef.current = kycDocs;
   const index = steps.findIndex(s => s.key === activeStep);
   const isLast = index === steps.length - 1;
   const progress = Math.round(((index + 1) / steps.length) * 100);
@@ -97,17 +99,18 @@ const NewProfileForm = () => {
   }, [user, activeStep, termsAccepted]);
 
   const saveKycDocument = useCallback((docKey: string, url: string, name: string, type: string) => {
-    const next = { ...kycDocs, [docKey]: { url, name, type } };
+    const next = { ...kycDocsRef.current, [docKey]: { url, name, type } };
+    kycDocsRef.current = next;
     setKycDocs(next);
     persistDraft(formRef.current, next);
-  }, [kycDocs, persistDraft]);
+  }, [persistDraft]);
 
   const update = useCallback((field: string, value: any) => {
     const next = { ...formRef.current, [field]: value };
     formRef.current = next;
     setForm(next);
-    persistDraft(next, kycDocs);
-  }, [persistDraft, kycDocs]);
+    persistDraft(next, kycDocsRef.current);
+  }, [persistDraft]);
 
   useEffect(() => {
     const load = async () => {
@@ -144,6 +147,34 @@ const NewProfileForm = () => {
     load();
   }, [user]);
 
+  // Flush the latest values before a mobile browser backgrounds or restores
+  // this page around the native Android/iOS document picker.
+  useEffect(() => {
+    if (!user || loading) return;
+    const saveBeforePageSuspend = () => {
+      try {
+        window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify({
+          savedAt: Date.now(),
+          form: formRef.current,
+          kycDocs: kycDocsRef.current,
+          activeStep,
+          termsAccepted,
+        } satisfies ProfileDraft));
+      } catch (error) {
+        console.warn('Unable to preserve profile draft before page suspension.', error);
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') saveBeforePageSuspend();
+    };
+    window.addEventListener('pagehide', saveBeforePageSuspend);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', saveBeforePageSuspend);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user, loading, activeStep, termsAccepted]);
+
   // Preserve an in-progress profile if a mobile browser reloads after the
   // device file picker backgrounds or reclaims the page. Drafts stay in this
   // tab's session storage, are user-scoped, and expire after four hours.
@@ -166,7 +197,7 @@ const NewProfileForm = () => {
   const payload = useMemo(() => ({
     id: user?.id || '', referred_by_id: referralLookup?.realtor_id || null, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, first_name: form.firstName || null, last_name: form.lastName || null, date_of_birth: form.dateOfBirth || null, gender: form.gender || null, marital_status: form.maritalStatus || null, spouse_name: form.spouseName || null, nationality: form.nationality || null, languages_spoken: form.languagesSpoken || [], phone_number: form.phoneNumber || null, state_of_origin: form.stateOfOrigin || null, local_government: form.localGovernment || null, address: form.address || null, current_residence: form.currentResidence || null,
     occupation: form.occupation || null, employer_name: form.employerName || null, employer_address: form.employerAddress || null, employment_status: form.employmentStatus || null, employer_country: form.employerCountry || null, employment_role: form.employmentRole || null, nature_of_business: form.natureOfBusiness || null, is_organization: !!form.isOrganization, company_name: form.companyName || null, company_address: form.companyAddress || null, company_registration_number: form.companyRegistrationNumber || null, incorporation_country: form.incorporationCountry || null, incorporation_date: form.incorporationDate || null, nature_of_corporate_business: form.natureOfCorporateBusiness || null, sales_status: form.salesStatus || null,
-    next_of_kin_name: form.nextOfKinName || null, next_of_kin_relationship: form.nextOfKinRelationship || null, next_of_kin_address: form.nextOfKinAddress || null, next_of_kin_phone: form.nextOfKinPhone || null, next_of_kin_email: form.nextOfKinEmail || null, source_of_income: form.sourceOfIncome || null, monthly_income: incomeValue(form.annualIncome), banking_details: form.bankName ? `${form.bankName} - ${form.accountNumber} - ${form.accountName}` : null, is_foreigner: !!form.isForeigner, residence_permit: form.residencePermit || null, visa_status: form.visaStatus || null, is_politically_exposed: !!form.isPoliticallyExposed, political_exposure_details: form.politicalExposureDetails || null, has_financial_crimes_history: !!form.hasFinancialCrimesHistory, financial_crimes_details: form.financialCrimesDetails || null, referrer_name: form.referrerName || null, referrer_phone: form.referrerPhone || null, referrer_email: form.referrerEmail || null, id_type: form.idType || null, id_number: form.idNumber || null, id_country_of_issue: form.idCountryOfIssue || null, id_date_of_issue: form.idDateOfIssue || null, id_expiry: form.idExpiry || null, id_issuing_authority: form.idIssuingAuthority || null, kyc_docs: kycDocs, profile_picture_url: kycDocs.passport_photo?.url || null, terms_accepted: termsAccepted, profile_status: 'IN_PROGRESS', updated_at: new Date().toISOString(),
+    next_of_kin_name: form.nextOfKinName || null, next_of_kin_relationship: form.nextOfKinRelationship || null, next_of_kin_address: form.nextOfKinAddress || null, next_of_kin_phone: form.nextOfKinPhone || null, next_of_kin_email: form.nextOfKinEmail || null, source_of_income: form.sourceOfIncome || null, monthly_income: incomeValue(form.annualIncome), banking_details: form.bankName ? `${form.bankName} - ${form.accountNumber} - ${form.accountName}` : null, is_foreigner: !!form.isForeigner, residence_permit: form.residencePermit || null, visa_status: form.visaStatus || null, is_politically_exposed: !!form.isPoliticallyExposed, political_exposure_details: form.politicalExposureDetails || null, has_financial_crimes_history: !!form.hasFinancialCrimesHistory, financial_crimes_details: form.financialCrimesDetails || null, referrer_name: form.referrerName || null, referrer_phone: form.referrerPhone || null, referrer_email: form.referrerEmail || null, id_type: form.idType || null, id_number: form.idNumber || null, id_country_of_issue: form.idCountryOfIssue || null, id_date_of_issue: form.idDateOfIssue || null, id_expiry: form.idExpiry || null, id_issuing_authority: form.idIssuingAuthority || null, kyc_docs: kycDocs, terms_accepted: termsAccepted, profile_status: 'IN_PROGRESS', updated_at: new Date().toISOString(),
   }), [form, kycDocs, termsAccepted, user?.id, referralLookup?.realtor_id]);
 
   const validateStep = (step: StepKey) => {
