@@ -78,6 +78,8 @@ const NewProfileForm = () => {
   const [existingReferralId, setExistingReferralId] = useState<string | null>(null);
   const formRef = useRef<FormState>(initialForm);
   formRef.current = form;
+  const kycDocsRef = useRef(kycDocs);
+  kycDocsRef.current = kycDocs;
   const index = steps.findIndex(s => s.key === activeStep);
   const isLast = index === steps.length - 1;
   const progress = Math.round(((index + 1) / steps.length) * 100);
@@ -97,17 +99,18 @@ const NewProfileForm = () => {
   }, [user, activeStep, termsAccepted]);
 
   const saveKycDocument = useCallback((docKey: string, url: string, name: string, type: string) => {
-    const next = { ...kycDocs, [docKey]: { url, name, type } };
+    const next = { ...kycDocsRef.current, [docKey]: { url, name, type } };
+    kycDocsRef.current = next;
     setKycDocs(next);
     persistDraft(formRef.current, next);
-  }, [kycDocs, persistDraft]);
+  }, [persistDraft]);
 
   const update = useCallback((field: string, value: any) => {
     const next = { ...formRef.current, [field]: value };
     formRef.current = next;
     setForm(next);
-    persistDraft(next, kycDocs);
-  }, [persistDraft, kycDocs]);
+    persistDraft(next, kycDocsRef.current);
+  }, [persistDraft]);
 
   useEffect(() => {
     const load = async () => {
@@ -143,6 +146,34 @@ const NewProfileForm = () => {
     };
     load();
   }, [user]);
+
+  // Flush the latest values before a mobile browser backgrounds or restores
+  // this page around the native Android/iOS document picker.
+  useEffect(() => {
+    if (!user || loading) return;
+    const saveBeforePageSuspend = () => {
+      try {
+        window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify({
+          savedAt: Date.now(),
+          form: formRef.current,
+          kycDocs: kycDocsRef.current,
+          activeStep,
+          termsAccepted,
+        } satisfies ProfileDraft));
+      } catch (error) {
+        console.warn('Unable to preserve profile draft before page suspension.', error);
+      }
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') saveBeforePageSuspend();
+    };
+    window.addEventListener('pagehide', saveBeforePageSuspend);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', saveBeforePageSuspend);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user, loading, activeStep, termsAccepted]);
 
   // Preserve an in-progress profile if a mobile browser reloads after the
   // device file picker backgrounds or reclaims the page. Drafts stay in this
