@@ -212,7 +212,7 @@ serve(async (req) => {
             const detailsById = new Map<number, unknown>(
               detailsResult.data
                 .filter(isRecord)
-                .map((item) => [Number(item.id), item]),
+                .map((item) => [Number(item.id), item] as [number, unknown]),
             );
             data = data.map((item) => isRecord(item)
               ? { ...item, details: detailsById.get(Number(item.id)) ?? null }
