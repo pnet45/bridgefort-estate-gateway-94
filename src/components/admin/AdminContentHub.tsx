@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,13 +42,17 @@ const empty = (page: ContentPage): Partial<ContentItem> => ({
   link_url: '',
   cta_label: '',
   display_order: 0,
-  is_published: true,
+  is_published: false,
   is_featured: false,
   event_date: null,
   event_location: '',
 });
 
+const slugify = (value: string) => value.toLowerCase().trim()
+  .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+
 const AdminContentHub: React.FC = () => {
+  const { user } = useAuth();
   const [activePage, setActivePage] = useState<ContentPage>('blog');
   const [items, setItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,8 +80,13 @@ const AdminContentHub: React.FC = () => {
   const save = async () => {
     if (!editing?.title?.trim()) { toast({ title: 'Title required', variant: 'destructive' }); return; }
     setSaving(true);
-    const payload: any = { ...editing };
+    const payload: any = {
+      ...editing,
+      slug: slugify(editing.slug || editing.title || ''),
+      metadata: { ...(editing.metadata || {}) },
+    };
     if (!payload.event_date) delete payload.event_date;
+    if (!editing.id) payload.created_by = user?.id || null;
     const op = editing.id
       ? (supabase as any).from('content_items').update(payload).eq('id', editing.id)
       : (supabase as any).from('content_items').insert(payload);
@@ -108,7 +118,7 @@ const AdminContentHub: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-xl font-semibold text-white">Content Hub (CMS)</h2>
-            <p className="text-sm text-slate-400">Manage every article, post and section across Blog, Training, Services and Home — synced to web & mobile.</p>
+            <p className="text-sm text-slate-400">Create drafts, publish articles and update page sections. Each item is routed by its page and content type to the matching website section.</p>
           </div>
           {activePage !== 'login' && (
             <Button onClick={() => setEditing(empty(activePage))} className="gap-2"><Plus className="h-4 w-4" /> New Item</Button>
@@ -196,7 +206,7 @@ const AdminContentHub: React.FC = () => {
                   <select className="w-full mt-1 p-2 border rounded bg-background"
                     value={editing.page}
                     onChange={e => setEditing({ ...editing, page: e.target.value as ContentPage })}>
-                    {PAGES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                    {PAGES.filter(p => p.value !== 'login').map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                   </select>
                 </div>
               </div>
@@ -206,6 +216,7 @@ const AdminContentHub: React.FC = () => {
                 <div><Label>Category</Label><Input value={editing.category || ''} onChange={e => setEditing({ ...editing, category: e.target.value })} /></div>
               </div>
               <div><Label>Subtitle</Label><Input value={editing.subtitle || ''} onChange={e => setEditing({ ...editing, subtitle: e.target.value })} /></div>
+              <div><Label>Tags (comma separated)</Label><Input value={(editing.tags || []).join(', ')} onChange={e => setEditing({ ...editing, tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean) })} placeholder="real estate, investment, company news" /></div>
               <div><Label>Excerpt</Label><Textarea
           maxLength={300} rows={2} value={editing.excerpt || ''} onChange={e => setEditing({ ...editing, excerpt: e.target.value })} /></div>
               <div><Label>Body / Content</Label><Textarea
@@ -227,6 +238,10 @@ const AdminContentHub: React.FC = () => {
                 <div><Label>Event Date</Label><Input type="datetime-local" value={editing.event_date ? editing.event_date.slice(0,16) : ''} onChange={e => setEditing({ ...editing, event_date: e.target.value ? new Date(e.target.value).toISOString() : null })} /></div>
               </div>
               <div><Label>Event Location</Label><Input value={editing.event_location || ''} onChange={e => setEditing({ ...editing, event_location: e.target.value })} /></div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div><Label>SEO Title</Label><Input value={(editing.metadata as any)?.seo_title || ''} onChange={e => setEditing({ ...editing, metadata: { ...(editing.metadata || {}), seo_title: e.target.value } })} maxLength={70} placeholder="Search result title" /></div>
+                <div><Label>SEO Description</Label><Textarea value={(editing.metadata as any)?.seo_description || ''} onChange={e => setEditing({ ...editing, metadata: { ...(editing.metadata || {}), seo_description: e.target.value } })} maxLength={160} rows={2} placeholder="Short search result summary" /></div>
+              </div>
               <div className="flex gap-6">
                 <div className="flex items-center gap-2"><Switch checked={!!editing.is_published} onCheckedChange={v => setEditing({ ...editing, is_published: v })} /><Label>Published</Label></div>
                 <div className="flex items-center gap-2"><Switch checked={!!editing.is_featured} onCheckedChange={v => setEditing({ ...editing, is_featured: v })} /><Label>Featured</Label></div>
@@ -235,7 +250,7 @@ const AdminContentHub: React.FC = () => {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
-            <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
+            <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : editing?.is_published ? 'Save & Publish' : 'Save Draft'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
