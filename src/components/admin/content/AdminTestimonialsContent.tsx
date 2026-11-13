@@ -42,6 +42,7 @@ const AdminTestimonialsContent: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState<TestimonialForm>(emptyForm);
 
   const load = async () => {
@@ -66,10 +67,12 @@ const AdminTestimonialsContent: React.FC = () => {
   const reset = () => {
     setForm(emptyForm);
     setEditingId(null);
+    setFormOpen(false);
   };
 
   const startEdit = (item: TestimonialItem) => {
     const metadata = item.metadata || {};
+    setFormOpen(true);
     setForm({
       name: String(metadata.name || item.title || ''),
       role: String(metadata.role || item.category || ''),
@@ -146,14 +149,14 @@ const AdminTestimonialsContent: React.FC = () => {
           </h3>
           <p className="mt-1 text-sm text-slate-400">Published testimonials appear in the homepage social-proof section. New entries are drafts until published.</p>
         </div>
-        {!editingId && (
-          <Button size="sm" onClick={() => setForm({ ...emptyForm })}>
+        {!formOpen && (
+          <Button size="sm" onClick={() => { setForm({ ...emptyForm }); setFormOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" /> New testimonial
           </Button>
         )}
       </div>
 
-      {(form.name || editingId || form.content || form.image_url || form.role || form.is_published) && (
+      {formOpen && (
         <Card className="border-slate-600 bg-slate-900">
           <CardContent className="space-y-3 p-4">
             <div className="flex items-center justify-between gap-2">
