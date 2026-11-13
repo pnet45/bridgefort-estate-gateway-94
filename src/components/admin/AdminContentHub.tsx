@@ -205,7 +205,7 @@ const AdminContentHub: React.FC = () => {
                   <Label>Page</Label>
                   <select className="w-full mt-1 p-2 border rounded bg-background"
                     value={editing.page}
-                    onChange={e => setEditing({ ...editing, page: e.target.value as ContentPage })}>
+                    onChange={e => { const nextPage = e.target.value as ContentPage; setEditing({ ...editing, page: nextPage, content_type: PAGE_TO_TYPES[nextPage][0] }); }}>
                     {PAGES.filter(p => p.value !== 'login').map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                   </select>
                 </div>
