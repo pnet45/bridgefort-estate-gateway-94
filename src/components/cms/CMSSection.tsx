@@ -11,13 +11,13 @@ interface Props {
   title?: string;
   emptyHidden?: boolean;
   className?: string;
-  excludeMetadataKey?: string;
+  excludeMetadata?: { key: string; value: string };
 }
 
-const CMSSection: React.FC<Props> = ({ page, contentType, title, emptyHidden = true, className, excludeMetadataKey }) => {
+const CMSSection: React.FC<Props> = ({ page, contentType, title, emptyHidden = true, className, excludeMetadata }) => {
   const { items, loading } = useContentItems({ page, contentType });
-  const displayItems = excludeMetadataKey
-    ? items.filter(item => !item.metadata?.[excludeMetadataKey])
+  const displayItems = excludeMetadata
+    ? items.filter(item => item.metadata?.[excludeMetadata.key] !== excludeMetadata.value)
     : items;
 
   if (loading) {
