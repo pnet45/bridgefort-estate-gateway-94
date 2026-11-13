@@ -10,11 +10,13 @@ import TrainingEventsTab from '@/components/dashboard/TrainingEventsTab';
 interface AdminUnifiedCMSHubProps {
   canManageContent: boolean;
   canManageSections: boolean;
+  canManageTraining: boolean;
 }
 
 const AdminUnifiedCMSHub: React.FC<AdminUnifiedCMSHubProps> = ({
   canManageContent,
   canManageSections,
+  canManageTraining,
 }) => {
   const defaultTab = canManageContent ? 'editorial' : 'hero';
 
@@ -48,9 +50,9 @@ const AdminUnifiedCMSHub: React.FC<AdminUnifiedCMSHubProps> = ({
               <TabsTrigger value="hero" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <PanelsTopLeft className="h-4 w-4" /> Hero Slides
               </TabsTrigger>
-              <TabsTrigger value="training" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              {canManageTraining && <TabsTrigger value="training" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <CalendarDays className="h-4 w-4" /> Training
-              </TabsTrigger>
+              </TabsTrigger>}
               <TabsTrigger value="testimonials" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <MessageSquare className="h-4 w-4" /> Testimonials
               </TabsTrigger>
@@ -73,11 +75,11 @@ const AdminUnifiedCMSHub: React.FC<AdminUnifiedCMSHubProps> = ({
                 <AdminHeroSlidesContent />
               </div>
             </TabsContent>
-            <TabsContent value="training" className="min-w-0">
+            {canManageTraining && <TabsContent value="training" className="min-w-0">
               <div className="rounded-xl border border-slate-700 bg-slate-800 p-3 sm:p-5">
                 <TrainingEventsTab />
               </div>
-            </TabsContent>
+            </TabsContent>}
             <TabsContent value="testimonials" className="min-w-0">
               <div className="rounded-xl border border-slate-700 bg-slate-800 p-3 sm:p-5">
                 <AdminTestimonialsContent />
