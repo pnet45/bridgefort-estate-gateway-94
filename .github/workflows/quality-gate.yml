@@ -49,10 +49,21 @@ jobs:
   webhook-security:
     name: Deno webhook security tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+
+      # Deno 2 resolves Node type references from node_modules for the
+      # Supabase JS dependency imported by the Edge Function shared helper.
+      - name: Install Node type dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
@@ -61,3 +72,13 @@ jobs:
 
       - name: Test webhook security helpers
         run: deno test supabase/functions/_shared/webhookSecurity_test.ts
+
+      - name: Test Booking.com Demand API validation helpers
+        run: deno test supabase/functions/_shared/booking-demand_test.ts
+
+      - name: Type-check Booking.com Demand API Edge Functions
+        run: |
+          deno check \
+            supabase/functions/booking-demand-cities/index.ts \
+            supabase/functions/booking-demand-search/index.ts \
+            supabase/functions/booking-demand-look/index.ts
