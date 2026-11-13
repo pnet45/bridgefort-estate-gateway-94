@@ -86,8 +86,8 @@ const AdminContentHub: React.FC = () => {
       toast({ title: 'Announcement summary required', description: 'Add an excerpt or article body for the homepage announcement.', variant: 'destructive' });
       return;
     }
-    if (editing.page === 'home' && editing.content_type === 'motivation_slide' && !editing.image_url) {
-      toast({ title: 'Motivation slide image required', description: 'Choose an image so the homepage slider can display this item.', variant: 'destructive' });
+    if (editing.page === 'home' && editing.content_type === 'motivation_slide' && (!editing.image_url || !editing.body?.trim() && !editing.excerpt?.trim())) {
+      toast({ title: 'Motivation slide content incomplete', description: 'Add slide text and choose an image before saving.', variant: 'destructive' });
       return;
     }
     if (editing.link_url && !/^(https?:\\/\\/|\\/)/i.test(editing.link_url.trim())) {
