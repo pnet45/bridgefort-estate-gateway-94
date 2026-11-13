@@ -1,38 +1,55 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { homepageMotivationData } from "./motivationData";
+import { useContentItems } from "@/hooks/useContentItems";
 
 export const useMotivationSlider = () => {
   const [current, setCurrent] = useState(0);
   const [loadingImages, setLoadingImages] = useState(true);
   const [fade, setFade] = useState(true);
+  const { items: cmsItems, loading: contentLoading } = useContentItems({
+    page: "home",
+    contentType: "motivation_slide",
+  });
 
-  const activeMotivationData = homepageMotivationData;
+  const cmsMotivationData = useMemo(() => cmsItems
+    .filter(item => Boolean(item.image_url))
+    .map(item => ({
+      title: item.title,
+      text: item.body || item.excerpt || "",
+      author: String(item.metadata?.author || "Bridgefort Homes"),
+      image: item.image_url || "",
+      link: item.link_url || undefined,
+      badgeLabel: String(item.metadata?.badge_label || item.category || "Monday Motivation"),
+    })), [cmsItems]);
 
-  const preloadImages = (srcs: string[], onComplete: () => void) => {
-    let loaded = 0;
-    srcs.forEach((src) => {
-      const img = new window.Image();
-      img.onload = () => {
-        loaded += 1;
-        if (loaded === srcs.length) onComplete();
-      };
-      img.onerror = () => {
-        console.error("Failed to load image:", src);
-        loaded += 1;
-        if (loaded === srcs.length) onComplete();
-      };
-      img.src = src;
-    });
-  };
+  const activeMotivationData = !contentLoading && cmsMotivationData.length
+    ? cmsMotivationData
+    : homepageMotivationData;
 
   useEffect(() => {
-    const imagePaths = activeMotivationData.map((d) => d.image);
-    if (imagePaths.length === 0) {
+    setCurrent(previous => activeMotivationData.length
+      ? previous % activeMotivationData.length
+      : 0);
+    setLoadingImages(true);
+    const imagePaths = activeMotivationData.map(item => item.image).filter(Boolean);
+    if (!imagePaths.length) {
       setLoadingImages(false);
       return;
     }
-    preloadImages(imagePaths, () => setLoadingImages(false));
+
+    let active = true;
+    Promise.all(imagePaths.map(src => new Promise<void>(resolve => {
+      const img = new window.Image();
+      img.onload = () => resolve();
+      img.onerror = () => {
+        console.error("Failed to load motivation image:", src);
+        resolve();
+      };
+      img.src = src;
+    }))).then(() => {
+      if (active) setLoadingImages(false);
+    });
+    return () => { active = false; };
   }, [activeMotivationData]);
 
   useEffect(() => {
@@ -44,7 +61,7 @@ export const useMotivationSlider = () => {
   useEffect(() => {
     if (activeMotivationData.length <= 1) return;
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % activeMotivationData.length);
+      setCurrent(previous => (previous + 1) % activeMotivationData.length);
     }, 10000);
     return () => clearInterval(timer);
   }, [activeMotivationData]);
@@ -54,6 +71,6 @@ export const useMotivationSlider = () => {
     setCurrent,
     loadingImages,
     fade,
-    currentData: activeMotivationData[current] || activeMotivationData[0]
+    currentData: activeMotivationData[current] || activeMotivationData[0],
   };
 };
