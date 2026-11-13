@@ -15,7 +15,7 @@ const countries = [
   ["de", "Germany"], ["ng", "Nigeria"], ["ca", "Canada"], ["gh", "Ghana"],
 ];
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => {\n  const date = new Date();\n  const month = String(date.getMonth() + 1).padStart(2, "0");\n  const day = String(date.getDate()).padStart(2, "0");\n  return `${date.getFullYear()}-${month}-${day}`;\n};
 const localized = (value: unknown): string => {
   if (typeof value === "string") return value;
   if (value && typeof value === "object") {
