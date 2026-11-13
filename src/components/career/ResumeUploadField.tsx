@@ -17,7 +17,6 @@ const ALLOWED_RESUME_TYPES: Record<string, string> = {
 };
 
 const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
-  fullName,
   resumeUrl,
   onFileChange,
 }) => {
@@ -62,10 +61,11 @@ const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
 
     setIsUploading(true);
     try {
-      const safeName =
-        (fullName || "applicant").trim().replace(/[^a-z0-9_-]+/gi, "-").slice(0, 60) || "applicant";
-      const safeFileName = file.name.replace(/[^a-z0-9._-]+/gi, "-");
-      const storagePath = `${safeName}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName}`;
+      // Do not include applicant names or original filenames in the object key.
+      const objectId = typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2, 14)}`;
+      const storagePath = `career-applications/${objectId}.${extension}`;
 
       const { data, error } = await supabase.storage.from("resumes").upload(storagePath, file, {
         cacheControl: "3600",
@@ -76,8 +76,9 @@ const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
       if (error) throw error;
       if (!data?.path) throw new Error("The upload did not return a storage path.");
 
-      const { data: publicUrlData } = supabase.storage.from("resumes").getPublicUrl(data.path);
-      onFileChange(publicUrlData.publicUrl);
+      // Persist only the private object path in applications.resume_url.
+      // Resume documents must never be exposed through a public storage URL.
+      onFileChange(data.path);
       setSelectedFile(file);
       toast({
         title: "Resume uploaded successfully",
@@ -87,7 +88,7 @@ const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
       console.error("Error uploading career resume:", error);
       toast({
         title: "Upload failed",
-        description: "Your application details are still here. Please try selecting the resume again.",
+        description: "Your application details are still here. Please select the resume again.",
         variant: "destructive",
       });
     } finally {
@@ -95,8 +96,11 @@ const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
     }
   };
 
-  const displayFile = selectedFile || (resumeUrl
-    ? new File([], decodeURIComponent(resumeUrl.split("/").pop()?.split("?")[0] || "resume"))
+  const storedFileName = resumeUrl
+    ? decodeURIComponent(resumeUrl.split("/").pop()?.split("?")[0] || "resume")
+    : "";
+  const displayFile = selectedFile || (storedFileName
+    ? new File([], storedFileName)
     : null);
 
   return (
