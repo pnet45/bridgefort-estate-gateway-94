@@ -24,11 +24,23 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const inputId = useId();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Capture the File before resetting the native input. Do not prevent or
-    // stop the native change event: mobile file providers rely on normal flow.
+    // Some Android document providers expose a temporary content:// backed File.
+    // Keep the native input value intact until the asynchronous upload has read
+    // the file; clearing it synchronously can invalidate that provider handle.
     const selectedFile = event.currentTarget.files?.[0] || null;
-    event.currentTarget.value = "";
-    if (selectedFile) void onFileSelect(selectedFile);
+    if (!selectedFile) return;
+
+    try {
+      const result = onFileSelect(selectedFile);
+      void Promise.resolve(result).finally(() => {
+        // Reset after the consumer has finished reading/uploading the File so
+        // the same document can be selected again after either success or failure.
+        if (inputRef.current) inputRef.current.value = "";
+      });
+    } catch (error) {
+      if (inputRef.current) inputRef.current.value = "";
+      throw error;
+    }
   };
 
   const handleRemoveFile = () => {
