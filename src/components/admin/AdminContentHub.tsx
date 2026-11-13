@@ -97,6 +97,7 @@ const AdminContentHub: React.FC = () => {
     setSaving(true);
     const payload: any = {
       ...editing,
+      link_url: editing.link_url?.trim() || null,
       slug: slugify(editing.slug || editing.title || ''),
       metadata: { ...(editing.metadata || {}) },
     };
