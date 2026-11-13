@@ -157,7 +157,6 @@ const CareerForm: React.FC<CareerFormProps> = ({ defaultPosition }) => {
             onChange={(v) => handleInputChange('cover_letter', v)}
           />
           <ResumeUploadField
-            fullName={formData.full_name}
             resumeUrl={formData.resume_url}
             onFileChange={(url: string) => handleInputChange('resume_url', url)}
           />
