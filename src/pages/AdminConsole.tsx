@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, FileText, BookOpen, Mail, LayoutDashboard, LogOut, Bell, Home, UserCheck, CheckSquare, Building, Activity, TrendingUp, DollarSign, Settings, Plane, Network, Images, Building2, Sprout, MapPinned, PanelLeftClose, PanelLeftOpen, Menu, X, Sun, Moon } from 'lucide-react';
+import { Shield, Users, FileText, BookOpen, Mail, LayoutDashboard, LogOut, Bell, Home, UserCheck, CheckSquare, Building, Activity, TrendingUp, DollarSign, Settings, Plane, Network, Building2, Sprout, MapPinned, PanelLeftClose, PanelLeftOpen, Menu, X, Sun, Moon } from 'lucide-react';
 import { useIsGlobalAdmin } from '@/hooks/useIsGlobalAdmin';
 import { getAllowedAdminTabs, isAdminRole } from '@/lib/rbac';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
@@ -116,7 +116,7 @@ const AdminConsole = () => {
       <TabsContent value="activity" className="min-w-0"><AdminActivityLogs/></TabsContent>
       <TabsContent value="leo-knowledge" className="min-w-0"><AdminLeoKnowledgeManagement/></TabsContent>
       <TabsContent value="training" className="min-w-0"><AdminTrainingRegistrations/></TabsContent>
-      <TabsContent value="cms" className="min-w-0"><AdminUnifiedCMSHub canManageContent={hasPermission('admin:view_content') || hasPermission('admin:view_cms')} canManageSections={hasPermission('admin:view_cms')} /></TabsContent>
+      <TabsContent value="cms" className="min-w-0"><AdminUnifiedCMSHub canManageContent={hasPermission('admin:view_content') || hasPermission('admin:view_cms')} canManageSections={hasPermission('admin:view_cms')} canManageTraining={hasPermission('admin:view_content')} /></TabsContent>
       <TabsContent value="other-payments" className="min-w-0"><AdminOtherPayments/></TabsContent>
       <TabsContent value="permissions" className="min-w-0"><AdminRolePermissions/></TabsContent>
       {hasPermission('admin:manage_departments')&&<TabsContent value="departments" className="min-w-0"><AdminDepartmentManagement/></TabsContent>}
