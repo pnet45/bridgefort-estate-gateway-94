@@ -8,7 +8,6 @@ import {
 const ALLOWED_ORIGINS = new Set([
   "https://bridgeforthomes.com",
   "https://www.bridgeforthomes.com",
-  "http://localhost:5173",
 ]);
 
 function response(req: Request, body: unknown, status = 200) {
@@ -30,8 +29,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-async function sha256(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+async function rateLimitKey(secret: string, value: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const digest = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
@@ -105,11 +111,11 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const rateKey = `booking-demand:${await sha256(clientIp.trim().slice(0, 128))}`;
-  const { data: rateAllowed, error: rateError } = await supabase.rpc("consume_leo_public_rate_limit", {
-    p_rate_key: rateKey,
-    p_limit: 20,
-    p_window_seconds: 900,
+  const rateKey = await rateLimitKey(serviceRoleKey, `booking-demand:${clientIp.trim().slice(0, 128)}`);
+  const { data: rateAllowed, error: rateError } = await supabase.rpc("consume_travel_enquiry_rate_limit", {
+    _client_key: rateKey,
+    _window_seconds: 900,
+    _max_requests: 20,
   });
   if (rateError) {
     console.error("Booking.com search rate-limit check failed", rateError.message);
