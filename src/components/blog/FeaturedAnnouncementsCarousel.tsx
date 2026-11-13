@@ -26,14 +26,13 @@ const FeaturedAnnouncementsCarousel = () => {
   useEffect(() => {
     if (announcements.length <= 2) return;
     const interval = setInterval(() => {
-      setCurrentIndex(prev => (prev + 2) % announcements.length);
+      const groupCount = Math.ceil(announcements.length / 2);
+      setCurrentIndex(prev => ((Math.floor(prev / 2) + 1) % groupCount) * 2);
     }, 15000);
     return () => clearInterval(interval);
   }, [announcements.length]);
 
-  const currentItems = announcements.length
-    ? [announcements[safeIndex], announcements[(safeIndex + 1) % announcements.length]].filter(Boolean)
-    : [];
+  const currentItems = announcements.slice(safeIndex, safeIndex + 2);
 
   return (
     <section className="py-10 bg-white" aria-label="Featured announcements">
