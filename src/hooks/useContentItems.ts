@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, useId } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { ContentItem, ContentPage, ContentType } from '@/types/content';
-import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
+import { listenForPublicDataRevalidation, readPublicDataCache, refreshPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 const CACHE_PREFIX = 'public-content-items:';
 
@@ -32,32 +32,39 @@ export function useContentItems(opts: Options = {}) {
   const [loading, setLoading] = useState(() => !canCache || readContentCache(cacheKey).length === 0);
   const [error, setError] = useState<string | null>(null);
 
+  const requestKey = canCache ? cacheKey : `${cacheKey}:private-unpublished`;
+
   const fetchItems = useCallback(async () => {
     if (canCache) {
       const cached = readContentCache(cacheKey);
       if (cached.length) setItems(cached);
     }
-    let query = (supabase as any).from('content_items').select('*');
-    if (opts.page) query = query.eq('page', opts.page);
-    if (opts.contentType) {
-      if (Array.isArray(opts.contentType)) query = query.in('content_type', opts.contentType);
-      else query = query.eq('content_type', opts.contentType);
-    }
-    if (!opts.includeUnpublished) query = query.eq('is_published', true);
-    if (opts.featuredOnly) query = query.eq('is_featured', true);
-    query = query.order('display_order', { ascending: true }).order('created_at', { ascending: false });
+    try {
+      const nextItems = await refreshPublicDataCache(requestKey, async () => {
+        let query = (supabase as any).from('content_items').select('*');
+        if (opts.page) query = query.eq('page', opts.page);
+        if (opts.contentType) {
+          if (Array.isArray(opts.contentType)) query = query.in('content_type', opts.contentType);
+          else query = query.eq('content_type', opts.contentType);
+        }
+        if (!opts.includeUnpublished) query = query.eq('is_published', true);
+        if (opts.featuredOnly) query = query.eq('is_featured', true);
+        query = query.order('display_order', { ascending: true }).order('created_at', { ascending: false });
 
-    const { data, error } = await query;
-    if (error) {
-      setError(error.message);
-    } else {
-      const nextItems = (data as ContentItem[]) || [];
+        const { data, error } = await query;
+        if (error) throw error;
+        const result = (data as ContentItem[]) || [];
+        if (canCache) writeContentCache(cacheKey, result);
+        return result;
+      });
       setItems(nextItems);
       setError(null);
-      if (canCache) writeContentCache(cacheKey, nextItems);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unable to refresh published content.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [cacheKey, canCache, opts.page, contentTypeKey, opts.includeUnpublished, opts.featuredOnly]);
+  }, [cacheKey, requestKey, canCache, opts.page, contentTypeKey, opts.includeUnpublished, opts.featuredOnly]);
 
   // When the content filter changes, show that filter's cached content immediately,
   // then refresh only this content_items query from Supabase.
@@ -73,13 +80,16 @@ export function useContentItems(opts: Options = {}) {
   useEffect(() => {
     const matchesCurrentFilter = (row: Record<string, unknown> | undefined) => {
       if (!row) return true;
-      if (opts.page && row.page !== opts.page) return false;
-      if (opts.contentType) {
+      // Realtime DELETE payloads can contain only primary-key columns when
+      // REPLICA IDENTITY is DEFAULT. Missing filter columns must be treated as
+      // unknown (and refreshed), not as a non-match that leaves stale cards.
+      if (opts.page && 'page' in row && row.page !== opts.page) return false;
+      if (opts.contentType && 'content_type' in row) {
         const acceptedTypes = Array.isArray(opts.contentType) ? opts.contentType : [opts.contentType];
         if (!acceptedTypes.includes(row.content_type as ContentType)) return false;
       }
-      if (!opts.includeUnpublished && row.is_published !== true) return false;
-      if (opts.featuredOnly && row.is_featured !== true) return false;
+      if (!opts.includeUnpublished && 'is_published' in row && row.is_published !== true) return false;
+      if (opts.featuredOnly && 'is_featured' in row && row.is_featured !== true) return false;
       return true;
     };
 
