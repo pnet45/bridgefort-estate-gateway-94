@@ -225,7 +225,7 @@ export default function TravelPartnerSearch() {
               const url = getRedirect(item);
               const title = getTitle(item, kind);
               const price = getPrice(item);
-              const cityName = localized(item?.location?.city ?? item?.city?.name ?? item?.location?.name);
+              const cityName = localized(item?.details?.location?.city ?? item?.location?.city ?? item?.city?.name ?? item?.details?.location?.address ?? item?.location?.name);
               return <article key={String(item.id ?? index)} className="rounded-xl border bg-card p-5 flex flex-col min-w-0">
                 <h4 className="font-semibold text-lg break-words">{title}</h4>
                 {cityName && <p className="text-sm text-muted-foreground mt-1">{cityName}</p>}
