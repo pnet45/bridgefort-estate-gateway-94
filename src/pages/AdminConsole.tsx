@@ -116,7 +116,7 @@ const AdminConsole = () => {
       <TabsContent value="activity" className="min-w-0"><AdminActivityLogs/></TabsContent>
       <TabsContent value="leo-knowledge" className="min-w-0"><AdminLeoKnowledgeManagement/></TabsContent>
       <TabsContent value="training" className="min-w-0"><AdminTrainingRegistrations/></TabsContent>
-      <TabsContent value="cms" className="min-w-0"><AdminUnifiedCMSHub canManageContent={hasPermission('admin:view_content') || hasPermission('admin:view_cms')} canManageSections={hasPermission('admin:view_cms')} canManageTraining={hasPermission('admin:view_content')} /></TabsContent>
+      <TabsContent value="cms" className="min-w-0"><AdminUnifiedCMSHub canManageContent={hasPermission('admin:view_cms')} canManageSections={hasPermission('admin:view_content')} canManageTraining={hasPermission('admin:view_content')} canManageGallery={hasPermission('admin:view_cms')} /></TabsContent>
       <TabsContent value="other-payments" className="min-w-0"><AdminOtherPayments/></TabsContent>
       <TabsContent value="permissions" className="min-w-0"><AdminRolePermissions/></TabsContent>
       {hasPermission('admin:manage_departments')&&<TabsContent value="departments" className="min-w-0"><AdminDepartmentManagement/></TabsContent>}
