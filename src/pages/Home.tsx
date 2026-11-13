@@ -18,6 +18,7 @@ import FeaturedAnnouncementsCarousel from '../components/blog/FeaturedAnnounceme
 import FeaturedCenterSeminar from '../components/home/FeaturedCenterSeminar';
 import GoogleDataTransparency from '../components/home/GoogleDataTransparency';
 import AgriculturalTrainingProgramme from '../components/training/AgriculturalTrainingProgramme';
+import CMSSection from '@/components/cms/CMSSection';
 
 const Home = () => {
   // Wrap all property-dependent sections with the provider for shared data (for search, FeaturedProperties, etc)
@@ -91,6 +92,7 @@ const Home = () => {
       
       {/* Testimonials */}
       <Testimonials />
+      <CMSSection page="home" contentType="page_section" excludeMetadataKey="section_key" title="More from Bridgefort" />
       
       {/* YouTube Section */}
       <YouTubeSection />
