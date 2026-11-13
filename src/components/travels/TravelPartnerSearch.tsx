@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { CalendarDays, ExternalLink, Hotel, MapPin, Search, Ticket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -85,7 +85,7 @@ export default function TravelPartnerSearch() {
 
   const selectedCountry = useMemo(() => countries.find(([code]) => code === country)?.[1] ?? country, [country]);
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
     setItems([]);
