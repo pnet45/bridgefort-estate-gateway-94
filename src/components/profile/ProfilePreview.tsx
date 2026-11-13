@@ -15,13 +15,7 @@ const ProfilePreview = ({ profile }: ProfilePreviewProps) => {
   };
 
   const getProfileImageUrl = () => {
-    // Use passport photo if available, otherwise use avatar_url
-    if (profile.kyc_docs && typeof profile.kyc_docs === 'object') {
-      const kycData = profile.kyc_docs as any;
-      if (kycData.passport_photo) {
-        return kycData.passport_photo;
-      }
-    }
+    // Private KYC documents must not be exposed as public profile avatars.
     return profile.avatar_url || null;
   };
 
