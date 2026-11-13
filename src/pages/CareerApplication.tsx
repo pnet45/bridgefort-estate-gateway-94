@@ -1,4 +1,3 @@
-
 import React from "react";
 import CareerForm from "../components/career/CareerForm";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,17 +5,27 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { PropertyProvider } from "../contexts/property";
 import WhatsAppChat from "../components/WhatsAppChat";
+import { CheckCircle2, FileText, Clock3 } from "lucide-react";
 
-// Simple sidebar example - you can expand/replace the content as needed
-const Sidebar = () => (
-  <aside className="bg-white border-r w-full sm:w-64 p-6 overflow-y-auto h-full">
-    <div className="mb-4 font-semibold text-lg text-estate-blue">Application Tips</div>
-    <ul className="text-gray-700 text-sm space-y-3">
-      <li>✔️ Fill in all required fields accurately</li>
-      <li>✔️ Tailor your cover letter for the role</li>
-      <li>✔️ Double-check your contact info</li>
-      <li>📑 Attach a clear, up-to-date resume</li>
-      <li>🕑 We'll contact you if shortlisted</li>
+const ApplicationTips = () => (
+  <aside className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <h2 className="text-base font-semibold text-foreground">Before you apply</h2>
+    <p className="mt-1 text-sm text-muted-foreground">
+      A few quick checks will help us review your application smoothly.
+    </p>
+    <ul className="mt-5 space-y-4 text-sm text-foreground">
+      <li className="flex items-start gap-3">
+        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-estate-blue" />
+        <span>Complete the required fields with accurate contact details.</span>
+      </li>
+      <li className="flex items-start gap-3">
+        <FileText className="mt-0.5 h-5 w-5 shrink-0 text-estate-blue" />
+        <span>Attach an up-to-date resume in PDF, DOC or DOCX format (maximum 10 MB).</span>
+      </li>
+      <li className="flex items-start gap-3">
+        <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-estate-blue" />
+        <span>Our team will contact you if your application is shortlisted.</span>
+      </li>
     </ul>
   </aside>
 );
@@ -24,30 +33,44 @@ const Sidebar = () => (
 const CareerApplication = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  // Read the defaultPosition from navigation state (set by OpenPositions)
   const defaultPosition = location.state?.position || "";
 
   return (
     <PropertyProvider>
-      <div className="flex flex-col min-h-screen">
+      <div className="flex min-h-screen flex-col bg-muted/30">
         <Navbar />
-        <div className="flex flex-1 flex-col sm:flex-row bg-gray-50">
-          <Sidebar />
-          <main className="flex-1 p-4 md:p-12 overflow-y-auto">
+        {/* Navbar is fixed: reserve its full responsive height before page content. */}
+        <div className="flex-1 pt-[88px] lg:pt-[150px]">
+          <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
             <button
-              className="mb-4 text-estate-blue font-medium hover:underline"
+              type="button"
+              className="mb-6 inline-flex min-h-10 items-center text-sm font-medium text-estate-blue transition-colors hover:text-estate-darkBlue hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-blue focus-visible:ring-offset-2"
               onClick={() => navigate(-1)}
             >
-              &larr; Back to Career Page
+              <span aria-hidden="true" className="mr-2">←</span>
+              Back to Career Page
             </button>
-            <div className="w-full max-w-2xl mx-auto">
-              <div className="text-center mb-6">
-                <h2 className="text-3xl font-bold mb-3 animate-scale-in">Apply to Join Our Team</h2>
-                <p className="text-gray-600 max-w-2xl mx-auto animate-fade-in">
-                  Take the first step towards an exciting career with Bridgefort Homes Development Ltd. Submit your application and we'll be in touch.
-                </p>
+
+            <div className="mb-8 max-w-3xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-estate-blue">
+                Careers at Bridgefort
+              </p>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                Apply to Join Our Team
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                Take the first step towards an exciting career with Bridgefort Homes Development Ltd.
+                Complete the form below and our team will be in touch.
+              </p>
+            </div>
+
+            <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-8">
+              <section className="min-w-0" aria-label="Career application form">
+                <CareerForm defaultPosition={defaultPosition} />
+              </section>
+              <div className="order-first lg:order-last">
+                <ApplicationTips />
               </div>
-              <CareerForm defaultPosition={defaultPosition} />
             </div>
           </main>
         </div>
