@@ -4,17 +4,17 @@ import { sanitizeRichText } from "@/components/editor/richTextSanitize";
 
 /**
  * BlogPostContent
- * Renders the main blog post content. If content is short/lacking, uses a default enriched version with inline images.
- * Images are responsive and well-aligned for mobile/desktop.
+ * Renders the article content supplied by the CMS. Use the legacy fallback only
+ * when an older post has no body; short CMS articles must remain intact.
  */
 interface BlogPostContentProps {
   htmlContent?: string;
 }
 
 const BlogPostContent: React.FC<BlogPostContentProps> = ({ htmlContent }) => {
-  // If content is missing or too short, use placeholder with images
+  // Never replace a real, short article with unrelated placeholder copy.
   let html = htmlContent || "";
-  if (!html || html.length < 300) {
+  if (!html.trim()) {
     html = `
       <p>
         <img src="/lovable-uploads/e96b32e6-88d0-4155-8c87-cbe499a239d3.png" alt="Summit Event" class="rounded-lg w-full md:w-2/3 mx-auto mb-6 shadow-md" loading="lazy" />
