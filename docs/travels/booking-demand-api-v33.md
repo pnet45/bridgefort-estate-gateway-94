@@ -8,7 +8,7 @@ The implementation uses:
 - `POST /accommodations/search` for accommodation discovery.
 - `POST /attractions/search` for experience discovery.
 - Booking.com URLs returned by the API for outbound redirects.
-- The existing service-role-only `consume_leo_public_rate_limit` database RPC for per-IP throttling.
+- The existing service-role-only `consume_travel_enquiry_rate_limit` database RPC for per-IP throttling, with an HMAC-derived client key.
 
 The code does not create a new database table or migration. Live prices and availability are never cached.
 
@@ -27,8 +27,8 @@ The token and affiliate ID must be issued for the Bridgefort partner account. Do
 ## Runtime controls
 
 - Function slug: `booking-demand-api`
-- JWT gateway verification is disabled because this is a public search endpoint; the function independently enforces an exact browser-origin allow-list, POST-only requests, JSON content type, 8 KB body limit, strict field/date validation and a 20-request / 15-minute per-IP limit.
-- The function uses the Supabase service role only for the existing atomic rate-limit RPC. The service key is never returned to the client.
+- JWT gateway verification is disabled because this is a public search endpoint; the function independently enforces an exact production apex/www browser-origin allow-list, POST-only requests, JSON content type, 8 KB body limit, strict field/date validation and a 20-request / 15-minute per-IP limit.
+- The function uses the Supabase service role only for the existing atomic travel rate-limit RPC. Client IPs are HMACed with the service key before storage; the service key is never returned to the client.
 - The API base URL is restricted to Booking.com's official Demand API v3.3 production or sandbox host.
 - Search results use `Cache-Control: no-store`; prices and availability are always requested live.
 - Redirects are only accepted for HTTPS URLs on `booking.com` or `www.booking.com`.
