@@ -8,12 +8,14 @@ const FeaturedAnnouncementsCarousel = () => {
   const { items: cmsItems } = useContentItems({ page: "home", contentType: "announcement" });
   const announcements = useMemo(() => {
     if (!cmsItems.length) return announcementItems;
-    return cmsItems.map(item => ({
+    const cmsAnnouncements = cmsItems.map(item => ({
       id: item.id,
       title: item.title,
       text: item.excerpt || item.body || "",
       img: item.image_url || "/lovable-uploads/PropertyHero.png",
     }));
+    const cmsTitles = new Set(cmsAnnouncements.map(item => item.title.trim().toLowerCase()));
+    return [...cmsAnnouncements, ...announcementItems.filter(item => !cmsTitles.has(item.title.trim().toLowerCase()))];
   }, [cmsItems]);
 
   const animations = ["animate-fade-in", "animate-scale-in", "animate-slide-in-right"];
