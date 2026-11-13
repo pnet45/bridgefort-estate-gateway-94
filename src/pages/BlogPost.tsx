@@ -66,14 +66,52 @@ const BlogPost = () => {
 
     const fetchPost = async () => {
       try {
-        const { data, error } = await supabase
-          .from('posts')
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+        const { data: cmsItem, error: cmsError } = await (supabase as any)
+          .from('content_items')
           .select('*')
-          .eq('id', id)
-          .eq('published', true)
+          .eq('page', 'blog')
+          .eq('content_type', 'blog_post')
+          .eq('is_published', true)
+          .eq(isUuid ? 'id' : 'slug', id)
           .maybeSingle();
+        if (cmsError) throw cmsError;
 
-        if (error) throw error;
+        let data: any = null;
+        let nextAuthor: any = null;
+        if (cmsItem) {
+          if (cmsItem.created_by) {
+            const { data: author } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('id', cmsItem.created_by)
+              .maybeSingle();
+            nextAuthor = author || null;
+          }
+          data = {
+            ...cmsItem,
+            content: `<p class="mb-4">${markdownToHtml(cmsItem.body || '')}</p>`,
+            image_path: cmsItem.image_url || null,
+          };
+        } else {
+          const { data: legacyPost, error: legacyError } = await supabase
+            .from('posts')
+            .select('*')
+            .eq('id', id)
+            .eq('published', true)
+            .maybeSingle();
+          if (legacyError) throw legacyError;
+          data = legacyPost;
+          if (data?.author_id) {
+            const { data: author } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('id', data.author_id)
+              .maybeSingle();
+            nextAuthor = author || null;
+          }
+        }
+
         if (!data) {
           window.localStorage.removeItem(`bridgefort:public-data:v1:${cacheKey}`);
           if (active) {
@@ -83,16 +121,6 @@ const BlogPost = () => {
             setLoading(false);
           }
           return;
-        }
-
-        let nextAuthor: any = null;
-        if (data.author_id) {
-          const { data: author } = await supabase
-            .from('profiles')
-            .select('first_name, last_name')
-            .eq('id', data.author_id)
-            .maybeSingle();
-          nextAuthor = author || null;
         }
 
         if (!active) return;
@@ -114,6 +142,11 @@ const BlogPost = () => {
     void fetchPost();
     const channel = supabase
       .channel(`public_blog_detail_${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, (payload) => {
+        const previous = payload.old as Record<string, unknown> | undefined;
+        const next = payload.new as Record<string, unknown> | undefined;
+        if (previous?.id === id || next?.id === id || previous?.slug === id || next?.slug === id) void fetchPost();
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
         const previous = payload.old as Record<string, unknown> | undefined;
         const next = payload.new as Record<string, unknown> | undefined;
