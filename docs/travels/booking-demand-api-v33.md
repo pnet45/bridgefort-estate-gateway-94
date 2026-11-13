@@ -5,7 +5,7 @@
 The Travels page uses a server-side Booking.com Demand API v3.3 proxy for accommodation and attraction discovery. Booking.com remains the booking and payment destination. The website does not collect or store Booking.com credentials, live prices, availability, or reservation details.
 
 The implementation uses:
-- `POST /accommodations/search` for accommodation discovery.
+- `POST /accommodations/search` for live accommodation discovery, followed by `POST /accommodations/details` to enrich returned property names and descriptions.
 - `POST /attractions/search` for experience discovery.
 - Booking.com URLs returned by the API for outbound redirects.
 - The existing service-role-only `consume_travel_enquiry_rate_limit` database RPC for per-IP throttling, with an HMAC-derived client key.
@@ -40,7 +40,7 @@ Accommodation check-in must be within 500 days, with a stay of 1–90 nights. At
 ## Production readiness checklist
 
 1. Confirm the partner account has Demand API v3.3 access and valid credentials.
-2. Set the three secrets above (the base URL is optional).
+2. Set the two required secrets above; set the base URL only when using the approved sandbox.
 3. Deploy the `booking-demand-api` Edge Function with `verify_jwt = false`.
 4. Smoke-test one accommodation search and one attraction search using the production site.
 5. Confirm affiliate attribution on the Booking.com redirect and verify rate-limit responses.
