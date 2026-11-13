@@ -11,11 +11,9 @@ export const ADMIN_TAB_PERMISSION_MAP: Record<string, string> = {
   analytics: 'admin:view_analytics',
   'mlm-funnel': 'admin:view_mlm_funnel',
   activity: 'admin:view_activity',
-  content: 'admin:view_content',
   'leo-knowledge': 'admin:view_content',
   training: 'admin:view_dashboard',
   cms: 'admin:view_cms',
-  gallery: 'admin:view_cms',
   'other-payments': 'admin:view_other_payments',
   permissions: 'admin:manage_permissions',
   departments: 'admin:manage_departments',
@@ -63,7 +61,9 @@ export function hasPermission(permissionSet: string[] | null | undefined, requir
 
 export function getAllowedAdminTabs(permissionSet: string[] | null | undefined): string[] {
   return Object.entries(ADMIN_TAB_PERMISSION_MAP)
-    .filter(([, permissionKey]) => hasPermission(permissionSet, permissionKey))
+    .filter(([tabKey, permissionKey]) => tabKey === 'cms'
+      ? hasPermission(permissionSet, ['admin:view_cms', 'admin:view_content'])
+      : hasPermission(permissionSet, permissionKey))
     .map(([tabKey]) => tabKey);
 }
 

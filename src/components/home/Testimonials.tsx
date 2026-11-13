@@ -1,9 +1,8 @@
-
 import React from 'react';
 import TestimonialCard from '../TestimonialCard';
+import { useContentItems } from '@/hooks/useContentItems';
 
-// Updated testimonials with Nigerian images
-const testimonials = [
+const fallbackTestimonials = [
   {
     name: 'Solomon Innocent',
     role: 'Property Investor',
@@ -28,6 +27,19 @@ const testimonials = [
 ];
 
 const Testimonials = () => {
+  const { items } = useContentItems({ page: 'home', contentType: 'page_section' });
+  const cmsTestimonials = items
+    .filter(item => item.metadata?.section_key === 'testimonial')
+    .map(item => ({
+      name: String(item.metadata?.name || item.title),
+      role: String(item.metadata?.role || item.category || 'Client'),
+      testimonial: item.body || '',
+      rating: Math.min(5, Math.max(1, Number(item.metadata?.rating) || 5)),
+      imageUrl: item.image_url || '/placeholder.svg',
+    }))
+    .filter(item => item.testimonial.trim().length > 0);
+  const testimonials = cmsTestimonials.length ? cmsTestimonials : fallbackTestimonials;
+
   return (
     <section className="section-padding relative">
       <div className="container-custom">
@@ -35,7 +47,7 @@ const Testimonials = () => {
           <h2 className="text-3xl font-bold mb-4 font-display">Client Testimonials</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">Hear what our satisfied clients have to say about their experience with Bridgefort Homes Development Ltd.</p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <TestimonialCard key={index} {...testimonial} />

@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, FileText, BookOpen, Mail, LayoutDashboard, LogOut, Bell, Home, UserCheck, CheckSquare, Building, Activity, TrendingUp, DollarSign, Settings, Plane, Network, Images, Building2, Sprout, MapPinned, PanelLeftClose, PanelLeftOpen, Menu, X, Sun, Moon } from 'lucide-react';
+import { Shield, Users, FileText, BookOpen, Mail, LayoutDashboard, LogOut, Bell, Home, UserCheck, CheckSquare, Building, Activity, TrendingUp, DollarSign, Settings, Plane, Network, Building2, Sprout, MapPinned, PanelLeftClose, PanelLeftOpen, Menu, X, Sun, Moon } from 'lucide-react';
 import { useIsGlobalAdmin } from '@/hooks/useIsGlobalAdmin';
 import { getAllowedAdminTabs, isAdminRole } from '@/lib/rbac';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
@@ -29,9 +29,7 @@ import AdminNotificationCenter from '@/components/admin/AdminNotificationCenter'
 import NotificationBell from '@/components/notifications/NotificationBell';
 import AdminPropertyAnalytics from '@/components/admin/AdminPropertyAnalytics';
 import AdminMlmFunnelDashboard from '@/components/admin/AdminMlmFunnelDashboard';
-import AdminContentManagement from '@/components/admin/AdminContentManagement';
-import AdminContentHub from '@/components/admin/AdminContentHub';
-import AdminCircularGalleryContent from '@/components/admin/content/AdminCircularGalleryContent';
+import AdminUnifiedCMSHub from '@/components/admin/AdminUnifiedCMSHub';
 import AdminOtherPayments from '@/components/admin/AdminOtherPayments';
 import AdminRolePermissions from '@/components/admin/AdminRolePermissions';
 import AdminCRMWorkspace from '@/components/admin/AdminCRMWorkspace';
@@ -64,9 +62,9 @@ const AdminConsole = () => {
   const [adminTheme, setAdminTheme] = useState<'light' | 'dark'>(() => localStorage.getItem('bridgefort-admin-theme') === 'light' ? 'light' : 'dark');
   useEffect(() => { localStorage.setItem('bridgefort-admin-theme', adminTheme); }, [adminTheme]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
+  const [activeTab, setActiveTab] = useState(() => { const requested = searchParams.get('tab'); return requested === 'content' || requested === 'gallery' ? 'cms' : requested || 'overview'; });
   const handleTabChange = (tab: string) => { if (!allowedTabs.includes(tab)) return; setMobileMenuOpen(false); setActiveTab(tab); const nextParams = new URLSearchParams(searchParams); nextParams.set('tab', tab); setSearchParams(nextParams, { replace: true }); };
-  useEffect(() => { const tab = searchParams.get('tab'); if (tab && tab !== activeTab && allowedTabs.includes(tab)) setActiveTab(tab); }, [searchParams, activeTab, allowedTabs]);
+  useEffect(() => { const requested = searchParams.get('tab'); const tab = requested === 'content' || requested === 'gallery' ? 'cms' : requested; if (tab && tab !== activeTab && allowedTabs.includes(tab)) setActiveTab(tab); }, [searchParams, activeTab, allowedTabs]);
   useEffect(() => { if (authLoading || globalAdminLoading) return; if (!allowedTabs.length) { navigate('/dashboard'); return; } if (!allowedTabs.includes(activeTab)) { const fallbackTab = allowedTabs[0]; setActiveTab(fallbackTab); const nextParams = new URLSearchParams(searchParams); nextParams.set('tab', fallbackTab); setSearchParams(nextParams, { replace: true }); } }, [allowedTabs, activeTab, navigate, searchParams, setSearchParams, authLoading, globalAdminLoading]);
   useEffect(() => { const checkAdminAccess = async () => { if (authLoading) return; if (!user) { navigate('/admin-login'); return; } const isAllowed = hasPermission('admin:view_dashboard') || hasPermission('admin:all') || isAdminRole(userRole); if (!isAllowed) { toast({ title: 'Access Denied', description: "You don't have permission to access the admin console", variant: 'destructive' }); navigate('/dashboard'); return; } const { count } = await supabase.from('pending_admin_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending'); setPendingCount(count || 0); setLoading(false); }; checkAdminAccess(); }, [user, navigate, userRole, hasPermission, permissions, authLoading]);
   useEffect(() => { const w = window as TawkWindow; const hideTawk = () => w.Tawk_API?.hideWidget?.(); hideTawk(); const previousOnLoad = w.Tawk_API?.onLoad; w.Tawk_API = w.Tawk_API || {}; w.Tawk_API.onLoad = () => { previousOnLoad?.(); hideTawk(); }; return () => w.Tawk_API?.showWidget?.(); }, []);
@@ -93,11 +91,9 @@ const AdminConsole = () => {
         {hasPermission('admin:view_analytics') && <TabsTrigger value="analytics" className={`${ADMIN_TAB_CLASS} mt-3 border-t border-slate-200 pt-3 lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><TrendingUp className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Analytics</span></TabsTrigger>}
         {hasPermission('admin:view_mlm_funnel') && <TabsTrigger value="mlm-funnel" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Network className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>BHRealtors Funnel</span></TabsTrigger>}
         {hasPermission('admin:view_activity') && <TabsTrigger value="activity" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Activity className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Activity</span></TabsTrigger>}
-        {hasPermission('admin:view_content') && <TabsTrigger value="content" className={`${ADMIN_TAB_CLASS} mt-3 border-t border-slate-200 pt-3 lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><FileText className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Content</span></TabsTrigger>}
         {hasPermission('admin:view_content') && <TabsTrigger value="leo-knowledge" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><BookOpen className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Leo Knowledge</span></TabsTrigger>}
         {hasPermission('admin:view_dashboard') && <TabsTrigger value="training" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Sprout className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Training</span></TabsTrigger>}
-        {hasPermission('admin:view_cms') && <TabsTrigger value="cms" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><FileText className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>CMS Hub</span></TabsTrigger>}
-        {hasPermission('admin:view_cms') && <TabsTrigger value="gallery" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Images className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Circular Gallery</span></TabsTrigger>}
+        {(hasPermission('admin:view_cms') || hasPermission('admin:view_content')) && <TabsTrigger value="cms" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><FileText className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>CMS Hub</span></TabsTrigger>}
         {hasPermission('admin:view_other_payments') && <TabsTrigger value="other-payments" className={`${ADMIN_TAB_CLASS} mt-3 border-t border-slate-200 pt-3 lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><DollarSign className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Other Payments</span></TabsTrigger>}
         {(hasPermission('admin:manage_permissions') || isGlobalAdmin) && <TabsTrigger value="permissions" className={`${ADMIN_TAB_CLASS} mt-3 border-t border-slate-200 pt-3 lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Settings className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Permissions</span></TabsTrigger>}
         {hasPermission('admin:manage_departments') && <TabsTrigger value="departments" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Building2 className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Departments</span></TabsTrigger>}
@@ -118,11 +114,9 @@ const AdminConsole = () => {
       <TabsContent value="analytics" className="min-w-0"><AdminPropertyAnalytics/></TabsContent>
       <TabsContent value="mlm-funnel" className="min-w-0"><AdminMlmFunnelDashboard/></TabsContent>
       <TabsContent value="activity" className="min-w-0"><AdminActivityLogs/></TabsContent>
-      <TabsContent value="content" className="min-w-0"><AdminContentManagement/></TabsContent>
       <TabsContent value="leo-knowledge" className="min-w-0"><AdminLeoKnowledgeManagement/></TabsContent>
       <TabsContent value="training" className="min-w-0"><AdminTrainingRegistrations/></TabsContent>
-      <TabsContent value="cms" className="min-w-0"><AdminContentHub/></TabsContent>
-      <TabsContent value="gallery" className="min-w-0"><AdminCircularGalleryContent/></TabsContent>
+      <TabsContent value="cms" className="min-w-0"><AdminUnifiedCMSHub canManageContent={hasPermission('admin:view_cms')} canManageSections={hasPermission('admin:view_content')} canManageTraining={hasPermission('admin:view_content')} canManageGallery={hasPermission('admin:view_cms')} /></TabsContent>
       <TabsContent value="other-payments" className="min-w-0"><AdminOtherPayments/></TabsContent>
       <TabsContent value="permissions" className="min-w-0"><AdminRolePermissions/></TabsContent>
       {hasPermission('admin:manage_departments')&&<TabsContent value="departments" className="min-w-0"><AdminDepartmentManagement/></TabsContent>}

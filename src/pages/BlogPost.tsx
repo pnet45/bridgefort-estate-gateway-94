@@ -66,14 +66,52 @@ const BlogPost = () => {
 
     const fetchPost = async () => {
       try {
-        const { data, error } = await supabase
-          .from('posts')
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+        const { data: cmsItem, error: cmsError } = await (supabase as any)
+          .from('content_items')
           .select('*')
-          .eq('id', id)
-          .eq('published', true)
+          .eq('page', 'blog')
+          .eq('content_type', 'blog_post')
+          .eq('is_published', true)
+          .eq(isUuid ? 'id' : 'slug', id)
           .maybeSingle();
+        if (cmsError) throw cmsError;
 
-        if (error) throw error;
+        let data: any = null;
+        let nextAuthor: any = null;
+        if (cmsItem) {
+          if (cmsItem.created_by) {
+            const { data: author } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('id', cmsItem.created_by)
+              .maybeSingle();
+            nextAuthor = author || null;
+          }
+          data = {
+            ...cmsItem,
+            content: `<p class="mb-4">${markdownToHtml(cmsItem.body || '')}</p>`,
+            image_path: cmsItem.image_url || null,
+          };
+        } else {
+          const { data: legacyPost, error: legacyError } = await supabase
+            .from('posts')
+            .select('*')
+            .eq('id', id)
+            .eq('published', true)
+            .maybeSingle();
+          if (legacyError) throw legacyError;
+          data = legacyPost;
+          if (data?.author_id) {
+            const { data: author } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('id', data.author_id)
+              .maybeSingle();
+            nextAuthor = author || null;
+          }
+        }
+
         if (!data) {
           window.localStorage.removeItem(`bridgefort:public-data:v1:${cacheKey}`);
           if (active) {
@@ -83,16 +121,6 @@ const BlogPost = () => {
             setLoading(false);
           }
           return;
-        }
-
-        let nextAuthor: any = null;
-        if (data.author_id) {
-          const { data: author } = await supabase
-            .from('profiles')
-            .select('first_name, last_name')
-            .eq('id', data.author_id)
-            .maybeSingle();
-          nextAuthor = author || null;
         }
 
         if (!active) return;
@@ -114,6 +142,11 @@ const BlogPost = () => {
     void fetchPost();
     const channel = supabase
       .channel(`public_blog_detail_${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, (payload) => {
+        const previous = payload.old as Record<string, unknown> | undefined;
+        const next = payload.new as Record<string, unknown> | undefined;
+        if (previous?.id === id || next?.id === id || previous?.slug === id || next?.slug === id) void fetchPost();
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
         const previous = payload.old as Record<string, unknown> | undefined;
         const next = payload.new as Record<string, unknown> | undefined;
@@ -156,7 +189,9 @@ const BlogPost = () => {
     const plain = (mergedPost.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
     const wordCount = plain ? plain.split(' ').length : 0;
 
-    document.title = `${mergedPost.title} | Bridgefort Homes Development Ltd`;
+    const seoTitle = mergedPost.metadata?.seo_title || mergedPost.title;
+    const seoDescription = mergedPost.metadata?.seo_description || mergedPost.excerpt || mergedPost.title;
+    document.title = `${seoTitle} | Bridgefort Homes Development Ltd`;
 
     const setMeta = (key: string, value: string, attr: 'name' | 'property' = 'name') => {
       let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
@@ -168,16 +203,16 @@ const BlogPost = () => {
       el.setAttribute('content', value);
     };
 
-    setMeta('description', mergedPost.excerpt || mergedPost.title);
-    setMeta('og:title', mergedPost.title, 'property');
-    setMeta('og:description', mergedPost.excerpt || mergedPost.title, 'property');
+    setMeta('description', seoDescription);
+    setMeta('og:title', seoTitle, 'property');
+    setMeta('og:description', seoDescription, 'property');
     setMeta('og:image', mergedPost.image_path || '', 'property');
     setMeta('og:url', url, 'property');
     setMeta('og:type', 'article', 'property');
     setMeta('article:published_time', mergedPost.created_at, 'property');
     setMeta('twitter:card', 'summary_large_image');
-    setMeta('twitter:title', mergedPost.title);
-    setMeta('twitter:description', mergedPost.excerpt || mergedPost.title);
+    setMeta('twitter:title', seoTitle);
+    setMeta('twitter:description', seoDescription);
     if (mergedPost.image_path) setMeta('twitter:image', mergedPost.image_path);
 
     const setJsonLd = (id: string, data: object) => {

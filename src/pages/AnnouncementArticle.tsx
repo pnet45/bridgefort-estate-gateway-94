@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { ArrowLeft, Share2 } from 'lucide-react';
@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import PhoneContactBar from '@/components/PhoneContactBar';
 import { Button } from '@/components/ui/button';
 import { getAnnouncementById, announcementItems } from '@/data/announcements';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 const setMeta = (name: string, content: string, attr: 'name' | 'property' = 'name') => {
@@ -42,9 +43,50 @@ const stripHtml = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g
 
 const AnnouncementArticle = () => {
   const { id } = useParams<{ id: string }>();
-  const article = id ? getAnnouncementById(id) : undefined;
+  const [cmsArticle, setCmsArticle] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
+    setCmsArticle(null);
+    setLoading(true);
+    if (!id) {
+      setLoading(false);
+      return () => { active = false; };
+    }
+    const loadCMSArticle = async () => {
+      const { data, error } = await (supabase as any)
+        .from('content_items')
+        .select('id,title,excerpt,body,image_url,created_at,updated_at,metadata')
+        .eq('id', id)
+        .eq('page', 'home')
+        .eq('content_type', 'announcement')
+        .eq('is_published', true)
+        .maybeSingle();
+      if (error) console.error('Could not load CMS announcement:', error);
+      if (active && data) {
+        setCmsArticle({
+          id: data.id,
+          title: data.title,
+          text: data.excerpt || (data.body || '').slice(0, 180),
+          img: data.image_url || '/lovable-uploads/PropertyHero.png',
+          fullContent: data.body || data.excerpt || '',
+          datePublished: data.created_at?.slice(0, 10),
+          dateModified: data.updated_at?.slice(0, 10),
+          seoTitle: data.metadata?.seo_title || data.title,
+          seoDescription: data.metadata?.seo_description || data.excerpt || data.title,
+        });
+      }
+      if (active) setLoading(false);
+    };
+    void loadCMSArticle();
+    return () => { active = false; };
+  }, [id]);
+
+  const article = cmsArticle || (id ? getAnnouncementById(id) : undefined);
+
+  useEffect(() => {
+    if (!article && loading) return;
     if (!article) {
       document.title = 'Announcement Not Found | Bridgefort Homes Development Ltd';
       removeJsonLd(ARTICLE_LD_ID);
@@ -53,15 +95,16 @@ const AnnouncementArticle = () => {
     }
     const url = typeof window !== 'undefined' ? window.location.href : '';
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const desc = article.text.slice(0, 158);
+    const seoTitle = article.seoTitle || article.title;
+    const desc = (article.seoDescription || article.text || article.title).slice(0, 158);
     const plainText = stripHtml(article.fullContent);
     const wordCount = plainText ? plainText.split(/\s+/).length : 0;
     const datePublished = article.datePublished || new Date().toISOString().slice(0, 10);
     const dateModified = article.dateModified || datePublished;
 
-    document.title = `${article.title} | Bridgefort Homes Development Ltd`;
+    document.title = `${seoTitle} | Bridgefort Homes Development Ltd`;
     setMeta('description', desc);
-    setMeta('og:title', article.title, 'property');
+    setMeta('og:title', seoTitle, 'property');
     setMeta('og:description', desc, 'property');
     setMeta('og:type', 'article', 'property');
     setMeta('og:image', article.img, 'property');
@@ -70,7 +113,7 @@ const AnnouncementArticle = () => {
     setMeta('article:published_time', datePublished, 'property');
     setMeta('article:modified_time', dateModified, 'property');
     setMeta('twitter:card', 'summary_large_image');
-    setMeta('twitter:title', article.title);
+    setMeta('twitter:title', seoTitle);
     setMeta('twitter:description', desc);
     setMeta('twitter:image', article.img);
 
@@ -125,7 +168,7 @@ const AnnouncementArticle = () => {
       removeJsonLd(ARTICLE_LD_ID);
       removeJsonLd(BREADCRUMB_LD_ID);
     };
-  }, [article]);
+  }, [article, loading]);
 
   const handleShare = async () => {
     const shareData = {
@@ -166,7 +209,9 @@ const AnnouncementArticle = () => {
             )}
           </div>
 
-          {!article ? (
+          {loading && !article ? (
+            <div className="rounded-xl bg-white p-8 text-center text-gray-500" aria-live="polite">Loading announcement…</div>
+          ) : !article ? (
             <div className="bg-white rounded-xl shadow p-8 text-center">
               <h1 className="text-2xl font-bold text-estate-blue mb-3">Announcement not found</h1>
               <p className="text-gray-600 mb-6">
