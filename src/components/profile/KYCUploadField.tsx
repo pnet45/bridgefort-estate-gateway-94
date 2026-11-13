@@ -25,6 +25,24 @@ const MIME_BY_EXTENSION: Record<string, string> = {
 };
 const ALLOWED_MIME_TYPES = new Set(Object.values(MIME_BY_EXTENSION));
 
+function getKycObjectPath(value: string | undefined, bucket: string): string {
+  if (!value) return "";
+  if (!/^https?:\/\//i.test(value)) return value;
+
+  // Support legacy rows that stored a public URL before this private-bucket fix.
+  const markers = [
+    `/storage/v1/object/public/${bucket}/`,
+    `/storage/v1/object/sign/${bucket}/`,
+  ];
+  const marker = markers.find((candidate) => value.includes(candidate));
+  if (!marker) return "";
+  try {
+    return decodeURIComponent(value.split(marker)[1].split("?")[0]);
+  } catch {
+    return value.split(marker)[1].split("?")[0];
+  }
+}
+
 const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
   label, bucket, userId, docKey, onUploaded, existingUrl
 }) => {
@@ -36,8 +54,23 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
   const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
-    setUploadedUrl(existingUrl || "");
-  }, [existingUrl]);
+    let active = true;
+    const objectPath = getKycObjectPath(existingUrl, bucket);
+    if (!objectPath) {
+      setUploadedUrl("");
+      return () => { active = false; };
+    }
+
+    // KYC documents live in a private bucket. Recreate a short-lived URL
+    // whenever the form is opened instead of persisting an expiring/public URL.
+    void supabase.storage.from(bucket).createSignedUrl(objectPath, 60 * 60).then(({ data, error }) => {
+      if (!active) return;
+      setUploadedUrl(error ? "" : data.signedUrl);
+      if (error) setUploadError("This saved document could not be opened. Please select it again.");
+    });
+
+    return () => { active = false; };
+  }, [existingUrl, bucket]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     // Capture the input and File synchronously. Do not preventDefault() on a
@@ -98,9 +131,15 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
 
       if (error) throw error;
 
-      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-      setUploadedUrl(data.publicUrl);
-      onUploaded(data.publicUrl, fileName, inferredMime);
+      const { data, error: signedUrlError } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(filePath, 60 * 60);
+      if (signedUrlError) throw signedUrlError;
+
+      setUploadedUrl(data.signedUrl);
+      // Store the stable object path in the profile record, never the
+      // short-lived signed URL or a public URL for private identity documents.
+      onUploaded(filePath, fileName, inferredMime);
       setUploadError("");
       toast({ title: "Upload successful", description: `${label} uploaded.` });
     } catch (error: unknown) {
