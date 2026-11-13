@@ -11,14 +11,16 @@ interface AdminUnifiedCMSHubProps {
   canManageContent: boolean;
   canManageSections: boolean;
   canManageTraining: boolean;
+  canManageGallery: boolean;
 }
 
 const AdminUnifiedCMSHub: React.FC<AdminUnifiedCMSHubProps> = ({
   canManageContent,
   canManageSections,
   canManageTraining,
+  canManageGallery,
 }) => {
-  const defaultTab = canManageContent ? 'editorial' : 'hero';
+  const defaultTab = canManageContent ? 'editorial' : canManageSections ? 'hero' : canManageTraining ? 'training' : 'gallery';
 
   return (
     <div className="space-y-5">
@@ -56,11 +58,11 @@ const AdminUnifiedCMSHub: React.FC<AdminUnifiedCMSHubProps> = ({
               <TabsTrigger value="testimonials" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <MessageSquare className="h-4 w-4" /> Testimonials
               </TabsTrigger>
-              <TabsTrigger value="gallery" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                <Images className="h-4 w-4" /> Gallery
-              </TabsTrigger>
             </>
           )}
+          {canManageGallery && <TabsTrigger value="gallery" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <Images className="h-4 w-4" /> Gallery
+          </TabsTrigger>}
         </TabsList>
 
         {canManageContent && (
@@ -85,11 +87,11 @@ const AdminUnifiedCMSHub: React.FC<AdminUnifiedCMSHubProps> = ({
                 <AdminTestimonialsContent />
               </div>
             </TabsContent>
-            <TabsContent value="gallery" className="min-w-0">
-              <AdminCircularGalleryContent />
-            </TabsContent>
           </>
         )}
+        {canManageGallery && <TabsContent value="gallery" className="min-w-0">
+          <AdminCircularGalleryContent />
+        </TabsContent>}
       </Tabs>
     </div>
   );
