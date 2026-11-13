@@ -15,7 +15,12 @@ const countries = [
   ["de", "Germany"], ["ng", "Nigeria"], ["ca", "Canada"], ["gh", "Ghana"],
 ];
 
-const today = () => {\n  const date = new Date();\n  const month = String(date.getMonth() + 1).padStart(2, "0");\n  const day = String(date.getDate()).padStart(2, "0");\n  return `${date.getFullYear()}-${month}-${day}`;\n};
+const today = () => {
+  const date = new Date();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+};
 const localized = (value: unknown): string => {
   if (typeof value === "string") return value;
   if (value && typeof value === "object") {
