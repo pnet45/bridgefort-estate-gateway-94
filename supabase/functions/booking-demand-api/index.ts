@@ -140,7 +140,7 @@ serve(async (req) => {
       },
       rows: 20,
       ...(city !== undefined ? { city } : { country }),
-      extras: ["products"],
+      extras: ["products", "extra_charges"],
     };
     endpoint = "/accommodations/search";
   } else {
@@ -182,9 +182,53 @@ serve(async (req) => {
       console.error("Booking.com Demand API returned an unexpected response shape");
       return response(req, { error: "Travel search returned an unexpected response" }, 502);
     }
+
+    let data = result.data;
+    if (kind === "accommodations" && data.length > 0) {
+      const accommodationIds = data
+        .map((item) => isRecord(item) ? Number(item.id) : NaN)
+        .filter((id) => Number.isSafeInteger(id) && id > 0)
+        .slice(0, 20);
+      if (accommodationIds.length > 0) {
+        try {
+          const detailsResponse = await fetch(`${apiBase}/accommodations/details`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "X-Affiliate-Id": affiliateId,
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              accommodations: accommodationIds,
+              extras: ["description", "photos", "facilities", "policies"],
+              languages: ["en-gb"],
+              rows: Math.max(10, Math.ceil(accommodationIds.length / 10) * 10),
+            }),
+            signal: AbortSignal.timeout(12_000),
+          });
+          const detailsResult = await detailsResponse.json().catch(() => null);
+          if (detailsResponse.ok && isRecord(detailsResult) && Array.isArray(detailsResult.data)) {
+            const detailsById = new Map<number, unknown>(
+              detailsResult.data
+                .filter(isRecord)
+                .map((item) => [Number(item.id), item]),
+            );
+            data = data.map((item) => isRecord(item)
+              ? { ...item, details: detailsById.get(Number(item.id)) ?? null }
+              : item);
+          } else {
+            console.warn("Booking.com accommodation details were unavailable", { status: detailsResponse.status });
+          }
+        } catch (detailsError) {
+          console.warn("Booking.com accommodation details request failed", detailsError instanceof Error ? detailsError.message : "unknown error");
+        }
+      }
+    }
+
     return response(req, {
       kind,
-      data: result.data,
+      data,
       metadata: isRecord(result.metadata) ? result.metadata : {},
       request_id: typeof result.request_id === "string" ? result.request_id : null,
     });
