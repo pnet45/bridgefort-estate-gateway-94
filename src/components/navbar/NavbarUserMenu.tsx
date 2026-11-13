@@ -43,7 +43,7 @@ const NavbarUserMenu = ({ profile, userRole }: NavbarUserMenuProps) => {
 
   const getProfileImageUrl = () => {
     // Private KYC documents must not be exposed as public profile avatars.
-    return profile?.avatar_url || null;
+    return profile?.profile_picture_url || profile?.avatar_url || null;
   };
 
   const handleSignOut = async () => {
