@@ -26,7 +26,6 @@ const PAGES: { value: ContentPage; label: string }[] = [
   { value: 'home', label: 'Home' },
   { value: 'about', label: 'About' },
   { value: 'login', label: 'Login' },
-  { value: 'generic', label: 'Generic' },
 ];
 
 const empty = (page: ContentPage): Partial<ContentItem> => ({
