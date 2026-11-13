@@ -11,10 +11,14 @@ interface Props {
   title?: string;
   emptyHidden?: boolean;
   className?: string;
+  excludeMetadataKey?: string;
 }
 
-const CMSSection: React.FC<Props> = ({ page, contentType, title, emptyHidden = true, className }) => {
+const CMSSection: React.FC<Props> = ({ page, contentType, title, emptyHidden = true, className, excludeMetadataKey }) => {
   const { items, loading } = useContentItems({ page, contentType });
+  const displayItems = excludeMetadataKey
+    ? items.filter(item => !item.metadata?.[excludeMetadataKey])
+    : items;
 
   if (loading) {
     return (
@@ -42,14 +46,14 @@ const CMSSection: React.FC<Props> = ({ page, contentType, title, emptyHidden = t
       </section>
     );
   }
-  if (emptyHidden && items.length === 0) return null;
+  if (emptyHidden && displayItems.length === 0) return null;
 
   return (
     <section className={`py-12 ${className || ''}`}>
       <div className="container-custom">
         {title && <h2 className="text-3xl font-bold mb-8 text-center">{title}</h2>}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map(item => (
+          {displayItems.map(item => (
             <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               {item.image_url && (
                 <div className="aspect-video bg-muted overflow-hidden">
