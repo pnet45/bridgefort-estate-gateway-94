@@ -1,96 +1,98 @@
-
-import React, { useId, useRef } from 'react';
+import React, { useId, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Upload, X } from 'lucide-react';
+import { Loader2, Upload, X } from "lucide-react";
 
 interface FileUploadProps {
   label: string;
-  onFileSelect: (file: File | null) => void;
+  onFileSelect: (file: File | null) => void | Promise<void>;
   file: File | null;
   acceptedTypes?: string;
+  disabled?: boolean;
+  uploading?: boolean;
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({
   label,
   onFileSelect,
   file,
-  acceptedTypes = '.pdf,.doc,.docx'
+  acceptedTypes = ".pdf,.doc,.docx",
+  disabled = false,
+  uploading = false,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const inputId = useId();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const selectedFile = e.currentTarget.files?.[0] || null;
-    // Clear the native input after capturing the File so the same document
-    // can be selected again if an upload needs to be retried.
-    e.currentTarget.value = '';
-    if (selectedFile) onFileSelect(selectedFile);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Capture the File before resetting the native input. Do not prevent or
+    // stop the native change event: mobile file providers rely on normal flow.
+    const selectedFile = event.currentTarget.files?.[0] || null;
+    event.currentTarget.value = "";
+    if (selectedFile) void onFileSelect(selectedFile);
   };
-  
+
   const handleRemoveFile = () => {
-    onFileSelect(null);
-    if (inputRef.current) {
-      inputRef.current.value = '';
-    }
+    if (disabled || uploading) return;
+    void onFileSelect(null);
+    if (inputRef.current) inputRef.current.value = "";
   };
-  
+
   return (
     <div className="space-y-2">
       <Label htmlFor={inputId}>{label}</Label>
-      
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+      <div className="rounded-xl border-2 border-dashed border-border bg-muted/20 p-5 text-center transition-colors hover:border-estate-blue/50 sm:p-6">
+        <input
+          ref={inputRef}
+          type="file"
+          id={inputId}
+          accept={acceptedTypes}
+          onChange={handleFileChange}
+          disabled={disabled || uploading}
+          className="sr-only"
+          aria-describedby={`${inputId}-hint`}
+        />
+
         {!file ? (
-          <>
-            <input
-              ref={inputRef}
-              type="file"
-              id={inputId}
-              accept={acceptedTypes}
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <div className="space-y-2">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
-                <Upload className="h-6 w-6 text-gray-600" />
-              </div>
-              <div className="text-sm text-gray-600">
-                <label
-                  htmlFor={inputId}
-                  className="cursor-pointer text-estate-blue hover:text-estate-darkBlue font-medium"
-                >
-                  Click to upload
-                </label>{' '}
-                or drag and drop
-              </div>
-              <p className="text-xs text-gray-500">{acceptedTypes.replace(/\./g, '').toUpperCase()} up to 10MB</p>
+          <div className="space-y-3">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-estate-blue/10">
+              {uploading ? (
+                <Loader2 className="h-6 w-6 animate-spin text-estate-blue" aria-hidden="true" />
+              ) : (
+                <Upload className="h-6 w-6 text-estate-blue" aria-hidden="true" />
+              )}
             </div>
-          </>
+            <div className="text-sm text-foreground">
+              <label
+                htmlFor={inputId}
+                className={`font-semibold text-estate-blue ${disabled || uploading ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:underline"}`}
+              >
+                {uploading ? "Uploading resume…" : "Choose a file"}
+              </label>
+              {!uploading && <span className="text-muted-foreground"> or select it from your device</span>}
+            </div>
+            <p id={`${inputId}-hint`} className="text-xs text-muted-foreground">
+              PDF, DOC or DOCX · Maximum file size: 10 MB
+            </p>
+          </div>
         ) : (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-estate-blue bg-opacity-10 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-estate-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                </div>
+          <div className="flex items-center justify-between gap-3 text-left">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-estate-blue/10">
+                <FileIcon />
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                <p className="text-xs text-gray-500">
-                  {(file.size / 1024 / 1024).toFixed(2)} MB
-                </p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-foreground">{file.name}</p>
+                <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB · Uploaded</p>
               </div>
             </div>
             <Button
               type="button"
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={handleRemoveFile}
-              className="text-gray-500 hover:text-red-500"
+              disabled={disabled || uploading}
+              aria-label="Remove uploaded resume"
+              className="shrink-0 text-muted-foreground hover:text-destructive"
             >
               <X size={18} />
             </Button>
@@ -100,3 +102,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     </div>
   );
 };
+
+const FileIcon = () => (
+  <svg className="h-5 w-5 text-estate-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 3v6h5M8 14h8M8 17h6" />
+  </svg>
+);
