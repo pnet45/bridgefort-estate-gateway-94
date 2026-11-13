@@ -11,6 +11,7 @@ import TeamPhoto from '../components/about/TeamPhoto';
 import ManagementTeam from '../components/about/ManagementTeam';
 import BoardOfDirectors from '../components/about/BoardOfDirectors';
 import CallToAction from '../components/about/CallToAction';
+import CMSSection from '@/components/cms/CMSSection';
 
 const About = () => (
   <div className="flex min-h-screen flex-col overflow-x-clip bg-background text-foreground">
@@ -45,6 +46,7 @@ const About = () => (
       <TeamPhoto />
       <ManagementTeam />
       <BoardOfDirectors />
+      <CMSSection page="about" contentType="page_section" title="More About Bridgefort" />
       <CallToAction />
     </main>
     <Footer />
