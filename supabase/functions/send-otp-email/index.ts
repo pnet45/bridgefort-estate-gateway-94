@@ -140,7 +140,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <p><strong>Bridgefort Homes Development Ltd</strong></p>
                 <p>Bringing your dream home!</p>
                 <p style="margin-top: 10px;">
-                  Need help? Contact us at <a href="mailto:support@bridgeforthomes.com" style="color: #1e40af;">support@pwanbridgefort.ng</a>
+                  Need help? Contact us at <a href="mailto:info@bridgeforthomes.com" style="color: #1e40af;">info@bridgeforthomes.com</a>
                 </p>
               </div>
             </div>
