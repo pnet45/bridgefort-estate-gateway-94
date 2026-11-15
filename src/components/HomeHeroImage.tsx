@@ -94,7 +94,7 @@ const HomeHeroImage = () => {
   }, [heroImages.length]);
 
   return (
-    <section className="relative w-screen max-w-none h-[min(58svh,520px)] min-h-[390px] sm:h-[min(68svh,620px)] lg:h-[calc(100vh-104px)] left-1/2 -translate-x-1/2">
+    <section className="relative w-screen max-w-none h-[min(50svh,420px)] min-h-[280px] sm:h-[min(60svh,560px)] lg:h-[calc(100vh-104px)] left-1/2 -translate-x-1/2">
       <div className="h-full relative overflow-hidden w-full">
         <img
           src={heroImages[currentSlide]}
