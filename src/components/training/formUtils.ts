@@ -30,5 +30,5 @@ export const handleFormSubmission = (data: TrainingFormValues) => {
   }
   
   // Open the default email client with pre-populated fields
-  window.location.href = `mailto:training@pwanbridgefort.ng?subject=${subject}&body=${body}`;
+  window.location.href = `mailto:info@bridgeforthomes.com?subject=${subject}&body=${body}`;
 };

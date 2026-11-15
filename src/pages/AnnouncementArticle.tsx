@@ -138,14 +138,14 @@ const AnnouncementArticle = () => {
       author: {
         '@type': 'Organization',
         name: 'Bridgefort Homes Development Ltd',
-        url: 'https://pwanbridgefort.ng',
+        url: 'https://www.bridgeforthomes.com',
       },
       publisher: {
         '@type': 'Organization',
         name: 'Bridgefort Homes Development Ltd',
         logo: {
           '@type': 'ImageObject',
-          url: 'https://pwanbridgefort.ng/lovable-uploads/PropertyHero.png',
+          url: 'https://www.bridgeforthomes.com/lovable-uploads/PropertyHero.png',
         },
       },
       mainEntityOfPage: {
