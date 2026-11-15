@@ -197,7 +197,7 @@ const AnnouncementArticle = () => {
         <div className="container-custom max-w-4xl">
           <div className="mb-6 flex items-center justify-between">
             <Link
-              to="/"
+              to="/#announcements"
               className="inline-flex items-center text-estate-blue hover:underline text-sm"
             >
               <ArrowLeft className="w-4 h-4 mr-1" /> Back to Announcements
