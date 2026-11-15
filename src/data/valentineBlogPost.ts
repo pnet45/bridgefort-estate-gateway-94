@@ -70,8 +70,8 @@ export const valentineBlogPost = {
       <p>Contact Bridgefort Homes Development Ltd to explore our Valentine property packages:</p>
       <ul>
         <li> Phone: +234-803-410-8432, +234-807-071-0688</li>
-        <li> Email: info@pwanbridgefort.ng</li>
-        <li> Website: <a href="https://pwanbridgefort.ng" class="text-blue-600 underline">pwanbridgefort.ng</a></li>
+        <li> Email: info@bridgeforthomes.com</li>
+        <li> Website: <a href="https://www.bridgeforthomes.com" class="text-blue-600 underline">www.bridgeforthomes.com</a></li>
       </ul>
 
       <p class="text-center text-xl font-bold mt-8"> Love Smart. Gift Land. Build Legacy. </p>

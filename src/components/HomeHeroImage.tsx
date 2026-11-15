@@ -128,11 +128,11 @@ const HomeHeroImage = () => {
               <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-4 md:mb-8 max-w-2xl text-left text-white" style={{ animationDelay: '200ms' }}>
                 {heroSubtitle}
               </p>
-              <div className="flex w-full flex-col gap-2 text-center sm:w-auto sm:flex-row sm:gap-4" style={{ animationDelay: '400ms' }}>
-                <Link to="/properties" className="inline-flex min-h-11 w-full items-center justify-center bg-primary text-primary-foreground font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg transition-colors hover:bg-primary/90 active:scale-[.99] text-sm md:text-base sm:w-auto">
+              <div className="flex w-fit max-w-full flex-col items-start gap-2 text-left sm:flex-row sm:gap-3" style={{ animationDelay: '400ms' }}>
+                <Link to="/properties" className="inline-flex min-h-10 w-fit max-w-full items-center justify-center whitespace-nowrap bg-primary px-4 py-2 text-left text-xs font-semibold text-primary-foreground rounded-lg transition-colors hover:bg-primary/90 active:scale-[.99] sm:text-sm md:px-6 md:py-3">
                   <span>Browse Properties</span>
                 </Link>
-                <Link to="/contact" className="inline-flex min-h-11 w-full items-center justify-center border-2 border-white bg-black/20 text-white font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg transition-colors hover:bg-white/15 active:scale-[.99] text-sm md:text-base sm:w-auto">
+                <Link to="/contact" className="inline-flex min-h-10 w-fit max-w-full items-center justify-center whitespace-nowrap border-2 border-white bg-black/20 px-4 py-2 text-left text-xs font-semibold text-white rounded-lg transition-colors hover:bg-white/15 active:scale-[.99] sm:text-sm md:px-6 md:py-3">
                   <span>Contact Us</span>
                 </Link>
               </div>

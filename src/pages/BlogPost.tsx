@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 import Navbar from '@/components/Navbar';
@@ -38,6 +39,27 @@ const BlogPost = () => {
     // Static editorial articles are bundled with the application and need no
     // database round-trip or browser cache.
     const staticArticle = realEstateArticles.find((article: any) => article.id === id);
+    const editorialArticle = [customerServiceWeekPost, salesStrategyBlogPost, valentineBlogPost].find((article) => article.id === id);
+
+    if (editorialArticle) {
+      const articleContent = /<[a-z][\s\S]*>/i.test(editorialArticle.content)
+        ? editorialArticle.content
+        : `<p class="mb-4">${markdownToHtml(editorialArticle.content)}</p>`;
+      setPost({
+        id: editorialArticle.id,
+        title: editorialArticle.title,
+        excerpt: editorialArticle.excerpt,
+        content: articleContent,
+        category: editorialArticle.category,
+        image_path: editorialArticle.image,
+        created_at: editorialArticle.publishedAt,
+      });
+      setAuthorProfile({ first_name: 'Bridgefort', last_name: 'Homes' });
+      setError(null);
+      setLoading(false);
+      return () => { active = false; };
+    }
+
     if (staticArticle) {
       setPost({
         id: staticArticle.id,
@@ -269,6 +291,15 @@ const BlogPost = () => {
       <PhoneContactBar />
 
       <main className="flex-grow pt-28 pb-12">
+        <div className="container-custom mb-5">
+          <Link
+            to="/blog"
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-estate-blue/40 hover:text-estate-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-blue focus-visible:ring-offset-2"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Back to Blog
+          </Link>
+        </div>
         {loading ? (
           <div className="container-custom space-y-6 py-10" aria-label="Loading article">
             <div className="h-4 w-32 animate-pulse rounded bg-muted" />

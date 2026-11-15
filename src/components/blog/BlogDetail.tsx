@@ -1,34 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar } from '@/components/ui/avatar';
 import { AvatarFallback } from '@/components/ui/avatar';
 import { CalendarIcon, Tag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import SocialShareButtons from './SocialShareButtons';
 import BlogPostContent from './BlogPostContent';
 
 interface BlogDetailProps {
   post: any;
 }
-
-// BackButton: Extracted for clarity and future reusability
-const BackButton = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const handleBack = () => {
-    if (location.key !== "default") navigate(-1);
-    else navigate("/blog");
-  };
-  return (
-    <div className="mb-6">
-      <Button type="button" onClick={handleBack} variant="outline" size="sm" className="flex items-center gap-2">
-        <span aria-hidden="true" className="mr-1 text-xl">←</span> Back to Blog
-      </Button>
-    </div>
-  );
-};
 
 const BlogDetail = ({ post }: BlogDetailProps) => {
   const [currentUrl, setCurrentUrl] = useState('');
@@ -59,9 +39,6 @@ const BlogDetail = ({ post }: BlogDetailProps) => {
 
   return (
     <article className="max-w-4xl mx-auto p-2 sm:p-8 bg-white rounded-lg shadow-md">
-      {/* Back button (always links to /blog) */}
-      <BackButton />
-
       {/* Post image (cover) */}
       {post.image_path && (
         <div className="mb-6">
@@ -112,10 +89,10 @@ const BlogDetail = ({ post }: BlogDetailProps) => {
         </div>
       )}
 
-      {/* Post content in scrollable area, using new BlogPostContent */}
-      <ScrollArea className="h-[500px] rounded-md border p-4 bg-gray-50">
+      {/* Let the article use the page's natural scroll instead of a nested fixed-height scroller. */}
+      <div className="rounded-md border p-4 bg-gray-50">
         <BlogPostContent htmlContent={post.content} />
-      </ScrollArea>
+      </div>
 
       {/* Social share buttons (bottom) */}
       <div className="mt-8 pt-4 border-t">

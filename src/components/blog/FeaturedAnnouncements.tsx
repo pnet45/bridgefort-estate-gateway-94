@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 const announcementItems = [
   {
     title: "Bridgefort Homes Development Ltd Delivers Again: Land Allocation at Ode-Omi Estates",
@@ -61,7 +62,7 @@ const FeaturedAnnouncements = () => <section className="py-10 bg-white">
             <div className="md:w-2/3 p-4 sm:p-5 md:p-6 flex flex-col">
               <h3 className="font-bold text-base sm:text-lg md:text-xl text-estate-blue mb-2 line-clamp-3">{item.title}</h3>
               <p className="text-gray-700 mb-3 text-sm sm:text-base line-clamp-4">{item.text}</p>
-              {item.cta && <a href={item.cta.url} className="self-start bg-estate-blue text-white px-4 py-2 rounded shadow hover:bg-estate-blue/90 text-sm font-medium">{item.cta.label}</a>}
+              {item.cta && <Link to={item.cta.url} className="self-start bg-estate-blue text-white px-4 py-2 rounded shadow hover:bg-estate-blue/90 text-sm font-medium">{item.cta.label}</Link>}
             </div>
           </div>)}
       </div>

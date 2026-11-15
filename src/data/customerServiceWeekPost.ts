@@ -52,8 +52,8 @@ With a clear focus on service excellence and customer trust, analysts and client
 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, opposite VGC Estate, Lekki, Lagos State
 
  **+234 803 062 4059**  
- **www.pwanbridgefort.ng**  
- **info@pwanbridgefort.ng**
+ **www.bridgeforthomes.com**  
+ **info@bridgeforthomes.com**
 
 **"…Rebuilding the Future."**
 

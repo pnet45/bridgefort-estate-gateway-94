@@ -12,6 +12,9 @@ import MarketUpdates from '@/components/blog/MarketUpdates';
 import YouTubeSection from '@/components/blog/YouTubeSection';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { realEstateArticles } from '@/data/realEstateContent';
+import { customerServiceWeekPost } from '@/data/customerServiceWeekPost';
+import { salesStrategyBlogPost } from '@/data/salesStrategyBlogPost';
+import { valentineBlogPost } from '@/data/valentineBlogPost';
 import { shareArticle } from '@/utils/blogUtils';
 import type { BlogPost } from '@/types/blog';
 
@@ -33,7 +36,16 @@ const Blog = () => {
       category: article.category,
     }));
 
-    return [...staticArticles, ...posts].sort(
+    const editorialArticles: BlogPost[] = [customerServiceWeekPost, salesStrategyBlogPost, valentineBlogPost].map((article) => ({
+      id: article.id,
+      title: article.title,
+      excerpt: article.excerpt,
+      image_path: article.image,
+      created_at: article.publishedAt,
+      category: article.category,
+    }));
+
+    return [...staticArticles, ...editorialArticles, ...posts].sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [posts]);

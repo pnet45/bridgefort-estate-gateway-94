@@ -1,5 +1,6 @@
 
 import React from "react";
+import { Link } from "react-router-dom";
 
 const investmentItems = [
   {
@@ -39,9 +40,9 @@ const InvestmentSpotlight = () => (
               <h3 className="font-bold text-xl md:text-2xl text-estate-blue mb-2">{item.title}</h3>
               <p className="text-gray-700 mb-3">{item.text}</p>
               {item.cta && (
-                <a href={item.cta.url}
+                <Link to={item.cta.url}
                   className="self-start bg-estate-blue text-white px-4 py-2 rounded shadow hover:bg-estate-blue/90 text-sm font-medium"
-                >{item.cta.label}</a>
+                >{item.cta.label}</Link>
               )}
             </div>
           </div>
