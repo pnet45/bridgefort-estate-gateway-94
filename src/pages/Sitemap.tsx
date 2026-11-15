@@ -54,7 +54,7 @@ const sitemapData = [
     title: 'Account & Support',
     links: [
       { name: 'Login / Register', path: '/auth' },
-      { name: 'Reset Password', path: '/reset-password' },
+      { name: 'Reset Password', path: '/auth/reset-password' },
       { name: 'Account Settings', path: '/dashboard#account' },
       { name: 'Saved Properties', path: '/dashboard#saved' },
       { name: 'Book Inspection', path: '/dashboard#book' },

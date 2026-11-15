@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from "@/lib/publicDataCache";
 
@@ -93,7 +94,7 @@ const HomeHeroImage = () => {
   }, [heroImages.length]);
 
   return (
-    <section className="relative w-screen max-w-none h-[calc(100vh-88px)] lg:h-[calc(100vh-104px)] left-1/2 -translate-x-1/2">
+    <section className="relative w-screen max-w-none h-[min(58svh,520px)] min-h-[390px] sm:h-[min(68svh,620px)] lg:h-[calc(100vh-104px)] left-1/2 -translate-x-1/2">
       <div className="h-full relative overflow-hidden w-full">
         <img
           src={heroImages[currentSlide]}
@@ -118,22 +119,22 @@ const HomeHeroImage = () => {
           />
         )}
 
-        <div className="absolute inset-0 hero-overlay-light flex items-end pb-16 md:items-center md:pb-0">
-          <div className="container-custom text-white px-4 pt-20 flex justify-start">
-            <div key={textKey} className={`max-w-3xl ${textEffect}`} style={{ animationDuration: '0.8s' }}>
-              <h1 className="text-lg md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-6 leading-snug md:leading-tight text-left text-gradient">
+        <div className="absolute inset-0 bg-black/40 flex items-end pb-14 sm:pb-16 md:items-center md:pb-0">
+          <div className="container-custom text-white px-4 pt-10 sm:pt-16 flex justify-start">
+            <div key={textKey} className={`max-w-3xl w-full ${textEffect}`} style={{ animationDuration: '0.8s' }}>
+              <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 md:mb-6 leading-tight text-left text-white">
                 {heroTitle}
               </h1>
-              <p className="text-sm md:text-lg lg:text-xl xl:text-2xl mb-3 md:mb-8 max-w-2xl text-left hero-text" style={{ animationDelay: '200ms' }}>
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-4 md:mb-8 max-w-2xl text-left text-white" style={{ animationDelay: '200ms' }}>
                 {heroSubtitle}
               </p>
-              <div className="flex gap-4 text-center" style={{ animationDelay: '400ms' }}>
-                <a href="/properties" className="inline-flex items-center bg-primary text-primary-foreground font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg transition-all duration-300 ease-out hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-1 active:scale-95 text-sm md:text-base group">
-                  <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-primary-foreground after:transition-all after:duration-300 group-hover:after:w-full">Browse Properties</span>
-                </a>
-                <a href="/contact" className="inline-flex items-center border-2 border-white text-white font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg transition-all duration-300 ease-out hover:bg-white/20 hover:shadow-xl hover:shadow-white/30 hover:-translate-y-1 active:scale-95 text-sm md:text-base group">
-                  <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 group-hover:after:w-full">Contact Us</span>
-                </a>
+              <div className="flex w-full flex-col gap-2 text-center sm:w-auto sm:flex-row sm:gap-4" style={{ animationDelay: '400ms' }}>
+                <Link to="/properties" className="inline-flex min-h-11 w-full items-center justify-center bg-primary text-primary-foreground font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg transition-colors hover:bg-primary/90 active:scale-[.99] text-sm md:text-base sm:w-auto">
+                  <span>Browse Properties</span>
+                </Link>
+                <Link to="/contact" className="inline-flex min-h-11 w-full items-center justify-center border-2 border-white bg-black/20 text-white font-semibold px-5 py-2.5 md:px-8 md:py-3 rounded-lg transition-colors hover:bg-white/15 active:scale-[.99] text-sm md:text-base sm:w-auto">
+                  <span>Contact Us</span>
+                </Link>
               </div>
             </div>
           </div>
