@@ -10,6 +10,9 @@ import BlogDetail from '@/components/blog/BlogDetail';
 import BlogNewsletter from '@/components/blog/BlogNewsletter';
 import PhoneContactBar from '@/components/PhoneContactBar';
 import { realEstateArticles } from '@/data/realEstateContent';
+import { customerServiceWeekPost } from '@/data/customerServiceWeekPost';
+import { salesStrategyBlogPost } from '@/data/salesStrategyBlogPost';
+import { valentineBlogPost } from '@/data/valentineBlogPost';
 import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 // Convert markdown-ish content to basic HTML for rendering in BlogDetail
