@@ -140,7 +140,7 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
       setUploadedUrl(data.signedUrl);
       // Store the stable object path in the profile record, never the
       // short-lived signed URL or a public URL for private identity documents.
-      onUploaded(filePath, fileName, inferredMime);
+      onUploaded(filePath, fileName, mimeType);
       setUploadError("");
       toast({ title: "Upload successful", description: `${label} uploaded.` });
     } catch (error: unknown) {
