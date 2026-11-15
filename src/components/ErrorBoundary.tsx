@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
+  recoveryScope?: string;
 }
 
 interface ErrorBoundaryState {
@@ -51,9 +52,13 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   private recoveryTimer: number | undefined;
 
+  private get recoveryStorageKey() {
+    return `${RECOVERY_STORAGE_KEY}:${this.props.recoveryScope || 'routes'}`;
+  }
+
   private clearRecoveryRecord = () => {
     try {
-      window.sessionStorage.removeItem(RECOVERY_STORAGE_KEY);
+      window.sessionStorage.removeItem(this.recoveryStorageKey);
     } catch {
       // Storage may be unavailable in private browsing; normal rendering still works.
     }
@@ -70,7 +75,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       let record: RecoveryRecord | null = null;
 
       try {
-        const stored = window.sessionStorage.getItem(RECOVERY_STORAGE_KEY);
+        const stored = window.sessionStorage.getItem(this.recoveryStorageKey);
         record = stored ? JSON.parse(stored) as RecoveryRecord : null;
       } catch {
         record = null;
@@ -82,7 +87,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
       if (record.attempts < MAX_AUTOMATIC_RELOADS) {
         record.attempts += 1;
-        window.sessionStorage.setItem(RECOVERY_STORAGE_KEY, JSON.stringify(record));
+        window.sessionStorage.setItem(this.recoveryStorageKey, JSON.stringify(record));
         this.recoveryTimer = window.setTimeout(() => window.location.reload(), 250);
       } else {
         console.error('Automatic page recovery limit reached; reload stopped to prevent a loop.');

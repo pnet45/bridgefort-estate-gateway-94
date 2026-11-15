@@ -15,7 +15,7 @@ const app = (
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ErrorBoundary>
+    <ErrorBoundary recoveryScope="root">
       {isPostHogConfigured ? (
         <PostHogProvider client={posthog}>
           <PostHogErrorBoundary>{app}</PostHogErrorBoundary>
