@@ -39,6 +39,27 @@ const BlogPost = () => {
     // Static editorial articles are bundled with the application and need no
     // database round-trip or browser cache.
     const staticArticle = realEstateArticles.find((article: any) => article.id === id);
+    const editorialArticle = [customerServiceWeekPost, salesStrategyBlogPost, valentineBlogPost].find((article) => article.id === id);
+
+    if (editorialArticle) {
+      const articleContent = /<[a-z][\\s\\S]*>/i.test(editorialArticle.content)
+        ? editorialArticle.content
+        : `<p class="mb-4">${markdownToHtml(editorialArticle.content)}</p>`;
+      setPost({
+        id: editorialArticle.id,
+        title: editorialArticle.title,
+        excerpt: editorialArticle.excerpt,
+        content: articleContent,
+        category: editorialArticle.category,
+        image_path: editorialArticle.image,
+        created_at: editorialArticle.publishedAt,
+      });
+      setAuthorProfile({ first_name: 'Bridgefort', last_name: 'Homes' });
+      setError(null);
+      setLoading(false);
+      return () => { active = false; };
+    }
+
     if (staticArticle) {
       setPost({
         id: staticArticle.id,
