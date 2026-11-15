@@ -4,10 +4,21 @@ import { Button } from '@/components/ui/button';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
+  recoveryScope?: string;
 }
 
 interface ErrorBoundaryState {
   error: Error | null;
+}
+
+const RECOVERY_STORAGE_KEY = 'bridgefort:ui-error-recovery:v1';
+const RECOVERY_WINDOW_MS = 60_000;
+const MAX_AUTOMATIC_RELOADS = 2;
+
+interface RecoveryRecord {
+  path: string;
+  attempts: number;
+  startedAt: number;
 }
 
 /**
@@ -27,12 +38,68 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     return { error };
   }
 
+  componentDidMount() {
+    if (!this.state.error) this.clearRecoveryRecord();
+  }
+
+  componentDidUpdate(_previousProps: ErrorBoundaryProps, previousState: ErrorBoundaryState) {
+    if (previousState.error && !this.state.error) this.clearRecoveryRecord();
+  }
+
+  componentWillUnmount() {
+    if (this.recoveryTimer !== undefined) window.clearTimeout(this.recoveryTimer);
+  }
+
+  private recoveryTimer: number | undefined;
+
+  private get recoveryStorageKey() {
+    return `${RECOVERY_STORAGE_KEY}:${this.props.recoveryScope || 'routes'}`;
+  }
+
+  private clearRecoveryRecord = () => {
+    try {
+      window.sessionStorage.removeItem(this.recoveryStorageKey);
+    } catch {
+      // Storage may be unavailable in private browsing; normal rendering still works.
+    }
+  };
+
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Unhandled error caught by ErrorBoundary:', error, errorInfo);
+
+    // Reload the exact current URL for transient render/chunk failures. The
+    // session-scoped attempt limit prevents persistent bugs from looping.
+    try {
+      const currentPath = window.location.pathname + window.location.search + window.location.hash;
+      const now = Date.now();
+      let record: RecoveryRecord | null = null;
+
+      try {
+        const stored = window.sessionStorage.getItem(this.recoveryStorageKey);
+        record = stored ? JSON.parse(stored) as RecoveryRecord : null;
+      } catch {
+        record = null;
+      }
+
+      if (!record || record.path !== currentPath || now - record.startedAt > RECOVERY_WINDOW_MS) {
+        record = { path: currentPath, attempts: 0, startedAt: now };
+      }
+
+      if (record.attempts < MAX_AUTOMATIC_RELOADS) {
+        record.attempts += 1;
+        window.sessionStorage.setItem(this.recoveryStorageKey, JSON.stringify(record));
+        this.recoveryTimer = window.setTimeout(() => window.location.reload(), 250);
+      } else {
+        console.error('Automatic page recovery limit reached; reload stopped to prevent a loop.');
+      }
+    } catch (recoveryError) {
+      console.error('Automatic page recovery unavailable:', recoveryError);
+    }
   }
 
   handleRetry = () => {
-    this.setState({ error: null });
+    this.clearRecoveryRecord();
+    window.location.reload();
   };
 
   handleGoHome = () => {
