@@ -98,7 +98,7 @@ const queryClient = new QueryClient({
       gcTime: 24 * 60 * 60 * 1000,
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
-      refetchOnMount: false,
+      refetchOnMount: true,
       placeholderData: (previousData) => previousData,
       retry: 1,
       networkMode: 'online',
