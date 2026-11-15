@@ -16,6 +16,13 @@ const ALLOWED_RESUME_TYPES: Record<string, string> = {
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 };
 
+const MIME_TO_EXTENSION: Record<string, keyof typeof ALLOWED_RESUME_TYPES> = {
+  "application/pdf": "pdf",
+  "application/msword": "doc",
+  "application/vnd.ms-word": "doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+};
+
 const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
   resumeUrl,
   onFileChange,
@@ -32,7 +39,12 @@ const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
       return;
     }
 
-    const extension = file.name.split(".").pop()?.toLowerCase() || "";
+    const namedExtension = file.name.split(".").pop()?.toLowerCase() || "";
+    // Android's system picker may return a valid MIME type without a useful
+    // filename extension. Use the provider MIME metadata as a safe fallback.
+    const extension = ALLOWED_RESUME_TYPES[namedExtension]
+      ? namedExtension
+      : MIME_TO_EXTENSION[file.type] || "";
     const contentType = ALLOWED_RESUME_TYPES[extension];
     if (!contentType) {
       toast({
@@ -110,6 +122,7 @@ const ResumeUploadField: React.FC<ResumeUploadFieldProps> = ({
       file={displayFile}
       disabled={isUploading}
       uploading={isUploading}
+      acceptedTypes=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     />
   );
 };

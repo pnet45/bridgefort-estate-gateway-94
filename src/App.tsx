@@ -91,11 +91,15 @@ const queryClient = new QueryClient({
       // Keep database-backed page data visible during navigation and brief
       // network interruptions; table-specific Realtime listeners invalidate
       // only the dataset that actually changed.
-      staleTime: 60 * 1000,
+      // Keep fetched records mounted while a background refresh runs. Realtime
+      // subscriptions and successful mutations invalidate only affected keys;
+      // focus/reconnect also revalidate stale data without blanking the page.
+      staleTime: 5 * 60 * 1000,
       gcTime: 24 * 60 * 60 * 1000,
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
       refetchOnMount: true,
+      placeholderData: (previousData) => previousData,
       retry: 1,
       networkMode: 'online',
     },
@@ -122,7 +126,23 @@ function AppLayout() {
               <ScrollToTop />
               <div className="App flex flex-col min-h-screen w-full">
               <ErrorBoundary>
-                <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-slate-600">Loading…</div>}>
+                <Suspense fallback={
+                  <div className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-8" role="status" aria-label="Loading page">
+                    <div className="h-8 w-2/5 animate-pulse rounded-lg bg-muted" />
+                    <div className="h-4 w-3/5 animate-pulse rounded bg-muted/80" />
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {[0, 1, 2].map((item) => (
+                        <div key={item} className="space-y-3 rounded-xl border border-border p-4">
+                          <div className="aspect-[16/9] animate-pulse rounded-lg bg-muted" />
+                          <div className="h-4 w-4/5 animate-pulse rounded bg-muted" />
+                          <div className="h-3 w-full animate-pulse rounded bg-muted/80" />
+                          <div className="h-3 w-2/3 animate-pulse rounded bg-muted/80" />
+                        </div>
+                      ))}
+                    </div>
+                    <span className="sr-only">Loading page content…</span>
+                  </div>
+                }>
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/home" element={<Home />} />
