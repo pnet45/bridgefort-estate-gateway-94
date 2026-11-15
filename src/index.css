@@ -949,8 +949,8 @@
 .admin-theme-dark [role=tab][data-state=active], .admin-theme-light [role=tab][data-state=active] { background: #513078 !important; color: #fff !important; }
 .admin-theme-dark header { background: var(--admin-glass) !important; color: var(--admin-ink) !important; }
 .admin-theme-light header { background: #fff !important; color: #20202a !important; }
-.admin-theme .bg-green-500, .admin-theme .bg-green-600, .admin-theme .bg-green-700, .admin-theme .bg-emerald-500, .admin-theme .bg-emerald-600, .admin-theme .bg-emerald-700, .admin-theme .bg-beauty-green, .bg-beauty-green, .bg-green-600, .bg-green-700, .bg-emerald-600, .bg-emerald-700 { color: #fff !important; }
-.admin-theme .bg-green-500 *, .admin-theme .bg-green-600 *, .admin-theme .bg-green-700 *, .admin-theme .bg-emerald-500 *, .admin-theme .bg-emerald-600 *, .admin-theme .bg-emerald-700 *, .bg-beauty-green .text-black, .bg-green-600 .text-black, .bg-green-700 .text-black, .bg-emerald-600 .text-black, .bg-emerald-700 .text-black { color: #fff !important; }
+.admin-theme .bg-green-500, .admin-theme .bg-green-600, .admin-theme .bg-green-700, .admin-theme .bg-emerald-500, .admin-theme .bg-emerald-600, .admin-theme .bg-emerald-700, .admin-theme .bg-beauty-green { color: #fff !important; }
+.admin-theme .bg-green-500 *, .admin-theme .bg-green-600 *, .admin-theme .bg-green-700 *, .admin-theme .bg-emerald-500 *, .admin-theme .bg-emerald-600 *, .admin-theme .bg-emerald-700 *, .admin-theme .bg-beauty-green .text-black { color: #fff !important; }
 .admin-theme-dark, .admin-theme-light { background-image: none !important; }
 
 .admin-theme button, .admin-theme a, .admin-theme [role="tab"] { transition: background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease !important; }
