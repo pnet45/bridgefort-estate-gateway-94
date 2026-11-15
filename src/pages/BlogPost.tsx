@@ -42,7 +42,7 @@ const BlogPost = () => {
     const editorialArticle = [customerServiceWeekPost, salesStrategyBlogPost, valentineBlogPost].find((article) => article.id === id);
 
     if (editorialArticle) {
-      const articleContent = /<[a-z][\\s\\S]*>/i.test(editorialArticle.content)
+      const articleContent = /<[a-z][\s\S]*>/i.test(editorialArticle.content)
         ? editorialArticle.content
         : `<p class="mb-4">${markdownToHtml(editorialArticle.content)}</p>`;
       setPost({
