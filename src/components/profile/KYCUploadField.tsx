@@ -74,72 +74,65 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
     return () => { active = false; };
   }, [existingUrl, bucket]);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Capture the input and File synchronously. Do not preventDefault() on a
-    // change event: mobile browsers need to complete the native file selection.
-    const input = event.currentTarget;
-    const file = input.files?.[0];
-    if (!file || uploading) return;
+    const uploadInProgressRef = useRef(false);
 
-    setSelectedFileName(file.name);
+  const detectFileMime = async (file: File): Promise<string> => {
+    const bytes = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+    // Trust the file signature when Android document providers report a generic
+    // MIME type or omit the original filename extension.
+    if (bytes.length >= 5 && bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46 && bytes[4] === 0x2d) return "application/pdf";
+    if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+    if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 && bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a) return "image/png";
+    if (bytes.length >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return "image/webp";
+    return "";
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    // Keep the DOM input reference before awaiting: React may clear currentTarget
+    // after the event callback returns, and Android can suspend the page picker.
+    const input = event.currentTarget;
+    const file = input.files?.[0] || null;
+    if (!file || uploadInProgressRef.current) return;
+
+    uploadInProgressRef.current = true;
+    setSelectedFileName(file.name || label);
     setUploadError("");
 
-    const rawExtension = file.name.includes(".") ? file.name.split(".").pop()?.toLowerCase() || "" : "";
-    const inferredMime = MIME_BY_EXTENSION[rawExtension];
-    const declaredMime = (file.type || "").toLowerCase();
-    const normalisedMime = MIME_ALIASES[declaredMime] || declaredMime;
-    const genericMime = !normalisedMime || normalisedMime === "application/octet-stream";
-    // Mobile document providers may omit the extension but still supply MIME.
-    const mimeType = ALLOWED_MIME_TYPES.has(normalisedMime) ? normalisedMime : (genericMime ? inferredMime || "" : "");
-    const extension = rawExtension && MIME_BY_EXTENSION[rawExtension] === mimeType ? rawExtension : EXTENSION_BY_MIME[mimeType] || "";
-    const supported = Boolean(mimeType && extension && ALLOWED_MIME_TYPES.has(mimeType));
-
-    if (file.size > MAX_FILE_SIZE) {
-      const message = "File must be 4MB or smaller.";
-      setUploadError(message);
-      toast({ title: "File too large", description: message, variant: "destructive" });
-      input.value = "";
-      return;
-    }
-
-    if (!supported) {
-      const message = "Choose a JPG, PNG, WebP or PDF file.";
-      setUploadError(message);
-      toast({ title: "Unsupported file", description: message, variant: "destructive" });
-      input.value = "";
-      return;
-    }
-
-    if (!userId) {
-      const message = "Your account could not be verified. Please sign in again.";
-      setUploadError(message);
-      toast({ title: "Upload unavailable", description: message, variant: "destructive" });
-      input.value = "";
-      return;
-    }
-
-    setUploading(true);
     try {
-      const safeExtension = extension.replace(/[^a-z0-9]/g, "");
+      if (file.size > MAX_FILE_SIZE) throw new Error("File must be 4MB or smaller.");
+      if (!userId) throw new Error("Your account could not be verified. Please sign in again.");
+
+      const rawExtension = file.name.includes(".") ? file.name.split(".").pop()?.toLowerCase() || "" : "";
+      const declaredMime = (file.type || "").toLowerCase();
+      const normalisedMime = MIME_ALIASES[declaredMime] || declaredMime;
+      const genericMime = !normalisedMime || normalisedMime === "application/octet-stream";
+      const signatureMime = await detectFileMime(file);
+      const inferredMime = MIME_BY_EXTENSION[rawExtension] || "";
+      const mimeType = signatureMime || (ALLOWED_MIME_TYPES.has(normalisedMime) ? normalisedMime : (genericMime ? inferredMime : ""));
+      const extension = EXTENSION_BY_MIME[mimeType] || (rawExtension && MIME_BY_EXTENSION[rawExtension] === mimeType ? rawExtension : "");
+      if (!mimeType || !extension || !ALLOWED_MIME_TYPES.has(mimeType)) {
+        throw new Error("Choose a valid JPG, PNG, WebP or PDF document.");
+      }
+
+      setUploading(true);
       const uniqueId = typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-      const fileName = `${docKey}_${uniqueId}.${safeExtension}`;
+      const fileName = `${docKey}_${uniqueId}.${extension}`;
       const filePath = `${userId}/${fileName}`;
       const { error } = await supabase.storage
         .from(bucket)
         .upload(filePath, file, { upsert: false, contentType: mimeType });
-
       if (error) throw error;
 
       const { data, error: signedUrlError } = await supabase.storage
         .from(bucket)
         .createSignedUrl(filePath, 60 * 60);
-      if (signedUrlError) throw signedUrlError;
+      if (signedUrlError || !data?.signedUrl) {
+        throw signedUrlError || new Error("The document uploaded, but its preview link could not be created. Please refresh your profile before uploading again.");
+      }
 
       setUploadedUrl(data.signedUrl);
-      // Store the stable object path in the profile record, never the
-      // short-lived signed URL or a public URL for private identity documents.
       onUploaded(filePath, fileName, mimeType);
       setUploadError("");
       toast({ title: "Upload successful", description: `${label} uploaded.` });
@@ -149,7 +142,9 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
       toast({ title: "Upload failed", description: message, variant: "destructive" });
     } finally {
       setUploading(false);
-      // Reset only the native picker value. Do not reset the parent profile form.
+      uploadInProgressRef.current = false;
+      // Clear the picker value only after processing; this permits selecting the
+      // same file again without resetting any profile fields.
       input.value = "";
     }
   };
