@@ -68,8 +68,8 @@ export const salesStrategyBlogPost = {
         <li>0809 593 3269</li>
       </ul>
       
-      <p><strong>Email:</strong> training@pwanbridgefort.ng<br/>
-      <strong>Web:</strong> www.pwanbridgefort.ng</p>
+      <p><strong>Email:</strong> info@bridgeforthomes.com<br/>
+      <strong>Web:</strong> www.bridgeforthomes.com</p>
       
       <h3> Don't Miss This Opportunity!</h3>
       <p>These explosive opportunities will unlock the blueprint for closing high-value deals and scaling your income beyond limits!</p>

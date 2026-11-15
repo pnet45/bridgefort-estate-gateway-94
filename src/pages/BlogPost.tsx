@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 import Navbar from '@/components/Navbar';
@@ -269,6 +270,15 @@ const BlogPost = () => {
       <PhoneContactBar />
 
       <main className="flex-grow pt-28 pb-12">
+        <div className="container-custom mb-5">
+          <Link
+            to="/blog"
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-estate-blue/40 hover:text-estate-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-blue focus-visible:ring-offset-2"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Back to Blog
+          </Link>
+        </div>
         {loading ? (
           <div className="container-custom space-y-6 py-10" aria-label="Loading article">
             <div className="h-4 w-32 animate-pulse rounded bg-muted" />

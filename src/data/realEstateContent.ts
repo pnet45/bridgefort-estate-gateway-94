@@ -30,7 +30,7 @@ We are excited to officially inform you that your plot has been successfully **d
 
 ###  Sending a Representative?
 
-In the event that you will be sending a representative, we request that you notify us via **pwanbridgefortestates@gmail.com** with details of your representative before the allocation date.
+In the event that you will be sending a representative, we request that you notify us via **info@bridgeforthomes.com** with details of your representative before the allocation date.
 
 ##  About Precious Gardens Estate Scheme 1
 
@@ -105,7 +105,7 @@ Whether you're a first-time buyer or a seasoned investor, our mission is to make
 
 ** Ready to take the first step?** Visit us at 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, Opp VGC Estate, Lekki, Lagos.
 
-**** +2348030624059 | **** www.pwanbridgefort.ng | **** info@pwanbridgefort.ng`,
+**** +2348030624059 | **** www.bridgeforthomes.com | **** info@bridgeforthomes.com`,
     category: 'Investment',
     image: '/lovable-uploads/city-skyscrapers-.png',
     date: '2025-07-10',
@@ -164,8 +164,8 @@ If there's one thing the rich understand, it's this: **Buy land. Wait. Let time 
 
 **** Visit us at: 117 Wosilat Okoya Seriki Street, Eleganza Gardens Estate, Opp VGC Estate, Lekki, Lagos  
 **** Call/WhatsApp: +2348030624059  
-**** Website: www.pwanbridgefort.ng  
-**** Email: info@pwanbridgefort.ng
+**** Website: www.bridgeforthomes.com  
+**** Email: info@bridgeforthomes.com
 
 *Bridgefort Homes Development Ltd — Rebuilding the Future, One Plot at a Time.*`,
     category: 'Market Analysis',
