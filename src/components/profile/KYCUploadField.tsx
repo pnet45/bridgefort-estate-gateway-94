@@ -24,6 +24,8 @@ const MIME_BY_EXTENSION: Record<string, string> = {
   pdf: "application/pdf",
 };
 const ALLOWED_MIME_TYPES = new Set(Object.values(MIME_BY_EXTENSION));
+const EXTENSION_BY_MIME: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "application/pdf": "pdf" };
+const MIME_ALIASES: Record<string, string> = { "image/jpg": "image/jpeg", "application/x-pdf": "application/pdf" };
 
 function getKycObjectPath(value: string | undefined, bucket: string): string {
   if (!value) return "";
@@ -82,16 +84,15 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
     setSelectedFileName(file.name);
     setUploadError("");
 
-    const extension = file.name.split(".").pop()?.toLowerCase() || "";
-    const inferredMime = MIME_BY_EXTENSION[extension];
-    const mimeType = file.type || inferredMime || "";
-
-    // Android document providers sometimes report application/octet-stream or
-    // an empty MIME type. Accept a supported extension in that case, while
-    // continuing to reject an explicitly unsupported MIME/extension pair.
-    const genericMime = !mimeType || mimeType === "application/octet-stream";
-    const supported = Boolean(inferredMime) &&
-      (genericMime || (ALLOWED_MIME_TYPES.has(mimeType) && mimeType === inferredMime));
+    const rawExtension = file.name.includes(".") ? file.name.split(".").pop()?.toLowerCase() || "" : "";
+    const inferredMime = MIME_BY_EXTENSION[rawExtension];
+    const declaredMime = (file.type || "").toLowerCase();
+    const normalisedMime = MIME_ALIASES[declaredMime] || declaredMime;
+    const genericMime = !normalisedMime || normalisedMime === "application/octet-stream";
+    // Mobile document providers may omit the extension but still supply MIME.
+    const mimeType = ALLOWED_MIME_TYPES.has(normalisedMime) ? normalisedMime : (genericMime ? inferredMime || "" : "");
+    const extension = rawExtension && MIME_BY_EXTENSION[rawExtension] === mimeType ? rawExtension : EXTENSION_BY_MIME[mimeType] || "";
+    const supported = Boolean(mimeType && extension && ALLOWED_MIME_TYPES.has(mimeType));
 
     if (file.size > MAX_FILE_SIZE) {
       const message = "File must be 4MB or smaller.";
@@ -127,7 +128,7 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
       const filePath = `${userId}/${fileName}`;
       const { error } = await supabase.storage
         .from(bucket)
-        .upload(filePath, file, { upsert: false, contentType: inferredMime });
+        .upload(filePath, file, { upsert: false, contentType: mimeType });
 
       if (error) throw error;
 
@@ -161,7 +162,8 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
           id={inputId}
           type="file"
           accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
-          onChange={handleFileChange}
+          onChange={(event) => { event.stopPropagation(); void handleFileChange(event); }}
+          onClick={(event) => event.stopPropagation()}
           ref={fileInputRef}
           disabled={uploading}
           className="sr-only"

@@ -96,7 +96,9 @@ const queryClient = new QueryClient({
       // focus/reconnect also revalidate stale data without blanking the page.
       staleTime: 5 * 60 * 1000,
       gcTime: 24 * 60 * 60 * 1000,
-      refetchOnWindowFocus: true,
+      // Native file pickers temporarily background mobile browsers. Avoid a global refetch on return.
+      // Targeted mutations and Realtime invalidations refresh only changed records.
+      refetchOnWindowFocus: false,
       refetchOnReconnect: true,
       refetchOnMount: true,
       placeholderData: (previousData) => previousData,

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar } from '@/components/ui/avatar';
 import { AvatarFallback } from '@/components/ui/avatar';
@@ -14,20 +14,21 @@ interface BlogDetailProps {
 }
 
 // BackButton: Extracted for clarity and future reusability
-const BackButton = () => (
-  <div className="mb-6">
-    <Button
-      asChild
-      variant="outline"
-      size="sm"
-      className="flex items-center gap-2"
-    >
-      <Link to="/blog">
-        <span className="mr-1 text-xl">&#8592;</span> Back to Blog
-      </Link>
-    </Button>
-  </div>
-);
+const BackButton = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const handleBack = () => {
+    if (location.key !== "default") navigate(-1);
+    else navigate("/blog");
+  };
+  return (
+    <div className="mb-6">
+      <Button type="button" onClick={handleBack} variant="outline" size="sm" className="flex items-center gap-2">
+        <span aria-hidden="true" className="mr-1 text-xl">←</span> Back to Blog
+      </Button>
+    </div>
+  );
+};
 
 const BlogDetail = ({ post }: BlogDetailProps) => {
   const [currentUrl, setCurrentUrl] = useState('');

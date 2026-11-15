@@ -1,4 +1,5 @@
 import Navbar from '../components/Navbar';
+import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 import PropertySearch from '../components/PropertySearch';
 import WhatsAppChat from '../components/WhatsAppChat';
@@ -23,7 +24,7 @@ import CMSSection from '@/components/cms/CMSSection';
 const Home = () => {
   // Wrap all property-dependent sections with the provider for shared data (for search, FeaturedProperties, etc)
   return (
-    <div className="flex flex-col min-h-screen bg-aurora-mesh">
+    <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
 
       {/* Hero Section - begins immediately below the fixed navbar (navbar is h-[88px] lg:h-[104px]) */}
@@ -52,7 +53,7 @@ const Home = () => {
         <section className="section-padding relative overflow-hidden">
           <div className="container-custom text-center">
             <div className="glass-strong rounded-3xl p-8 md:p-14 max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 font-display bg-clip-text text-transparent bg-gradient-to-r from-estate-purple via-estate-red to-estate-gold">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 font-display text-estate-purple">
                 Luxury Homes & Apartments
               </h2>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-4">
@@ -64,9 +65,9 @@ const Home = () => {
                 Whether you're looking for a family home, a rental investment, or a turnkey property,
                 we offer flexible payment plans and end-to-end support from purchase to possession.
               </p>
-              <a href="/homes-sales" className="btn-cta">
+              <Link to="/homes-sales" className="btn-cta">
                 Explore Our Homes →
-              </a>
+              </Link>
             </div>
           </div>
         </section>

@@ -18,6 +18,15 @@ const GoogleDataTransparency = () => {
   return (
     <section className="py-12 bg-muted/40 border-t border-border">
       <div className="container-custom max-w-4xl mx-auto">
+        <details className="group rounded-2xl border border-estate-purple/20 bg-background px-5 py-4 shadow-sm">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left [&::-webkit-details-marker]:hidden">
+            <span>
+              <span className="block text-base font-semibold text-foreground">Your Privacy & Google Data</span>
+              <span className="block text-sm text-muted-foreground">How Bridgefort uses and protects your information</span>
+            </span>
+            <span aria-hidden="true" className="text-xl text-muted-foreground transition-transform group-open:rotate-180">⌄</span>
+          </summary>
+          <div className="pt-6">
 
         {/* Section header */}
         <div className="text-center mb-8">
@@ -107,7 +116,8 @@ const GoogleDataTransparency = () => {
             Registered in Nigeria · NDPA Compliant
           </p>
         </div>
-
+          </div>
+        </details>
       </div>
     </section>
   );

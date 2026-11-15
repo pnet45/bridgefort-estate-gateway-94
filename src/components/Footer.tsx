@@ -112,8 +112,7 @@ const Footer = () => {
               <Link to="/NDPP" className="text-gray-400 text-sm hover:text-white transition-all duration-200">Data Protection Policy Statement</Link>
               <Link to="/terms-of-service" className="text-gray-400 text-sm hover:text-white transition-all duration-200">Terms of Service</Link>
               <Link to="/sitemap" className="text-gray-400 text-sm hover:text-white transition-all duration-200">Sitemap</Link>
-              <Link to="/admin-login" className="text-gray-400 text-sm hover:text-white transition-all duration-200">
-              </Link>
+              <Link to="/admin-login" className="text-gray-400 text-sm hover:text-white transition-all duration-200">Admin Login</Link>
             </div>
           </div>
         </div>
