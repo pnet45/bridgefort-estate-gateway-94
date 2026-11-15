@@ -13,14 +13,22 @@ if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
 }
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
-  // useLayoutEffect runs synchronously before the browser paints, so the
-  // reset happens before the user ever sees a frame — useEffect would allow
-  // one scrolled-down frame to flash first.
+  // Keep normal route changes at the top, but honor in-page anchors after the
+  // destination route has committed its DOM. This supports links into sections
+  // such as the announcements carousel from a full article page.
   useLayoutEffect(() => {
+    if (hash) {
+      const targetId = decodeURIComponent(hash.slice(1));
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ block: 'start' });
+        return;
+      }
+    }
     window.scrollTo(0, 0);
-  }, [pathname]);
+  }, [pathname, hash]);
 
   return null;
 };

@@ -37,7 +37,7 @@ const FeaturedAnnouncementsCarousel = () => {
   const currentItems = announcements.slice(safeIndex, safeIndex + 2);
 
   return (
-    <section className="py-10 bg-white" aria-label="Featured announcements">
+    <section id="announcements" className="py-10 bg-white scroll-mt-24" aria-label="Featured announcements">
       <div className="container-custom">
         <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">Featured Announcements</h2>
 
