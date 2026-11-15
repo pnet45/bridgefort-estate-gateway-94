@@ -938,8 +938,8 @@
 .admin-theme-light { color-scheme: light; }
 .admin-theme-dark .text-black, .admin-theme-dark .text-slate-900, .admin-theme-dark .text-slate-800, .admin-theme-dark .text-gray-900, .admin-theme-dark .text-gray-800 { color: var(--admin-ink) !important; }
 .admin-theme-light .text-black, .admin-theme-light .text-slate-900, .admin-theme-light .text-slate-800, .admin-theme-light .text-gray-900, .admin-theme-light .text-gray-800 { color: var(--admin-ink) !important; }
-.admin-theme-dark .bg-slate-950, .admin-theme-dark .bg-slate-950\\/60, .admin-theme-dark .bg-slate-900, .admin-theme-dark .bg-slate-800, .admin-theme-dark .bg-slate-700, .admin-theme-dark .bg-gray-950, .admin-theme-dark .bg-gray-900, .admin-theme-dark .bg-gray-800 { background: var(--admin-panel) !important; color: var(--admin-ink) !important; }
-.admin-theme-light .bg-slate-950, .admin-theme-light .bg-slate-950\\/60, .admin-theme-light .bg-slate-900, .admin-theme-light .bg-slate-800, .admin-theme-light .bg-slate-700, .admin-theme-light .bg-gray-950, .admin-theme-light .bg-gray-900, .admin-theme-light .bg-gray-800 { background: var(--admin-panel) !important; color: var(--admin-ink) !important; }
+.admin-theme-dark .bg-slate-950, .admin-theme-dark [class~="bg-slate-950/60"], .admin-theme-dark .bg-slate-900, .admin-theme-dark .bg-slate-800, .admin-theme-dark .bg-slate-700, .admin-theme-dark .bg-gray-950, .admin-theme-dark .bg-gray-900, .admin-theme-dark .bg-gray-800 { background: var(--admin-panel) !important; color: var(--admin-ink) !important; }
+.admin-theme-light .bg-slate-950, .admin-theme-light [class~="bg-slate-950/60"], .admin-theme-light .bg-slate-900, .admin-theme-light .bg-slate-800, .admin-theme-light .bg-slate-700, .admin-theme-light .bg-gray-950, .admin-theme-light .bg-gray-900, .admin-theme-light .bg-gray-800 { background: var(--admin-panel) !important; color: var(--admin-ink) !important; }
 .admin-theme-dark .text-white, .admin-theme-dark .text-slate-100, .admin-theme-dark .text-slate-200, .admin-theme-dark .text-slate-300 { color: var(--admin-ink) !important; }
 .admin-theme-light .text-slate-100, .admin-theme-light .text-slate-200, .admin-theme-light .text-slate-300, .admin-theme-light .text-white { color: var(--admin-ink) !important; }
 .admin-theme-dark .bg-white { background: var(--admin-panel) !important; color: var(--admin-ink) !important; }
@@ -952,3 +952,6 @@
 .admin-theme .bg-green-500, .admin-theme .bg-green-600, .admin-theme .bg-green-700, .admin-theme .bg-emerald-500, .admin-theme .bg-emerald-600, .admin-theme .bg-emerald-700, .admin-theme .bg-beauty-green, .bg-beauty-green, .bg-green-600, .bg-green-700, .bg-emerald-600, .bg-emerald-700 { color: #fff !important; }
 .admin-theme .bg-green-500 *, .admin-theme .bg-green-600 *, .admin-theme .bg-green-700 *, .admin-theme .bg-emerald-500 *, .admin-theme .bg-emerald-600 *, .admin-theme .bg-emerald-700 *, .bg-beauty-green .text-black, .bg-green-600 .text-black, .bg-green-700 .text-black, .bg-emerald-600 .text-black, .bg-emerald-700 .text-black { color: #fff !important; }
 .admin-theme-dark, .admin-theme-light { background-image: none !important; }
+
+.admin-theme button, .admin-theme a, .admin-theme [role="tab"] { transition: background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease !important; }
+.admin-theme button:focus-visible, .admin-theme a:focus-visible, .admin-theme [role="tab"]:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
