@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import CircularGallery3D from '@/components/gallery/CircularGallery3D';
 import GalleryLightbox from '@/components/gallery/GalleryLightbox';
 import { supabase } from '@/integrations/supabase/client';
-import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
+import { listenForPublicDataRevalidation, readPublicDataCache, refreshPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 import type { GalleryMediaItem, GalleryMediaType } from '@/types/gallery';
 
 type GalleryFilter = 'all' | GalleryMediaType;
@@ -29,18 +29,18 @@ const GalleryPage = () => {
     let active = true;
     const load = async () => {
       try {
-        const { data, error } = await (supabase as any)
-          .from('gallery_media_items')
-          .select('*')
-          .eq('is_published', true)
-          .order('display_order');
-
-        if (error) throw error;
-        if (active && data) {
-          const nextItems = data as GalleryMediaItem[];
-          writePublicDataCache(GALLERY_CACHE_KEY, nextItems);
-          setMediaItems(nextItems);
-        }
+        const nextItems = await refreshPublicDataCache<GalleryMediaItem[]>(GALLERY_CACHE_KEY, async () => {
+          const { data, error } = await (supabase as any)
+            .from('gallery_media_items')
+            .select('*')
+            .eq('is_published', true)
+            .order('display_order');
+          if (error) throw error;
+          const rows = (data as GalleryMediaItem[]) || [];
+          writePublicDataCache(GALLERY_CACHE_KEY, rows);
+          return rows;
+        });
+        if (active) setMediaItems(nextItems);
       } catch (error) {
         console.error('Gallery content refresh failed; keeping cached content.', error);
       } finally {

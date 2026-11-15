@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo, useId } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { ContentItem, ContentPage, ContentType } from '@/types/content';
-import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
+import { listenForPublicDataRevalidation, readPublicDataCache, refreshPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 const CACHE_PREFIX = 'public-content-items:';
 
@@ -37,26 +37,40 @@ export function useContentItems(opts: Options = {}) {
       const cached = readContentCache(cacheKey);
       if (cached.length) setItems(cached);
     }
-    let query = (supabase as any).from('content_items').select('*');
-    if (opts.page) query = query.eq('page', opts.page);
-    if (opts.contentType) {
-      if (Array.isArray(opts.contentType)) query = query.in('content_type', opts.contentType);
-      else query = query.eq('content_type', opts.contentType);
-    }
-    if (!opts.includeUnpublished) query = query.eq('is_published', true);
-    if (opts.featuredOnly) query = query.eq('is_featured', true);
-    query = query.order('display_order', { ascending: true }).order('created_at', { ascending: false });
 
-    const { data, error } = await query;
-    if (error) {
-      setError(error.message);
-    } else {
+    const loadItems = async (): Promise<ContentItem[]> => {
+      let query = (supabase as any).from('content_items').select('*');
+      if (opts.page) query = query.eq('page', opts.page);
+      if (opts.contentType) {
+        if (Array.isArray(opts.contentType)) query = query.in('content_type', opts.contentType);
+        else query = query.eq('content_type', opts.contentType);
+      }
+      if (!opts.includeUnpublished) query = query.eq('is_published', true);
+      if (opts.featuredOnly) query = query.eq('is_featured', true);
+      query = query.order('display_order', { ascending: true }).order('created_at', { ascending: false });
+
+      const { data, error } = await query;
+      if (error) throw error;
       const nextItems = (data as ContentItem[]) || [];
+      if (canCache) writeContentCache(cacheKey, nextItems);
+      return nextItems;
+    };
+
+    try {
+      // Identical public CMS filters share one in-flight request across page
+      // sections. Admin/unpublished content is never shared or browser-cached.
+      const nextItems = canCache
+        ? await refreshPublicDataCache<ContentItem[]>(cacheKey, loadItems)
+        : await loadItems();
       setItems(nextItems);
       setError(null);
-      if (canCache) writeContentCache(cacheKey, nextItems);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unable to load content right now.';
+      setError(message);
+      console.error('Content items refresh failed; cached content remains visible.', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [cacheKey, canCache, opts.page, contentTypeKey, opts.includeUnpublished, opts.featuredOnly]);
 
   // When the content filter changes, show that filter's cached content immediately,

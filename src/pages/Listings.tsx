@@ -10,7 +10,7 @@ import ListingFilters, { ListingFilterState } from '@/components/listings/Listin
 import RegionSpotlightCards from '@/components/listings/RegionSpotlightCards';
 import { LayoutGrid, List, Plus, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
+import { listenForPublicDataRevalidation, readPublicDataCache, refreshPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
 const PUBLIC_LISTINGS_CACHE_KEY = 'public-listings';
 const readPublishedListings = (): Listing[] => readPublicDataCache<Listing[]>(PUBLIC_LISTINGS_CACHE_KEY) || [];
@@ -35,21 +35,25 @@ const Listings = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const fetchListings = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('listings')
-      .select('*')
-      .eq('is_published', true)
-      .order('is_featured', { ascending: false })
-      .order('created_at', { ascending: false });
-
-    if (!error && data) {
-      const nextListings = data as unknown as Listing[];
+    try {
+      const nextListings = await refreshPublicDataCache<Listing[]>(PUBLIC_LISTINGS_CACHE_KEY, async () => {
+        const { data, error } = await supabase
+          .from('listings')
+          .select('*')
+          .eq('is_published', true)
+          .order('is_featured', { ascending: false })
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        const rows = (data || []) as unknown as Listing[];
+        writePublishedListings(rows);
+        return rows;
+      });
       setListings(nextListings);
-      writePublishedListings(nextListings);
-    } else if (error) {
-      console.error('Error refreshing published listings:', error);
+    } catch (error) {
+      console.error('Error refreshing published listings; cached listings remain visible:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const channelId = useId().replace(/[^a-zA-Z0-9]/g, '');
