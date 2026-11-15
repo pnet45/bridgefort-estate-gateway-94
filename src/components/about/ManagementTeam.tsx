@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Linkedin, Mail, Phone } from 'lucide-react';
+import { Linkedin, Phone } from 'lucide-react';
 
 const managementTeam = [{
   name: 'Dalvin Silva, PhD',
@@ -9,7 +9,6 @@ const managementTeam = [{
   imageUrl: '/lovable-uploads/Dalvin-Silva-PhD.jpg',
   social: {
     linkedin: 'https://linkedin.com/Dalvinsilva',
-    email: 'dalvin.silva@pwanbridgefort.ng',
     phone: '+234 803 062 4059'
   }
 }, {
@@ -19,7 +18,6 @@ const managementTeam = [{
   imageUrl: '/lovable-uploads/Precious.png',
   social: {
     linkedin: 'https://linkedin.com/Precioussilva',
-    email: 'precious.silva@pwanbridgefort.ng',
     phone: '+234 807 244 0090'
   }
 }, {
@@ -29,7 +27,6 @@ const managementTeam = [{
   imageUrl: '/lovable-uploads/GV.png',
   social: {
     linkedin: 'https://linkedin.com/gvince',
-    email: 'gideon.vincent@pwanbridgefort.ng',
     phone: '+234 803 768 8503'
   }
 }];
@@ -63,9 +60,6 @@ const ManagementTeam = () => {
                 <div className="flex space-x-3 mt-4">
                   <a href={member.social.linkedin} className="text-muted-foreground hover:text-estate-blue transition-colors">
                     <Linkedin size={18} />
-                  </a>
-                  <a href={`mailto:${member.social.email}`} className="text-muted-foreground hover:text-estate-blue transition-colors">
-                    <Mail size={18} />
                   </a>
                   <a href={`tel:${member.social.phone}`} className="text-muted-foreground hover:text-estate-blue transition-colors">
                     <Phone size={18} />
