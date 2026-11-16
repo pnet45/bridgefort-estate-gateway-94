@@ -67,7 +67,7 @@ const Listings = () => {
         if (previous?.is_published === true || next?.is_published === true) void fetchListings();
       })
       .subscribe();
-    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchListings());
+    const stopRevalidation = listenForPublicDataRevalidation(PUBLIC_LISTINGS_CACHE_KEY, () => void fetchListings());
     const stopCacheSync = subscribePublicDataCache<Listing[]>(PUBLIC_LISTINGS_CACHE_KEY, setListings);
     return () => {
       stopRevalidation();
