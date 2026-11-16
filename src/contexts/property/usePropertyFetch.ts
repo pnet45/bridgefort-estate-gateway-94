@@ -102,7 +102,7 @@ export function usePropertyFetch(searchQuery: string, filters: Filters) {
         void fetchProperties();
       })
       .subscribe();
-    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchProperties());
+    const stopRevalidation = listenForPublicDataRevalidation(PUBLIC_ESTATE_CACHE_KEY, () => void fetchProperties());
     const stopCacheSync = subscribePublicDataCache<Property[]>(PUBLIC_ESTATE_CACHE_KEY, setProperties);
     return () => {
       stopRevalidation();
