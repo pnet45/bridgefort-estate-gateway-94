@@ -31,7 +31,7 @@ interface PropertyFormProps {
   };
 }
 
-const MAX_SUBSCRIPTION_PDF_SIZE = 25 * 1024 * 1024;
+const MAX_SUBSCRIPTION_PDF_SIZE = 50 * 1024 * 1024;
 
 const readEstateFormDraft = (key: string) => {
   try {
@@ -315,7 +315,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
       let subFormUrl = formData.sub_form || existingSubFormUrl || '';
       if (subscriptionFile) {
         if (subscriptionFile.size > MAX_SUBSCRIPTION_PDF_SIZE) {
-          throw new Error('Subscription form PDF must be 25 MB or smaller.');
+          throw new Error('Subscription form PDF must be 50 MB or smaller.');
         }
         if (!subscriptionFile.name.toLowerCase().endsWith('.pdf') ||
             (subscriptionFile.type && subscriptionFile.type !== 'application/pdf')) {
@@ -717,13 +717,13 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                     input.value = '';
                   }}
                   className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-                  aria-label="Choose estate subscription PDF (maximum 25 MB)"
+                  aria-label="Choose estate subscription PDF (maximum 50 MB)"
                 />
               </div>
               <span className="min-w-0 break-all text-sm text-muted-foreground">{subscriptionFile ? subscriptionFile.name : 'No new PDF selected'}</span>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">Upload a PDF subscription form for this estate (maximum 25 MB). Users will be able to download it.</p>
+          <p className="text-xs text-muted-foreground">Upload a PDF subscription form for this estate (maximum 50 MB). Users will be able to download it.</p>
         </div>
 
         {/* Documentation Pricing */}
