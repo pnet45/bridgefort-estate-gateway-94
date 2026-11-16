@@ -122,6 +122,11 @@ const NewProfileForm = () => {
       setLoading(true);
       try {
         const draft = readProfileDraft(userId);
+        const metadataReferralCode = String(user?.user_metadata?.referred_by_code || '').trim().toUpperCase();
+        if (metadataReferralCode) {
+          setReferralCodeLocked(true);
+          setForm(prev => ({ ...prev, referrerCode: metadataReferralCode }));
+        }
         // Restore the current tab draft immediately, even if the database
         // request below fails while the device is coming back from file storage.
         if (draft) {
@@ -239,6 +244,11 @@ const NewProfileForm = () => {
           setReferralLookup(null);
           return;
         }
+        if (String(match.realtor_id) === userId) {
+          setReferralLookup(null);
+          toast({ title: 'Self-referral is not allowed', description: 'You cannot use your own BHRealtor referral code.', variant: 'destructive' });
+          return;
+        }
         setReferralLookup({
           realtor_id: String(match.realtor_id),
           code,
@@ -259,7 +269,7 @@ const NewProfileForm = () => {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [form.referrerCode]);
+  }, [form.referrerCode, userId]);
 
   const resolveReferralBeforeSave = useCallback(async () => {
     const code = String(form.referrerCode || '').trim().toUpperCase();
@@ -270,7 +280,8 @@ const NewProfileForm = () => {
       const { data, error } = await supabase.rpc('lookup_bhrealtor_referral' as any, { _code: code });
       if (error) throw error;
       const match = Array.isArray(data) ? data[0] : data;
-      if (!match) throw new Error('That referral code does not belong to an active BHRealtor.');
+      if (!match) throw new Error('That referral code does not belong to a BHRealtor.');
+      if (String(match.realtor_id) === userId) throw new Error('You cannot use your own BHRealtor referral code.');
       setReferralLookup({ realtor_id: String(match.realtor_id), code, first_name: String(match.first_name || ''), last_initial: String(match.last_initial || ''), package: String(match.package || 'associate') });
       return match.realtor_id as string;
     } catch (error: any) {
@@ -279,7 +290,36 @@ const NewProfileForm = () => {
     } finally {
       setReferralLookupLoading(false);
     }
-  }, [form.referrerCode, referralLookup]);
+  }, [form.referrerCode, referralLookup, userId]);
+  // Once a referral-link code has been verified for the signed-in account,
+  // persist the sponsor relationship immediately instead of waiting for the
+  // user to reach or save the Referrer step.
+  useEffect(() => {
+    const code = String(form.referrerCode || '').trim().toUpperCase();
+    if (!userId || !referralCodeLocked || !code || existingReferralId || !referralLookup || referralLookup.code !== code) return;
+    let cancelled = false;
+    const attachReferral = async () => {
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ referred_by_id: referralLookup.realtor_id, referred_by_code: code })
+          .eq('id', userId);
+        if (error) throw error;
+        if (!cancelled) {
+          setExistingReferralId(referralLookup.realtor_id);
+          notifyProfileUpdated();
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Automatic referral attribution failed:', error);
+          toast({ title: 'Referral link saved for verification', description: 'Your account is registered. We could not finish linking the referrer automatically, so please save the Referrer section or contact support.', variant: 'destructive' });
+        }
+      }
+    };
+    void attachReferral();
+    return () => { cancelled = true; };
+  }, [userId, referralCodeLocked, form.referrerCode, existingReferralId, referralLookup]);
+
   const saveCurrentStep = async () => {
     if (!userId || saving || !validateStep(activeStep)) return;
     setSaving(true); setSavedStep(null);
