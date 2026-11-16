@@ -135,6 +135,9 @@ const NewProfileForm = () => {
         if (data) {
           setExistingReferralId(data.referred_by_id || null);
           setReferralCodeLocked(Boolean(data.referred_by_id && data.referred_by_code));
+          if (data.referred_by_id && data.referred_by_code) {
+            setForm(prev => ({ ...prev, referrerCode: String(data.referred_by_code).trim().toUpperCase() }));
+          }
           // A browser file picker can suspend/recreate the page. A locally saved draft
           // is newer than the last database save, so never overwrite it with stale DB data.
           if (draft) return;
@@ -279,7 +282,7 @@ const NewProfileForm = () => {
     if (!userId || saving || !validateStep(activeStep)) return;
     setSaving(true); setSavedStep(null);
     try {
-      const referralId = form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
+      const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
       if (form.referrerCode && !referralId) { setSaving(false); return; }
       const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }, { onConflict: 'id' });
       if (error) throw error;
@@ -293,7 +296,7 @@ const NewProfileForm = () => {
   const submitProfile = async () => {
     if (!termsAccepted || !userId || saving || !validateStep('review')) return;
     setSaving(true);
-    try { const referralId = form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
+    try { const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
     catch (error: any) { console.error('Profile submission error:', error); toast({ title: 'Submission failed', description: error?.message || 'Please try again.', variant: 'destructive' }); }
     finally { setSaving(false); }
   };
