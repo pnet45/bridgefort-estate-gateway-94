@@ -23,7 +23,7 @@ export function usePropertyFetch(searchQuery: string, filters: Filters) {
       const propertyData = await refreshPublicDataCache<Property[]>(PUBLIC_ESTATE_CACHE_KEY, async () => {
         const { data: estates, error } = await supabase
           .from("estate")
-          .select("*");
+          .select("id,name,location,promo_price,prelaunch_price,actual_price,total_plots,sold_plots,media,size,type,property_category,phase,description,sub_form,scheme");
 
         if (error) throw error;
 

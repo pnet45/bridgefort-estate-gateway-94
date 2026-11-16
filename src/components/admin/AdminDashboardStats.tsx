@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, Building2, DollarSign, FileText, Mail, UserCheck, TrendingUp, Calendar } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface Stats {
   totalUsers: number;
@@ -14,6 +14,18 @@ interface Stats {
   trainingEvents: number;
 }
 
+type RefreshKey = 'users' | 'properties' | 'orders' | 'blogs' | 'approvals' | 'messages' | 'events';
+
+const REFRESH_KEYS: RefreshKey[] = [
+  'users',
+  'properties',
+  'orders',
+  'blogs',
+  'approvals',
+  'messages',
+  'events',
+];
+
 const AdminDashboardStats = () => {
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
@@ -23,67 +35,160 @@ const AdminDashboardStats = () => {
     totalBlogs: 0,
     pendingApprovals: 0,
     contactMessages: 0,
-    trainingEvents: 0
+    trainingEvents: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    let mounted = true;
+    const requestVersions: Record<RefreshKey, number> = {
+      users: 0,
+      properties: 0,
+      orders: 0,
+      blogs: 0,
+      approvals: 0,
+      messages: 0,
+      events: 0,
+    };
+
+    // Keep admin-only metrics in component memory. Never put profiles, orders,
+    // payment totals, or approval/message counts in the public browser cache.
+    const refreshMetric = async (key: RefreshKey) => {
+      const requestVersion = ++requestVersions[key];
+
       try {
-        const [
-          { count: usersCount },
-          { count: propertiesCount },
-          { data: ordersData },
-          { count: blogsCount },
-          { count: pendingCount },
-          { count: messagesCount },
-          { count: eventsCount }
-        ] = await Promise.all([
-          supabase.from('profiles').select('*', { count: 'exact', head: true }),
-          supabase.from('estate').select('*', { count: 'exact', head: true }),
-          supabase.from('orders').select('total_amount, payment_status'),
-          supabase.from('posts').select('*', { count: 'exact', head: true }),
-          supabase.from('pending_admin_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-          supabase.from('contact_messages').select('*', { count: 'exact', head: true }).eq('responded', false),
-          supabase.from('training_events').select('*', { count: 'exact', head: true })
-        ]);
-
-        const totalRevenue = ordersData?.reduce((sum, order) => {
-          if (order.payment_status === 'completed' || order.payment_status === 'success') {
-            return sum + (order.total_amount || 0);
+        switch (key) {
+          case 'users': {
+            const { count, error } = await supabase
+              .from('profiles')
+              .select('*', { count: 'exact', head: true });
+            if (error) throw error;
+            if (mounted && requestVersions.users === requestVersion) {
+              setStats((previous) => ({ ...previous, totalUsers: count ?? 0 }));
+            }
+            break;
           }
-          return sum;
-        }, 0) || 0;
-
-        setStats({
-          totalUsers: usersCount || 0,
-          totalProperties: propertiesCount || 0,
-          totalRevenue,
-          totalOrders: ordersData?.length || 0,
-          totalBlogs: blogsCount || 0,
-          pendingApprovals: pendingCount || 0,
-          contactMessages: messagesCount || 0,
-          trainingEvents: eventsCount || 0
-        });
+          case 'properties': {
+            const { count, error } = await supabase
+              .from('estate')
+              .select('*', { count: 'exact', head: true });
+            if (error) throw error;
+            if (mounted && requestVersions.properties === requestVersion) {
+              setStats((previous) => ({ ...previous, totalProperties: count ?? 0 }));
+            }
+            break;
+          }
+          case 'orders': {
+            const { data, error } = await supabase
+              .from('orders')
+              .select('total_amount, payment_status');
+            if (error) throw error;
+            const orders = data ?? [];
+            const totalRevenue = orders.reduce((sum, order) => {
+              if (order.payment_status === 'completed' || order.payment_status === 'success') {
+                return sum + (order.total_amount || 0);
+              }
+              return sum;
+            }, 0);
+            if (mounted && requestVersions.orders === requestVersion) {
+              setStats((previous) => ({
+                ...previous,
+                totalRevenue,
+                totalOrders: orders.length,
+              }));
+            }
+            break;
+          }
+          case 'blogs': {
+            const { count, error } = await supabase
+              .from('posts')
+              .select('*', { count: 'exact', head: true });
+            if (error) throw error;
+            if (mounted && requestVersions.blogs === requestVersion) {
+              setStats((previous) => ({ ...previous, totalBlogs: count ?? 0 }));
+            }
+            break;
+          }
+          case 'approvals': {
+            const { count, error } = await supabase
+              .from('pending_admin_requests')
+              .select('*', { count: 'exact', head: true })
+              .eq('status', 'pending');
+            if (error) throw error;
+            if (mounted && requestVersions.approvals === requestVersion) {
+              setStats((previous) => ({ ...previous, pendingApprovals: count ?? 0 }));
+            }
+            break;
+          }
+          case 'messages': {
+            const { count, error } = await supabase
+              .from('contact_messages')
+              .select('*', { count: 'exact', head: true })
+              .eq('responded', false);
+            if (error) throw error;
+            if (mounted && requestVersions.messages === requestVersion) {
+              setStats((previous) => ({ ...previous, contactMessages: count ?? 0 }));
+            }
+            break;
+          }
+          case 'events': {
+            const { count, error } = await supabase
+              .from('training_events')
+              .select('*', { count: 'exact', head: true });
+            if (error) throw error;
+            if (mounted && requestVersions.events === requestVersion) {
+              setStats((previous) => ({ ...previous, trainingEvents: count ?? 0 }));
+            }
+            break;
+          }
+        }
       } catch (error) {
-        console.error('Error fetching stats:', error);
-      } finally {
-        setLoading(false);
+        // A failed background refresh must not blank a previously loaded metric.
+        console.error(`Error refreshing admin dashboard metric (${key}):`, error);
       }
     };
 
-    fetchStats();
+    const loadInitialStats = async () => {
+      await Promise.all(REFRESH_KEYS.map((key) => refreshMetric(key)));
+      if (mounted) setLoading(false);
+    };
 
-    // Set up real-time subscription for updates
+    void loadInitialStats();
+
+    // Realtime is enabled for estate, posts and training_events in the
+    // current database publication. Refresh only those metrics on table events.
     const channel = supabase
       .channel('stats-updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'pending_admin_requests' }, fetchStats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'estate' }, () => { void refreshMetric('properties'); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => { void refreshMetric('blogs'); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'training_events' }, () => { void refreshMetric('events'); })
       .subscribe();
 
+    // The current Realtime publication does not include profiles, orders,
+    // pending_admin_requests or contact_messages. Refresh these admin-only
+    // metrics while the dashboard is visible without changing production DB
+    // publication settings or persisting private data in browser storage.
+    const refreshNonRealtimeMetrics = () => {
+      if (document.visibilityState !== 'visible' || !navigator.onLine) return;
+      void Promise.all([
+        refreshMetric('users'),
+        refreshMetric('orders'),
+        refreshMetric('approvals'),
+        refreshMetric('messages'),
+      ]);
+    };
+    const pollId = window.setInterval(refreshNonRealtimeMetrics, 60_000);
+    window.addEventListener('focus', refreshNonRealtimeMetrics);
+    window.addEventListener('online', refreshNonRealtimeMetrics);
+    document.addEventListener('visibilitychange', refreshNonRealtimeMetrics);
+
     return () => {
-      supabase.removeChannel(channel);
+      mounted = false;
+      window.clearInterval(pollId);
+      window.removeEventListener('focus', refreshNonRealtimeMetrics);
+      window.removeEventListener('online', refreshNonRealtimeMetrics);
+      document.removeEventListener('visibilitychange', refreshNonRealtimeMetrics);
+      void supabase.removeChannel(channel);
     };
   }, []);
 
@@ -157,9 +262,9 @@ const AdminDashboardStats = () => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Loading dashboard statistics">
         {[...Array(8)].map((_, i) => (
-          <div key={i} className="h-28 bg-slate-800 rounded-xl animate-pulse" />
+          <div key={i} className="h-28 rounded-xl border border-slate-700/50 bg-slate-800/60 animate-pulse" />
         ))}
       </div>
     );
