@@ -85,3 +85,8 @@ verify_jwt = false
 # the server-side automation control must be enabled before any document is generated or emailed.
 [functions.auto-send-contract-of-sale]
 verify_jwt = false
+
+
+# Public search validates requests, rate limits callers and keeps partner credentials server-side.
+[functions.booking-demand-api]
+verify_jwt = false

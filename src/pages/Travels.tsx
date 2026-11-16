@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/accordion';
 import TravelsFilters, { TravelFiltersState, TravelType } from '@/components/travels/TravelsFilters';
 import TravelsBookingForm from '@/components/travels/TravelsBookingForm';
+import TravelPartnerSearch from '@/components/travels/TravelPartnerSearch';
 import heroImg from '@/assets/travels-hero.jpg';
 
 const valueProps = [
@@ -619,6 +620,9 @@ const Travels = () => {
           </Accordion>
         </div>
       </section>
+
+      {/* LIVE BOOKING.COM SEARCH */}
+      <TravelPartnerSearch />
 
       {/* BOOKING / ENQUIRY FORM */}
       <TravelsBookingForm initialPackage={bookingPackage} initialDestination={bookingDestination} />
