@@ -155,20 +155,39 @@ const AdminDashboardStats = () => {
 
     void loadInitialStats();
 
-    // Realtime events refresh only the metric backed by the changed table.
+    // Realtime is enabled for estate, posts and training_events in the
+    // current database publication. Refresh only those metrics on table events.
     const channel = supabase
       .channel('stats-updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => { void refreshMetric('users'); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'estate' }, () => { void refreshMetric('properties'); })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => { void refreshMetric('orders'); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => { void refreshMetric('blogs'); })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'pending_admin_requests' }, () => { void refreshMetric('approvals'); })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, () => { void refreshMetric('messages'); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'training_events' }, () => { void refreshMetric('events'); })
       .subscribe();
 
+    // The current Realtime publication does not include profiles, orders,
+    // pending_admin_requests or contact_messages. Refresh these admin-only
+    // metrics while the dashboard is visible without changing production DB
+    // publication settings or persisting private data in browser storage.
+    const refreshNonRealtimeMetrics = () => {
+      if (document.visibilityState !== 'visible' || !navigator.onLine) return;
+      void Promise.all([
+        refreshMetric('users'),
+        refreshMetric('orders'),
+        refreshMetric('approvals'),
+        refreshMetric('messages'),
+      ]);
+    };
+    const pollId = window.setInterval(refreshNonRealtimeMetrics, 60_000);
+    window.addEventListener('focus', refreshNonRealtimeMetrics);
+    window.addEventListener('online', refreshNonRealtimeMetrics);
+    document.addEventListener('visibilitychange', refreshNonRealtimeMetrics);
+
     return () => {
       mounted = false;
+      window.clearInterval(pollId);
+      window.removeEventListener('focus', refreshNonRealtimeMetrics);
+      window.removeEventListener('online', refreshNonRealtimeMetrics);
+      document.removeEventListener('visibilitychange', refreshNonRealtimeMetrics);
       void supabase.removeChannel(channel);
     };
   }, []);
