@@ -75,7 +75,7 @@ export function usePublicMlmPackages() {
     };
 
     refresh();
-    const stopRevalidation = listenForPublicDataRevalidation(refresh);
+    const stopRevalidation = listenForPublicDataRevalidation(CACHE_KEY, refresh);
 
     return () => {
       active = false;
