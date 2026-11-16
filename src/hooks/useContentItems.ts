@@ -107,7 +107,7 @@ export function useContentItems(opts: Options = {}) {
         if (matchesCurrentFilter(previous) || matchesCurrentFilter(next)) void fetchItems();
       })
       .subscribe();
-    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchItems());
+    const stopRevalidation = listenForPublicDataRevalidation(cacheKey, () => void fetchItems());
     const stopCacheSync = canCache
       ? subscribePublicDataCache<ContentItem[]>(cacheKey, setItems)
       : () => undefined;
