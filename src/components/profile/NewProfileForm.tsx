@@ -141,7 +141,7 @@ const NewProfileForm = () => {
           const signupReferralCode = String(user?.user_metadata?.referred_by_code || '').trim().toUpperCase();
           const savedReferralCode = String(data.referred_by_code || signupReferralCode || '').trim().toUpperCase();
           setExistingReferralId(data.referred_by_id || null);
-          setReferralCodeLocked(Boolean(savedReferralCode));
+          setReferralCodeLocked(Boolean((data.referred_by_id && data.referred_by_code) || (user?.user_metadata?.referral_link === true && signupReferralCode)));
           if (savedReferralCode) {
             setForm(prev => ({ ...prev, referrerCode: savedReferralCode }));
           }
