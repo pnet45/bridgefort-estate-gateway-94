@@ -1,9 +1,8 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, Loader2, Upload } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 
 interface KYCUploadFieldProps {
   label: string;
@@ -88,6 +87,8 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     // Keep the DOM input reference before awaiting: React may clear currentTarget
     // after the event callback returns, and Android can suspend the page picker.
+    event.preventDefault();
+    event.stopPropagation();
     const input = event.currentTarget;
     const file = input.files?.[0] || null;
     if (!file || uploadInProgressRef.current) return;
@@ -150,37 +151,29 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
   return (
     <div className="my-2 min-w-0">
       <Label htmlFor={inputId} className="mb-1 block">{label}</Label>
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative inline-flex">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={uploading}
-            aria-describedby={`${inputId}-status`}
-            className="pointer-events-none"
-          >
-            {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-            {uploading ? "Uploading…" : "Choose file"}
-          </Button>
-          <input
-            id={inputId}
-            type="file"
-            accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
-            onChange={(event) => { event.stopPropagation(); void handleFileChange(event); }}
-            onClick={(event) => event.stopPropagation()}
-            disabled={uploading}
-            aria-label={`Choose ${label}`}
-            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
-          />
+      <div className="flex min-w-0 flex-col gap-3">
+        <input
+          id={inputId}
+          type="file"
+          accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+          onChange={(event) => { void handleFileChange(event); }}
+          onClick={(event) => event.stopPropagation()}
+          disabled={uploading}
+          aria-label={`Choose ${label}`}
+          aria-describedby={`${inputId}-status`}
+          className="block w-full min-w-0 max-w-full cursor-pointer text-sm text-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-4 file:py-2 file:text-sm file:font-medium file:text-foreground hover:file:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+        />
+        <div className="flex min-w-0 items-center gap-2">
+          <span id={`${inputId}-status`} role="status" aria-live="polite" className="min-w-0 break-all text-xs text-muted-foreground">
+            {uploading
+              ? `Uploading ${selectedFileName}… Please keep this page open.`
+              : uploadedUrl
+                ? "File uploaded successfully"
+                : selectedFileName || "PDF or image · Maximum 4MB"}
+          </span>
+          {uploading && <Loader2 className="h-4 w-4 shrink-0 animate-spin" />}
+          {uploadedUrl && !uploading && <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-label="Upload complete" />}
         </div>
-        <span id={`${inputId}-status`} role="status" aria-live="polite" className="min-w-0 break-all text-xs text-muted-foreground">
-          {uploading
-            ? `Uploading ${selectedFileName}… Please keep this page open.`
-            : uploadedUrl
-              ? "File uploaded successfully"
-              : selectedFileName || "PDF or image · Maximum 4MB"}
-        </span>
-        {uploadedUrl && !uploading && <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-label="Upload complete" />}
       </div>
       {uploadError && <p role="alert" className="mt-2 text-sm text-destructive">{uploadError}</p>}
       {uploadedUrl && (
