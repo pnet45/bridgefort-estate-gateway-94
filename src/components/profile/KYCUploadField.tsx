@@ -1,5 +1,4 @@
 import React, { useEffect, useId, useRef, useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -48,7 +47,6 @@ function getKycObjectPath(value: string | undefined, bucket: string): string {
 const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
   label, bucket, userId, docKey, onUploaded, existingUrl
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
   const [uploading, setUploading] = useState(false);
   const [uploadedUrl, setUploadedUrl] = useState(existingUrl || "");
@@ -153,26 +151,28 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
     <div className="my-2 min-w-0">
       <Label htmlFor={inputId} className="mb-1 block">{label}</Label>
       <div className="flex flex-wrap items-center gap-3">
-        <Input
-          id={inputId}
-          type="file"
-          accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
-          onChange={(event) => { event.stopPropagation(); void handleFileChange(event); }}
-          onClick={(event) => event.stopPropagation()}
-          ref={fileInputRef}
-          disabled={uploading}
-          className="sr-only"
-        />
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          aria-describedby={`${inputId}-status`}
-        >
-          {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-          {uploading ? "Uploading…" : "Choose file"}
-        </Button>
+        <div className="relative inline-flex">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={uploading}
+            aria-describedby={`${inputId}-status`}
+            className="pointer-events-none"
+          >
+            {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+            {uploading ? "Uploading…" : "Choose file"}
+          </Button>
+          <input
+            id={inputId}
+            type="file"
+            accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+            onChange={(event) => { event.stopPropagation(); void handleFileChange(event); }}
+            onClick={(event) => event.stopPropagation()}
+            disabled={uploading}
+            aria-label={`Choose ${label}`}
+            className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+          />
+        </div>
         <span id={`${inputId}-status`} role="status" aria-live="polite" className="min-w-0 break-all text-xs text-muted-foreground">
           {uploading
             ? `Uploading ${selectedFileName}… Please keep this page open.`

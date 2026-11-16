@@ -31,6 +31,8 @@ interface PropertyFormProps {
   };
 }
 
+const MAX_SUBSCRIPTION_PDF_SIZE = 50 * 1024 * 1024;
+
 const readEstateFormDraft = (key: string) => {
   try {
     const raw = window.sessionStorage.getItem(key);
@@ -49,7 +51,6 @@ const readEstateFormDraft = (key: string) => {
 export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, onSuccess, initialCategory }) => {
   const isEditing = !!estate;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const subscriptionFileInputRef = useRef<HTMLInputElement>(null);
   const mediaFileInputRef = useRef<HTMLInputElement>(null);
   // Parent admin screens may recreate the estate object during unrelated renders.
   // Hydrate only when the selected estate identity changes, never on file selection.
@@ -313,11 +314,25 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
       // Upload subscription form PDF if selected
       let subFormUrl = formData.sub_form || existingSubFormUrl || '';
       if (subscriptionFile) {
-        const fileExt = subscriptionFile.name.split('.').pop();
-        const fileName = `subscription-forms/${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        if (subscriptionFile.size > MAX_SUBSCRIPTION_PDF_SIZE) {
+          throw new Error('Subscription form PDF must be 50 MB or smaller.');
+        }
+        if (!subscriptionFile.name.toLowerCase().endsWith('.pdf') ||
+            (subscriptionFile.type && subscriptionFile.type !== 'application/pdf')) {
+          throw new Error('Choose a valid PDF subscription form.');
+        }
+
+        const uniqueId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        const fileName = `subscription-forms/${uniqueId}.pdf`;
         const { error: uploadError } = await supabase.storage
           .from('public')
-          .upload(fileName, subscriptionFile);
+          .upload(fileName, subscriptionFile, {
+            cacheControl: '3600',
+            contentType: 'application/pdf',
+            upsert: false,
+          });
         if (uploadError) throw uploadError;
         const { data: { publicUrl } } = supabase.storage.from('public').getPublicUrl(fileName);
         subFormUrl = publicUrl;
@@ -676,28 +691,39 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
           )}
           <div className="flex items-center gap-3">
             <div className="flex flex-1 flex-wrap items-center gap-3 rounded-md border-2 border-dashed border-muted-foreground/30 p-3 transition-colors hover:border-primary">
-              <input
-                ref={subscriptionFileInputRef}
-                type="file"
-                accept=".pdf,application/pdf"
-                onClick={(e) => e.stopPropagation()}
-                onChange={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const selectedFile = e.currentTarget.files?.[0] || null;
-                  if (selectedFile) setSubscriptionFile(selectedFile);
-                  e.currentTarget.value = '';
-                }}
-                className="sr-only"
-                aria-label="Choose estate subscription PDF"
-              />
-              <Button type="button" variant="outline" onClick={() => subscriptionFileInputRef.current?.click()}>
-                <Upload className="mr-2 h-4 w-4" /> Choose PDF
-              </Button>
+              <div className="relative inline-flex">
+                <Button type="button" variant="outline" className="pointer-events-none">
+                  <Upload className="mr-2 h-4 w-4" /> Choose PDF
+                </Button>
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const input = e.currentTarget;
+                    const selectedFile = input.files?.[0] || null;
+                    if (selectedFile) {
+                      if (selectedFile.size > MAX_SUBSCRIPTION_PDF_SIZE) {
+                        toast({ title: 'PDF is too large', description: 'Choose a subscription form PDF that is 50 MB or smaller.', variant: 'destructive' });
+                      } else if (!selectedFile.name.toLowerCase().endsWith('.pdf') ||
+                          (selectedFile.type && selectedFile.type !== 'application/pdf')) {
+                        toast({ title: 'Invalid file type', description: 'Only PDF subscription forms are accepted.', variant: 'destructive' });
+                      } else {
+                        setSubscriptionFile(selectedFile);
+                      }
+                    }
+                    input.value = '';
+                  }}
+                  className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                  aria-label="Choose estate subscription PDF (maximum 50 MB)"
+                />
+              </div>
               <span className="min-w-0 break-all text-sm text-muted-foreground">{subscriptionFile ? subscriptionFile.name : 'No new PDF selected'}</span>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">Upload a PDF subscription form for this estate. Users will be able to download it.</p>
+          <p className="text-xs text-muted-foreground">Upload a PDF subscription form for this estate (maximum 50 MB). Users will be able to download it.</p>
         </div>
 
         {/* Documentation Pricing */}
