@@ -11,6 +11,8 @@ interface KYCUploadFieldProps {
   docKey: string;
   onUploaded: (fileUrl: string, fileName: string, mimetype: string) => void;
   existingUrl?: string;
+  existingName?: string;
+  existingType?: string;
 }
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024;
@@ -44,12 +46,13 @@ function getKycObjectPath(value: string | undefined, bucket: string): string {
 }
 
 const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
-  label, bucket, userId, docKey, onUploaded, existingUrl
+  label, bucket, userId, docKey, onUploaded, existingUrl, existingName, existingType
 }) => {
   const inputId = useId();
   const [uploading, setUploading] = useState(false);
   const [uploadedUrl, setUploadedUrl] = useState(existingUrl || "");
-  const [selectedFileName, setSelectedFileName] = useState("");
+  const [selectedFileName, setSelectedFileName] = useState(existingName || "");
+  const [uploadedMimeType, setUploadedMimeType] = useState(existingType || "");
   const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
@@ -65,11 +68,12 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
     void supabase.storage.from(bucket).createSignedUrl(objectPath, 60 * 60).then(({ data, error }) => {
       if (!active) return;
       setUploadedUrl(error ? "" : data.signedUrl);
+      if (!error) setSelectedFileName(existingName || objectPath.split('/').pop() || label);
       if (error) setUploadError("This saved document could not be opened. Please select it again.");
     });
 
     return () => { active = false; };
-  }, [existingUrl, bucket]);
+  }, [existingUrl, existingName, bucket, label]);
 
     const uploadInProgressRef = useRef(false);
 
@@ -132,7 +136,9 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
       }
 
       setUploadedUrl(data.signedUrl);
-      onUploaded(filePath, fileName, mimeType);
+      setSelectedFileName(file.name || fileName);
+      setUploadedMimeType(mimeType);
+      onUploaded(filePath, file.name || fileName, mimeType);
       setUploadError("");
       toast({ title: "Upload successful", description: `${label} uploaded.` });
     } catch (error: unknown) {
@@ -168,7 +174,7 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
             {uploading
               ? `Uploading ${selectedFileName}… Please keep this page open.`
               : uploadedUrl
-                ? "File uploaded successfully"
+                ? `Uploaded: ${selectedFileName || label}`
                 : selectedFileName || "PDF or image · Maximum 4MB"}
           </span>
           {uploading && <Loader2 className="h-4 w-4 shrink-0 animate-spin" />}
@@ -177,9 +183,16 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
       </div>
       {uploadError && <p role="alert" className="mt-2 text-sm text-destructive">{uploadError}</p>}
       {uploadedUrl && (
-        <a href={uploadedUrl} target="_blank" rel="noopener noreferrer" className="mt-1 block break-all text-sm text-blue-600 underline">
-          View uploaded file
-        </a>
+        <div className="mt-3 min-w-0 space-y-2">
+          {uploadedMimeType.startsWith("image/") ? (
+            <img src={uploadedUrl} alt={`${label} preview`} className="max-h-56 max-w-full rounded-lg border object-contain" />
+          ) : uploadedMimeType === "application/pdf" || selectedFileName.toLowerCase().endsWith(".pdf") ? (
+            <iframe title={`${label} PDF preview`} src={uploadedUrl} className="h-64 w-full rounded-lg border bg-background" />
+          ) : null}
+          <a href={uploadedUrl} target="_blank" rel="noopener noreferrer" className="block break-all text-sm text-blue-600 underline">
+            Open uploaded document
+          </a>
+        </div>
       )}
     </div>
   );
