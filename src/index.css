@@ -955,3 +955,17 @@
 
 .admin-theme button, .admin-theme a, .admin-theme [role="tab"] { transition: background-color .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease !important; }
 .admin-theme button:focus-visible, .admin-theme a:focus-visible, .admin-theme [role="tab"]:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
+
+/* Site-wide contrast guard for saturated green action/status surfaces.
+   Keep pale green badges unchanged; force readable white foreground only on
+   the stronger green/emerald surfaces used for buttons, banners and panels. */
+:where(.bg-green-500, .bg-green-600, .bg-green-700, .bg-green-800, .bg-green-900,
+       .bg-emerald-500, .bg-emerald-600, .bg-emerald-700, .bg-emerald-800, .bg-emerald-900,
+       .bg-beauty-green) {
+  color: #fff !important;
+}
+:where(.bg-green-500, .bg-green-600, .bg-green-700, .bg-green-800, .bg-green-900,
+       .bg-emerald-500, .bg-emerald-600, .bg-emerald-700, .bg-emerald-800, .bg-emerald-900,
+       .bg-beauty-green) :where(*) {
+  color: #fff !important;
+}

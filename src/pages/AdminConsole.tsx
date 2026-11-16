@@ -59,8 +59,20 @@ const AdminConsole = () => {
   const [pendingCount, setPendingCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [adminTheme, setAdminTheme] = useState<'light' | 'dark'>(() => localStorage.getItem('bridgefort-admin-theme') === 'light' ? 'light' : 'dark');
-  useEffect(() => { localStorage.setItem('bridgefort-admin-theme', adminTheme); }, [adminTheme]);
+  const [adminTheme, setAdminTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      return window.localStorage.getItem('bridgefort-admin-theme') === 'light' ? 'light' : 'dark';
+    } catch {
+      return 'dark';
+    }
+  });
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('bridgefort-admin-theme', adminTheme);
+    } catch {
+      // Keep the selected theme active for this session if browser storage is unavailable.
+    }
+  }, [adminTheme]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(() => { const requested = searchParams.get('tab'); return requested === 'content' || requested === 'gallery' ? 'cms' : requested || 'overview'; });
   const handleTabChange = (tab: string) => { if (!allowedTabs.includes(tab)) return; setMobileMenuOpen(false); setActiveTab(tab); const nextParams = new URLSearchParams(searchParams); nextParams.set('tab', tab); setSearchParams(nextParams, { replace: true }); };
@@ -68,7 +80,16 @@ const AdminConsole = () => {
   useEffect(() => { if (authLoading || globalAdminLoading) return; if (!allowedTabs.length) { navigate('/dashboard'); return; } if (!allowedTabs.includes(activeTab)) { const fallbackTab = allowedTabs[0]; setActiveTab(fallbackTab); const nextParams = new URLSearchParams(searchParams); nextParams.set('tab', fallbackTab); setSearchParams(nextParams, { replace: true }); } }, [allowedTabs, activeTab, navigate, searchParams, setSearchParams, authLoading, globalAdminLoading]);
   useEffect(() => { const checkAdminAccess = async () => { if (authLoading) return; if (!user) { navigate('/admin-login'); return; } const isAllowed = hasPermission('admin:view_dashboard') || hasPermission('admin:all') || isAdminRole(userRole); if (!isAllowed) { toast({ title: 'Access Denied', description: "You don't have permission to access the admin console", variant: 'destructive' }); navigate('/dashboard'); return; } const { count } = await supabase.from('pending_admin_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending'); setPendingCount(count || 0); setLoading(false); }; checkAdminAccess(); }, [user, navigate, userRole, hasPermission, permissions, authLoading]);
   useEffect(() => { const w = window as TawkWindow; const hideTawk = () => w.Tawk_API?.hideWidget?.(); hideTawk(); const previousOnLoad = w.Tawk_API?.onLoad; w.Tawk_API = w.Tawk_API || {}; w.Tawk_API.onLoad = () => { previousOnLoad?.(); hideTawk(); }; return () => w.Tawk_API?.showWidget?.(); }, []);
-  const handleSignOut = async () => { if (user) await supabase.from('admin_presence').update({ is_online: false, status: 'offline', last_seen: new Date().toISOString() }).eq('user_id', user.id); localStorage.removeItem('admin_email_active_mailbox'); await signOut(); navigate('/admin-login'); };
+  const handleSignOut = async () => {
+    if (user) await supabase.from('admin_presence').update({ is_online: false, status: 'offline', last_seen: new Date().toISOString() }).eq('user_id', user.id);
+    try {
+      window.localStorage.removeItem('admin_email_active_mailbox');
+    } catch {
+      // Sign-out must still complete when browser storage is blocked.
+    }
+    await signOut();
+    navigate('/admin-login');
+  };
   if (authLoading || loading) return <div className="admin-theme min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" /></div>;
   return <div className={`admin-theme admin-theme-${adminTheme} min-h-screen overflow-x-hidden`}>
     <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-50"><div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8"><div className="flex items-center justify-between min-h-16 py-2 gap-2"><div className="flex items-center gap-3 min-w-0"><Button type="button" variant="ghost" size="icon" onClick={() => setMobileMenuOpen(value => !value)} className="lg:hidden shrink-0 text-white hover:bg-slate-700" aria-label={mobileMenuOpen ? 'Close admin menu' : 'Open admin menu'}>{mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</Button><div className="p-2 bg-primary/10 rounded-lg shrink-0"><Shield className="h-6 w-6 text-primary" /></div><div className="min-w-0"><h1 className="text-base sm:text-lg font-bold text-white truncate">Admin Console</h1><p className="text-[11px] sm:text-xs text-slate-400 truncate">Bridgefort Homes Development Ltd</p></div></div><div className="flex items-center gap-1 sm:gap-2"><div className="relative"><Button variant="ghost" size="icon" onClick={() => setNotificationOpen(!notificationOpen)} className="text-slate-400 hover:text-white relative" aria-label="Open admin notifications"><Bell className="h-5 w-5" />{pendingCount > 0 && <span className="absolute -top-1 -right-1 h-5 min-w-5 px-1 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{pendingCount > 99 ? '99+' : pendingCount}</span>}</Button><AdminNotificationCenter isOpen={notificationOpen} onClose={() => setNotificationOpen(false)} onNavigate={handleTabChange} /></div><NotificationBell audience="admin" triggerClassName="text-slate-400 hover:text-white hidden sm:inline-flex" /><div className="hidden md:flex items-center gap-3 px-3 py-1.5 bg-slate-700/50 rounded-lg max-w-56"><div className="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center shrink-0"><span className="text-primary font-medium text-sm">{profile?.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'A'}</span></div><div className="min-w-0"><p className="text-sm font-medium text-white truncate">{profile?.first_name || 'Admin'}</p><p className="text-xs text-slate-400 truncate">{getAdminDisplayLabel(userRole)}</p></div></div><Button type="button" variant="ghost" size="icon" onClick={() => setAdminTheme(value => value === 'dark' ? 'light' : 'dark')} className="admin-theme-toggle shrink-0" aria-label={`Switch to ${adminTheme === 'dark' ? 'light' : 'dark'} theme`} title={`Switch to ${adminTheme === 'dark' ? 'light' : 'dark'} theme`}>{adminTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}<span className="sr-only">{adminTheme === 'dark' ? 'Light theme' : 'Dark theme'}</span></Button><Button variant="ghost" size="icon" onClick={() => navigate('/')} className="text-slate-400 hover:text-white sm:w-auto sm:px-3" aria-label="Main site"><Home className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Main Site</span></Button><Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-400 hover:text-red-300 hover:bg-red-900/20 sm:w-auto sm:px-3" aria-label="Logout"><LogOut className="h-4 w-4 sm:mr-1" /><span className="hidden sm:inline">Logout</span></Button></div></div></div></header>
