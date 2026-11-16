@@ -57,6 +57,8 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
 
   useEffect(() => {
     let active = true;
+    setSelectedFileName(existingName || "");
+    setUploadedMimeType(existingType || "");
     const objectPath = getKycObjectPath(existingUrl, bucket);
     if (!objectPath) {
       setUploadedUrl("");
