@@ -302,8 +302,10 @@ const NewProfileForm = () => {
       try {
         const { data: updatedProfile, error } = await supabase
           .from('profiles')
-          .update({ referred_by_id: referralLookup.realtor_id, referred_by_code: code })
-          .eq('id', userId)
+          .upsert(
+            { id: userId, referred_by_id: referralLookup.realtor_id, referred_by_code: code },
+            { onConflict: 'id' },
+          )
           .select('id')
           .maybeSingle();
         if (error) throw error;
