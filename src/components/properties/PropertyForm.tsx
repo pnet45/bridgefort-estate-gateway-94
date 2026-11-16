@@ -92,6 +92,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
   const [subscriptionFileName, setSubscriptionFileName] = useState('');
   const [existingSubFormUrl, setExistingSubFormUrl] = useState<string>('');
   const [uploadingSubForm, setUploadingSubForm] = useState(false);
+  const [subscriptionUploadError, setSubscriptionUploadError] = useState('');
   const [docPricing, setDocPricing] = useState<DocPricing>({
     deed_of_assignment: 0,
     survey_plan: 0,
@@ -686,17 +687,22 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                 if (!selectedFile) return;
                 setSubscriptionFileName(selectedFile.name);
                 if (selectedFile.size > MAX_SUBSCRIPTION_PDF_SIZE) {
+                  setSubscriptionFileName('');
+                  setSubscriptionUploadError('Choose a subscription form PDF that is 50 MB or smaller.');
                   toast({ title: 'PDF is too large', description: 'Choose a subscription form PDF that is 50 MB or smaller.', variant: 'destructive' });
                   input.value = '';
                   return;
                 }
                 if (!selectedFile.name.toLowerCase().endsWith('.pdf') ||
                     (selectedFile.type && selectedFile.type !== 'application/pdf')) {
+                  setSubscriptionFileName('');
+                  setSubscriptionUploadError('Only PDF subscription forms are accepted.');
                   toast({ title: 'Invalid file type', description: 'Only PDF subscription forms are accepted.', variant: 'destructive' });
                   input.value = '';
                   return;
                 }
                 setUploadingSubForm(true);
+                setSubscriptionUploadError('');
                 try {
                   const uniqueId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
                     ? crypto.randomUUID()
@@ -713,8 +719,10 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                   const { data: { publicUrl } } = supabase.storage.from('public').getPublicUrl(objectPath);
                   setExistingSubFormUrl(publicUrl);
                   setFormData(prev => ({ ...prev, sub_form: publicUrl }));
+                  setSubscriptionUploadError('');
                   toast({ title: 'Subscription form uploaded', description: selectedFile.name });
                 } catch (error: any) {
+                  setSubscriptionUploadError(error?.message || 'Upload failed. Please choose the PDF again.');
                   toast({ title: 'Subscription form upload failed', description: error?.message || 'Please try again.', variant: 'destructive' });
                 } finally {
                   setUploadingSubForm(false);
@@ -725,7 +733,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
               aria-label="Choose estate subscription PDF (maximum 50 MB)"
             />
             {uploadingSubForm && <div role="status" aria-live="polite" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Uploading {subscriptionFileName}… Keep this form open.</div>}
-            {!uploadingSubForm && subscriptionFileName && <p className="break-all text-xs text-muted-foreground">Selected file: {subscriptionFileName}</p>}
+            {!uploadingSubForm && subscriptionFileName && <p className="break-all text-xs text-muted-foreground">{existingSubFormUrl || formData.sub_form ? 'Uploaded file: ' : 'Selected file: '}{subscriptionFileName}</p>}
+            {subscriptionUploadError && <p role="alert" className="text-sm text-destructive">{subscriptionUploadError}</p>}
           </div>
           <p className="text-xs text-muted-foreground">PDF only · Maximum 50 MB. The file is uploaded as soon as it is selected so the form can retain its saved URL if the page is refreshed.</p>
         </div>
