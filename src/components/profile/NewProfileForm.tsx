@@ -124,7 +124,7 @@ const NewProfileForm = () => {
         const draft = readProfileDraft(userId);
         const metadataReferralCode = String(user?.user_metadata?.referred_by_code || '').trim().toUpperCase();
         if (metadataReferralCode) {
-          setReferralCodeLocked(true);
+          setReferralCodeLocked(user?.user_metadata?.referral_link === true);
           setForm(prev => ({ ...prev, referrerCode: metadataReferralCode }));
         }
         // Restore the current tab draft immediately, even if the database
