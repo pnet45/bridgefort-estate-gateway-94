@@ -122,7 +122,15 @@ export function useBlogPosts(limit = 20) {
       .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, payload => {
         const previous = payload.old as Record<string, unknown> | undefined;
         const next = payload.new as Record<string, unknown> | undefined;
-        if (previous?.published === true || next?.published === true) void fetchBlogPosts();
+        const shouldRefresh = payload.eventType === "DELETE"
+          || (payload.eventType === "INSERT" && next?.published === true)
+          || (payload.eventType === "UPDATE" && (
+            previous?.published === true
+            || next?.published === true
+            // Partial old-row payloads do not prove the deleted/updated post was unpublished.
+            || previous?.published === undefined
+          ));
+        if (shouldRefresh) void fetchBlogPosts();
       })
       .subscribe();
     const stopRevalidation = listenForPublicDataRevalidation(() => void fetchBlogPosts());
