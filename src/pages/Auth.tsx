@@ -64,7 +64,7 @@ const Auth = ({
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const refCode = params.get('ref');
+    const refCode = params.get('ref')?.trim().toUpperCase();
 
     if (refCode) {
       setSponsorCode(refCode);
@@ -317,6 +317,30 @@ const Auth = ({
       // }
 
       setRememberMe(true);
+      const normalizedSponsorCode = sponsorCode.trim().toUpperCase();
+      let verifiedSponsor: { id: string } | null = null;
+
+      // Validate a referral before creating the auth account. This prevents an
+      // invalid or mistyped link from leaving an unlinked account behind.
+      if (normalizedSponsorCode) {
+        const { data: sponsor, error: sponsorLookupError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('pbo_referral_code', normalizedSponsorCode)
+          .eq('is_pbo', true)
+          .maybeSingle();
+        if (sponsorLookupError) throw sponsorLookupError;
+        if (!sponsor) {
+          toast({
+            title: 'Referral code not found',
+            description: 'This referral link is invalid or no longer active. Please contact the person who shared it for a valid link.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        verifiedSponsor = sponsor;
+      }
+
       const { data, error } = await signUp(email, password, firstName, lastName);
       if (error) throw error;
 
@@ -414,33 +438,9 @@ const Auth = ({
           }
         }
 
-        if (sponsorCode.trim()) {
-          const { data: sponsorProfile, error: sponsorError } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('pbo_referral_code', sponsorCode.trim())
-            .eq('is_pbo', true)
-            .maybeSingle();
-
-          // IMPORTANT: by this point `signUp()` has already created the real
-          // auth account — there is no undoing that. The old code called
-          // `return` here on an invalid code, which abandoned registration
-          // entirely: the auth user existed but their profile was never
-          // created, no success message was shown, and re-submitting the
-          // same email would then fail as "already registered", leaving the
-          // user completely stuck. A bad/mistyped sponsor code should never
-          // be able to break account creation — just skip attaching a
-          // sponsor and let them know, then continue.
-          if (sponsorError || !sponsorProfile) {
-            toast({
-              title: "Referral code not found",
-              description: "We couldn't find that referral code, so your account was created without a sponsor. You can add one later from your profile.",
-              variant: "destructive"
-            });
-          } else {
-            profileUpdate.referred_by_id = sponsorProfile.id;
-            profileUpdate.referred_by_code = sponsorCode.trim();
-          }
+        if (verifiedSponsor && normalizedSponsorCode) {
+          profileUpdate.referred_by_id = verifiedSponsor.id;
+          profileUpdate.referred_by_code = normalizedSponsorCode;
         }
 
         const { error: profileUpsertError } = await supabase
