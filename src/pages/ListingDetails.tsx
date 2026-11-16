@@ -16,7 +16,7 @@ import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDa
 const ListingDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [listing, setListing] = useState<Listing | null>(() => id ? readPublicDataCache<Listing>(`public-listing-detail-v2:${id}`) : null);
-  const [loading, setLoading] = useState(() => !id || !readPublicDataCache<Listing>(`public-listing-detail:${id}`));
+  const [loading, setLoading] = useState(() => !id || !readPublicDataCache<Listing>(`public-listing-detail-v2:${id}`));
   const [activePhoto, setActivePhoto] = useState(0);
 
   // Track view
@@ -25,7 +25,9 @@ const ListingDetails = () => {
   useEffect(() => {
     if (!id) return;
     let active = true;
-    const cacheKey = `public-listing-detail:${id}`;
+    const cacheKey = `public-listing-detail-v2:${id}`;
+    // Retire the previous wildcard snapshot, which could contain owner contact PII.
+    window.localStorage.removeItem(`bridgefort:public-data:v1:public-listing-detail:${id}`);
     const cached = readPublicDataCache<Listing>(cacheKey);
     if (cached) {
       setListing(cached);
