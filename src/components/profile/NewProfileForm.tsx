@@ -133,10 +133,12 @@ const NewProfileForm = () => {
         const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
         if (error) throw error;
         if (data) {
+          const signupReferralCode = String(user?.user_metadata?.referred_by_code || '').trim().toUpperCase();
+          const savedReferralCode = String(data.referred_by_code || signupReferralCode || '').trim().toUpperCase();
           setExistingReferralId(data.referred_by_id || null);
-          setReferralCodeLocked(Boolean(data.referred_by_id && data.referred_by_code));
-          if (data.referred_by_id && data.referred_by_code) {
-            setForm(prev => ({ ...prev, referrerCode: String(data.referred_by_code).trim().toUpperCase() }));
+          setReferralCodeLocked(Boolean(savedReferralCode));
+          if (savedReferralCode) {
+            setForm(prev => ({ ...prev, referrerCode: savedReferralCode }));
           }
           // A browser file picker can suspend/recreate the page. A locally saved draft
           // is newer than the last database save, so never overwrite it with stale DB data.
@@ -153,7 +155,7 @@ const NewProfileForm = () => {
       finally { setLoading(false); }
     };
     load();
-  }, [userId]);
+  }, [userId, user?.user_metadata?.referred_by_code]);
 
   // Flush the latest values before a mobile browser backgrounds or restores
   // this page around the native Android/iOS document picker.
