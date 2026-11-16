@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, CalendarDays, Search, Share2, TrendingUp } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -21,6 +21,8 @@ import type { BlogPost } from '@/types/blog';
 const PAGE_SIZE = 9;
 
 const Blog = () => {
+  const location = useLocation();
+  const articleNavigationState = { from: `${location.pathname}${location.search}${location.hash}` };
   const { posts, loading } = useBlogPosts(50);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
@@ -121,7 +123,7 @@ const Blog = () => {
                   <h2 className="mt-4 max-w-3xl text-3xl font-black leading-tight text-white md:text-5xl">{featured.title}</h2>
                   <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-200 md:text-base">{featured.excerpt}</p>
                   <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <Link to={`/blog/${featured.id}`} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-slate-100">Read story <ArrowRight className="h-4 w-4" /></Link>
+                    <Link to={`/blog/${featured.id}`} state={articleNavigationState} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-slate-100">Read story <ArrowRight className="h-4 w-4" /></Link>
                     <button type="button" onClick={() => shareArticle(featured.id, featured.title)} className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/15"><Share2 className="h-4 w-4" /> Share</button>
                   </div>
                 </div>
@@ -130,7 +132,7 @@ const Blog = () => {
               <aside className="space-y-4">
                 <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Editor's picks</p><h2 className="mt-1 text-2xl font-black">Worth reading</h2></div>
                 {secondary.map((post) => (
-                  <Link key={post.id} to={`/blog/${post.id}`} className="group flex gap-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+                  <Link key={post.id} to={`/blog/${post.id}`} state={articleNavigationState} className="group flex gap-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
                     <img src={post.image_path} alt={post.title} className="h-24 w-28 shrink-0 rounded-xl object-cover" loading="lazy" />
                     <div className="min-w-0 py-1">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-estate-purple">{post.category}</p>
@@ -167,7 +169,7 @@ const Blog = () => {
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {latest.map((post) => (
                   <article key={post.id} className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-                    <Link to={`/blog/${post.id}`} className="relative block aspect-[16/10] overflow-hidden bg-slate-100">
+                    <Link to={`/blog/${post.id}`} state={articleNavigationState} className="relative block aspect-[16/10] overflow-hidden bg-slate-100">
                       <img src={post.image_path} alt={post.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" />
                       <span className="absolute left-4 top-4 rounded-full bg-slate-950/75 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">{post.category}</span>
                     </Link>
@@ -179,7 +181,7 @@ const Blog = () => {
                       <h3 className="mt-3 line-clamp-2 text-xl font-bold leading-7 text-slate-900 group-hover:text-estate-blue">{post.title}</h3>
                       <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-500">{post.excerpt}</p>
                       <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-                        <Link to={`/blog/${post.id}`} className="inline-flex items-center gap-2 text-sm font-bold text-estate-blue">Read article <ArrowRight className="h-4 w-4" /></Link>
+                        <Link to={`/blog/${post.id}`} state={articleNavigationState} className="inline-flex items-center gap-2 text-sm font-bold text-estate-blue">Read article <ArrowRight className="h-4 w-4" /></Link>
                         <button type="button" aria-label={`Share ${post.title}`} onClick={() => shareArticle(post.id, post.title)} className="rounded-full border border-slate-200 p-2 text-slate-500 transition hover:border-estate-blue/30 hover:text-estate-blue"><Share2 className="h-4 w-4" /></button>
                       </div>
                     </div>
