@@ -178,7 +178,7 @@ const EstateDetails: React.FC = () => {
         if (previous?.id === id || next?.id === id || payload.eventType === 'INSERT' || payload.eventType === 'DELETE') void loadEstate();
       })
       .subscribe();
-    const stopRevalidation = listenForPublicDataRevalidation(() => void loadEstate());
+    const stopRevalidation = listenForPublicDataRevalidation(cacheKey, () => void loadEstate());
     const stopCacheSync = subscribePublicDataCache<any>(cacheKey, (nextEstate) => {
       setEstateRow(nextEstate);
       setProperty(mapEstateRowToProperty(nextEstate));

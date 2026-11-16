@@ -62,7 +62,7 @@ const HomeHeroImage = () => {
       })
       .subscribe();
 
-    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchSlides());
+    const stopRevalidation = listenForPublicDataRevalidation(HERO_SLIDES_CACHE_KEY, () => void fetchSlides());
     const stopCacheSync = subscribePublicDataCache<HeroSlide[]>(HERO_SLIDES_CACHE_KEY, (nextSlides) => {
       setSlides(nextSlides);
       setCurrentSlide((current) => Math.min(current, Math.max(0, nextSlides.length - 1)));

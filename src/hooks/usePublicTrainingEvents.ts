@@ -83,7 +83,7 @@ export function usePublicTrainingEvents() {
     };
 
     refresh();
-    const stopRevalidation = listenForPublicDataRevalidation(refresh);
+    const stopRevalidation = listenForPublicDataRevalidation(CACHE_KEY, refresh);
     const stopCacheSync = subscribePublicDataCache<PublicTrainingEvent[]>(CACHE_KEY, (nextEvents) => {
       snapshot = nextEvents;
       listeners.forEach((notify) => notify(nextEvents));

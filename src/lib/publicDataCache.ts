@@ -75,11 +75,40 @@ export function subscribePublicDataCache<T>(key: string, listener: (data: T) => 
   };
 }
 
-/** Revalidate only when the user returns to an online, visible tab. */
-export function listenForPublicDataRevalidation(refresh: () => void): () => void {
+const DEFAULT_REVALIDATION_AGE_MS = 60_000;
+
+/** Check the age of one public snapshot without removing stale content from the UI. */
+export function isPublicDataCacheStale(key: string, maxAgeMs = DEFAULT_REVALIDATION_AGE_MS): boolean {
+  if (typeof window === 'undefined') return true;
+  try {
+    const raw = window.localStorage.getItem(CACHE_PREFIX + key);
+    if (!raw) return true;
+    const parsed = JSON.parse(raw) as CacheEnvelope<unknown>;
+    return parsed?.version !== 1
+      || !parsed.savedAt
+      || Date.now() - parsed.savedAt > maxAgeMs;
+  } catch {
+    return true;
+  }
+}
+
+/** Revalidate only the named dataset when its cached snapshot is older than one minute. */
+export function listenForPublicDataRevalidation(
+  key: string,
+  refresh: () => void,
+  maxAgeMs = DEFAULT_REVALIDATION_AGE_MS,
+): () => void {
   if (typeof window === 'undefined') return () => undefined;
+  let lastAttemptAt = 0;
   const refreshWhenAvailable = () => {
-    if (document.visibilityState === 'visible' && navigator.onLine) refresh();
+    if (
+      document.visibilityState !== 'visible'
+      || !navigator.onLine
+      || Date.now() - lastAttemptAt < 5_000
+      || !isPublicDataCacheStale(key, maxAgeMs)
+    ) return;
+    lastAttemptAt = Date.now();
+    refresh();
   };
   window.addEventListener('focus', refreshWhenAvailable);
   window.addEventListener('online', refreshWhenAvailable);
