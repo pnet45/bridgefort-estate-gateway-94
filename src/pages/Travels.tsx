@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/accordion';
 import TravelsFilters, { TravelFiltersState, TravelType } from '@/components/travels/TravelsFilters';
 import TravelsBookingForm from '@/components/travels/TravelsBookingForm';
+import BookingComHotelSearch from '@/components/travels/BookingComHotelSearch';
 import heroImg from '@/assets/travels-hero.jpg';
 
 const valueProps = [
@@ -361,6 +362,9 @@ const Travels = () => {
           </div>
         </div>
       </section>
+
+      {/* BOOKING.COM LIVE ACCOMMODATION SEARCH */}
+      <BookingComHotelSearch />
 
       {/* VISA SERVICES */}
       <section className="section-padding bg-gradient-to-br from-estate-darkBlue to-estate-blue text-white">
