@@ -706,7 +706,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                     const selectedFile = input.files?.[0] || null;
                     if (selectedFile) {
                       if (selectedFile.size > MAX_SUBSCRIPTION_PDF_SIZE) {
-                        toast({ title: 'PDF is too large', description: 'Choose a subscription form PDF that is 25 MB or smaller.', variant: 'destructive' });
+                        toast({ title: 'PDF is too large', description: 'Choose a subscription form PDF that is 50 MB or smaller.', variant: 'destructive' });
                       } else if (!selectedFile.name.toLowerCase().endsWith('.pdf') ||
                           (selectedFile.type && selectedFile.type !== 'application/pdf')) {
                         toast({ title: 'Invalid file type', description: 'Only PDF subscription forms are accepted.', variant: 'destructive' });
