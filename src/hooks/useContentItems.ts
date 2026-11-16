@@ -87,13 +87,15 @@ export function useContentItems(opts: Options = {}) {
   useEffect(() => {
     const matchesCurrentFilter = (row: Record<string, unknown> | undefined) => {
       if (!row) return true;
-      if (opts.page && row.page !== opts.page) return false;
-      if (opts.contentType) {
+      // Realtime old-row payloads may contain only primary-key columns.
+      // Treat omitted filter fields as unknown and refresh rather than retaining stale public cards.
+      if (opts.page && 'page' in row && row.page !== opts.page) return false;
+      if (opts.contentType && 'content_type' in row) {
         const acceptedTypes = Array.isArray(opts.contentType) ? opts.contentType : [opts.contentType];
         if (!acceptedTypes.includes(row.content_type as ContentType)) return false;
       }
-      if (!opts.includeUnpublished && row.is_published !== true) return false;
-      if (opts.featuredOnly && row.is_featured !== true) return false;
+      if (!opts.includeUnpublished && 'is_published' in row && row.is_published !== true) return false;
+      if (opts.featuredOnly && 'is_featured' in row && row.is_featured !== true) return false;
       return true;
     };
 
