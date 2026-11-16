@@ -141,7 +141,7 @@ const EstateDetails: React.FC = () => {
     setNotFound(false);
 
     const loadEstate = async () => {
-      const { data, error } = await supabase.from('estate').select('*').eq('id', id).single();
+      const { data, error } = await supabase.from('estate').select('id,name,location,promo_price,prelaunch_price,actual_price,media,type,description,property_category').eq('id', id).single();
       if (!active) return;
       if (error || !data) {
         if (!error || error.code === 'PGRST116') {
@@ -161,7 +161,7 @@ const EstateDetails: React.FC = () => {
 
       const { data: related } = await supabase
         .from('estate')
-        .select('*')
+        .select('id,name,location,promo_price,prelaunch_price,actual_price,media,type,description,property_category')
         .neq('id', id)
         .eq('property_category', data.property_category || 'land')
         .limit(4);
