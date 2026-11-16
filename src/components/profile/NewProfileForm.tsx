@@ -66,6 +66,9 @@ const incomeValue = (value: string) => ({ 'Below ₦1M': 500000, '₦1M - ₦5M'
 
 const NewProfileForm = () => {
   const { user } = useAuth();
+  // A stable ID prevents a token refresh after Android's file picker from
+  // re-running profile loading and remounting the form.
+  const userId = user?.id ?? null;
   const [form, setForm] = useState<FormState>(initialForm);
   const [kycDocs, setKycDocs] = useState<Record<string, { url: string; name: string; type: string }>>({});
   const [activeStep, setActiveStep] = useState<StepKey>('personal');
@@ -84,9 +87,9 @@ const NewProfileForm = () => {
   const isLast = index === steps.length - 1;
   const progress = Math.round(((index + 1) / steps.length) * 100);
   const persistDraft = useCallback((nextForm: FormState, nextKycDocs: Record<string, { url: string; name: string; type: string }>) => {
-    if (!user) return;
+    if (!userId) return;
     try {
-      window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify({
+      window.sessionStorage.setItem(profileDraftKey(userId), JSON.stringify({
         savedAt: Date.now(),
         form: nextForm,
         kycDocs: nextKycDocs,
@@ -96,7 +99,7 @@ const NewProfileForm = () => {
     } catch (error) {
       console.warn('Unable to preserve profile draft in this browser session.', error);
     }
-  }, [user, activeStep, termsAccepted]);
+  }, [userId, activeStep, termsAccepted]);
 
   const saveKycDocument = useCallback((docKey: string, url: string, name: string, type: string) => {
     const next = { ...kycDocsRef.current, [docKey]: { url, name, type } };
@@ -114,10 +117,10 @@ const NewProfileForm = () => {
 
   useEffect(() => {
     const load = async () => {
-      if (!user) { setLoading(false); return; }
+      if (!userId) { setLoading(false); return; }
       setLoading(true);
       try {
-        const draft = readProfileDraft(user.id);
+        const draft = readProfileDraft(userId);
         // Restore the current tab draft immediately, even if the database
         // request below fails while the device is coming back from file storage.
         if (draft) {
@@ -126,7 +129,7 @@ const NewProfileForm = () => {
           setTermsAccepted(draft.termsAccepted);
           setActiveStep(draft.activeStep || 'personal');
         }
-        const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
         if (error) throw error;
         if (data) {
           setExistingReferralId(data.referred_by_id || null);
@@ -145,15 +148,15 @@ const NewProfileForm = () => {
       finally { setLoading(false); }
     };
     load();
-  }, [user]);
+  }, [userId]);
 
   // Flush the latest values before a mobile browser backgrounds or restores
   // this page around the native Android/iOS document picker.
   useEffect(() => {
-    if (!user || loading) return;
+    if (!userId || loading) return;
     const saveBeforePageSuspend = () => {
       try {
-        window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify({
+        window.sessionStorage.setItem(profileDraftKey(userId), JSON.stringify({
           savedAt: Date.now(),
           form: formRef.current,
           kycDocs: kycDocsRef.current,
@@ -173,13 +176,13 @@ const NewProfileForm = () => {
       window.removeEventListener('pagehide', saveBeforePageSuspend);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user, loading, activeStep, termsAccepted]);
+  }, [userId, loading, activeStep, termsAccepted]);
 
   // Preserve an in-progress profile if a mobile browser reloads after the
   // device file picker backgrounds or reclaims the page. Drafts stay in this
   // tab's session storage, are user-scoped, and expire after four hours.
   useEffect(() => {
-    if (!user || loading) return;
+    if (!userId || loading) return;
     try {
       const draft: ProfileDraft = {
         savedAt: Date.now(),
@@ -188,17 +191,17 @@ const NewProfileForm = () => {
         activeStep,
         termsAccepted,
       };
-      window.sessionStorage.setItem(profileDraftKey(user.id), JSON.stringify(draft));
+      window.sessionStorage.setItem(profileDraftKey(userId), JSON.stringify(draft));
     } catch (error) {
       console.warn('Unable to preserve profile draft in this browser session.', error);
     }
-  }, [user, loading, form, kycDocs, activeStep, termsAccepted]);
+  }, [userId, loading, form, kycDocs, activeStep, termsAccepted]);
 
   const payload = useMemo(() => ({
-    id: user?.id || '', referred_by_id: referralLookup?.realtor_id || null, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, first_name: form.firstName || null, last_name: form.lastName || null, date_of_birth: form.dateOfBirth || null, gender: form.gender || null, marital_status: form.maritalStatus || null, spouse_name: form.spouseName || null, nationality: form.nationality || null, languages_spoken: form.languagesSpoken || [], phone_number: form.phoneNumber || null, state_of_origin: form.stateOfOrigin || null, local_government: form.localGovernment || null, address: form.address || null, current_residence: form.currentResidence || null,
+    id: userId || '', referred_by_id: referralLookup?.realtor_id || null, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, first_name: form.firstName || null, last_name: form.lastName || null, date_of_birth: form.dateOfBirth || null, gender: form.gender || null, marital_status: form.maritalStatus || null, spouse_name: form.spouseName || null, nationality: form.nationality || null, languages_spoken: form.languagesSpoken || [], phone_number: form.phoneNumber || null, state_of_origin: form.stateOfOrigin || null, local_government: form.localGovernment || null, address: form.address || null, current_residence: form.currentResidence || null,
     occupation: form.occupation || null, employer_name: form.employerName || null, employer_address: form.employerAddress || null, employment_status: form.employmentStatus || null, employer_country: form.employerCountry || null, employment_role: form.employmentRole || null, nature_of_business: form.natureOfBusiness || null, is_organization: !!form.isOrganization, company_name: form.companyName || null, company_address: form.companyAddress || null, company_registration_number: form.companyRegistrationNumber || null, incorporation_country: form.incorporationCountry || null, incorporation_date: form.incorporationDate || null, nature_of_corporate_business: form.natureOfCorporateBusiness || null, sales_status: form.salesStatus || null,
     next_of_kin_name: form.nextOfKinName || null, next_of_kin_relationship: form.nextOfKinRelationship || null, next_of_kin_address: form.nextOfKinAddress || null, next_of_kin_phone: form.nextOfKinPhone || null, next_of_kin_email: form.nextOfKinEmail || null, source_of_income: form.sourceOfIncome || null, monthly_income: incomeValue(form.annualIncome), banking_details: form.bankName ? `${form.bankName} - ${form.accountNumber} - ${form.accountName}` : null, is_foreigner: !!form.isForeigner, residence_permit: form.residencePermit || null, visa_status: form.visaStatus || null, is_politically_exposed: !!form.isPoliticallyExposed, political_exposure_details: form.politicalExposureDetails || null, has_financial_crimes_history: !!form.hasFinancialCrimesHistory, financial_crimes_details: form.financialCrimesDetails || null, referrer_name: form.referrerName || null, referrer_phone: form.referrerPhone || null, referrer_email: form.referrerEmail || null, id_type: form.idType || null, id_number: form.idNumber || null, id_country_of_issue: form.idCountryOfIssue || null, id_date_of_issue: form.idDateOfIssue || null, id_expiry: form.idExpiry || null, id_issuing_authority: form.idIssuingAuthority || null, kyc_docs: kycDocs, terms_accepted: termsAccepted, profile_status: 'IN_PROGRESS', updated_at: new Date().toISOString(),
-  }), [form, kycDocs, termsAccepted, user?.id, referralLookup?.realtor_id]);
+  }), [form, kycDocs, termsAccepted, userId, referralLookup?.realtor_id]);
 
   const validateStep = (step: StepKey) => {
     const required: Record<StepKey, string[]> = { personal: ['firstName', 'lastName', 'dateOfBirth', 'gender', 'phoneNumber'], identity: ['idType', 'idNumber'], employment: ['occupation'], financial: ['sourceOfIncome', 'annualIncome'], aml: [], referrer: [], review: [] };
@@ -271,12 +274,12 @@ const NewProfileForm = () => {
     }
   }, [form.referrerCode, referralLookup]);
   const saveCurrentStep = async () => {
-    if (!user || saving || !validateStep(activeStep)) return;
+    if (!userId || saving || !validateStep(activeStep)) return;
     setSaving(true); setSavedStep(null);
     try {
       const referralId = form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
       if (form.referrerCode && !referralId) { setSaving(false); return; }
-      const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }, { onConflict: 'id' });
+      const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }, { onConflict: 'id' });
       if (error) throw error;
       if (form.referrerCode) setExistingReferralId(referralId); else if (activeStep === 'referrer') setExistingReferralId(null);
       setSavedStep(activeStep); notifyProfileUpdated(); toast({ title: 'Saved successfully', description: `${steps[index].label} information has been saved.` });
@@ -286,9 +289,9 @@ const NewProfileForm = () => {
   };
 
   const submitProfile = async () => {
-    if (!termsAccepted || !user || saving || !validateStep('review')) return;
+    if (!termsAccepted || !userId || saving || !validateStep('review')) return;
     setSaving(true);
-    try { const referralId = form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: user.id, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(user.id)); }
+    try { const referralId = form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
     catch (error: any) { console.error('Profile submission error:', error); toast({ title: 'Submission failed', description: error?.message || 'Please try again.', variant: 'destructive' }); }
     finally { setSaving(false); }
   };
@@ -300,7 +303,7 @@ const NewProfileForm = () => {
   const section = () => {
     switch (activeStep) {
       case 'personal': return <div className="grid gap-5 md:grid-cols-2"><Field label="First name" name="firstName" required /><Field label="Last name" name="lastName" required /><Field label="Date of birth" name="dateOfBirth" type="date" required /><SelectField label="Gender" name="gender" options={['Male', 'Female', 'Other']} required /><SelectField label="Marital status" name="maritalStatus" options={['Single', 'Married', 'Divorced', 'Widowed']} /><Field label="Spouse name" name="spouseName" /><Field label="Nationality" name="nationality" /><Field label="Phone number" name="phoneNumber" required /><Field label="State of origin" name="stateOfOrigin" /><Field label="Local government" name="localGovernment" /><TextAreaField label="Residential address" name="address" /><TextAreaField label="Current residence" name="currentResidence" /></div>;
-      case 'identity': return <div className="grid gap-5 md:grid-cols-2"><SelectField label="ID type" name="idType" options={['International Passport', 'National ID Card', 'NIN Slip', "Voter's Card", "Driver's Licence", 'Work Permit', 'Resident Permit', 'Others']} required /><Field label="ID number" name="idNumber" required /><Field label="Country of issue" name="idCountryOfIssue" /><Field label="Date of issue" name="idDateOfIssue" type="date" /><Field label="Expiry date" name="idExpiry" type="date" /><Field label="Issuing authority" name="idIssuingAuthority" /><div className="md:col-span-2 grid gap-4 md:grid-cols-2"><KYCUploadField label="Passport photograph" bucket="kyc-documents" userId={user?.id || ''} docKey="passport_photo" existingUrl={kycDocs.passport_photo?.url} onUploaded={(url, name, type) => saveKycDocument('passport_photo', url, name, type)} /><KYCUploadField label="Identification document" bucket="kyc-documents" userId={user?.id || ''} docKey="identity_document" existingUrl={kycDocs.identity_document?.url} onUploaded={(url, name, type) => saveKycDocument('identity_document', url, name, type)} /></div></div>;
+      case 'identity': return <div className="grid gap-5 md:grid-cols-2"><SelectField label="ID type" name="idType" options={['International Passport', 'National ID Card', 'NIN Slip', "Voter's Card", "Driver's Licence", 'Work Permit', 'Resident Permit', 'Others']} required /><Field label="ID number" name="idNumber" required /><Field label="Country of issue" name="idCountryOfIssue" /><Field label="Date of issue" name="idDateOfIssue" type="date" /><Field label="Expiry date" name="idExpiry" type="date" /><Field label="Issuing authority" name="idIssuingAuthority" /><div className="md:col-span-2 grid gap-4 md:grid-cols-2"><KYCUploadField label="Passport photograph" bucket="kyc-documents" userId={userId || ''} docKey="passport_photo" existingUrl={kycDocs.passport_photo?.url} onUploaded={(url, name, type) => saveKycDocument('passport_photo', url, name, type)} /><KYCUploadField label="Identification document" bucket="kyc-documents" userId={userId || ''} docKey="identity_document" existingUrl={kycDocs.identity_document?.url} onUploaded={(url, name, type) => saveKycDocument('identity_document', url, name, type)} /></div></div>;
       case 'employment': return <div className="grid gap-5 md:grid-cols-2"><Field label="Occupation" name="occupation" required /><SelectField label="Employment status" name="employmentStatus" options={['Employed', 'Self-employed', 'Business owner', 'Student', 'Retired', 'Unemployed']} /><Field label="Employer / business name" name="employerName" /><Field label="Role / position" name="employmentRole" /><Field label="Employer country" name="employerCountry" /><TextAreaField label="Employer / business address" name="employerAddress" /><TextAreaField label="Nature of business" name="natureOfBusiness" /><div className="md:col-span-2 flex items-center gap-3 rounded-lg border p-4"><Checkbox checked={!!form.isOrganization} onCheckedChange={v => update('isOrganization', !!v)} /><Label>Buying / registering as an organisation</Label></div>{form.isOrganization && <><Field label="Company name" name="companyName" /><Field label="Company registration number" name="companyRegistrationNumber" /><TextAreaField label="Company address" name="companyAddress" /><Field label="Country of incorporation" name="incorporationCountry" /><Field label="Date of incorporation" name="incorporationDate" type="date" /><TextAreaField label="Nature of corporate business" name="natureOfCorporateBusiness" /><Field label="Sales status" name="salesStatus" /></>}<div className="md:col-span-2 border-t pt-5"><h3 className="font-semibold mb-4">Next of kin</h3><div className="grid gap-5 md:grid-cols-2"><Field label="Full name" name="nextOfKinName" /><Field label="Relationship" name="nextOfKinRelationship" /><Field label="Phone" name="nextOfKinPhone" /><Field label="Email" name="nextOfKinEmail" /><TextAreaField label="Address" name="nextOfKinAddress" /></div></div></div>;
       case 'financial': return <div className="grid gap-5 md:grid-cols-2"><SelectField label="Source of income / funds" name="sourceOfIncome" options={['Salary', 'Business Income', 'Gift', 'Bank Loan', 'Other Loan', 'Inheritance', 'Investment Return', 'Others']} required /><SelectField label="Annual income range" name="annualIncome" options={['Below ₦1M', '₦1M - ₦5M', '₦6M - ₦20M', 'Above ₦20M']} required /><Field label="TIN number" name="tinNumber" /><Field label="NIN number" name="ninNumber" /><Field label="Bank name" name="bankName" /><Field label="Account number" name="accountNumber" /><Field label="Account name" name="accountName" /><div className="md:col-span-2 flex items-center gap-3 rounded-lg border p-4"><Checkbox checked={!!form.isForeigner} onCheckedChange={v => update('isForeigner', !!v)} /><Label>I am a foreign national</Label></div>{form.isForeigner && <><Field label="Residence permit" name="residencePermit" /><Field label="Visa status" name="visaStatus" /></>}</div>;
       case 'aml': return <div className="space-y-5"><div className="rounded-xl border p-5 space-y-4"><div className="flex items-center gap-3"><ShieldCheck className="h-5 w-5" /><div><h3 className="font-semibold">AML / CFT declaration</h3><p className="text-sm text-muted-foreground">Provide accurate compliance information.</p></div></div><div className="flex items-center gap-3"><Checkbox checked={!!form.isPoliticallyExposed} onCheckedChange={v => update('isPoliticallyExposed', !!v)} /><Label>I am a politically exposed person (PEP)</Label></div>{form.isPoliticallyExposed && <TextAreaField label="PEP details" name="politicalExposureDetails" placeholder="Provide relevant position, country and relationship details." />}<div className="flex items-center gap-3"><Checkbox checked={!!form.hasFinancialCrimesHistory} onCheckedChange={v => update('hasFinancialCrimesHistory', !!v)} /><Label>I have a financial crimes history</Label></div>{form.hasFinancialCrimesHistory && <TextAreaField label="Financial crimes details" name="financialCrimesDetails" />}</div></div>;
