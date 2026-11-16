@@ -187,7 +187,7 @@ const BlogPost = () => {
         if (previous?.id === id || next?.id === id) void fetchPost();
       })
       .subscribe();
-    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchPost());
+    const stopRevalidation = listenForPublicDataRevalidation(cacheKey, () => void fetchPost());
     const stopCacheSync = subscribePublicDataCache<{ post: any; authorProfile: any }>(cacheKey, (next) => {
       setPost(next.post);
       setAuthorProfile(next.authorProfile);
