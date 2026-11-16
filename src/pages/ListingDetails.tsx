@@ -63,7 +63,7 @@ const ListingDetails = () => {
         if (previous?.id === id || next?.id === id) void fetchListing();
       })
       .subscribe();
-    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchListing());
+    const stopRevalidation = listenForPublicDataRevalidation(cacheKey, () => void fetchListing());
     const stopCacheSync = subscribePublicDataCache<Listing>(cacheKey, (nextListing) => {
       setListing(nextListing);
       setLoading(false);
