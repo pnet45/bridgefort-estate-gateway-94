@@ -130,7 +130,7 @@ const NewProfileForm = () => {
         // Restore the current tab draft immediately, even if the database
         // request below fails while the device is coming back from file storage.
         if (draft) {
-          setForm(prev => ({ ...prev, ...draft.form }));
+          setForm(prev => ({ ...prev, ...draft.form, ...(user?.user_metadata?.referral_link === true && metadataReferralCode ? { referrerCode: metadataReferralCode } : {}) }));
           setKycDocs(draft.kycDocs || {});
           setTermsAccepted(draft.termsAccepted);
           setActiveStep(draft.activeStep || 'personal');
