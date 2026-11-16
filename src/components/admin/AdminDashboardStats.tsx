@@ -43,7 +43,37 @@ const AdminDashboardStats = () => {
 
   // Admin metrics remain request-scoped in memory; they are never written to
   // the public browser cache. A table event refreshes only its own metric.
-  const fetchMetric = useCallback(async (key: StatKey) => {
+  const fetchOrdersMetrics = useCallback(async () => {
+    const ordersVersion = ++requestVersions.current.totalOrders;
+    const revenueVersion = ++requestVersions.current.totalRevenue;
+
+    try {
+      const [{ count, error: countError }, { data, error: revenueError }] = await Promise.all([
+        supabase.from('orders').select('*', { count: 'exact', head: true }),
+        supabase.from('orders')
+          .select('total_amount')
+          .in('payment_status', ['completed', 'success']),
+      ]);
+      if (countError) throw countError;
+      if (revenueError) throw revenueError;
+
+      const totalRevenue = (data || []).reduce(
+        (sum, order) => sum + Number(order.total_amount || 0),
+        0,
+      );
+
+      if (requestVersions.current.totalOrders === ordersVersion) {
+        setStats((previous) => ({ ...previous, totalOrders: count || 0 }));
+      }
+      if (requestVersions.current.totalRevenue === revenueVersion) {
+        setStats((previous) => ({ ...previous, totalRevenue }));
+      }
+    } catch (error) {
+      console.error('Error refreshing admin dashboard order metrics:', error);
+    }
+  }, []);
+
+  const fetchMetric = useCallback(async (key: Exclude<StatKey, 'totalRevenue' | 'totalOrders'>) => {
     const requestVersion = ++requestVersions.current[key];
 
     try {
@@ -64,24 +94,6 @@ const AdminDashboardStats = () => {
             .select('*', { count: 'exact', head: true });
           if (error) throw error;
           value = count || 0;
-          break;
-        }
-        case 'totalRevenue':
-        case 'totalOrders': {
-          const [{ count, error: countError }, { data, error: revenueError }] = await Promise.all([
-            supabase.from('orders').select('*', { count: 'exact', head: true }),
-            supabase.from('orders')
-              .select('total_amount')
-              .in('payment_status', ['completed', 'success']),
-          ]);
-          if (countError) throw countError;
-          if (revenueError) throw revenueError;
-
-          if (key === 'totalOrders') {
-            value = count || 0;
-          } else {
-            value = (data || []).reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
-          }
           break;
         }
         case 'totalBlogs': {
@@ -128,14 +140,11 @@ const AdminDashboardStats = () => {
       console.error(`Error refreshing admin dashboard metric "${key}":`, error);
     }
   }, []);
-
   useEffect(() => {
     let active = true;
     const metricKeys: StatKey[] = [
       'totalUsers',
       'totalProperties',
-      'totalRevenue',
-      'totalOrders',
       'totalBlogs',
       'pendingApprovals',
       'contactMessages',
@@ -143,7 +152,10 @@ const AdminDashboardStats = () => {
     ];
 
     const loadInitialStats = async () => {
-      await Promise.all(metricKeys.map((key) => fetchMetric(key)));
+      await Promise.all([
+        ...metricKeys.map((key) => fetchMetric(key)),
+        fetchOrdersMetrics(),
+      ]);
       if (active) setLoading(false);
     };
 
@@ -153,10 +165,7 @@ const AdminDashboardStats = () => {
       .channel('admin-dashboard-stats')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => void fetchMetric('totalUsers'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'estate' }, () => void fetchMetric('totalProperties'))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-        void fetchMetric('totalOrders');
-        void fetchMetric('totalRevenue');
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => void fetchOrdersMetrics())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => void fetchMetric('totalBlogs'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pending_admin_requests' }, () => void fetchMetric('pendingApprovals'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, () => void fetchMetric('contactMessages'))
@@ -170,7 +179,7 @@ const AdminDashboardStats = () => {
       });
       void supabase.removeChannel(channel);
     };
-  }, [fetchMetric]);
+  }, [fetchMetric, fetchOrdersMetrics]);
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('en-NG', {
     style: 'currency',
