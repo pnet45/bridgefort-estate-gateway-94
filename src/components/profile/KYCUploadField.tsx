@@ -185,7 +185,7 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
       {uploadError && <p role="alert" className="mt-2 text-sm text-destructive">{uploadError}</p>}
       {uploadedUrl && (
         <div className="mt-3 min-w-0 space-y-2">
-          {uploadedMimeType.startsWith("image/") ? (
+          {(uploadedMimeType.startsWith("image/") || /\.(jpe?g|png|webp)$/i.test(selectedFileName)) ? (
             <img src={uploadedUrl} alt={`${label} preview`} className="max-h-56 max-w-full rounded-lg border object-contain" />
           ) : uploadedMimeType === "application/pdf" || selectedFileName.toLowerCase().endsWith(".pdf") ? (
             <iframe title={`${label} PDF preview`} src={uploadedUrl} className="h-64 w-full rounded-lg border bg-background" />
