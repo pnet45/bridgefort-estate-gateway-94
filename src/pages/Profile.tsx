@@ -10,6 +10,7 @@ import { Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 const Profile = () => {
   const { user } = useAuth();
+  const userId = user?.id ?? null;
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profileExists, setProfileExists] = useState(false);
@@ -18,7 +19,7 @@ const Profile = () => {
   const [kycStatus, setKycStatus] = useState('NOT_STARTED');
 
   useEffect(() => {
-    if (!user) {
+    if (!userId) {
       navigate('/auth');
       return;
     }
@@ -29,7 +30,7 @@ const Profile = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('id,profile_completion_percentage,profile_status,kyc_status')
-          .eq('id', user.id)
+          .eq('id', userId)
           .maybeSingle();
 
         if (!error) {
@@ -46,9 +47,9 @@ const Profile = () => {
     };
 
     checkProfile();
-  }, [user, navigate]);
+  }, [userId, navigate]);
 
-  if (!user || loading) {
+  if (!userId || loading) {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />
