@@ -74,7 +74,7 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
     });
 
     return () => { active = false; };
-  }, [existingUrl, existingName, bucket, label]);
+  }, [existingUrl, existingName, existingType, bucket, label]);
 
     const uploadInProgressRef = useRef(false);
 
