@@ -12,7 +12,7 @@ import { LayoutGrid, List, Plus, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { listenForPublicDataRevalidation, readPublicDataCache, refreshPublicDataCache, subscribePublicDataCache, writePublicDataCache } from '@/lib/publicDataCache';
 
-const PUBLIC_LISTINGS_CACHE_KEY = 'public-listings';
+const PUBLIC_LISTINGS_CACHE_KEY = 'public-listings-v2';
 const readPublishedListings = (): Listing[] => readPublicDataCache<Listing[]>(PUBLIC_LISTINGS_CACHE_KEY) || [];
 const writePublishedListings = (listings: Listing[]) => writePublicDataCache(PUBLIC_LISTINGS_CACHE_KEY, listings);
 
@@ -39,7 +39,7 @@ const Listings = () => {
       const nextListings = await refreshPublicDataCache<Listing[]>(PUBLIC_LISTINGS_CACHE_KEY, async () => {
         const { data, error } = await supabase
           .from('listings')
-          .select('*')
+          .select('id,region,city,estate,title,description,property_type,price_amount,price_currency,price_period,address,latitude,longitude,built_sqm,land_sqm,bedrooms,bathrooms,parking,parking_type,year_built,amenities,photos,video_tours,drone_footage,floor_plans,tour_3d_url,deposit_amount,monthly_rent,annual_rent,payment_options,maintenance_fees,hoa_fees,min_rental_months,max_rental_months,price_negotiable,hotspot,roi_percent,ownership_status,tax_status,encumbrances,is_featured,is_published,created_at,updated_at')
           .eq('is_published', true)
           .order('is_featured', { ascending: false })
           .order('created_at', { ascending: false });
@@ -58,6 +58,9 @@ const Listings = () => {
 
   const channelId = useId().replace(/[^a-zA-Z0-9]/g, '');
   useEffect(() => {
+    // Retire the old wildcard snapshot, which may contain columns no longer
+    // granted to public visitors (including owner contact details).
+    window.localStorage.removeItem('bridgefort:public-data:v1:public-listings');
     void fetchListings();
     const channel = supabase
       .channel(`published_listings_${channelId}`)
