@@ -300,11 +300,14 @@ const NewProfileForm = () => {
     let cancelled = false;
     const attachReferral = async () => {
       try {
-        const { error } = await supabase
+        const { data: updatedProfile, error } = await supabase
           .from('profiles')
           .update({ referred_by_id: referralLookup.realtor_id, referred_by_code: code })
-          .eq('id', userId);
+          .eq('id', userId)
+          .select('id')
+          .maybeSingle();
         if (error) throw error;
+        if (!updatedProfile) throw new Error('The profile referral update was not confirmed by the database.');
         if (!cancelled) {
           setExistingReferralId(referralLookup.realtor_id);
           notifyProfileUpdated();
