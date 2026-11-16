@@ -64,7 +64,7 @@ const Auth = ({
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const refCode = params.get('ref');
+    const refCode = params.get('ref')?.trim().toUpperCase();
 
     if (refCode) {
       setSponsorCode(refCode);
@@ -317,7 +317,10 @@ const Auth = ({
       // }
 
       setRememberMe(true);
-      const { data, error } = await signUp(email, password, firstName, lastName);
+      const normalizedSponsorCode = sponsorCode.trim().toUpperCase();
+      // Persist the captured code in auth metadata as a recovery path when
+      // email confirmation means signup has no authenticated session yet.
+      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked);
       if (error) throw error;
 
       // Supabase can return a *truthy* user object with an empty
@@ -414,32 +417,26 @@ const Auth = ({
           }
         }
 
-        if (sponsorCode.trim()) {
-          const { data: sponsorProfile, error: sponsorError } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('pbo_referral_code', sponsorCode.trim())
-            .eq('is_pbo', true)
-            .maybeSingle();
-
-          // IMPORTANT: by this point `signUp()` has already created the real
-          // auth account — there is no undoing that. The old code called
-          // `return` here on an invalid code, which abandoned registration
-          // entirely: the auth user existed but their profile was never
-          // created, no success message was shown, and re-submitting the
-          // same email would then fail as "already registered", leaving the
-          // user completely stuck. A bad/mistyped sponsor code should never
-          // be able to break account creation — just skip attaching a
-          // sponsor and let them know, then continue.
-          if (sponsorError || !sponsorProfile) {
-            toast({
-              title: "Referral code not found",
-              description: "We couldn't find that referral code, so your account was created without a sponsor. You can add one later from your profile.",
-              variant: "destructive"
-            });
-          } else {
-            profileUpdate.referred_by_id = sponsorProfile.id;
-            profileUpdate.referred_by_code = sponsorCode.trim();
+        if (normalizedSponsorCode) {
+          profileUpdate.referred_by_code = normalizedSponsorCode;
+          const { data: { session: signupSession } } = await supabase.auth.getSession();
+          if (signupSession) {
+            const { data: sponsorMatch, error: sponsorLookupError } = await supabase.rpc(
+              'lookup_bhrealtor_referral' as any,
+              { _code: normalizedSponsorCode },
+            );
+            const match = Array.isArray(sponsorMatch) ? sponsorMatch[0] : sponsorMatch;
+            if (sponsorLookupError) {
+              console.warn('Referral attribution will be completed from the saved signup code after verification:', sponsorLookupError);
+            } else if (match?.realtor_id) {
+              profileUpdate.referred_by_id = String(match.realtor_id);
+            } else {
+              toast({
+                title: 'Referral code could not be verified',
+                description: 'Your account can still be created. The referral code will remain available in your profile for verification.',
+                variant: 'destructive',
+              });
+            }
           }
         }
 

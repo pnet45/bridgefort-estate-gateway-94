@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { notifyProfileUpdated } from '@/lib/profileEvents';
-import { ChevronLeft, ChevronRight, Check, Loader2, Save, ShieldCheck, Search, UserCheck, UserX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Loader2, Save, ShieldCheck, Search, UserCheck, UserX, Lock } from 'lucide-react';
 import KYCUploadField from './KYCUploadField';
 
 const steps = [
@@ -79,6 +79,7 @@ const NewProfileForm = () => {
   const [referralLookupLoading, setReferralLookupLoading] = useState(false);
   const [referralLookup, setReferralLookup] = useState<{ realtor_id: string; first_name: string; last_initial: string; package: string; code: string } | null>(null);
   const [existingReferralId, setExistingReferralId] = useState<string | null>(null);
+  const [referralCodeLocked, setReferralCodeLocked] = useState(false);
   const formRef = useRef<FormState>(initialForm);
   formRef.current = form;
   const kycDocsRef = useRef(kycDocs);
@@ -121,10 +122,15 @@ const NewProfileForm = () => {
       setLoading(true);
       try {
         const draft = readProfileDraft(userId);
+        const metadataReferralCode = String(user?.user_metadata?.referred_by_code || '').trim().toUpperCase();
+        if (metadataReferralCode) {
+          setReferralCodeLocked(user?.user_metadata?.referral_link === true);
+          setForm(prev => ({ ...prev, referrerCode: metadataReferralCode }));
+        }
         // Restore the current tab draft immediately, even if the database
         // request below fails while the device is coming back from file storage.
         if (draft) {
-          setForm(prev => ({ ...prev, ...draft.form }));
+          setForm(prev => ({ ...prev, ...draft.form, ...(user?.user_metadata?.referral_link === true && metadataReferralCode ? { referrerCode: metadataReferralCode } : {}) }));
           setKycDocs(draft.kycDocs || {});
           setTermsAccepted(draft.termsAccepted);
           setActiveStep(draft.activeStep || 'personal');
@@ -132,7 +138,13 @@ const NewProfileForm = () => {
         const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
         if (error) throw error;
         if (data) {
+          const signupReferralCode = String(user?.user_metadata?.referred_by_code || '').trim().toUpperCase();
+          const savedReferralCode = String(data.referred_by_code || signupReferralCode || '').trim().toUpperCase();
           setExistingReferralId(data.referred_by_id || null);
+          setReferralCodeLocked(Boolean((data.referred_by_id && data.referred_by_code) || (user?.user_metadata?.referral_link === true && signupReferralCode)));
+          if (savedReferralCode) {
+            setForm(prev => ({ ...prev, referrerCode: savedReferralCode }));
+          }
           // A browser file picker can suspend/recreate the page. A locally saved draft
           // is newer than the last database save, so never overwrite it with stale DB data.
           if (draft) return;
@@ -148,7 +160,7 @@ const NewProfileForm = () => {
       finally { setLoading(false); }
     };
     load();
-  }, [userId]);
+  }, [userId, user?.user_metadata?.referred_by_code]);
 
   // Flush the latest values before a mobile browser backgrounds or restores
   // this page around the native Android/iOS document picker.
@@ -232,6 +244,11 @@ const NewProfileForm = () => {
           setReferralLookup(null);
           return;
         }
+        if (String(match.realtor_id) === userId) {
+          setReferralLookup(null);
+          toast({ title: 'Self-referral is not allowed', description: 'You cannot use your own BHRealtor referral code.', variant: 'destructive' });
+          return;
+        }
         setReferralLookup({
           realtor_id: String(match.realtor_id),
           code,
@@ -252,7 +269,7 @@ const NewProfileForm = () => {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [form.referrerCode]);
+  }, [form.referrerCode, userId]);
 
   const resolveReferralBeforeSave = useCallback(async () => {
     const code = String(form.referrerCode || '').trim().toUpperCase();
@@ -263,7 +280,8 @@ const NewProfileForm = () => {
       const { data, error } = await supabase.rpc('lookup_bhrealtor_referral' as any, { _code: code });
       if (error) throw error;
       const match = Array.isArray(data) ? data[0] : data;
-      if (!match) throw new Error('That referral code does not belong to an active BHRealtor.');
+      if (!match) throw new Error('That referral code does not belong to a BHRealtor.');
+      if (String(match.realtor_id) === userId) throw new Error('You cannot use your own BHRealtor referral code.');
       setReferralLookup({ realtor_id: String(match.realtor_id), code, first_name: String(match.first_name || ''), last_initial: String(match.last_initial || ''), package: String(match.package || 'associate') });
       return match.realtor_id as string;
     } catch (error: any) {
@@ -272,12 +290,46 @@ const NewProfileForm = () => {
     } finally {
       setReferralLookupLoading(false);
     }
-  }, [form.referrerCode, referralLookup]);
+  }, [form.referrerCode, referralLookup, userId]);
+  // Once a referral-link code has been verified for the signed-in account,
+  // persist the sponsor relationship immediately instead of waiting for the
+  // user to reach or save the Referrer step.
+  useEffect(() => {
+    const code = String(form.referrerCode || '').trim().toUpperCase();
+    if (!userId || !referralCodeLocked || !code || existingReferralId || !referralLookup || referralLookup.code !== code) return;
+    let cancelled = false;
+    const attachReferral = async () => {
+      try {
+        const { data: updatedProfile, error } = await supabase
+          .from('profiles')
+          .upsert(
+            { id: userId, referred_by_id: referralLookup.realtor_id, referred_by_code: code },
+            { onConflict: 'id' },
+          )
+          .select('id')
+          .maybeSingle();
+        if (error) throw error;
+        if (!updatedProfile) throw new Error('The profile referral update was not confirmed by the database.');
+        if (!cancelled) {
+          setExistingReferralId(referralLookup.realtor_id);
+          notifyProfileUpdated();
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Automatic referral attribution failed:', error);
+          toast({ title: 'Referral link saved for verification', description: 'Your account is registered. We could not finish linking the referrer automatically, so please save the Referrer section or contact support.', variant: 'destructive' });
+        }
+      }
+    };
+    void attachReferral();
+    return () => { cancelled = true; };
+  }, [userId, referralCodeLocked, form.referrerCode, existingReferralId, referralLookup]);
+
   const saveCurrentStep = async () => {
     if (!userId || saving || !validateStep(activeStep)) return;
     setSaving(true); setSavedStep(null);
     try {
-      const referralId = form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
+      const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
       if (form.referrerCode && !referralId) { setSaving(false); return; }
       const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }, { onConflict: 'id' });
       if (error) throw error;
@@ -291,7 +343,7 @@ const NewProfileForm = () => {
   const submitProfile = async () => {
     if (!termsAccepted || !userId || saving || !validateStep('review')) return;
     setSaving(true);
-    try { const referralId = form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
+    try { const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
     catch (error: any) { console.error('Profile submission error:', error); toast({ title: 'Submission failed', description: error?.message || 'Please try again.', variant: 'destructive' }); }
     finally { setSaving(false); }
   };
@@ -303,13 +355,13 @@ const NewProfileForm = () => {
   const section = () => {
     switch (activeStep) {
       case 'personal': return <div className="grid gap-5 md:grid-cols-2"><Field label="First name" name="firstName" required /><Field label="Last name" name="lastName" required /><Field label="Date of birth" name="dateOfBirth" type="date" required /><SelectField label="Gender" name="gender" options={['Male', 'Female', 'Other']} required /><SelectField label="Marital status" name="maritalStatus" options={['Single', 'Married', 'Divorced', 'Widowed']} /><Field label="Spouse name" name="spouseName" /><Field label="Nationality" name="nationality" /><Field label="Phone number" name="phoneNumber" required /><Field label="State of origin" name="stateOfOrigin" /><Field label="Local government" name="localGovernment" /><TextAreaField label="Residential address" name="address" /><TextAreaField label="Current residence" name="currentResidence" /></div>;
-      case 'identity': return <div className="grid gap-5 md:grid-cols-2"><SelectField label="ID type" name="idType" options={['International Passport', 'National ID Card', 'NIN Slip', "Voter's Card", "Driver's Licence", 'Work Permit', 'Resident Permit', 'Others']} required /><Field label="ID number" name="idNumber" required /><Field label="Country of issue" name="idCountryOfIssue" /><Field label="Date of issue" name="idDateOfIssue" type="date" /><Field label="Expiry date" name="idExpiry" type="date" /><Field label="Issuing authority" name="idIssuingAuthority" /><div className="md:col-span-2 grid gap-4 md:grid-cols-2"><KYCUploadField label="Passport photograph" bucket="kyc-documents" userId={userId || ''} docKey="passport_photo" existingUrl={kycDocs.passport_photo?.url} onUploaded={(url, name, type) => saveKycDocument('passport_photo', url, name, type)} /><KYCUploadField label="Identification document" bucket="kyc-documents" userId={userId || ''} docKey="identity_document" existingUrl={kycDocs.identity_document?.url} onUploaded={(url, name, type) => saveKycDocument('identity_document', url, name, type)} /></div></div>;
+      case 'identity': return <div className="grid gap-5 md:grid-cols-2"><SelectField label="ID type" name="idType" options={['International Passport', 'National ID Card', 'NIN Slip', "Voter's Card", "Driver's Licence", 'Work Permit', 'Resident Permit', 'Others']} required /><Field label="ID number" name="idNumber" required /><Field label="Country of issue" name="idCountryOfIssue" /><Field label="Date of issue" name="idDateOfIssue" type="date" /><Field label="Expiry date" name="idExpiry" type="date" /><Field label="Issuing authority" name="idIssuingAuthority" /><div className="md:col-span-2 grid gap-4 md:grid-cols-2"><KYCUploadField label="Passport photograph" bucket="kyc-documents" userId={userId || ''} docKey="passport_photo" existingUrl={kycDocs.passport_photo?.url} existingName={kycDocs.passport_photo?.name} existingType={kycDocs.passport_photo?.type} onUploaded={(url, name, type) => saveKycDocument('passport_photo', url, name, type)} /><KYCUploadField label="Identification document" bucket="kyc-documents" userId={userId || ''} docKey="identity_document" existingUrl={kycDocs.identity_document?.url} existingName={kycDocs.identity_document?.name} existingType={kycDocs.identity_document?.type} onUploaded={(url, name, type) => saveKycDocument('identity_document', url, name, type)} /></div></div>;
       case 'employment': return <div className="grid gap-5 md:grid-cols-2"><Field label="Occupation" name="occupation" required /><SelectField label="Employment status" name="employmentStatus" options={['Employed', 'Self-employed', 'Business owner', 'Student', 'Retired', 'Unemployed']} /><Field label="Employer / business name" name="employerName" /><Field label="Role / position" name="employmentRole" /><Field label="Employer country" name="employerCountry" /><TextAreaField label="Employer / business address" name="employerAddress" /><TextAreaField label="Nature of business" name="natureOfBusiness" /><div className="md:col-span-2 flex items-center gap-3 rounded-lg border p-4"><Checkbox checked={!!form.isOrganization} onCheckedChange={v => update('isOrganization', !!v)} /><Label>Buying / registering as an organisation</Label></div>{form.isOrganization && <><Field label="Company name" name="companyName" /><Field label="Company registration number" name="companyRegistrationNumber" /><TextAreaField label="Company address" name="companyAddress" /><Field label="Country of incorporation" name="incorporationCountry" /><Field label="Date of incorporation" name="incorporationDate" type="date" /><TextAreaField label="Nature of corporate business" name="natureOfCorporateBusiness" /><Field label="Sales status" name="salesStatus" /></>}<div className="md:col-span-2 border-t pt-5"><h3 className="font-semibold mb-4">Next of kin</h3><div className="grid gap-5 md:grid-cols-2"><Field label="Full name" name="nextOfKinName" /><Field label="Relationship" name="nextOfKinRelationship" /><Field label="Phone" name="nextOfKinPhone" /><Field label="Email" name="nextOfKinEmail" /><TextAreaField label="Address" name="nextOfKinAddress" /></div></div></div>;
       case 'financial': return <div className="grid gap-5 md:grid-cols-2"><SelectField label="Source of income / funds" name="sourceOfIncome" options={['Salary', 'Business Income', 'Gift', 'Bank Loan', 'Other Loan', 'Inheritance', 'Investment Return', 'Others']} required /><SelectField label="Annual income range" name="annualIncome" options={['Below ₦1M', '₦1M - ₦5M', '₦6M - ₦20M', 'Above ₦20M']} required /><Field label="TIN number" name="tinNumber" /><Field label="NIN number" name="ninNumber" /><Field label="Bank name" name="bankName" /><Field label="Account number" name="accountNumber" /><Field label="Account name" name="accountName" /><div className="md:col-span-2 flex items-center gap-3 rounded-lg border p-4"><Checkbox checked={!!form.isForeigner} onCheckedChange={v => update('isForeigner', !!v)} /><Label>I am a foreign national</Label></div>{form.isForeigner && <><Field label="Residence permit" name="residencePermit" /><Field label="Visa status" name="visaStatus" /></>}</div>;
       case 'aml': return <div className="space-y-5"><div className="rounded-xl border p-5 space-y-4"><div className="flex items-center gap-3"><ShieldCheck className="h-5 w-5" /><div><h3 className="font-semibold">AML / CFT declaration</h3><p className="text-sm text-muted-foreground">Provide accurate compliance information.</p></div></div><div className="flex items-center gap-3"><Checkbox checked={!!form.isPoliticallyExposed} onCheckedChange={v => update('isPoliticallyExposed', !!v)} /><Label>I am a politically exposed person (PEP)</Label></div>{form.isPoliticallyExposed && <TextAreaField label="PEP details" name="politicalExposureDetails" placeholder="Provide relevant position, country and relationship details." />}<div className="flex items-center gap-3"><Checkbox checked={!!form.hasFinancialCrimesHistory} onCheckedChange={v => update('hasFinancialCrimesHistory', !!v)} /><Label>I have a financial crimes history</Label></div>{form.hasFinancialCrimesHistory && <TextAreaField label="Financial crimes details" name="financialCrimesDetails" />}</div></div>;
       case 'referrer': return <div className="space-y-5">
-        <div className="rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-4"><div className="flex items-start gap-3"><Search className="mt-0.5 h-5 w-5 shrink-0 text-estate-purple" /><div><p className="font-semibold">Link a Bridgefort Realtor</p><p className="mt-1 text-sm text-muted-foreground">If a BHRealtor referred you, enter their unique referral code. We will verify it before linking your profile.</p></div></div></div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end"><div className="flex-1 space-y-2"><Label htmlFor="referrerCode">Realtor referral code</Label><Input id="referrerCode" value={form.referrerCode || ''} onChange={e => { update('referrerCode', e.target.value.toUpperCase()); setReferralLookup(null); }} placeholder="e.g. BHXXXXXXXX" className="h-11 font-mono uppercase" /></div><Button type="button" variant="outline" onClick={async () => {
+        <div className="rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-4"><div className="flex items-start gap-3"><Search className="mt-0.5 h-5 w-5 shrink-0 text-estate-purple" /><div><p className="font-semibold">Link a Bridgefort Realtor</p><p className="mt-1 text-sm text-muted-foreground">If a BHRealtor referred you, their unique code is linked to your account. Referral-link codes are locked to protect attribution; otherwise, you can enter a code and verify it.</p></div></div></div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end"><div className="flex-1 space-y-2"><Label htmlFor="referrerCode" className="flex items-center gap-2">Realtor referral code {referralCodeLocked && <><Lock className="h-3.5 w-3.5" /><span className="text-xs text-emerald-700 dark:text-emerald-300">Locked from referral link</span></>}</Label><Input id="referrerCode" value={form.referrerCode || ''} onChange={e => { update('referrerCode', e.target.value.toUpperCase()); setReferralLookup(null); }} readOnly={referralCodeLocked} aria-readonly={referralCodeLocked} placeholder="e.g. BHXXXXXXXX" className={`h-11 font-mono uppercase ${referralCodeLocked ? 'cursor-not-allowed bg-muted' : ''}`} /></div><Button type="button" variant="outline" onClick={async () => {
           const code = String(form.referrerCode || '').trim().toUpperCase();
           if (!code) { setReferralLookup(null); toast({ title: 'Enter a referral code', description: 'Type the code given to you by the Realtor.' }); return; }
           setReferralLookupLoading(true);
@@ -321,7 +373,7 @@ const NewProfileForm = () => {
           setReferralLookup({ realtor_id: String(match.realtor_id), code, first_name: String(match.first_name || ''), last_initial: String(match.last_initial || ''), package: String(match.package || 'associate') }); toast({ title: 'Realtor verified', description: 'Your profile will be linked to this Realtor when you save.' });
         }} disabled={referralLookupLoading || !String(form.referrerCode || '').trim()} className="h-11 shrink-0">{referralLookupLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}{referralLookupLoading ? 'Checking…' : 'Verify code'}</Button></div>
         {referralLookupLoading && <p className="text-sm text-slate-600 dark:text-slate-300">Checking this BH Referral Code against active Realtor records…</p>}
-         {referralLookup && <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200"><UserCheck className="h-5 w-5 shrink-0" /><div><p className="font-semibold">{referralLookup.first_name}{referralLookup.last_initial ? ' ' + referralLookup.last_initial + '.' : ''}</p><p className="text-sm opacity-80">Verified BHRealtor • {referralLookup.package === 'classic_gold' ? 'Classic Gold' : referralLookup.package === 'gold' ? 'Gold' : 'Associate'}</p></div></div>}
+         {referralCodeLocked && <p className="text-xs text-emerald-700 dark:text-emerald-300">This referral code was captured when you registered through a referral link and cannot be changed.</p>}{referralLookup && <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-200"><UserCheck className="h-5 w-5 shrink-0" /><div><p className="font-semibold">{referralLookup.first_name}{referralLookup.last_initial ? ' ' + referralLookup.last_initial + '.' : ''}</p><p className="text-sm opacity-80">Verified BHRealtor • {referralLookup.package === 'classic_gold' ? 'Classic Gold' : referralLookup.package === 'gold' ? 'Gold' : 'Associate'}</p></div></div>}
         {form.referrerCode && !referralLookup && <div className="flex items-start gap-2 text-sm text-amber-700 dark:text-amber-300"><UserX className="mt-0.5 h-4 w-4 shrink-0" />Verify the code before saving this section.</div>}
         <div className="grid gap-5 md:grid-cols-2"><Field label="Referrer name" name="referrerName" /><Field label="Referrer phone" name="referrerPhone" /><Field label="Referrer email" name="referrerEmail" /></div>
       </div>;
