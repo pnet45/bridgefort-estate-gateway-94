@@ -681,14 +681,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
               />
             </>
           )}
-          {(existingSubFormUrl || formData.sub_form) && (
-            <iframe
-              title="Estate subscription form PDF preview"
-              src={existingSubFormUrl || formData.sub_form}
-              className="h-72 w-full rounded-lg border bg-background"
-              loading="lazy"
-            />
-          )}
           <div className="space-y-2 rounded-md border-2 border-dashed border-muted-foreground/30 p-3">
             <input
               type="file"
