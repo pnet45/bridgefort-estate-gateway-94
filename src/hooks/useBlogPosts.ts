@@ -133,7 +133,7 @@ export function useBlogPosts(limit = 20) {
         if (shouldRefresh) void fetchBlogPosts();
       })
       .subscribe();
-    const stopRevalidation = listenForPublicDataRevalidation(() => void fetchBlogPosts());
+    const stopRevalidation = listenForPublicDataRevalidation(key, () => void fetchBlogPosts());
     const stopCacheSync = subscribePublicDataCache<BlogPost[]>(key, setPosts);
     return () => {
       stopRevalidation();
