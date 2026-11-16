@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -29,6 +29,15 @@ const markdownToHtml = (content: string) =>
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = (location.state as { from?: string } | null)?.from;
+
+  const handleBackToBlog = () => {
+    // Return to the originating blog URL when opened from the listing; direct
+    // article visits always have a safe, deterministic Blog fallback.
+    navigate(returnTo?.startsWith('/blog') ? returnTo : '/blog');
+  };
   const initialCache = id ? readPublicDataCache<{ post: any; authorProfile: any }>(`public-blog-detail:${id}`) : null;
   const [post, setPost] = useState<any>(initialCache?.post || null);
   const [authorProfile, setAuthorProfile] = useState<any>(initialCache?.authorProfile || null);
@@ -295,13 +304,14 @@ const BlogPost = () => {
 
       <main className="flex-grow pt-28 pb-12">
         <div className="container-custom mb-5">
-          <Link
-            to="/blog"
+          <button
+            type="button"
+            onClick={handleBackToBlog}
             className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:border-estate-blue/40 hover:text-estate-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-blue focus-visible:ring-offset-2"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Back to Blog
-          </Link>
+          </button>
         </div>
         {loading ? (
           <div className="container-custom space-y-6 py-10" aria-label="Loading article">
