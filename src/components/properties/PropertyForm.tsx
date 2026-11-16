@@ -659,19 +659,27 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         <div className="space-y-2">
           <Label>Subscription Form (PDF)</Label>
           {(existingSubFormUrl || formData.sub_form) && (
-            <div className="flex min-w-0 items-center gap-2 rounded-md bg-muted p-2">
-              <FileText className="h-4 w-4 shrink-0 text-primary" />
-              <a href={existingSubFormUrl || formData.sub_form} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 truncate text-sm text-primary underline">
-                {subscriptionFileName || 'Current subscription form uploaded'}
-              </a>
-              <Button type="button" variant="ghost" size="sm" onClick={() => {
-                setExistingSubFormUrl('');
-                setSubscriptionFileName('');
-                setFormData(prev => ({ ...prev, sub_form: '' }));
-              }}>
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
+            <>
+              <div className="flex min-w-0 items-center gap-2 rounded-md bg-muted p-2">
+                <FileText className="h-4 w-4 shrink-0 text-primary" />
+                <a href={existingSubFormUrl || formData.sub_form} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 truncate text-sm text-primary underline">
+                  {subscriptionFileName || 'Current subscription form uploaded'}
+                </a>
+                <Button type="button" variant="ghost" size="sm" onClick={() => {
+                  setExistingSubFormUrl('');
+                  setSubscriptionFileName('');
+                  setFormData(prev => ({ ...prev, sub_form: '' }));
+                }}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              <iframe
+                title="Estate subscription form PDF preview"
+                src={existingSubFormUrl || formData.sub_form}
+                className="h-72 w-full rounded-lg border bg-background"
+                loading="lazy"
+              />
+            </>
           )}
           <div className="space-y-2 rounded-md border-2 border-dashed border-muted-foreground/30 p-3">
             <input
