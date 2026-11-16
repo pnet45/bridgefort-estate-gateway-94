@@ -51,7 +51,6 @@ const readEstateFormDraft = (key: string) => {
 export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, onSuccess, initialCategory }) => {
   const isEditing = !!estate;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const subscriptionFileInputRef = useRef<HTMLInputElement>(null);
   const mediaFileInputRef = useRef<HTMLInputElement>(null);
   // Parent admin screens may recreate the estate object during unrelated renders.
   // Hydrate only when the selected estate identity changes, never on file selection.
@@ -697,7 +696,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                   <Upload className="mr-2 h-4 w-4" /> Choose PDF
                 </Button>
                 <input
-                  ref={subscriptionFileInputRef}
                   type="file"
                   accept=".pdf,application/pdf"
                   onClick={(e) => e.stopPropagation()}
