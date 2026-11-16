@@ -318,30 +318,9 @@ const Auth = ({
 
       setRememberMe(true);
       const normalizedSponsorCode = sponsorCode.trim().toUpperCase();
-      let verifiedSponsor: { id: string } | null = null;
-
-      // Validate a referral before creating the auth account. This prevents an
-      // invalid or mistyped link from leaving an unlinked account behind.
-      if (normalizedSponsorCode) {
-        const { data: sponsor, error: sponsorLookupError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('pbo_referral_code', normalizedSponsorCode)
-          .eq('is_pbo', true)
-          .maybeSingle();
-        if (sponsorLookupError) throw sponsorLookupError;
-        if (!sponsor) {
-          toast({
-            title: 'Referral code not found',
-            description: 'This referral link is invalid or no longer active. Please contact the person who shared it for a valid link.',
-            variant: 'destructive',
-          });
-          return;
-        }
-        verifiedSponsor = sponsor;
-      }
-
-      const { data, error } = await signUp(email, password, firstName, lastName);
+      // Persist the captured code in auth metadata as a recovery path when
+      // email confirmation means signup has no authenticated session yet.
+      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined);
       if (error) throw error;
 
       // Supabase can return a *truthy* user object with an empty
@@ -438,9 +417,27 @@ const Auth = ({
           }
         }
 
-        if (verifiedSponsor && normalizedSponsorCode) {
-          profileUpdate.referred_by_id = verifiedSponsor.id;
+        if (normalizedSponsorCode) {
           profileUpdate.referred_by_code = normalizedSponsorCode;
+          const { data: { session: signupSession } } = await supabase.auth.getSession();
+          if (signupSession) {
+            const { data: sponsorMatch, error: sponsorLookupError } = await supabase.rpc(
+              'lookup_bhrealtor_referral' as any,
+              { _code: normalizedSponsorCode },
+            );
+            const match = Array.isArray(sponsorMatch) ? sponsorMatch[0] : sponsorMatch;
+            if (sponsorLookupError) {
+              console.warn('Referral attribution will be completed from the saved signup code after verification:', sponsorLookupError);
+            } else if (match?.realtor_id) {
+              profileUpdate.referred_by_id = String(match.realtor_id);
+            } else {
+              toast({
+                title: 'Referral code could not be verified',
+                description: 'Your account can still be created. The referral code will remain available in your profile for verification.',
+                variant: 'destructive',
+              });
+            }
+          }
         }
 
         const { error: profileUpsertError } = await supabase
