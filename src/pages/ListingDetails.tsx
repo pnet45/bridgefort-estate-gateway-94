@@ -15,8 +15,8 @@ import { listenForPublicDataRevalidation, readPublicDataCache, subscribePublicDa
 
 const ListingDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const [listing, setListing] = useState<Listing | null>(() => id ? readPublicDataCache<Listing>(`public-listing-detail:${id}`) : null);
-  const [loading, setLoading] = useState(() => !id || !readPublicDataCache<Listing>(`public-listing-detail:${id}`));
+  const [listing, setListing] = useState<Listing | null>(() => id ? readPublicDataCache<Listing>(`public-listing-detail-v2:${id}`) : null);
+  const [loading, setLoading] = useState(() => !id || !readPublicDataCache<Listing>(`public-listing-detail-v2:${id}`));
   const [activePhoto, setActivePhoto] = useState(0);
 
   // Track view
@@ -25,7 +25,9 @@ const ListingDetails = () => {
   useEffect(() => {
     if (!id) return;
     let active = true;
-    const cacheKey = `public-listing-detail:${id}`;
+    const cacheKey = `public-listing-detail-v2:${id}`;
+    // Retire the previous wildcard snapshot, which could contain owner contact PII.
+    window.localStorage.removeItem(`bridgefort:public-data:v1:public-listing-detail:${id}`);
     const cached = readPublicDataCache<Listing>(cacheKey);
     if (cached) {
       setListing(cached);
@@ -37,7 +39,7 @@ const ListingDetails = () => {
     const fetchListing = async () => {
       const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        .select('id,region,city,estate,title,description,property_type,price_amount,price_currency,price_period,address,latitude,longitude,built_sqm,land_sqm,bedrooms,bathrooms,parking,parking_type,year_built,amenities,photos,video_tours,drone_footage,floor_plans,tour_3d_url,deposit_amount,monthly_rent,annual_rent,payment_options,maintenance_fees,hoa_fees,min_rental_months,max_rental_months,price_negotiable,hotspot,roi_percent,ownership_status,tax_status,encumbrances,is_featured,is_published,created_at,updated_at')
         .eq('id', id)
         .eq('is_published', true)
         .maybeSingle();
@@ -243,8 +245,7 @@ const ListingDetails = () => {
               <div className="bg-card border border-border rounded-2xl p-6 space-y-4 sticky top-24">
                 <h3 className="font-bold text-lg">Interested in this property?</h3>
                 <p className="text-sm text-muted-foreground">Contact the listing agent to schedule a viewing or request more information.</p>
-                {listing.owner_name && <p className="font-semibold">{listing.owner_name}</p>}
-                <ListingInquiryActions listingId={listing.id} title={listing.title} agentEmail={listing.owner_email} agentPhone={listing.owner_phone} />
+                <ListingInquiryActions listingId={listing.id} title={listing.title} />
               </div>
 
               {/* Disclosures */}
