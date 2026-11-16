@@ -709,11 +709,19 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                   input.value = '';
                   return;
                 }
-                if (!selectedFile.name.toLowerCase().endsWith('.pdf') ||
-                    (selectedFile.type && selectedFile.type !== 'application/pdf')) {
+                const fileHeader = new Uint8Array(await selectedFile.slice(0, 5).arrayBuffer());
+                const hasPdfSignature = fileHeader.length === 5 &&
+                  fileHeader[0] === 0x25 && fileHeader[1] === 0x50 &&
+                  fileHeader[2] === 0x44 && fileHeader[3] === 0x46 && fileHeader[4] === 0x2d;
+                const declaredMime = (selectedFile.type || '').toLowerCase();
+                const hasSupportedMime = !declaredMime ||
+                  declaredMime === 'application/pdf' ||
+                  declaredMime === 'application/x-pdf' ||
+                  declaredMime === 'application/octet-stream';
+                if (!selectedFile.name.toLowerCase().endsWith('.pdf') || !hasSupportedMime || !hasPdfSignature) {
                   setSubscriptionFileName('');
-                  setSubscriptionUploadError('Only PDF subscription forms are accepted.');
-                  toast({ title: 'Invalid file type', description: 'Only PDF subscription forms are accepted.', variant: 'destructive' });
+                  setSubscriptionUploadError('Choose a valid PDF file. The file contents must be a PDF document.');
+                  toast({ title: 'Invalid file type', description: 'Only valid PDF subscription forms are accepted.', variant: 'destructive' });
                   input.value = '';
                   return;
                 }
