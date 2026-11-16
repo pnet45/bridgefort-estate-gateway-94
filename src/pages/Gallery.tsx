@@ -56,7 +56,7 @@ const GalleryPage = () => {
       })
       .subscribe();
 
-    const stopRevalidation = listenForPublicDataRevalidation(() => void load());
+    const stopRevalidation = listenForPublicDataRevalidation(GALLERY_CACHE_KEY, () => void load());
     const stopCacheSync = subscribePublicDataCache<GalleryMediaItem[]>(GALLERY_CACHE_KEY, (nextItems) => {
       setMediaItems(nextItems);
       setLoadingMedia(false);
