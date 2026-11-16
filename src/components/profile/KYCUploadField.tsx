@@ -68,6 +68,7 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
     void supabase.storage.from(bucket).createSignedUrl(objectPath, 60 * 60).then(({ data, error }) => {
       if (!active) return;
       setUploadedUrl(error ? "" : data.signedUrl);
+      setUploadedMimeType(existingType || "");
       if (!error) setSelectedFileName(existingName || objectPath.split('/').pop() || label);
       if (error) setUploadError("This saved document could not be opened. Please select it again.");
     });
