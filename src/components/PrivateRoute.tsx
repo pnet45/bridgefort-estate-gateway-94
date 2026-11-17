@@ -1,4 +1,3 @@
-
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
 import { Loader2 } from "lucide-react";
@@ -10,7 +9,11 @@ interface PrivateRouteProps {
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
+  // Only block the initial session restore when no authenticated identity is
+  // available yet. If a signed-in user is already present, preserve the route
+  // subtree during background auth/profile/role refreshes. Replacing it with a
+  // spinner unmounts forms and native file inputs on mobile browsers.
+  if (!user && isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-10 w-10 text-estate-blue animate-spin" />
