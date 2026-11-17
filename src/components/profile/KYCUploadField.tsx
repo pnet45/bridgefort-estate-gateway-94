@@ -114,6 +114,7 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
         throw new Error('Choose a valid JPG, PNG, WebP or PDF document.');
       }
 
+      setUploadedMimeType(mimeType);
       setUploading(true);
       const uniqueId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
         ? crypto.randomUUID()
@@ -182,7 +183,7 @@ const KYCUploadField: React.FC<KYCUploadFieldProps> = ({
             )}
           </div>
           {uploading ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" /> : uploadedUrl ? <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" /> : null}
-          {!uploading && selectedFileName && (
+          {!uploading && selectedFileName && !uploadedUrl && (
             <button type="button" onClick={() => { setSelectedFileName(''); setPreviewUrl(''); setUploadedUrl(''); setProgress(0); setUploadError(''); }} className="rounded p-1 text-muted-foreground hover:bg-background" aria-label={`Remove ${label} selection`}>
               <X className="h-4 w-4" />
             </button>
