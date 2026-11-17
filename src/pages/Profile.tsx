@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,8 +9,12 @@ import NewProfileForm from '@/components/profile/NewProfileForm';
 import { Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 const Profile = () => {
-  const { user } = useAuth();
-  const userId = user?.id ?? null;
+  const { user, loading: authLoading } = useAuth();
+  const lastAuthenticatedUserIdRef = useRef<string | null>(user?.id ?? null);
+  if (user?.id) lastAuthenticatedUserIdRef.current = user.id;
+  // Retain the authenticated ID during a temporary auth hydration window so
+  // the profile route does not unmount while the mobile file picker is open.
+  const userId = user?.id ?? (authLoading ? lastAuthenticatedUserIdRef.current : null);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profileExists, setProfileExists] = useState(false);
@@ -20,7 +24,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (!userId) {
-      navigate('/auth');
+      if (!authLoading) navigate('/auth');
       return;
     }
 
@@ -47,7 +51,7 @@ const Profile = () => {
     };
 
     checkProfile();
-  }, [userId, navigate]);
+  }, [userId, authLoading, navigate]);
 
   if (!userId || loading) {
     return (
