@@ -20,7 +20,8 @@ export async function uploadFileWithProgress(
   if (!session?.access_token) throw new Error('Your session has expired. Please sign in again.');
 
   const encodedPath = objectPath.split('/').map(encodeURIComponent).join('/');
-  const endpoint = `${supabaseUrl.replace(/\\/$/, '')}/storage/v1/object/${encodeURIComponent(bucket)}/${encodedPath}`;
+  const baseUrl = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
+  const endpoint = `${baseUrl}/storage/v1/object/${encodeURIComponent(bucket)}/${encodedPath}`;
 
   await new Promise<void>((resolve, reject) => {
     const request = new XMLHttpRequest();
