@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadStorageFileWithProgress } from '@/lib/storageUpload';
 import { toast } from '@/hooks/use-toast';
 import { Estate, EstateFormData } from '@/types/estate';
 import { X, Upload, Loader2, FileText } from 'lucide-react';
@@ -92,6 +93,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
   const [subscriptionFileName, setSubscriptionFileName] = useState('');
   const [existingSubFormUrl, setExistingSubFormUrl] = useState<string>('');
   const [uploadingSubForm, setUploadingSubForm] = useState(false);
+  const [subscriptionUploadProgress, setSubscriptionUploadProgress] = useState(0);
   const [subscriptionUploadError, setSubscriptionUploadError] = useState('');
   const [docPricing, setDocPricing] = useState<DocPricing>({
     deed_of_assignment: 0,
@@ -659,43 +661,39 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
         <div className="space-y-2">
           <Label>Subscription Form (PDF)</Label>
           {(existingSubFormUrl || formData.sub_form) && (
-            <>
-              <div className="flex min-w-0 items-center gap-2 rounded-md bg-muted p-2">
-                <FileText className="h-4 w-4 shrink-0 text-primary" />
-                <a href={existingSubFormUrl || formData.sub_form} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 truncate text-sm text-primary underline">
-                  {subscriptionFileName || 'Current subscription form uploaded'}
-                </a>
-                <Button type="button" variant="ghost" size="sm" onClick={() => {
-                  setExistingSubFormUrl('');
-                  setSubscriptionFileName('');
-                  setFormData(prev => ({ ...prev, sub_form: '' }));
-                }}>
-                  <X className="h-3 w-3" />
-                </Button>
+            <div className="flex min-w-0 items-center gap-3 rounded-md border bg-muted/60 p-3">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md border bg-background">
+                <FileText className="h-8 w-8 text-primary" />
               </div>
-              <iframe
-                title="Estate subscription form PDF preview"
-                src={existingSubFormUrl || formData.sub_form}
-                className="h-72 w-full rounded-lg border bg-background"
-                loading="lazy"
-              />
-            </>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{subscriptionFileName || 'Subscription form PDF'}</p>
+                <a href={existingSubFormUrl || formData.sub_form} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">Open uploaded PDF</a>
+                <p className="mt-1 text-xs text-emerald-600">Upload complete</p>
+              </div>
+              <Button type="button" variant="ghost" size="sm" onClick={() => {
+                setExistingSubFormUrl('');
+                setSubscriptionFileName('');
+                setFormData(prev => ({ ...prev, sub_form: '' }));
+              }} aria-label="Remove subscription form">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           )}
           <div className="space-y-2 rounded-md border-2 border-dashed border-muted-foreground/30 p-3">
             <input
               type="file"
               accept=".pdf,application/pdf"
               disabled={uploadingSubForm || isSubmitting}
-              onClick={(event) => event.stopPropagation()}
-              onChange={async (event) => {
-                event.preventDefault();
+              onClick={event => event.stopPropagation()}
+              onChange={async event => {
                 event.stopPropagation();
                 const input = event.currentTarget;
                 const selectedFile = input.files?.[0] || null;
                 if (!selectedFile) return;
                 setSubscriptionFileName(selectedFile.name);
+                setSubscriptionUploadError('');
+                setSubscriptionUploadProgress(0);
                 if (selectedFile.size > MAX_SUBSCRIPTION_PDF_SIZE) {
-                  setSubscriptionFileName('');
                   setSubscriptionUploadError('Choose a subscription form PDF that is 50 MB or smaller.');
                   toast({ title: 'PDF is too large', description: 'Choose a subscription form PDF that is 50 MB or smaller.', variant: 'destructive' });
                   input.value = '';
@@ -711,27 +709,24 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                   declaredMime === 'application/x-pdf' ||
                   declaredMime === 'application/octet-stream';
                 if (!selectedFile.name.toLowerCase().endsWith('.pdf') || !hasSupportedMime || !hasPdfSignature) {
-                  setSubscriptionFileName('');
                   setSubscriptionUploadError('Choose a valid PDF file. The file contents must be a PDF document.');
                   toast({ title: 'Invalid file type', description: 'Only valid PDF subscription forms are accepted.', variant: 'destructive' });
                   input.value = '';
                   return;
                 }
                 setUploadingSubForm(true);
-                setSubscriptionUploadError('');
                 try {
                   const uniqueId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
                     ? crypto.randomUUID()
                     : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
                   const objectPath = `subscription-forms/${uniqueId}.pdf`;
-                  const { error: uploadError } = await supabase.storage
-                    .from('public')
-                    .upload(objectPath, selectedFile, {
-                      cacheControl: '3600',
-                      contentType: 'application/pdf',
-                      upsert: false,
-                    });
-                  if (uploadError) throw uploadError;
+                  await uploadStorageFileWithProgress(
+                    'public',
+                    objectPath,
+                    selectedFile,
+                    { cacheControl: '3600', contentType: 'application/pdf', upsert: false },
+                    setSubscriptionUploadProgress,
+                  );
                   const { data: { publicUrl } } = supabase.storage.from('public').getPublicUrl(objectPath);
                   setExistingSubFormUrl(publicUrl);
                   setFormData(prev => ({ ...prev, sub_form: publicUrl }));
@@ -748,11 +743,26 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
               className="block w-full min-w-0 max-w-full cursor-pointer text-sm text-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-4 file:py-2 file:text-sm file:font-medium file:text-foreground hover:file:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Choose estate subscription PDF (maximum 50 MB)"
             />
-            {uploadingSubForm && <div role="status" aria-live="polite" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Uploading {subscriptionFileName}… Keep this form open.</div>}
-            {!uploadingSubForm && subscriptionFileName && <p className="break-all text-xs text-muted-foreground">{existingSubFormUrl || formData.sub_form ? 'Uploaded file: ' : 'Selected file: '}{subscriptionFileName}</p>}
+            {subscriptionFileName && (
+              <div className="flex min-w-0 items-center gap-2 rounded-md bg-muted/60 p-2">
+                <FileText className="h-8 w-8 shrink-0 text-primary" />
+                <div className="min-w-0 flex-1">
+                  <p className="break-all text-xs font-medium">{subscriptionFileName}</p>
+                  <p role="status" aria-live="polite" className="text-xs text-muted-foreground">
+                    {uploadingSubForm ? `Uploading… ${subscriptionUploadProgress}%` : (existingSubFormUrl || formData.sub_form) ? 'Upload complete' : 'Selected PDF'}
+                  </p>
+                  {uploadingSubForm && (
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-background" role="progressbar" aria-label="Subscription form upload progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={subscriptionUploadProgress}>
+                      <div className="h-full rounded-full bg-estate-blue transition-[width] duration-200" style={{ width: `${subscriptionUploadProgress}%` }} />
+                    </div>
+                  )}
+                </div>
+                {uploadingSubForm && <Loader2 className="h-4 w-4 shrink-0 animate-spin" />}
+              </div>
+            )}
             {subscriptionUploadError && <p role="alert" className="text-sm text-destructive">{subscriptionUploadError}</p>}
           </div>
-          <p className="text-xs text-muted-foreground">PDF only · Maximum 50 MB. The file is uploaded as soon as it is selected so the form can retain its saved URL if the page is refreshed.</p>
+          <p className="text-xs text-muted-foreground">PDF only · Maximum 50 MB. The selected file stays visible here while uploading, with live progress and a compact PDF preview after completion.</p>
         </div>
 
         {/* Documentation Pricing */}

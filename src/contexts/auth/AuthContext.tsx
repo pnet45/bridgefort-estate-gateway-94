@@ -101,6 +101,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, nextSession) => {
       if (!mounted) return;
       setSession(nextSession); setUser(nextSession?.user ?? null);
+      // A token refresh only rotates credentials. The signed-in identity and
+      // authorization have not changed, so do not re-fetch profile/roles or
+      // toggle the app-wide loading gate while a mobile picker/upload is active.
+      if (event === 'TOKEN_REFRESHED') return;
       if (!nextSession?.user) { accessRequestRef.current += 1; clearAccess(); setLoading(false); return; }
       setLoading(true);
       setTimeout(() => {

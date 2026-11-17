@@ -65,10 +65,14 @@ function readProfileDraft(userId: string): ProfileDraft | null {
 const incomeValue = (value: string) => ({ 'Below ₦1M': 500000, '₦1M - ₦5M': 3000000, '₦6M - ₦20M': 13000000, 'Above ₦20M': 25000000 }[value] ?? null);
 
 const NewProfileForm = () => {
-  const { user } = useAuth();
-  // A stable ID prevents a token refresh after Android's file picker from
-  // re-running profile loading and remounting the form.
-  const userId = user?.id ?? null;
+  const { user, loading: authLoading } = useAuth();
+  // Keep the last authenticated identity while the auth provider is briefly
+  // hydrating a resumed mobile session. This prevents the KYC form from
+  // switching to its loading state and unmounting the native file input.
+  const lastAuthenticatedUserRef = useRef(user ?? null);
+  if (user) lastAuthenticatedUserRef.current = user;
+  const stableUser = user ?? (authLoading ? lastAuthenticatedUserRef.current : null);
+  const userId = stableUser?.id ?? null;
   const [form, setForm] = useState<FormState>(initialForm);
   const [kycDocs, setKycDocs] = useState<Record<string, { url: string; name: string; type: string }>>({});
   const [activeStep, setActiveStep] = useState<StepKey>('personal');
@@ -122,15 +126,15 @@ const NewProfileForm = () => {
       setLoading(true);
       try {
         const draft = readProfileDraft(userId);
-        const metadataReferralCode = String(user?.user_metadata?.referred_by_code || '').trim().toUpperCase();
+        const metadataReferralCode = String(stableUser?.user_metadata?.referred_by_code || '').trim().toUpperCase();
         if (metadataReferralCode) {
-          setReferralCodeLocked(user?.user_metadata?.referral_link === true);
+          setReferralCodeLocked(stableUser?.user_metadata?.referral_link === true);
           setForm(prev => ({ ...prev, referrerCode: metadataReferralCode }));
         }
         // Restore the current tab draft immediately, even if the database
         // request below fails while the device is coming back from file storage.
         if (draft) {
-          setForm(prev => ({ ...prev, ...draft.form, ...(user?.user_metadata?.referral_link === true && metadataReferralCode ? { referrerCode: metadataReferralCode } : {}) }));
+          setForm(prev => ({ ...prev, ...draft.form, ...(stableUser?.user_metadata?.referral_link === true && metadataReferralCode ? { referrerCode: metadataReferralCode } : {}) }));
           setKycDocs(draft.kycDocs || {});
           setTermsAccepted(draft.termsAccepted);
           setActiveStep(draft.activeStep || 'personal');
@@ -138,10 +142,10 @@ const NewProfileForm = () => {
         const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
         if (error) throw error;
         if (data) {
-          const signupReferralCode = String(user?.user_metadata?.referred_by_code || '').trim().toUpperCase();
+          const signupReferralCode = String(stableUser?.user_metadata?.referred_by_code || '').trim().toUpperCase();
           const savedReferralCode = String(data.referred_by_code || signupReferralCode || '').trim().toUpperCase();
           setExistingReferralId(data.referred_by_id || null);
-          setReferralCodeLocked(Boolean((data.referred_by_id && data.referred_by_code) || (user?.user_metadata?.referral_link === true && signupReferralCode)));
+          setReferralCodeLocked(Boolean((data.referred_by_id && data.referred_by_code) || (stableUser?.user_metadata?.referral_link === true && signupReferralCode)));
           if (savedReferralCode) {
             setForm(prev => ({ ...prev, referrerCode: savedReferralCode }));
           }
@@ -160,7 +164,7 @@ const NewProfileForm = () => {
       finally { setLoading(false); }
     };
     load();
-  }, [userId, user?.user_metadata?.referred_by_code]);
+  }, [userId, stableUser?.user_metadata?.referred_by_code]);
 
   // Flush the latest values before a mobile browser backgrounds or restores
   // this page around the native Android/iOS document picker.
@@ -386,3 +390,4 @@ const NewProfileForm = () => {
 };
 
 export default NewProfileForm;
+
