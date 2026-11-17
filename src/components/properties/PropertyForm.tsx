@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { Estate, EstateFormData } from '@/types/estate';
 import { X, Upload, Loader2, FileText } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { uploadFileWithProgress } from '@/lib/uploadFileWithProgress';
 
 interface DocPricing {
   deed_of_assignment: number;
@@ -92,6 +93,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
   const [subscriptionFileName, setSubscriptionFileName] = useState('');
   const [existingSubFormUrl, setExistingSubFormUrl] = useState<string>('');
   const [uploadingSubForm, setUploadingSubForm] = useState(false);
+  const [subscriptionUploadProgress, setSubscriptionUploadProgress] = useState(0);
   const [subscriptionUploadError, setSubscriptionUploadError] = useState('');
   const [docPricing, setDocPricing] = useState<DocPricing>({
     deed_of_assignment: 0,
@@ -673,12 +675,15 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
                   <X className="h-3 w-3" />
                 </Button>
               </div>
-              <iframe
-                title="Estate subscription form PDF preview"
-                src={existingSubFormUrl || formData.sub_form}
-                className="h-72 w-full rounded-lg border bg-background"
-                loading="lazy"
-              />
+              <div className="flex min-w-0 items-center gap-3 rounded-md border bg-muted/40 p-3">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border bg-background">
+                  <FileText className="h-7 w-7 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{subscriptionFileName || 'Subscription form PDF'}</p>
+                  <p className="text-xs text-muted-foreground">PDF document uploaded and ready</p>
+                </div>
+              </div>
             </>
           )}
           <div className="space-y-2 rounded-md border-2 border-dashed border-muted-foreground/30 p-3">
@@ -686,69 +691,67 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({ estate, onCancel, on
               type="file"
               accept=".pdf,application/pdf"
               disabled={uploadingSubForm || isSubmitting}
-              onClick={(event) => event.stopPropagation()}
+              onClick={(event) => { event.stopPropagation(); if (!uploadingSubForm) event.currentTarget.value = ''; }}
               onChange={async (event) => {
-                event.preventDefault();
                 event.stopPropagation();
                 const input = event.currentTarget;
                 const selectedFile = input.files?.[0] || null;
                 if (!selectedFile) return;
                 setSubscriptionFileName(selectedFile.name);
+                setSubscriptionUploadProgress(0);
+                setSubscriptionUploadError('');
                 if (selectedFile.size > MAX_SUBSCRIPTION_PDF_SIZE) {
-                  setSubscriptionFileName('');
                   setSubscriptionUploadError('Choose a subscription form PDF that is 50 MB or smaller.');
                   toast({ title: 'PDF is too large', description: 'Choose a subscription form PDF that is 50 MB or smaller.', variant: 'destructive' });
-                  input.value = '';
                   return;
                 }
-                const fileHeader = new Uint8Array(await selectedFile.slice(0, 5).arrayBuffer());
-                const hasPdfSignature = fileHeader.length === 5 &&
-                  fileHeader[0] === 0x25 && fileHeader[1] === 0x50 &&
-                  fileHeader[2] === 0x44 && fileHeader[3] === 0x46 && fileHeader[4] === 0x2d;
-                const declaredMime = (selectedFile.type || '').toLowerCase();
-                const hasSupportedMime = !declaredMime ||
-                  declaredMime === 'application/pdf' ||
-                  declaredMime === 'application/x-pdf' ||
-                  declaredMime === 'application/octet-stream';
-                if (!selectedFile.name.toLowerCase().endsWith('.pdf') || !hasSupportedMime || !hasPdfSignature) {
-                  setSubscriptionFileName('');
-                  setSubscriptionUploadError('Choose a valid PDF file. The file contents must be a PDF document.');
-                  toast({ title: 'Invalid file type', description: 'Only valid PDF subscription forms are accepted.', variant: 'destructive' });
-                  input.value = '';
-                  return;
-                }
-                setUploadingSubForm(true);
-                setSubscriptionUploadError('');
                 try {
+                  const fileHeader = new Uint8Array(await selectedFile.slice(0, 5).arrayBuffer());
+                  const hasPdfSignature = fileHeader.length === 5 &&
+                    fileHeader[0] === 0x25 && fileHeader[1] === 0x50 &&
+                    fileHeader[2] === 0x44 && fileHeader[3] === 0x46 && fileHeader[4] === 0x2d;
+                  const declaredMime = (selectedFile.type || '').toLowerCase();
+                  const hasSupportedMime = !declaredMime ||
+                    declaredMime === 'application/pdf' ||
+                    declaredMime === 'application/x-pdf' ||
+                    declaredMime === 'application/octet-stream';
+                  if (!selectedFile.name.toLowerCase().endsWith('.pdf') || !hasSupportedMime || !hasPdfSignature) {
+                    throw new Error('Choose a valid PDF file. The file contents must be a PDF document.');
+                  }
+                  setUploadingSubForm(true);
                   const uniqueId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
                     ? crypto.randomUUID()
                     : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
                   const objectPath = `subscription-forms/${uniqueId}.pdf`;
-                  const { error: uploadError } = await supabase.storage
-                    .from('public')
-                    .upload(objectPath, selectedFile, {
-                      cacheControl: '3600',
-                      contentType: 'application/pdf',
-                      upsert: false,
-                    });
-                  if (uploadError) throw uploadError;
+                  await uploadFileWithProgress('public', objectPath, selectedFile, 'application/pdf', setSubscriptionUploadProgress);
                   const { data: { publicUrl } } = supabase.storage.from('public').getPublicUrl(objectPath);
                   setExistingSubFormUrl(publicUrl);
                   setFormData(prev => ({ ...prev, sub_form: publicUrl }));
+                  setSubscriptionUploadProgress(100);
                   setSubscriptionUploadError('');
                   toast({ title: 'Subscription form uploaded', description: selectedFile.name });
                 } catch (error: any) {
-                  setSubscriptionUploadError(error?.message || 'Upload failed. Please choose the PDF again.');
-                  toast({ title: 'Subscription form upload failed', description: error?.message || 'Please try again.', variant: 'destructive' });
+                  const message = error?.message || 'Upload failed. Please choose the PDF again.';
+                  setSubscriptionUploadError(message);
+                  toast({ title: 'Subscription form upload failed', description: message, variant: 'destructive' });
                 } finally {
                   setUploadingSubForm(false);
-                  input.value = '';
                 }
               }}
               className="block w-full min-w-0 max-w-full cursor-pointer text-sm text-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-4 file:py-2 file:text-sm file:font-medium file:text-foreground hover:file:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Choose estate subscription PDF (maximum 50 MB)"
             />
-            {uploadingSubForm && <div role="status" aria-live="polite" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Uploading {subscriptionFileName}… Keep this form open.</div>}
+            {(uploadingSubForm || subscriptionUploadProgress > 0) && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span role="status" aria-live="polite">{uploadingSubForm ? `Uploading ${subscriptionFileName}…` : subscriptionUploadProgress === 100 ? 'Upload complete' : 'Upload progress'}</span>
+                  <span>{subscriptionUploadProgress}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={subscriptionUploadProgress}>
+                  <div className="h-full rounded-full bg-estate-blue transition-all duration-150" style={{ width: `${subscriptionUploadProgress}%` }} />
+                </div>
+              </div>
+            )}
             {!uploadingSubForm && subscriptionFileName && <p className="break-all text-xs text-muted-foreground">{existingSubFormUrl || formData.sub_form ? 'Uploaded file: ' : 'Selected file: '}{subscriptionFileName}</p>}
             {subscriptionUploadError && <p role="alert" className="text-sm text-destructive">{subscriptionUploadError}</p>}
           </div>
