@@ -31,7 +31,7 @@ export function refreshPublicTrainingEvents(): Promise<PublicTrainingEvent[]> {
   return refreshPublicDataCache(CACHE_KEY, async () => {
     const { data, error } = await supabase
       .from('training_events')
-      .select('*')
+      .select('id,title,description,date,time,location,image,capacity,category,featured')
       .order('date', { ascending: true });
 
     if (error) throw error;
