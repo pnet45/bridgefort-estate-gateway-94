@@ -101,7 +101,8 @@ const NewProfileForm = () => {
         activeStep,
         termsAccepted,
       } satisfies ProfileDraft));
-    } catch (error) {      console.warn('Unable to preserve profile draft in this browser session.', error);
+    } catch (error) {
+      console.warn('Unable to preserve profile draft in this browser session.', error);
     }
   }, [userId, activeStep, termsAccepted]);
 
@@ -200,7 +201,8 @@ const NewProfileForm = () => {
     if (!userId || loading) return;
     try {
       const draft: ProfileDraft = {
-        savedAt: Date.now(),        form,
+        savedAt: Date.now(),
+        form,
         kycDocs,
         activeStep,
         termsAccepted,
@@ -299,7 +301,8 @@ const NewProfileForm = () => {
   useEffect(() => {
     const code = String(form.referrerCode || '').trim().toUpperCase();
     if (!userId || !referralCodeLocked || !code || existingReferralId || !referralLookup || referralLookup.code !== code) return;
-    let cancelled = false;    const attachReferral = async () => {
+    let cancelled = false;
+    const attachReferral = async () => {
       try {
         const { data: updatedProfile, error } = await supabase
           .from('profiles')
@@ -387,3 +390,4 @@ const NewProfileForm = () => {
 };
 
 export default NewProfileForm;
+
