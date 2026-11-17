@@ -102,7 +102,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!mounted) return;
       setSession(nextSession); setUser(nextSession?.user ?? null);
       if (!nextSession?.user) { accessRequestRef.current += 1; clearAccess(); setLoading(false); return; }
-      setLoading(true);
+      // Token refreshes happen in the background (including when a mobile browser
+      // returns from the native file picker). Do not toggle the app-wide auth
+      // loading gate for them: protected routes must stay mounted during uploads.
+      if (event !== 'TOKEN_REFRESHED') setLoading(true);
       setTimeout(() => {
         if (!mounted) return;
         Promise.all([fetchUserAccess(nextSession.user.id), fetchProfile(nextSession.user.id)]).finally(() => { if (mounted) setLoading(false); });
