@@ -22,13 +22,17 @@ const Profile = () => {
   const [profileStatus, setProfileStatus] = useState('DRAFT');
   const [kycStatus, setKycStatus] = useState('NOT_STARTED');
 
+  // Redirect only when the initial auth check has completed without a user.
   useEffect(() => {
-    if (!userId) {
-      if (!authLoading) navigate('/auth');
-      return;
-    }
+    if (!userId && !authLoading) navigate('/auth');
+  }, [userId, authLoading, navigate]);
 
-    // Check if profile exists
+  // Load profile readiness only when the authenticated identity changes.
+  // Do not rerun this request on background auth-loading transitions: setting
+  // loading=true would replace NewProfileForm and discard its in-memory file.
+  useEffect(() => {
+    if (!userId) return;
+    let active = true;
     const checkProfile = async () => {
       try {
         const { data, error } = await supabase
@@ -37,7 +41,7 @@ const Profile = () => {
           .eq('id', userId)
           .maybeSingle();
 
-        if (!error) {
+        if (active && !error) {
           setProfileExists(!!data);
           setCompletion(data?.profile_completion_percentage ?? 0);
           setProfileStatus(data?.profile_status ?? 'DRAFT');
@@ -46,12 +50,13 @@ const Profile = () => {
       } catch (error) {
         console.error('Error checking profile:', error);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     checkProfile();
-  }, [userId, authLoading, navigate]);
+    return () => { active = false; };
+  }, [userId]);
 
   if (!userId || loading) {
     return (
