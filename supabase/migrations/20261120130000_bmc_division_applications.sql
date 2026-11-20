@@ -144,6 +144,11 @@ declare
   selected_division text;
   requested jsonb;
 begin
+  if new.raw_user_meta_data ->> 'bmc_agreement_accepted' <> 'true'
+     or new.raw_user_meta_data ->> 'bmc_privacy_acknowledged' <> 'true' then
+    return new;
+  end if;
+
   requested := coalesce(new.raw_user_meta_data -> 'bmc_selected_divisions', '[]'::jsonb);
   if jsonb_typeof(requested) = 'array' then
     for selected_division in
