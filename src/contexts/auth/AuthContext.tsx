@@ -122,9 +122,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
-  const signUp = async (email: string, password: string, firstName?: string, lastName?: string, referralCode?: string, referralLink = false) => {
+  const signUp = async (email: string, password: string, firstName?: string, lastName?: string, referralCode?: string, referralLink = false, additionalMetadata?: Record<string, unknown>) => {
     const redirectUrl = `${window.location.origin}/`;
-    const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: redirectUrl, data: { first_name: firstName || '', last_name: lastName || '', ...(referralCode ? { referred_by_code: referralCode.trim().toUpperCase() } : {}), ...(referralLink ? { referral_link: true } : {}) } } });
+    const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: redirectUrl, data: { first_name: firstName || '', last_name: lastName || '', ...(referralCode ? { referred_by_code: referralCode.trim().toUpperCase() } : {}), ...(referralLink ? { referral_link: true } : {}), ...(additionalMetadata || {}) } } });
     return { error, data };
   };
 
