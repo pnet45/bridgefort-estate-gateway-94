@@ -97,9 +97,12 @@ jobs:
           assert.match(security, /BMC Agreement acceptance and privacy acknowledgement are required before approval/i);
           assert.match(security, /Invalid BMC application status transition/i);
           assert.match(security, /A review reason is required for rejection or suspension/i);
-          assert.match(security, /new\.division = 'homes'/i, 'only Homes approval may activate BH-Realtors membership');
+          assert.doesNotMatch(security, /sync_bmc_homes_membership/i, 'BMC Homes approval must not activate paid BH-Realtors membership');
+          assert.match(security, /BMC Homes approval is intentionally separate from legacy BH-Realtors paid/i);
           assert.match(signup, /bmc_selected_divisions: selectedBmcDivisions/i);
-          assert.match(signup, /is_pbo and current_package are intentionally not set here/i);
+          assert.doesNotMatch(signup, /profileUpdate\.is_pbo\s*=/i);
+          assert.doesNotMatch(signup, /profileUpdate\.current_package\s*=/i);
+          assert.match(signup, /bmc_referral_code: bmcReferralCode/i);
           assert.match(hub, /request_bmc_division_application/i);
           assert.match(admin, /_review_note: reviewNote \|\| null/i);
           assert.match(admin, /Review reason required/i);
@@ -108,6 +111,8 @@ jobs:
           assert.match(referrals, /create table if not exists public\.bmc_division_referral_codes/i);
           assert.match(referrals, /create table if not exists public\.bmc_division_referral_attributions/i);
           assert.match(referrals, /get_my_bmc_division_referral_codes/i);
+          assert.match(referrals, /record_bmc_homes_signup_referral/i);
+          assert.match(referrals, /division in \('homes', 'travels', 'agrovest'\)/i);
           assert.match(referrals, /division = 'travels'/i);
           assert.match(referrals, /division = 'agrovest'/i);
           assert.match(travelForm, /bmc_referral_code: bmcReferralCode/i);
