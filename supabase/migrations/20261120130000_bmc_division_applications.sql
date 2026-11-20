@@ -92,7 +92,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $function$
 declare
   next_event text;
 begin
@@ -118,7 +118,7 @@ begin
   end if;
   return new;
 end;
-$;
+$function$;
 
 revoke all on function public.audit_bmc_partner_division_change() from public, anon, authenticated;
 
