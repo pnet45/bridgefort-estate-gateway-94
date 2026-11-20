@@ -101,6 +101,14 @@ create trigger bmc_sync_division_referral_code
   after insert or update of application_status on public.bmc_partner_divisions
   for each row execute function public.sync_bmc_division_referral_code();
 
+-- Backfill links for any Travels/Agrovest applications that were approved
+-- before this migration is applied. The status value is unchanged; the trigger
+-- only provisions the missing referral code.
+update public.bmc_partner_divisions
+set application_status = application_status
+where division in ('travels', 'agrovest')
+  and application_status = 'approved';
+
 create or replace function public.get_my_bmc_division_referral_codes()
 returns table (
   division text,
