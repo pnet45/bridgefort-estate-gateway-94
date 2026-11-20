@@ -64,7 +64,7 @@ begin
       where c.application_id = new.id
     ) then
       loop
-        candidate := 'BMC-' || upper(new.division) || '-' || upper(substr(encode(gen_random_bytes(5), 'hex'), 1, 8));
+        candidate := 'BMC-' || upper(new.division) || '-' || upper(substr(encode(extensions.gen_random_bytes(5), 'hex'), 1, 8));
         begin
           insert into public.bmc_division_referral_codes
             (application_id, user_id, division, referral_code, is_active)
