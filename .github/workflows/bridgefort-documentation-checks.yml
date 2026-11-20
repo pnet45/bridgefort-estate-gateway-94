@@ -135,6 +135,7 @@ jobs:
           assert.match(checkoutForm, /bmcReferralCode/i);
           assert.match(checkoutEdge, /bmc_referral_code_id: bmcReferralCodeId/i);
           assert.match(agrovestLanding, /referralQuery/i, 'Agrovest landing-page category links must preserve BMC referrals');
+          assert.match(agrovestLanding, /bmcReferralCode,/i, 'Agrovest landing-page checkout must retain BMC referral attribution');
           assert.match(agrovestCategory, /bmcReferralCode,/i, 'Agrovest category pages must carry BMC referral codes into the cart');
           assert.match(agrovestCategory, /referralQuery/i, 'Agrovest category navigation must preserve the referral query');
           assert.match(travelsPage, /referralQuery/i, 'Travel destination navigation must preserve the referral query');
