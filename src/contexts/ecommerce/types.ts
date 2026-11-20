@@ -11,6 +11,7 @@ export interface Plot {
   propertyType: string;
   unit?: 'plot' | 'pond' | 'pair';
   phase?: number;
+  bmcReferralCode?: string;
 }
 
 export interface CartItem {
