@@ -807,7 +807,7 @@ const Auth = ({
 
             <Button 
               type="submit" 
-              disabled={loading || (!isLogin && (!agreedToTerms || (isRegisteringAsPBO && (!agreedToBmcAgreement || !acknowledgedBmcPrivacy))))} 
+              disabled={loading || (!isLogin && (!agreedToTerms || (isRegisteringAsPBO && (selectedBmcDivisions.length === 0 || !agreedToBmcAgreement || !acknowledgedBmcPrivacy))))} 
               className="w-full bg-estate-blue hover:bg-estate-darkBlue"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
