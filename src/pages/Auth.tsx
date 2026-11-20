@@ -45,6 +45,7 @@ const Auth = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [agreedToBmcAgreement, setAgreedToBmcAgreement] = useState(false);
+  const [bmcMarketingConsent, setBmcMarketingConsent] = useState(false);
   const [accountLockedOpen, setAccountLockedOpen] = useState(false);
   const [lockedReason, setLockedReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -85,6 +86,7 @@ const Auth = ({
     setConfirmPassword('');
     setAgreedToTerms(false);
     setAgreedToBmcAgreement(false);
+    setBmcMarketingConsent(false);
     setRecaptchaToken(null);
     if (recaptchaRef.current) {
       recaptchaRef.current.reset();
@@ -327,7 +329,7 @@ const Auth = ({
       const normalizedSponsorCode = sponsorCode.trim().toUpperCase();
       // Persist the captured code in auth metadata as a recovery path when
       // email confirmation means signup has no authenticated session yet.
-      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked, isRegisteringAsPBO ? { bmc_agreement_accepted: true, bmc_agreement_version: '1.0', bmc_agreement_accepted_at: new Date().toISOString(), bmc_agreement_name: 'Bridgefort Multi-Business Consultants Partner Agreement' } : undefined);
+      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked, isRegisteringAsPBO ? { bmc_agreement_accepted: true, bmc_agreement_version: '1.0', bmc_agreement_accepted_at: new Date().toISOString(), bmc_agreement_name: 'Bridgefort Multi-Business Consultants Partner Agreement', bmc_marketing_consent: bmcMarketingConsent } : undefined);
       if (error) throw error;
 
       // Supabase can return a *truthy* user object with an empty
@@ -402,7 +404,7 @@ const Auth = ({
               name: `${firstName} ${lastName}`.trim() || 'BMC Partner',
               subject: 'Your BMC Referral Link',
               body: `Hello ${firstName || 'Partner'},\n\nYour BMC referral code has been generated successfully:\n\n${finalPbo}\n\nUse the link below to invite new BMC partners:\n${referralLink}\n\nThank you for joining the Bridgefort Multi-Business Consultants network!`,
-              html: `<p>Hello ${firstName || 'Partner'},</p><p>Your BHRealtors referral code has been generated successfully:</p><p><strong>${finalPbo}</strong></p><p>Use the link below to invite new Realtors:</p><p><a href="${referralLink}">${referralLink}</a></p><p>Thank you for joining BHRealtors!</p>`,
+              html: `<p>Hello ${firstName || 'Partner'},</p><p>Your BMC referral code has been generated successfully:</p><p><strong>${finalPbo}</strong></p><p>Use the link below to invite new BMC partners:</p><p><a href="${referralLink}">${referralLink}</a></p><p>Thank you for joining the Bridgefort Multi-Business Consultants network!</p>`,
             });
 
             if (emailResult.success) {
@@ -674,7 +676,7 @@ const Auth = ({
                     id="registerAsPBO"
                     type="checkbox"
                     checked={isRegisteringAsPBO}
-                    onChange={(e) => { setIsRegisteringAsPBO(e.target.checked); if (!e.target.checked) setAgreedToBmcAgreement(false); }}
+                    onChange={(e) => { setIsRegisteringAsPBO(e.target.checked); if (!e.target.checked) { setAgreedToBmcAgreement(false); setBmcMarketingConsent(false); } }}
                     className="h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
                   />
                   <Label htmlFor="registerAsPBO">Join BMC – Bridgefort Multi-Business Consultants</Label>
@@ -720,6 +722,12 @@ const Auth = ({
                     <Link to="/bmc-partner-agreement" target="_blank" className="text-estate-blue hover:underline font-semibold">BMC Partner Agreement and Terms of Engagement</Link>.
                     {' '}I understand that BMC status is subject to verification and formal Company approval.
                   </Label>
+                </div>
+              )}
+              {isRegisteringAsPBO && (
+                <div className="flex items-start gap-3 pt-1">
+                  <input id="bmcMarketingConsent" type="checkbox" checked={bmcMarketingConsent} onChange={(e) => setBmcMarketingConsent(e.target.checked)} className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
+                  <Label htmlFor="bmcMarketingConsent" className="font-normal leading-snug text-sm">I would like to receive optional Bridgefort news, offers and marketing communications. I can withdraw this consent later.</Label>
                 </div>
               )}
               <div className="flex items-start gap-3 pt-1">
