@@ -214,8 +214,6 @@ const Agrovest: React.FC = () => {
   const bmcReferralCode = new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase() || '';
   const referralQuery = bmcReferralCode ? `?bmc_ref=${encodeURIComponent(bmcReferralCode)}` : '';
   const { addToCart } = useEcommerce();
-  const location = useLocation();
-  const bmcReferralCode = new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase() || undefined;
   const [quantity, setQuantity] = useState(1);
   const [sector, setSector] = useState<AgrovestOptionKey>('food');
 
