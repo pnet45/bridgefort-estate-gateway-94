@@ -148,9 +148,9 @@ export default function BMCPartnerHub() {
               <p className="mt-1 text-xs text-muted-foreground">Your authenticated Bridgefort account is your unified partner identity across selected divisions.</p>
             </div>
             <div className="rounded-xl border border-border bg-muted/30 p-4">
-              <p className="text-xs text-muted-foreground">BMC ID / referral code</p>
+              <p className="text-xs text-muted-foreground">BMC account reference</p>
               <p className="mt-1 font-mono text-lg font-semibold text-foreground">{referralCode || 'Not yet assigned'}</p>
-              <p className="mt-1 text-xs text-muted-foreground">Your code is an account identifier. Do not distribute it as an active referral link until the relevant division approval and referral activation are confirmed. Existing BH-Realtors referral identity is preserved.</p>
+              <p className="mt-1 text-xs text-muted-foreground">This reference identifies your account; it is not a shareable referral link. Division-specific referral links will be displayed only after the relevant division is approved and its referral workflow is activated. Your existing BH-Realtors referral identity remains preserved.</p>
             </div>
           </div>
         </section>
