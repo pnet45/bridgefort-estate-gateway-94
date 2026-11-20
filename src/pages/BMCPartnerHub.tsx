@@ -7,9 +7,11 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock, ArrowRight } from 'lucide-react';
+import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock, ArrowRight, Copy, ExternalLink } from 'lucide-react';
 
 type Division = 'homes' | 'travels' | 'agrovest';
+type DivisionReferralCode = { division: 'travels' | 'agrovest'; referral_code: string; created_at: string; };
+
 type DivisionApplication = {
   id: string;
   division: Division;
@@ -45,6 +47,7 @@ const statusStyles: Record<DivisionApplication['application_status'], string> = 
 export default function BMCPartnerHub() {
   const { user, profile, loading: authLoading } = useAuth();
   const [applications, setApplications] = useState<DivisionApplication[]>([]);
+  const [divisionReferralCodes, setDivisionReferralCodes] = useState<DivisionReferralCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
   const [selectedAdditionalDivisions, setSelectedAdditionalDivisions] = useState<Division[]>([]);
@@ -69,6 +72,13 @@ export default function BMCPartnerHub() {
       setUnavailable(false);
       setApplications(Array.isArray(data) ? data as DivisionApplication[] : []);
     }
+    const { data: referralData, error: referralError } = await supabase.rpc('get_my_bmc_division_referral_codes' as never, {} as never) as unknown as { data: DivisionReferralCode[] | null; error: { message: string } | null };
+    if (referralError) {
+      console.info('Division referral links are not active in this environment yet.');
+      setDivisionReferralCodes([]);
+    } else {
+      setDivisionReferralCodes(Array.isArray(referralData) ? referralData : []);
+    }
     setLoading(false);
   }, [user]);
 
@@ -78,6 +88,16 @@ export default function BMCPartnerHub() {
   }, [user, authLoading, loadApplications]);
 
   const referralCode = profile?.pbo_referral_code || '';
+  const referralLinkFor = (division: 'travels' | 'agrovest', code: string) => `${window.location.origin}/${division === 'travels' ? 'travels' : 'agrovest'}?bmc_ref=${encodeURIComponent(code)}`;
+  const copyReferralLink = async (division: 'travels' | 'agrovest', code: string) => {
+    const link = referralLinkFor(division, code);
+    try {
+      await navigator.clipboard.writeText(link);
+      toast({ title: 'Referral link copied', description: `Your approved ${divisionDetails[division].title} referral link is ready to share.` });
+    } catch {
+      toast({ title: 'Unable to copy link', description: 'Please copy the referral link from the address field manually.', variant: 'destructive' });
+    }
+  };
 
   const existingDivisions = applications.map((application) => application.division);
   const availableDivisions = (['homes', 'travels', 'agrovest'] as Division[]).filter((division) => !existingDivisions.includes(division));
