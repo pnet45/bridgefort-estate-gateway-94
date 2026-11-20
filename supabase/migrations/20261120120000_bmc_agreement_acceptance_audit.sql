@@ -5,7 +5,7 @@
 
 create table if not exists public.bmc_agreement_acceptances (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete restrict,
+  user_id uuid not null references auth.users(id) on delete cascade,
   agreement_version text not null,
   agreement_name text not null,
   accepted_at timestamptz not null default now(),
