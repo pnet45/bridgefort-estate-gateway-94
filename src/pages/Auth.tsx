@@ -74,7 +74,7 @@ const Auth = ({
     if (divisionReferralCode) {
       setBmcReferralCode(divisionReferralCode);
       setIsLogin(false);
-      setReferralMessage('A Bridgefort Homes BMC referral link was detected. Referral attribution will be verified during registration.');
+      setReferralMessage('A Bridgefort Homes BMC referral link was detected. Its attribution will be verified separately from BH-Realtors sponsor membership.');
     }
 
     if (refCode) {
@@ -658,19 +658,19 @@ const Auth = ({
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   {isRegisteringAsPBO
-                    ? 'Your existing referral identity will be preserved, or a new BMC referral code will be generated.'
-                    : 'If you were referred by a BMC, enter their existing referral code here.'}
+                    ? 'Your existing BH-Realtors referral identity remains separate. BMC division referral links are issued only after the relevant division is approved.'
+                    : 'If a Bridgefort Homes BMC partner referred you, use their Homes referral link so attribution is captured separately from BH-Realtors membership.'}
                 </p>
 
                 <div>
                   <Label htmlFor="sponsorCode" className="flex items-center gap-1.5">
-                    Referral Code (Optional)
+                    BH-Realtors Referral Code (Optional)
                     {sponsorCodeLocked && <Lock className="h-3 w-3 text-slate-400" />}
                   </Label>
                   <Input
                     type="text"
                     id="sponsorCode"
-                    placeholder="Enter the referral code you received"
+                    placeholder="Enter a BH-Realtors referral code"
                     value={sponsorCode}
                     onChange={(e) => setSponsorCode(e.target.value)}
                     readOnly={sponsorCodeLocked}
@@ -679,7 +679,7 @@ const Auth = ({
                   <p className="text-xs text-gray-500 mt-1">
                     {sponsorCodeLocked
                       ? "This code came from your referral link and can't be changed here."
-                      : 'If you have a sponsoring BMC, enter their code so they receive credit for your signup.'}
+                      : 'This field is only for the legacy BH-Realtors referral system. BMC division referral links are captured separately.'}
                   </p>
                   {referralMessage && <p className="text-xs text-emerald-600 mt-1">{referralMessage}</p>}
                   {referralEmailSent !== null && (
