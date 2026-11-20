@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, CircleHelp, MapPin, Plane, PlayCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -144,6 +144,9 @@ const guides: DestinationGuide[] = [
 ];
 
 const TravelDestination = () => {
+  const location = useLocation();
+  const bmcReferralCode = new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase() || '';
+  const referralQuery = bmcReferralCode ? `?bmc_ref=${encodeURIComponent(bmcReferralCode)}` : '';
   const { slug = '' } = useParams();
   const guide = guides.find((item) => item.slug === slug);
 
@@ -163,7 +166,7 @@ const TravelDestination = () => {
         <main className="container-custom flex flex-1 flex-col items-start justify-center gap-4 px-4 pb-16 pt-32">
           <h1 className="text-3xl font-bold">Destination guide not found</h1>
           <p className="text-muted-foreground">Choose a destination from the Bridgefort Travels page to view its guide.</p>
-          <Button asChild variant="cta"><Link to="/travels">Browse destinations</Link></Button>
+          <Button asChild variant="cta"><Link to={`/travels${referralQuery}`}>Browse destinations</Link></Button>
         </main>
         <Footer />
       </div>
@@ -179,7 +182,7 @@ const TravelDestination = () => {
             <img src={guide.image} alt={`${guide.name} travel destination`} className="absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/55 to-slate-950/20" />
             <div className="container-custom relative z-10 flex min-h-[360px] flex-col justify-center py-12 text-white sm:min-h-[440px]">
-              <Link to="/travels" className="mb-6 inline-flex w-fit items-center gap-2 text-sm font-semibold text-white/85 transition hover:text-white">
+              <Link to={`/travels${referralQuery}`} className="mb-6 inline-flex w-fit items-center gap-2 text-sm font-semibold text-white/85 transition hover:text-white">
                 <ArrowLeft size={16} /> All destinations
               </Link>
               <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-amber-300">Bridgefort Travels destination guide</p>
@@ -292,7 +295,7 @@ const TravelDestination = () => {
               </div>
               <p className="mb-5 border-t border-border pt-4 text-sm leading-6 text-muted-foreground">Prices shown are indicative starting points, not a confirmed booking or guarantee of visa, job or residence approval. Final costs and availability depend on your requirements and current conditions.</p>
               <Button className="w-full" variant="cta" onClick={enquire}>Start an enquiry</Button>
-              <Link to="/travels" className="mt-4 inline-flex w-full items-center justify-center text-sm font-semibold text-estate-blue hover:underline">Compare other destinations</Link>
+              <Link to={`/travels${referralQuery}`} className="mt-4 inline-flex w-full items-center justify-center text-sm font-semibold text-estate-blue hover:underline">Compare other destinations</Link>
             </aside>
           </div>
         </section>
