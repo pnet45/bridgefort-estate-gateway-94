@@ -107,6 +107,7 @@ begin
   if auth.uid() is null
      or not (
        public.user_has_permission(auth.uid(), 'admin:view_approvals'::text)
+       or public.user_has_permission(auth.uid(), 'admin:manage_bmc_partners'::text)
        or public.user_has_permission(auth.uid(), 'admin:all'::text)
      ) then
     raise exception 'BMC approval permission required';
@@ -151,6 +152,7 @@ begin
   if auth.uid() is null
      or not (
        public.user_has_permission(auth.uid(), 'admin:view_approvals'::text)
+       or public.user_has_permission(auth.uid(), 'admin:manage_bmc_partners'::text)
        or public.user_has_permission(auth.uid(), 'admin:all'::text)
      ) then
     raise exception 'BMC approval permission required';
