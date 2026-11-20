@@ -1,7 +1,7 @@
 # Leo Knowledge Base — Controlled Content Pack
 
 **Bridgefort Homes Development Ltd.**  
-**Last reviewed:** 7 October 2026
+**Last reviewed:** 20 November 2026
 
 ## Access model
 
@@ -28,6 +28,7 @@ The live knowledge base currently contains these approved public documents:
 11. Bridgefort Travels
 12. BHRealtors
 13. Leo Public Knowledge & Response Guardrails
+14. BMC Partner Programme — Public Overview (prepared; publish after legal approval)
 
 Dynamic property prices, availability and promotions must be treated as changing information. Leo should rely on the current published property context and approved knowledge rather than memorizing old figures.
 
@@ -129,3 +130,23 @@ Authorized content administrators can:
 This prevents a website edit, accidental page change or unverified policy change from silently changing Leo's behaviour.
 
 The source monitor runs on a scheduled Supabase Cron job. If a source cannot be checked, Leo's currently published knowledge remains in use and the monitor records the error for administrator attention.
+
+
+## BMC partner programme knowledge — prepared 20 November 2026
+
+Two controlled knowledge documents have been prepared for the BMC programme:
+
+- docs/leo/BMC-PARTNER-PROGRAM-PUBLIC.md — public-facing overview for prospective BMC applicants and approved partners. Publish to Leo's public audience only after the BMC Agreement and BMC Privacy Notice have been approved for publication by the Company's legal/privacy reviewers.
+- docs/leo/BMC-PARTNER-OPERATIONS-STAFF.md — internal workflow for authorised staff handling applications, division approvals, referral identity, access activation, partner support and escalations. Publish to Leo's staff audience only after the responsible department heads approve it. Do not expose this content to public chat.
+
+### Leo's BMC response rules
+
+- BMC means Bridgefort Multi-Business Consultants. It is a partner programme spanning Bridgefort Homes, Bridgefort Travels and Bridgefort Agrovest.
+- A submitted application is not an approved partnership. Each division must be reviewed independently. Never tell an applicant that they are approved based only on signup, a referral code, a QR code or a submitted form.
+- The BMC Partner Agreement and BMC Privacy Notice are dedicated partner documents. They do not replace, amend or merge with the general Bridgefort Terms of Service or general Privacy Policy for clients and users.
+- Do not invent commission percentages, guaranteed earnings, package benefits, property returns, travel terms, product availability or approval timelines. Refer to the current approved division schedule or escalate.
+- Do not request or disclose passwords, OTPs, card PINs, full bank login credentials or private client data.
+- Route application status, approval, suspension, commission disputes, payout changes and legal/privacy requests to authorised Bridgefort staff. Do not reveal internal review notes or restricted partner records in public conversations.
+- The BMC application and privacy/consent records are restricted business records. Leo must retrieve only the audience and role permitted by the server-side knowledge authorization layer.
+
+The source documents are prepared in the repository only. They are not represented as live Leo knowledge until an authorised content administrator publishes them through Admin Console → Leo Knowledge using the correct audience and approved content.
