@@ -193,12 +193,19 @@ begin
     return new;
   end if;
 
-  if jsonb_typeof(coalesce(new.items, '[]'::jsonb)) <> 'array'
-     or jsonb_array_length(coalesce(new.items, '[]'::jsonb)) = 0
-     or exists (
-       select 1 from jsonb_array_elements(coalesce(new.items, '[]'::jsonb)) item
-       where coalesce(item ->> 'property_type', '') <> 'Agrovest'
-     ) then
+  if jsonb_typeof(coalesce(new.items, '[]'::jsonb)) <> 'array' then
+    raise exception 'Agrovest referral codes can only be used for Agrovest-only orders';
+  end if;
+
+  if jsonb_array_length(coalesce(new.items, '[]'::jsonb)) = 0 then
+    raise exception 'Agrovest referral codes can only be used for Agrovest-only orders';
+  end if;
+
+  if exists (
+    select 1
+    from jsonb_array_elements(coalesce(new.items, '[]'::jsonb)) as entries(item)
+    where coalesce(entries.item ->> 'property_type', '') <> 'Agrovest'
+  ) then
     raise exception 'Agrovest referral codes can only be used for Agrovest-only orders';
   end if;
 
