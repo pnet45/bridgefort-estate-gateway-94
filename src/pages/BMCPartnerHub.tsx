@@ -169,7 +169,7 @@ export default function BMCPartnerHub() {
             </div>
             <div className="rounded-xl border border-border bg-muted/30 p-4">
               <p className="text-xs text-muted-foreground">BMC account reference</p>
-              <p className="mt-1 font-mono text-lg font-semibold text-foreground">{user.id.slice(0, 8).toUpperCase()}</p>
+              <p className="mt-1 font-mono text-lg font-semibold text-foreground">{'BMC-' + user.id.slice(0, 8).toUpperCase()}</p>
               <p className="mt-1 text-xs text-muted-foreground">This reference identifies your account; it is not a shareable referral link. Division-specific referral links will be displayed only after the relevant division is approved and its referral workflow is activated. Your existing BH-Realtors referral identity remains preserved.</p>
             </div>
           </div>
