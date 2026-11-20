@@ -144,8 +144,8 @@ declare
   selected_division text;
   requested jsonb;
 begin
-  if new.raw_user_meta_data ->> 'bmc_agreement_accepted' <> 'true'
-     or new.raw_user_meta_data ->> 'bmc_privacy_acknowledged' <> 'true' then
+  if (new.raw_user_meta_data ->> 'bmc_agreement_accepted') is distinct from 'true'
+     or (new.raw_user_meta_data ->> 'bmc_privacy_acknowledged') is distinct from 'true' then
     return new;
   end if;
 
