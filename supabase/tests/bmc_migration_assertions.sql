@@ -47,6 +47,22 @@ begin
   perform set_config('request.jwt.claim.sub', admin_id::text, true);
   perform set_config('test.permission', 'admin:view_approvals', true);
 
+  -- View-only approval access must not grant decision authority.
+  begin
+    perform public.admin_review_bmc_division_application(homes_app, 'approved', null);
+    raise exception 'View-only approvals permission unexpectedly allowed BMC decision';
+  exception when others then
+    if sqlerrm = 'View-only approvals permission unexpectedly allowed BMC decision' then raise; end if;
+    if sqlerrm not like '%BMC approval permission required%' then raise; end if;
+  end;
+
+  if not exists (select 1 from public.role_permissions where role='super_admin' and permission_key='admin:manage_bmc_partners' and is_enabled is true)
+     or not exists (select 1 from public.role_permissions where role='manager' and permission_key='admin:manage_bmc_partners' and is_enabled is true)
+     or exists (select 1 from public.role_permissions where role in ('admin_it','admin_dir','admin_acct','admin_cs') and permission_key='admin:manage_bmc_partners' and is_enabled is true) then
+    raise exception 'BMC decision permission defaults are not restricted to designated management roles';
+  end if;
+
+  perform set_config('test.permission', 'admin:manage_bmc_partners', true);
   perform public.admin_review_bmc_division_application(homes_app, 'approved', null);
   perform public.admin_review_bmc_division_application(travels_app, 'approved', null);
   perform public.admin_review_bmc_division_application(agro_app, 'approved', null);
