@@ -135,6 +135,7 @@ returns table (
   application_status text,
   requested_at timestamptz,
   reviewed_at timestamptz,
+  review_note text,
   first_name text,
   last_name text,
   referral_code text,
@@ -157,7 +158,7 @@ begin
 
   return query
   select d.id, d.user_id, d.division, d.application_status, d.requested_at,
-         d.reviewed_at, p.first_name, p.last_name, p.pbo_referral_code,
+         d.reviewed_at, d.review_note, p.first_name, p.last_name, p.pbo_referral_code,
          acceptance.agreement_version, acceptance.accepted_at,
          acceptance.privacy_notice_acknowledged
   from public.bmc_partner_divisions d
