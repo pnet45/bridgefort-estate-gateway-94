@@ -55,7 +55,7 @@ const AdminConsole = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const canReviewReports = isGlobalAdmin || userRole === 'admin_acct';
   const canManageHR = isGlobalAdmin || userRole === 'admin_acct';
-  const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isGlobalAdmin) { tabs.add('overview'); tabs.add('permissions'); tabs.add('travels'); tabs.add('documentation'); } if (canReviewReports) tabs.add('reports'); if (canManageHR) tabs.add('hr-workspace'); return Array.from(tabs); }, [permissions, isGlobalAdmin, canReviewReports]);
+  const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isGlobalAdmin) { tabs.add('overview'); tabs.add('permissions'); tabs.add('travels'); tabs.add('documentation'); } if (canReviewReports) tabs.add('reports'); if (canManageHR) tabs.add('hr-workspace'); if (hasPermission('admin:view_approvals')) tabs.add('bmc-applications'); return Array.from(tabs); }, [permissions, isGlobalAdmin, canReviewReports, canManageHR, hasPermission]);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
