@@ -92,6 +92,7 @@ jobs:
           assert.match(security, /create trigger protect_bmc_membership_fields\s+before insert or update on public\.profiles/i);
           assert.match(security, /revoke update \(application_status, reviewed_at, updated_at\)\s+on public\.bmc_partner_divisions from anon, authenticated/i);
           assert.match(security, /drop policy if exists "BMC approvers can update division application status"/i);
+          assert.doesNotMatch(security, /current_setting\('bridgefort\.bmc_membership_sync'/i, 'client-settable custom GUCs must never bypass profile membership guards');
           assert.match(security, /create or replace function public\.admin_list_bmc_division_audit/i);
           assert.match(security, /create or replace function public\.admin_review_bmc_division_application/i);
           assert.match(security, /BMC Agreement acceptance and privacy acknowledgement are required before approval/i);
