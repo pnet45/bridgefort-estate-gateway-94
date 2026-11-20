@@ -181,7 +181,7 @@ export default function AdminBMCApplications() {
                       <ol className="space-y-3">
                         {(auditByApplication[application.id] || []).map((event) => (
                           <li key={event.audit_id} className="border-l-2 border-border pl-3">
-                            <p className="text-xs font-medium text-foreground">{event.event_type.replaceAll('_', ' ')} · {new Date(event.created_at).toLocaleString()}</p>
+                            <p className="text-xs font-medium text-foreground">{event.event_type.replace(/_/g, ' ')} · {new Date(event.created_at).toLocaleString()}</p>
                             <p className="text-xs text-muted-foreground">{event.previous_status ? `${statusNames[event.previous_status as Application['application_status']] || event.previous_status} → ` : ''}{statusNames[event.new_status as Application['application_status']] || event.new_status}</p>
                             {event.actor_user_id && <p className="text-xs text-muted-foreground">Reviewer ID: {event.actor_user_id.slice(0, 8)}…</p>}
                             {event.review_note && <p className="mt-1 text-xs text-muted-foreground">{event.review_note}</p>}
