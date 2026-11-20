@@ -5,8 +5,8 @@
 -- Prevent direct client-side edits to approval state and reviewer metadata.
 -- The existing self-profile UPDATE policy is broad. Protect both updates and
 -- any exceptional self-service insert so an applicant cannot self-promote.
--- The existing financial-field guard is extended only for the transaction-local
--- marker set by the trusted BMC approval trigger.
+-- Financial-field and BMC membership guards are independent; no client-settable
+-- custom GUC is trusted as an authorization signal.
 create or replace function public.protect_profile_financial_fields()
 returns trigger
 language plpgsql
@@ -15,7 +15,6 @@ set search_path = ''
 as $financial_guard$
 begin
   if auth.uid() is null
-     or current_setting('bridgefort.bmc_membership_sync', true) = '1'
      or public.has_role(auth.uid(), 'admin') then
     return new;
   end if;
@@ -38,7 +37,6 @@ set search_path = ''
 as $bmc_guard$
 begin
   if auth.uid() is null
-     or current_setting('bridgefort.bmc_membership_sync', true) = '1'
      or public.is_global_admin(auth.uid())
      or public.user_has_permission(auth.uid(), 'admin:all'::text)
  then
