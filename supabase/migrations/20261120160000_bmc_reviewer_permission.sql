@@ -23,5 +23,3 @@ on conflict (role, permission_key) do update
 set is_enabled = true,
     updated_at = now();
 
-comment on table public.permissions is
-  'Canonical permission catalogue. admin:manage_bmc_partners is separate from admin:view_approvals.';
