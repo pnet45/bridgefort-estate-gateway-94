@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Plane, Hotel, MapPin, FileCheck, Shield, Headphones, BadgeDollarSign,
@@ -103,6 +103,9 @@ const faqs = [
 ];
 
 const Travels = () => {
+  const location = useLocation();
+  const bmcReferralCode = new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase() || '';
+  const referralQuery = bmcReferralCode ? `?bmc_ref=${encodeURIComponent(bmcReferralCode)}` : '';
   useEffect(() => {
     document.title = 'Bridgefort Travels — Flights, Visas & Tours';
     const meta = document.querySelector('meta[name="description"]');
@@ -259,7 +262,7 @@ const Travels = () => {
               {filteredDestinations.map((d, i) => (
                 <Link
                   key={d.city}
-                  to={`/travels/destination/${d.city.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                  to={`/travels/destination/${d.city.toLowerCase().replace(/[^a-z0-9]+/g, '-')}${referralQuery}`}
                   className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-estate-blue focus-visible:ring-offset-2"
                   aria-label={`Read the ${d.country} travel guide`}
                 >
