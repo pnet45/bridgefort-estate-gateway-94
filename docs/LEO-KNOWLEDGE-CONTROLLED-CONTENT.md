@@ -28,7 +28,6 @@ The live knowledge base currently contains these approved public documents:
 11. Bridgefort Travels
 12. BHRealtors
 13. Leo Public Knowledge & Response Guardrails
-14. BMC Partner Programme — Public Overview (prepared; publish after legal approval)
 
 Dynamic property prices, availability and promotions must be treated as changing information. Leo should rely on the current published property context and approved knowledge rather than memorizing old figures.
 
