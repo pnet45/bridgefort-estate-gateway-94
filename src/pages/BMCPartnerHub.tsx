@@ -233,7 +233,7 @@ export default function BMCPartnerHub() {
 
         <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
           <h2 className="text-xl font-semibold text-foreground">Approved division referral links</h2>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">Only approved divisions receive active share links. Referral activity is recorded for attribution; commission eligibility and any payment remain subject to the relevant approved written division schedule.</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">Only formally approved BMC divisions, or preserved legacy BH-Realtors Homes accounts, receive active share links. Referral activity is recorded for attribution; commission eligibility and any payment remain subject to the relevant approved written division schedule.</p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {applications.some((application) => application.division === 'homes' && application.application_status === 'legacy_existing') && profile?.is_pbo && referralCode && (
               <article className="rounded-xl border border-border p-4">
