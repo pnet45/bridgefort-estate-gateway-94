@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock, ArrowRight, Copy, ExternalLink } from 'lucide-react';
 
 type Division = 'homes' | 'travels' | 'agrovest';
-type DivisionReferralCode = { division: 'travels' | 'agrovest'; referral_code: string; created_at: string; };
+type DivisionReferralCode = { division: Division; referral_code: string; created_at: string; };
 
 type DivisionApplication = {
   id: string;
@@ -88,8 +88,8 @@ export default function BMCPartnerHub() {
   }, [user, authLoading, loadApplications]);
 
   const referralCode = profile?.pbo_referral_code || '';
-  const referralLinkFor = (division: 'travels' | 'agrovest', code: string) => `${window.location.origin}/${division === 'travels' ? 'travels' : 'agrovest'}?bmc_ref=${encodeURIComponent(code)}`;
-  const copyReferralLink = async (division: 'travels' | 'agrovest', code: string) => {
+  const referralLinkFor = (division: Division, code: string) => `${window.location.origin}${division === 'homes' ? '/bridgefort-realtors-login' : division === 'travels' ? '/travels' : '/agrovest'}?bmc_ref=${encodeURIComponent(code)}`;
+  const copyReferralLink = async (division: Division, code: string) => {
     const link = referralLinkFor(division, code);
     try {
       await navigator.clipboard.writeText(link);
@@ -235,20 +235,20 @@ export default function BMCPartnerHub() {
           <h2 className="text-xl font-semibold text-foreground">Approved division referral links</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">Only approved divisions receive active share links. Referral activity is recorded for attribution; commission eligibility and any payment remain subject to the relevant approved written division schedule.</p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
-            {applications.some((application) => application.division === 'homes' && ['approved', 'legacy_existing'].includes(application.application_status)) && referralCode && (
+            {applications.some((application) => application.division === 'homes' && application.application_status === 'legacy_existing') && profile?.is_pbo && referralCode && (
               <article className="rounded-xl border border-border p-4">
-                <p className="font-semibold text-foreground">Bridgefort Homes</p>
+                <p className="font-semibold text-foreground">Legacy BH-Realtors Homes link</p>
                 <p className="mt-1 break-all font-mono text-sm text-muted-foreground">{referralCode}</p>
-                <p className="mt-2 text-xs text-muted-foreground">Existing BH-Realtors referral identity</p>
+                <p className="mt-2 text-xs text-muted-foreground">Your existing paid BH-Realtors referral identity remains separate from BMC division links.</p>
                 <Button size="sm" variant="outline" className="mt-3 w-full" onClick={async () => {
                   try {
                     await navigator.clipboard.writeText(`${window.location.origin}/bridgefort-realtors-login?ref=${encodeURIComponent(referralCode)}`);
-                    toast({ title: 'Homes referral link copied' });
+                    toast({ title: 'Legacy Homes referral link copied' });
                   } catch {
                     toast({ title: 'Unable to copy link', description: 'Please copy the link manually.', variant: 'destructive' });
                   }
                 }}>
-                  <Copy className="mr-2 h-4 w-4" /> Copy Homes link
+                  <Copy className="mr-2 h-4 w-4" /> Copy legacy Homes link
                 </Button>
               </article>
             )}
