@@ -107,6 +107,8 @@ jobs:
           assert.doesNotMatch(signup, /profileUpdate\.is_pbo\s*=/i);
           assert.doesNotMatch(signup, /profileUpdate\.current_package\s*=/i);
           assert.match(signup, /bmc_referral_code: bmcReferralCode/i);
+          assert.match(signup, /BH-Realtors Referral Code/i, 'legacy sponsor-code field must be clearly separated from BMC division codes');
+          assert.doesNotMatch(signup, /sponsoring BMC, enter their code/i, 'do not route BMC codes through the legacy BH-Realtors sponsor field');
           assert.match(hub, /request_bmc_division_application/i);
           assert.match(admin, /_review_note: reviewNote \|\| null/i);
           assert.match(admin, /Review reason required/i);
