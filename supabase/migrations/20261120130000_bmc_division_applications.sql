@@ -6,7 +6,7 @@ create table if not exists public.bmc_partner_divisions (
   user_id uuid not null references auth.users(id) on delete cascade,
   division text not null check (division in ('homes', 'travels', 'agrovest')),
   application_status text not null default 'pending_review'
-    check (application_status in ('pending_review', 'approved', 'rejected', 'suspended', 'withdrawn')),
+    check (application_status in ('pending_review', 'legacy_existing', 'approved', 'rejected', 'suspended', 'withdrawn')),
   requested_at timestamptz not null default now(),
   reviewed_at timestamptz,
   reviewed_by uuid references auth.users(id) on delete set null,
@@ -15,10 +15,19 @@ create table if not exists public.bmc_partner_divisions (
   updated_at timestamptz not null default now(),
   constraint bmc_partner_divisions_user_division_unique unique (user_id, division),
   constraint bmc_partner_divisions_review_state_check check (
-    (application_status = 'pending_review' and reviewed_at is null)
-    or application_status <> 'pending_review'
+    (application_status in ('pending_review', 'legacy_existing') and reviewed_at is null)
+    or (application_status in ('approved', 'rejected', 'suspended', 'withdrawn') and reviewed_at is not null)
   )
 );
+
+-- Preserve existing BH-Realtors partners in the unified model without
+-- assuming that their old membership flag grants approval in new divisions.
+-- Their original profile, referral code, sponsor and activity fields remain intact.
+insert into public.bmc_partner_divisions (user_id, division, application_status, requested_at)
+select p.id, 'homes', 'legacy_existing', coalesce(p.created_at, now())
+from public.profiles p
+where p.is_pbo is true
+on conflict (user_id, division) do nothing;
 
 create index if not exists bmc_partner_divisions_division_status_idx
   on public.bmc_partner_divisions(division, application_status, requested_at desc);
