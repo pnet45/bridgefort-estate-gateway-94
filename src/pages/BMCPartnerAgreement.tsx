@@ -20,7 +20,7 @@ const sections = [
   { title: '14. Suspension and termination', body: 'Either party may end the relationship under applicable partner policy or written notice. Bridgefort may take proportionate protective action where credible concerns involve fraud, unlawful conduct, customer safety, funds, data or systems. Except where immediate protective action is reasonably necessary, the BMC will be informed of the concern and given a reasonable opportunity to respond. Properly earned and undisputed commissions remain subject to the agreed schedule and applicable law.' },
   { title: '15. Liability and indemnity', body: 'Each party remains responsible for its own acts and omissions. A BMC may be responsible for losses directly caused by proven fraud, wilful misconduct, negligence or material breach, subject to applicable law. Nothing in this Agreement excludes liability or statutory rights that cannot lawfully be excluded.' },
   { title: '16. Disputes and governing law', body: 'The parties will first attempt good-faith resolution. If unresolved, they may pursue mediation or refer the dispute to a court of competent jurisdiction in Nigeria. This Agreement is governed by the laws of the Federal Republic of Nigeria.' },
-  { title: '17. Changes and entire agreement', body: 'This Agreement operates alongside approved division-specific rules, commission schedules and the Company Privacy Notice. Material amendments will be communicated to affected BMCs and will not retrospectively remove commissions already properly earned. If any provision is unenforceable, the remaining provisions continue to the extent permitted by law.' },
+  { title: '17. Changes and entire agreement', body: 'This BMC Agreement operates alongside the separate BMC Privacy Notice and approved division-specific rules and commission schedules. It does not replace, amend or merge with Bridgefort's general Terms of Service or general Privacy Policy, which continue to govern the Company's general services and client relationships. Material amendments will be communicated to affected BMCs and will not retrospectively remove commissions already properly earned. If any provision is unenforceable, the remaining provisions continue to the extent permitted by law.' },
   { title: '18. Declaration and acceptance', body: 'By electronically accepting this Agreement, the applicant confirms that the information supplied is accurate, that they have authority to apply personally or for the business named in their application, that they understand BMC status requires Company approval, and that they agree to comply with the obligations described here.' },
 ];
 
@@ -48,12 +48,12 @@ const BMCPartnerAgreement = () => (
           <div className="mt-9 rounded-xl border border-border p-4 text-sm leading-6 text-muted-foreground">
             <strong className="text-foreground">Company:</strong> Bridgefort Homes Development Ltd<br />
             <strong className="text-foreground">Contact:</strong> <a className="text-estate-blue underline" href="mailto:info@bridgeforthomes.com">info@bridgeforthomes.com</a><br />
-            <strong className="text-foreground">Privacy:</strong> See the <Link className="text-estate-blue underline" to="/privacy-policy">Privacy Policy</Link> and <Link className="text-estate-blue underline" to="/NDPP">Data Protection Notice</Link>.
+            <strong className="text-foreground">BMC Privacy:</strong> Read the separate <Link className="text-estate-blue underline" to="/bmc-privacy-notice">BMC Privacy Notice</Link>. The general Bridgefort Privacy Policy remains a separate document for general services and client relationships.
           </div>
           <p className="mt-6 text-xs leading-5 text-muted-foreground">This is a working digital agreement draft for implementation and must receive review and approval from qualified Nigerian legal counsel before it is treated as the Company's final executed legal instrument. Division-specific commission schedules and any special authority must be issued separately in writing.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/bridgefort-realtors-login" className="inline-flex items-center rounded-md bg-estate-blue px-5 py-3 text-sm font-semibold text-white hover:opacity-90">Apply to join BMC</Link>
-            <Link to="/privacy-policy" className="inline-flex items-center rounded-md border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted">Read Privacy Policy</Link>
+            <Link to="/bmc-privacy-notice" className="inline-flex items-center rounded-md border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted">Read BMC Privacy Notice</Link>
           </div>
         </article>
       </div>
