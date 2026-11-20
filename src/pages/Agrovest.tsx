@@ -210,6 +210,9 @@ const OptimizedImg: React.FC<{ src: string; alt: string; className?: string }> =
 );
 
 const Agrovest: React.FC = () => {
+  const location = useLocation();
+  const bmcReferralCode = new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase() || '';
+  const referralQuery = bmcReferralCode ? `?bmc_ref=${encodeURIComponent(bmcReferralCode)}` : '';
   const { addToCart } = useEcommerce();
   const location = useLocation();
   const bmcReferralCode = new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase() || undefined;
@@ -896,7 +899,7 @@ const Agrovest: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 mb-16">
             {plantationGallery.map((c) => (
               <Link
-                to={`/agrovest/${c.slug}`}
+                to={`/agrovest/${c.slug}${referralQuery}`}
                 key={c.slug}
                 className="relative rounded-2xl overflow-hidden aspect-[4/3] group cursor-pointer block focus:outline-none focus:ring-2 focus:ring-amber-400"
               >
