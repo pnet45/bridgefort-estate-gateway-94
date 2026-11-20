@@ -61,6 +61,7 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
 const BMCPartnerAgreement = lazy(() => import('@/pages/BMCPartnerAgreement'));
+const BMCPrivacyNotice = lazy(() => import('@/pages/BMCPrivacyNotice'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const NDPP = lazy(() => import('@/pages/NDPP'));
 const BridgefortMails = lazy(() => import('@/pages/BridgefortMails'));
@@ -188,6 +189,7 @@ function AppLayout() {
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="/terms-of-service" element={<TermsOfService />} />
                     <Route path="/bmc-partner-agreement" element={<BMCPartnerAgreement />} />
+                    <Route path="/bmc-privacy-notice" element={<BMCPrivacyNotice />} />
                     <Route path="/sitemap" element={<Sitemap />} />
                     <Route path="/NDPP" element={<NDPP />} />
                     <Route path="/admin-login" element={<AdminAuth />} />
