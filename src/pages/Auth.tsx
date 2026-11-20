@@ -728,6 +728,12 @@ const Auth = ({
               )}
               {isRegisteringAsPBO && (
                 <div className="flex items-start gap-3 pt-1">
+                  <input id="acknowledgedBmcPrivacy" type="checkbox" checked={acknowledgedBmcPrivacy} onChange={(e) => setAcknowledgedBmcPrivacy(e.target.checked)} required className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
+                  <Label htmlFor="acknowledgedBmcPrivacy" className="font-normal leading-snug">I acknowledge that I have read the separate <Link to="/bmc-privacy-notice" target="_blank" className="text-estate-blue hover:underline font-semibold">BMC Privacy Notice</Link>, which applies to my BMC application and partner relationship, not the general client Privacy Policy.</Label>
+                </div>
+              )}
+              {isRegisteringAsPBO && (
+                <div className="flex items-start gap-3 pt-1">
                   <input id="bmcMarketingConsent" type="checkbox" checked={bmcMarketingConsent} onChange={(e) => setBmcMarketingConsent(e.target.checked)} className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
                   <Label htmlFor="bmcMarketingConsent" className="font-normal leading-snug text-sm">I would like to receive optional Bridgefort news, offers and marketing communications. I can withdraw this consent later.</Label>
                 </div>
