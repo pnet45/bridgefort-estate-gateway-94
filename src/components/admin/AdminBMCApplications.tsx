@@ -40,7 +40,7 @@ const statusNames: Record<Application['application_status'], string> = {
   withdrawn: 'Withdrawn',
 };
 
-export default function AdminBMCApplications() {
+export default function AdminBMCApplications({ canManage }: { canManage: boolean }) {
   const [rows, setRows] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -158,7 +158,7 @@ export default function AdminBMCApplications() {
                   {application.reviewed_at && <p className="text-xs text-muted-foreground">Last reviewed {new Date(application.reviewed_at).toLocaleString()}</p>}
                   {application.review_note && <p className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">Previous review note: {application.review_note}</p>}
                 </div>
-                <div className="w-full space-y-2 md:w-72">
+                {canManage && <div className="w-full space-y-2 md:w-72">
                   <Textarea
                     value={reviewNotes[application.id] || ''}
                     onChange={(event) => setReviewNotes((current) => ({ ...current, [application.id]: event.target.value }))}
@@ -167,7 +167,7 @@ export default function AdminBMCApplications() {
                     maxLength={1000}
                     aria-label={`Review note for ${divisionNames[application.division]}`}
                   />
-                </div>
+                </div>}
                 <div className="flex w-full flex-wrap gap-2 md:w-auto">
                   <Button size="sm" variant="ghost" onClick={() => void toggleAudit(application.id)} disabled={auditLoadingId === application.id}>
                     {auditLoadingId === application.id ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <History className="mr-1 h-4 w-4" />}
@@ -191,7 +191,7 @@ export default function AdminBMCApplications() {
                     )}
                   </div>
                 )}
-                <div className="flex flex-wrap gap-2">
+                {canManage && <div className="flex flex-wrap gap-2">
                   {application.application_status === 'pending_review' && (
                     <>
                       <Button size="sm" onClick={() => void changeStatus(application, 'approved')} disabled={savingId === application.id}>
@@ -216,7 +216,8 @@ export default function AdminBMCApplications() {
                   {application.application_status === 'legacy_existing' && (
                     <span className="text-xs text-muted-foreground">Legacy account retained; review before granting new division access.</span>
                   )}
-                </div>
+                </div>}
+                {!canManage && <p className="text-xs text-muted-foreground">Read-only access. A designated BMC manager must make approval decisions.</p>}
               </CardContent>
             </Card>
           ))}
