@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { RefreshCw, Loader2, CheckCircle2, XCircle, RotateCcw, ShieldAlert } from 'lucide-react';
 
@@ -13,6 +14,7 @@ type Application = {
   application_status: 'pending_review' | 'legacy_existing' | 'approved' | 'rejected' | 'suspended' | 'withdrawn';
   requested_at: string;
   reviewed_at: string | null;
+  review_note: string | null;
   first_name: string | null;
   last_name: string | null;
   referral_code: string | null;
@@ -40,6 +42,7 @@ export default function AdminBMCApplications() {
   const [rows, setRows] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -60,11 +63,16 @@ export default function AdminBMCApplications() {
   useEffect(() => { void load(); }, [load]);
 
   const changeStatus = async (application: Application, nextStatus: Application['application_status']) => {
+    const reviewNote = (reviewNotes[application.id] || '').trim();
+    if ((nextStatus === 'rejected' || nextStatus === 'suspended') && !reviewNote) {
+      toast({ title: 'Review reason required', description: 'Record a reason before rejecting or suspending a BMC application.', variant: 'destructive' });
+      return;
+    }
     setSavingId(application.id);
     const { error } = await supabase.rpc('admin_review_bmc_division_application' as never, {
       _application_id: application.id,
       _decision: nextStatus,
-      _review_note: null,
+      _review_note: reviewNote || null,
     } as never);
     if (error) {
       console.error('BMC application status update failed:', error);
@@ -125,6 +133,17 @@ export default function AdminBMCApplications() {
                     {application.privacy_notice_acknowledged ? 'BMC Privacy Notice acknowledged' : 'BMC Privacy acknowledgement missing'}
                   </p>
                   {application.reviewed_at && <p className="text-xs text-muted-foreground">Last reviewed {new Date(application.reviewed_at).toLocaleString()}</p>}
+                  {application.review_note && <p className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">Previous review note: {application.review_note}</p>}
+                </div>
+                <div className="w-full space-y-2 md:w-72">
+                  <Textarea
+                    value={reviewNotes[application.id] || ''}
+                    onChange={(event) => setReviewNotes((current) => ({ ...current, [application.id]: event.target.value }))}
+                    placeholder="Review note (required for rejection or suspension)"
+                    rows={2}
+                    maxLength={1000}
+                    aria-label={`Review note for ${divisionNames[application.division]}`}
+                  />
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {application.application_status === 'pending_review' && (
