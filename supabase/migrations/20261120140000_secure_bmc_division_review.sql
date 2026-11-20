@@ -3,6 +3,43 @@
 -- general privacy policy, or production data until explicitly deployed.
 
 -- Prevent direct client-side edits to approval state and reviewer metadata.
+-- A user's broad self-profile UPDATE policy must never allow self-promotion
+-- into BH-Realtors. The existing financial-field trigger does not protect
+-- is_pbo, so enforce membership authority independently at the row level.
+create or replace function public.protect_bmc_membership_fields()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  if auth.uid() is null
+     or current_setting('bridgefort.bmc_membership_sync', true) = '1'
+     or public.is_global_admin(auth.uid())
+     or public.user_has_permission(auth.uid(), 'admin:all'::text)
+     or public.user_has_permission(auth.uid(), 'admin:view_users'::text) then
+    return new;
+  end if;
+
+  new.is_pbo := old.is_pbo;
+
+  -- Referral identifiers may be assigned once during onboarding, but an
+  -- existing identifier cannot be replaced by a self-service profile edit.
+  if old.pbo_referral_code is not null
+     and new.pbo_referral_code is distinct from old.pbo_referral_code then
+    new.pbo_referral_code := old.pbo_referral_code;
+  end if;
+
+  return new;
+end;
+$;
+
+revoke all on function public.protect_bmc_membership_fields() from public, anon, authenticated;
+drop trigger if exists protect_bmc_membership_fields on public.profiles;
+create trigger protect_bmc_membership_fields
+  before update on public.profiles
+  for each row execute function public.protect_bmc_membership_fields();
+
 revoke update on public.bmc_partner_divisions from anon, authenticated;
 
 create or replace function public.sync_bmc_homes_membership()
@@ -14,16 +51,21 @@ as $$
 begin
   if new.division = 'homes' and new.application_status is distinct from old.application_status then
     if new.application_status = 'approved' then
+      -- The profile guard permits this flag only while this trusted trigger
+      -- holds the transaction-local membership-sync marker.
+      perform set_config('bridgefort.bmc_membership_sync', '1', true);
       update public.profiles
       set is_pbo = true,
           current_package = coalesce(nullif(current_package, ''), 'associate'),
           updated_at = now()
       where id = new.user_id;
+      perform set_config('bridgefort.bmc_membership_sync', '0', true);
     elsif old.application_status = 'approved'
        and new.application_status in ('suspended', 'rejected', 'withdrawn', 'pending_review') then
       -- Only revoke the legacy BH-Realtors flag for a new approved BMC
       -- membership. Existing legacy accounts are represented by
       -- legacy_existing and are not changed by this transition.
+      perform set_config('bridgefort.bmc_membership_sync', '1', true);
       update public.profiles
       set is_pbo = false,
           updated_at = now()
@@ -33,6 +75,7 @@ begin
           where p.id = new.user_id
             and p.is_pbo is true
         );
+      perform set_config('bridgefort.bmc_membership_sync', '0', true);
     end if;
   end if;
   return new;
