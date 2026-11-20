@@ -221,7 +221,16 @@ const Auth = ({
         if (nextParam) {
           navigate(nextParam);
         } else if (pageTitle) {
-          navigate(redirectAfterSignIn);
+          if (redirectAfterSignIn === '/bh-realtors') {
+            const { data: partnerProfile } = await supabase
+              .from('profiles')
+              .select('is_pbo')
+              .eq('id', signedInUser?.id || '')
+              .maybeSingle();
+            navigate(partnerProfile?.is_pbo ? '/bh-realtors' : '/bmc-partner-hub');
+          } else {
+            navigate(redirectAfterSignIn);
+          }
         } else {
           let destination = '/dashboard';
           try {
@@ -366,74 +375,32 @@ const Auth = ({
         };
 
         if (isRegisteringAsPBO) {
-          // Automatically generate a unique 5-digit PBO referral code for every PBO registration.
-          const generateUniquePboCode = async () => {
-            let attempts = 0;
-            while (attempts < 10) {
-              const candidate = String(Math.floor(10000 + Math.random() * 90000));
-              const { data: existing } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('pbo_referral_code', candidate)
-                .limit(1)
-                .maybeSingle();
-
-              if (!existing) return candidate;
-              attempts += 1;
+          // A BMC application is not an approval. Generate and reserve an
+          // attribution code, but do not grant legacy BH-Realtors privileges,
+          // activate a package, or send a shareable referral link until Homes
+          // access is approved by an authorised reviewer.
+          let finalPbo: string | null = null;
+          for (let attempt = 0; attempt < 20; attempt += 1) {
+            const candidate = String(Math.floor(10000 + Math.random() * 90000));
+            const { data: existing } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('pbo_referral_code', candidate)
+              .limit(1)
+              .maybeSingle();
+            if (!existing) {
+              finalPbo = candidate;
+              break;
             }
-            return `P${String(Date.now()).slice(-5)}`;
-          };
-
-          const finalPbo = await generateUniquePboCode();
-
-          const { data: existingPBO } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('pbo_referral_code', finalPbo)
-            .limit(1)
-            .maybeSingle();
-
-          if (existingPBO) {
-            toast({
-              title: 'BMC Referral Code Already Used',
-              description: 'The generated partner referral code is already in use. Please try again.',
-              variant: 'destructive'
-            });
-            return;
           }
 
-          profileUpdate.is_pbo = true;
+          if (!finalPbo) {
+            throw new Error('We could not reserve a unique BMC reference code. Please try again.');
+          }
+
           profileUpdate.pbo_referral_code = finalPbo;
-          profileUpdate.current_package = 'associate';
-
-          if (data.user?.email) {
-            const referralLink = `${window.location.origin}/bridgefort-realtors-login?ref=${finalPbo}`;
-            const emailResult = await emailService.sendEmail({
-              to: data.user.email,
-              name: `${firstName} ${lastName}`.trim() || 'BMC Partner',
-              subject: 'Your BMC Referral Link',
-              body: `Hello ${firstName || 'Partner'},\n\nYour BMC referral code has been generated successfully:\n\n${finalPbo}\n\nUse the link below to invite new BMC partners:\n${referralLink}\n\nThank you for joining the Bridgefort Multi-Business Consultants network!`,
-              html: `<p>Hello ${firstName || 'Partner'},</p><p>Your BMC referral code has been generated successfully:</p><p><strong>${finalPbo}</strong></p><p>Use the link below to invite new BMC partners:</p><p><a href="${referralLink}">${referralLink}</a></p><p>Thank you for joining the Bridgefort Multi-Business Consultants network!</p>`,
-            });
-
-            if (emailResult.success) {
-              toast({
-                title: 'Referral link emailed',
-                description: 'Your PBO referral link and code were sent to your email address.',
-              });
-              setReferralEmailNotice(`We emailed your referral link to ${data.user.email}`);
-              setReferralEmailSent(true);
-            } else {
-              console.error('Failed to send PBO referral email:', emailResult.error);
-              toast({
-                title: 'Referral email failed',
-                description: 'Your referral code was generated, but the email could not be delivered. Please check your email address or contact support.',
-                variant: 'destructive',
-              });
-              setReferralEmailNotice('Referral code created but email delivery failed. Please contact support.');
-              setReferralEmailSent(false);
-            }
-          }
+          // is_pbo and current_package are intentionally not set here.
+          // The protected database approval workflow grants Homes access.
         }
 
         if (normalizedSponsorCode) {
@@ -503,10 +470,12 @@ const Auth = ({
         });
 
         toast({
-          title: "Registration successful!",
-          description: "Please check your email to verify your account."
+          title: isRegisteringAsPBO ? "BMC application received" : "Registration successful!",
+          description: isRegisteringAsPBO
+            ? "Please verify your email. Your selected divisions will remain pending until Bridgefort completes its review."
+            : "Please check your email to verify your account."
         });
-        navigate(nextParam ?? redirectAfterSignUp);
+        navigate(nextParam ?? (isRegisteringAsPBO ? '/bmc-partner-hub' : redirectAfterSignUp));
       } else {
         // Belt-and-suspenders: signUp() returned no error but also no user.
         // Rather than silently doing nothing (which just looks like a
