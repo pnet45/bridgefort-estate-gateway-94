@@ -46,6 +46,8 @@ begin
 
   perform set_config('request.jwt.claim.sub', admin_id::text, true);
   perform set_config('test.permission', 'admin:view_approvals', true);
+  select count(*) into attribution_count from public.admin_list_bmc_division_applications();
+  if attribution_count <> 3 then raise exception 'View-only approvals permission cannot read the BMC queue'; end if;
 
   -- View-only approval access must not grant decision authority.
   begin
@@ -63,6 +65,8 @@ begin
   end if;
 
   perform set_config('test.permission', 'admin:manage_bmc_partners', true);
+  select count(*) into attribution_count from public.admin_list_bmc_division_applications();
+  if attribution_count <> 3 then raise exception 'Dedicated BMC managers cannot read their review queue'; end if;
   perform public.admin_review_bmc_division_application(homes_app, 'approved', null);
   perform public.admin_review_bmc_division_application(travels_app, 'approved', null);
   perform public.admin_review_bmc_division_application(agro_app, 'approved', null);
