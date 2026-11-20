@@ -11,6 +11,8 @@ create table if not exists public.bmc_agreement_acceptances (
   accepted_at timestamptz not null default now(),
   acceptance_source text not null default 'web_signup',
   marketing_consent boolean not null default false,
+  privacy_notice_version text not null default '1.0',
+  privacy_notice_acknowledged boolean not null default false,
   created_at timestamptz not null default now(),
   constraint bmc_agreement_acceptances_version_nonempty check (length(trim(agreement_version)) > 0)
 );
@@ -41,7 +43,7 @@ begin
   metadata := coalesce(new.raw_user_meta_data, '{}'::jsonb);
   if metadata ->> 'bmc_agreement_accepted' = 'true' then
     insert into public.bmc_agreement_acceptances (
-      user_id, agreement_version, agreement_name, accepted_at, acceptance_source, marketing_consent
+      user_id, agreement_version, agreement_name, accepted_at, acceptance_source, marketing_consent, privacy_notice_version, privacy_notice_acknowledged
     )
     values (
       new.id,
@@ -49,7 +51,9 @@ begin
       coalesce(nullif(metadata ->> 'bmc_agreement_name', ''), 'BMC Partner Agreement'),
       now(),
       'web_signup',
-      coalesce((metadata ->> 'bmc_marketing_consent')::boolean, false)
+      coalesce((metadata ->> 'bmc_marketing_consent')::boolean, false),
+      coalesce(nullif(metadata ->> 'bmc_privacy_notice_version', ''), '1.0'),
+      coalesce((metadata ->> 'bmc_privacy_acknowledged')::boolean, false)
     )
     on conflict do nothing;
   end if;
