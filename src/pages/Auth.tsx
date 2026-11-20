@@ -84,6 +84,7 @@ const Auth = ({
     setLastName('');
     setConfirmPassword('');
     setAgreedToTerms(false);
+    setAgreedToBmcAgreement(false);
     setRecaptchaToken(null);
     if (recaptchaRef.current) {
       recaptchaRef.current.reset();
@@ -383,8 +384,8 @@ const Auth = ({
 
           if (existingPBO) {
             toast({
-              title: 'PBO Code Already Used',
-              description: 'Generated referral code collided. Please try again.',
+              title: 'BMC Referral Code Already Used',
+              description: 'The generated partner referral code is already in use. Please try again.',
               variant: 'destructive'
             });
             return;
@@ -398,9 +399,9 @@ const Auth = ({
             const referralLink = `${window.location.origin}/bridgefort-realtors-login?ref=${finalPbo}`;
             const emailResult = await emailService.sendEmail({
               to: data.user.email,
-              name: `${firstName} ${lastName}`.trim() || 'BHRealtors Partner',
-              subject: 'Your BHRealtors Referral Link',
-              body: `Hello ${firstName || 'Partner'},\n\nYour BHRealtors referral code has been generated successfully:\n\n${finalPbo}\n\nUse the link below to invite new Realtors:\n${referralLink}\n\nThank you for joining BHRealtors!`,
+              name: `${firstName} ${lastName}`.trim() || 'BMC Partner',
+              subject: 'Your BMC Referral Link',
+              body: `Hello ${firstName || 'Partner'},\n\nYour BMC referral code has been generated successfully:\n\n${finalPbo}\n\nUse the link below to invite new BMC partners:\n${referralLink}\n\nThank you for joining the Bridgefort Multi-Business Consultants network!`,
               html: `<p>Hello ${firstName || 'Partner'},</p><p>Your BHRealtors referral code has been generated successfully:</p><p><strong>${finalPbo}</strong></p><p>Use the link below to invite new Realtors:</p><p><a href="${referralLink}">${referralLink}</a></p><p>Thank you for joining BHRealtors!</p>`,
             });
 
@@ -582,7 +583,7 @@ const Auth = ({
                 onClick={() => setIsPBO(true)}
                 className="flex-1"
               >
-                Realtors Login
+                BMC Login
               </Button>
             </div>
           )}
@@ -673,7 +674,7 @@ const Auth = ({
                     id="registerAsPBO"
                     type="checkbox"
                     checked={isRegisteringAsPBO}
-                    onChange={(e) => setIsRegisteringAsPBO(e.target.checked)}
+                    onChange={(e) => { setIsRegisteringAsPBO(e.target.checked); if (!e.target.checked) setAgreedToBmcAgreement(false); }}
                     className="h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
                   />
                   <Label htmlFor="registerAsPBO">Join BMC – Bridgefort Multi-Business Consultants</Label>
