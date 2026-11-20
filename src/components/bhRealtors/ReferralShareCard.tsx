@@ -13,7 +13,10 @@ const ReferralShareCard: React.FC<Props> = ({ referralCode, referralLink, member
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [qrReady, setQrReady] = useState(false);
+  const [qrPreviewReady, setQrPreviewReady] = useState(false);
+  const [qrCardReady, setQrCardReady] = useState(false);
+  const [qrError, setQrError] = useState(false);
+  const qrReady = qrPreviewReady && qrCardReady && !qrError;
   const shareText = `Join me with Bridgefort Homes Realtors (BHRealtors). Use my referral code ${referralCode} to get started: ${referralLink}`;
 
   const copy = async () => {
@@ -96,7 +99,7 @@ const ReferralShareCard: React.FC<Props> = ({ referralCode, referralLink, member
 
   return (
     <section className="overflow-hidden rounded-3xl border border-estate-blue/15 bg-white shadow-xl dark:border-white/10 dark:bg-slate-950">
-      <div className="bg-gradient-to-r from-estate-blue via-estate-blue to-estate-purple p-5 text-white sm:p-6">
+      <div className="bg-estate-blue p-5 text-white sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="flex items-center gap-2"><Share2 className="h-5 w-5" /><p className="text-xs font-bold uppercase tracking-[0.2em] text-white/75">Your BHRealtors referral</p></div>
@@ -133,11 +136,11 @@ const ReferralShareCard: React.FC<Props> = ({ referralCode, referralLink, member
 
           <div className="rounded-2xl border border-slate-200 p-4 dark:border-white/10">
             <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white"><QrCode className="h-4 w-4 text-estate-purple" />Scan to join</div>
-            <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">The QR code opens the BHRealtors login/signup route with your referral code attached.</p>
+            <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">The QR code opens the official BHRealtors registration page with your referral code attached.</p>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="flex h-[190px] w-[190px] shrink-0 items-center justify-center rounded-xl bg-white p-2 shadow-inner">
-                {!qrReady && <div className="absolute text-xs text-slate-500">Loading…</div>}
-                <img crossOrigin="anonymous" src={qrUrl(referralLink)} alt={`QR code for referral ${referralCode}`} className="h-[174px] w-[174px]" onLoad={() => setQrReady(true)} onError={() => { setQrReady(false); toast({ title: 'QR code could not load', variant: 'destructive' }); }} />
+              <div className="relative flex h-[190px] w-[190px] shrink-0 items-center justify-center rounded-xl bg-white p-2 shadow-inner">
+                {!qrPreviewReady && !qrError && <span className="absolute text-xs text-slate-500">Loading QR code…</span>}
+                {qrError ? <p className="px-3 text-center text-xs text-slate-600">QR code is temporarily unavailable. Copy or share your referral link instead.</p> : <img crossOrigin="anonymous" src={qrUrl(referralLink)} alt={`QR code for referral ${referralCode}`} className="h-[174px] w-[174px]" onLoad={() => setQrPreviewReady(true)} onError={() => { setQrError(true); toast({ title: 'QR code could not load', description: 'You can still copy or share your referral link.', variant: 'destructive' }); }} />}
               </div>
               <div className="space-y-2">
                 <Button variant="outline" size="sm" onClick={() => void downloadImage()} disabled={busy || !qrReady}><Download className="mr-2 h-4 w-4" />Download referral image</Button>
@@ -152,7 +155,7 @@ const ReferralShareCard: React.FC<Props> = ({ referralCode, referralLink, member
           <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300">Bridgefort Homes</div>
           <div className="mt-3 text-xl font-black text-white">You're invited</div>
           <p className="mt-1 text-xs leading-5 text-slate-400">Join BHRealtors and grow with us.</p>
-          <div className="mt-4 rounded-xl bg-white p-2"><img crossOrigin="anonymous" src={qrUrl(referralLink)} alt="" className="w-full" /></div>
+          <div className="mt-4 rounded-xl bg-white p-2"><img crossOrigin="anonymous" src={qrUrl(referralLink)} alt="" className="w-full" onLoad={() => setQrCardReady(true)} onError={() => setQrError(true)} /></div>
           <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] p-3 text-center"><p className="text-[9px] uppercase tracking-wider text-slate-500">Referral code</p><p className="mt-1 font-mono text-lg font-black tracking-widest text-white">{referralCode}</p></div>
           <p className="mt-4 text-center text-[9px] text-slate-500">www.bridgeforthomes.com</p>
         </div>
