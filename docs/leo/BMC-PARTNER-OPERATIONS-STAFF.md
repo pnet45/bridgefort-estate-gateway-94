@@ -30,7 +30,7 @@ This guide supports authorised staff administering the Bridgefort Multi-Business
 
 ## Referral and commission integrity
 
-A referral code is an attribution identifier, not proof of employment, official approval, authority to bind the Company or an unconditional right to commission. Confirm the authoritative referral record, division status and current written commission schedule before answering a claim. Do not invent or promise earnings. Do not manually alter sponsor relationships to favour a partner. Escalate disputed attribution to the responsible manager and preserve relevant audit records.
+A referral code is an attribution identifier, not proof of employment, official approval, authority to bind the Company or an unconditional right to commission. Homes continues to use the existing BH-Realtors referral system. Approved Travels and Agrovest applications receive separate division-specific links from the BMC Partner Hub; the system disables those codes when the relevant division is no longer approved. Travel booking and Agrovest-only order attribution is recorded separately and is not a commission calculation. Confirm the authoritative referral record, division status and current written commission schedule before answering a claim. Do not invent or promise earnings. Do not manually alter sponsor relationships to favour a partner. Escalate disputed attribution to the responsible manager and preserve relevant audit records.
 
 ## Customer funds and payout security
 
