@@ -64,6 +64,42 @@ jobs:
           console.log('Legal-document automation safety assertions passed.');
           NODE
 
+      - name: Verify BMC agreement, division and approval migration safeguards
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+
+          const acceptance = readFileSync('supabase/migrations/20261120120000_bmc_agreement_acceptance_audit.sql', 'utf8');
+          const divisions = readFileSync('supabase/migrations/20261120130000_bmc_division_applications.sql', 'utf8');
+          const security = readFileSync('supabase/migrations/20261120140000_secure_bmc_division_review.sql', 'utf8');
+          const signup = readFileSync('src/pages/Auth.tsx', 'utf8');
+          const hub = readFileSync('src/pages/BMCPartnerHub.tsx', 'utf8');
+          const admin = readFileSync('src/components/admin/AdminBMCApplications.tsx', 'utf8');
+
+          assert.match(acceptance, /create table if not exists public\.bmc_agreement_acceptances/i);
+          assert.match(acceptance, /revoke all on public\.bmc_agreement_acceptances from anon, authenticated/i);
+          assert.match(acceptance, /after insert on auth\.users/i);
+          assert.match(divisions, /unique \(user_id, division\)/i, 'one independent application per division');
+          assert.match(divisions, /create table if not exists public\.bmc_partner_division_audit/i);
+          assert.match(divisions, /create or replace function public\.request_bmc_division_application/i);
+          assert.match(divisions, /create or replace function public\.create_bmc_division_applications/i);
+          assert.match(security, /create trigger protect_bmc_membership_fields\s+before insert or update on public\.profiles/i);
+          assert.match(security, /revoke update \(application_status, reviewed_at, updated_at\)\s+on public\.bmc_partner_divisions from anon, authenticated/i);
+          assert.match(security, /drop policy if exists "BMC approvers can update division application status"/i);
+          assert.match(security, /create or replace function public\.admin_review_bmc_division_application/i);
+          assert.match(security, /BMC Agreement acceptance and privacy acknowledgement are required before approval/i);
+          assert.match(security, /Invalid BMC application status transition/i);
+          assert.match(security, /A review reason is required for rejection or suspension/i);
+          assert.match(security, /new\.division = 'homes'/i, 'only Homes approval may activate BH-Realtors membership');
+          assert.match(signup, /bmc_selected_divisions: selectedBmcDivisions/i);
+          assert.match(signup, /is_pbo and current_package are intentionally not set here/i);
+          assert.match(hub, /request_bmc_division_application/i);
+          assert.match(admin, /_review_note: reviewNote \|\| null/i);
+          assert.match(admin, /Review reason required/i);
+          console.log('BMC migration and UI safeguard assertions passed.');
+          NODE
+
       - name: Lint
         run: npm run lint
 
