@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { Send, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
@@ -57,6 +57,8 @@ const TravelsBookingForm: React.FC<Props> = ({
 }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const bmcReferralCode = useMemo(() => new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase() || '', [location.search]);
 
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -279,6 +281,7 @@ const TravelsBookingForm: React.FC<Props> = ({
             package: result.data.package,
             destination: result.data.destination || null,
             notes: result.data.notes || null,
+            bmc_referral_code: bmcReferralCode || null,
             website: honeypotRef.current?.value ?? "",
 
             // ==================================================
