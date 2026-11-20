@@ -101,7 +101,7 @@ const BHRealtors: React.FC = () => {
     ? Boolean(dashboardIsPbo && dashboardIsActive)
     : Boolean(profile?.is_pbo && profile?.is_active);
   const referralCode = profile?.pbo_referral_code || dashboardReferralCode || '';
-  const referralLink = typeof window !== 'undefined' && referralCode ? `${window.location.origin}/auth?ref=${encodeURIComponent(referralCode)}` : '';
+  const referralLink = typeof window !== 'undefined' && referralCode ? `${window.location.origin}/bridgefort-realtors-login?ref=${encodeURIComponent(referralCode)}` : '';
 
   const load = useCallback(async () => {
     if (!user) return;
