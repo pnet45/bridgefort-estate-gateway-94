@@ -132,6 +132,43 @@ create trigger bmc_partner_division_audit_update
   after update of application_status on public.bmc_partner_divisions
   for each row execute function public.audit_bmc_partner_division_change();
 
+create or replace function public.admin_list_bmc_division_applications()
+returns table (
+  application_id uuid,
+  user_id uuid,
+  division text,
+  application_status text,
+  requested_at timestamptz,
+  reviewed_at timestamptz,
+  first_name text,
+  last_name text,
+  referral_code text
+)
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+begin
+  if auth.uid() is null
+     or not (
+       public.user_has_permission(auth.uid(), 'admin:view_approvals'::text)
+       or public.user_has_permission(auth.uid(), 'admin:all'::text)
+     ) then
+    raise exception 'BMC approval permission required';
+  end if;
+
+  return query
+  select d.id, d.user_id, d.division, d.application_status, d.requested_at,
+         d.reviewed_at, p.first_name, p.last_name, p.pbo_referral_code
+  from public.bmc_partner_divisions d
+  left join public.profiles p on p.id = d.user_id
+  order by d.requested_at desc;
+end;
+$function$;
+
+revoke all on function public.admin_list_bmc_division_applications() from public, anon;
+grant execute on function public.admin_list_bmc_division_applications() to authenticated;
+
 -- Existing BH-Realtors partners can apply for additional divisions after
 -- explicitly accepting the BMC-specific agreement and privacy notice.
 create or replace function public.request_bmc_division_application(
