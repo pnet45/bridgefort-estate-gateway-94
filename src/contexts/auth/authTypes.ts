@@ -49,7 +49,7 @@ export interface AuthContextType {
   hasPermission: (permission: string | string[]) => boolean;
   hasMailboxAccess: (mailboxEmail: string | null | undefined, provider?: 'gmail' | 'resend' | string) => Promise<boolean>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, firstName?: string, lastName?: string, referralCode?: string, referralLink?: boolean) => Promise<{ error: any; data?: any }>;
+  signUp: (email: string, password: string, firstName?: string, lastName?: string, referralCode?: string, referralLink?: boolean, additionalMetadata?: Record<string, unknown>) => Promise<{ error: any; data?: any }>;
   signOut: () => Promise<{ error: any }>;
   resetPassword: (email: string) => Promise<{ error: any }>;
   updatePassword: (password: string) => Promise<{ error: any }>;
