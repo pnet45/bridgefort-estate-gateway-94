@@ -5,7 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
-import { RefreshCw, Loader2, CheckCircle2, XCircle, RotateCcw, ShieldAlert } from 'lucide-react';
+import { RefreshCw, Loader2, CheckCircle2, XCircle, RotateCcw, ShieldAlert, History } from 'lucide-react';
+
+type AuditEvent = { audit_id: string; event_type: string; previous_status: string | null; new_status: string; actor_user_id: string | null; review_note: string | null; created_at: string; };
 
 type Application = {
   id: string;
@@ -43,6 +45,9 @@ export default function AdminBMCApplications() {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
+  const [auditByApplication, setAuditByApplication] = useState<Record<string, AuditEvent[]>>({});
+  const [expandedAuditId, setExpandedAuditId] = useState<string | null>(null);
+  const [auditLoadingId, setAuditLoadingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -62,6 +67,22 @@ export default function AdminBMCApplications() {
 
   useEffect(() => { void load(); }, [load]);
 
+  const toggleAudit = async (applicationId: string) => {
+    if (expandedAuditId === applicationId) { setExpandedAuditId(null); return; }
+    setExpandedAuditId(applicationId);
+    if (auditByApplication[applicationId]) return;
+    setAuditLoadingId(applicationId);
+    const { data, error } = await supabase.rpc('admin_list_bmc_division_audit' as never, { _application_id: applicationId } as never) as unknown as { data: AuditEvent[] | null; error: { message: string } | null };
+    if (error) {
+      console.error('BMC audit history failed:', error);
+      toast({ title: 'Unable to load review history', description: 'Check your approval permission and try again.', variant: 'destructive' });
+      setExpandedAuditId(null);
+    } else {
+      setAuditByApplication((current) => ({ ...current, [applicationId]: Array.isArray(data) ? data : [] }));
+    }
+    setAuditLoadingId(null);
+  };
+
   const changeStatus = async (application: Application, nextStatus: Application['application_status']) => {
     const reviewNote = (reviewNotes[application.id] || '').trim();
     if ((nextStatus === 'rejected' || nextStatus === 'suspended') && !reviewNote) {
@@ -79,6 +100,8 @@ export default function AdminBMCApplications() {
       toast({ title: 'Status update failed', description: 'The server rejected this change. Check your approval permission and try again.', variant: 'destructive' });
     } else {
       toast({ title: 'BMC application updated', description: `${divisionNames[application.division]} status changed to ${statusNames[nextStatus]}.` });
+      setAuditByApplication((current) => { const next = { ...current }; delete next[application.id]; return next; });
+      setReviewNotes((current) => ({ ...current, [application.id]: '' }));
       await load();
     }
     setSavingId(null);
@@ -145,6 +168,29 @@ export default function AdminBMCApplications() {
                     aria-label={`Review note for ${divisionNames[application.division]}`}
                   />
                 </div>
+                <div className="flex w-full flex-wrap gap-2 md:w-auto">
+                  <Button size="sm" variant="ghost" onClick={() => void toggleAudit(application.id)} disabled={auditLoadingId === application.id}>
+                    {auditLoadingId === application.id ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <History className="mr-1 h-4 w-4" />}
+                    {expandedAuditId === application.id ? 'Hide history' : 'Review history'}
+                  </Button>
+                </div>
+                {expandedAuditId === application.id && (
+                  <div className="w-full rounded-lg border border-border bg-muted/30 p-3">
+                    <p className="mb-2 text-sm font-semibold text-foreground">Application audit history</p>
+                    {(auditByApplication[application.id] || []).length === 0 ? <p className="text-xs text-muted-foreground">No audit events recorded.</p> : (
+                      <ol className="space-y-3">
+                        {(auditByApplication[application.id] || []).map((event) => (
+                          <li key={event.audit_id} className="border-l-2 border-border pl-3">
+                            <p className="text-xs font-medium text-foreground">{event.event_type.replaceAll('_', ' ')} · {new Date(event.created_at).toLocaleString()}</p>
+                            <p className="text-xs text-muted-foreground">{event.previous_status ? `${statusNames[event.previous_status as Application['application_status']] || event.previous_status} → ` : ''}{statusNames[event.new_status as Application['application_status']] || event.new_status}</p>
+                            {event.actor_user_id && <p className="text-xs text-muted-foreground">Reviewer ID: {event.actor_user_id.slice(0, 8)}…</p>}
+                            {event.review_note && <p className="mt-1 text-xs text-muted-foreground">{event.review_note}</p>}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {application.application_status === 'pending_review' && (
                     <>
