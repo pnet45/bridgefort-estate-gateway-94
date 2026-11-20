@@ -81,6 +81,9 @@ jobs:
           const travelEdge = readFileSync('supabase/functions/submit-travel-booking/index.ts', 'utf8');
           const checkoutForm = readFileSync('src/components/ecommerce/CheckoutForm.tsx', 'utf8');
           const checkoutEdge = readFileSync('supabase/functions/create-checkout-order/index.ts', 'utf8');
+          const agrovestCategory = readFileSync('src/pages/AgrovestCategoryDetail.tsx', 'utf8');
+          const travelsPage = readFileSync('src/pages/Travels.tsx', 'utf8');
+          const travelDestination = readFileSync('src/pages/TravelDestination.tsx', 'utf8');
 
           assert.match(acceptance, /create table if not exists public\.bmc_agreement_acceptances/i);
           assert.match(acceptance, /revoke all on public\.bmc_agreement_acceptances from anon, authenticated/i);
@@ -120,6 +123,10 @@ jobs:
           assert.match(travelEdge, /bmc_referral_code_id: bmcReferralCodeId/i);
           assert.match(checkoutForm, /bmcReferralCode/i);
           assert.match(checkoutEdge, /bmc_referral_code_id: bmcReferralCodeId/i);
+          assert.match(agrovestCategory, /bmcReferralCode,/i, 'Agrovest category pages must carry BMC referral codes into the cart');
+          assert.match(agrovestCategory, /referralQuery/i, 'Agrovest category navigation must preserve the referral query');
+          assert.match(travelsPage, /referralQuery/i, 'Travel destination navigation must preserve the referral query');
+          assert.match(travelDestination, /referralQuery/i, 'Travel destination enquiry links must preserve the referral query');
           console.log('BMC division referral attribution safeguards passed.');
           console.log('BMC migration and UI safeguard assertions passed.');
           NODE
