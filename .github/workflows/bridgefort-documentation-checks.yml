@@ -84,6 +84,7 @@ jobs:
           const checkoutForm = readFileSync('src/components/ecommerce/CheckoutForm.tsx', 'utf8');
           const checkoutEdge = readFileSync('supabase/functions/create-checkout-order/index.ts', 'utf8');
           const agrovestCategory = readFileSync('src/pages/AgrovestCategoryDetail.tsx', 'utf8');
+          const agrovestLanding = readFileSync('src/pages/Agrovest.tsx', 'utf8');
           const travelsPage = readFileSync('src/pages/Travels.tsx', 'utf8');
           const travelDestination = readFileSync('src/pages/TravelDestination.tsx', 'utf8');
 
@@ -133,6 +134,7 @@ jobs:
           assert.match(travelEdge, /bmc_referral_code_id: bmcReferralCodeId/i);
           assert.match(checkoutForm, /bmcReferralCode/i);
           assert.match(checkoutEdge, /bmc_referral_code_id: bmcReferralCodeId/i);
+          assert.match(agrovestLanding, /referralQuery/i, 'Agrovest landing-page category links must preserve BMC referrals');
           assert.match(agrovestCategory, /bmcReferralCode,/i, 'Agrovest category pages must carry BMC referral codes into the cart');
           assert.match(agrovestCategory, /referralQuery/i, 'Agrovest category navigation must preserve the referral query');
           assert.match(travelsPage, /referralQuery/i, 'Travel destination navigation must preserve the referral query');
