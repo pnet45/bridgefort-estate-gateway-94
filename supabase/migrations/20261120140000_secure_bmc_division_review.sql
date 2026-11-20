@@ -116,6 +116,58 @@ create trigger bmc_sync_homes_membership
   after update of application_status on public.bmc_partner_divisions
   for each row execute function public.sync_bmc_homes_membership();
 
+-- Include acceptance evidence in the approval queue so reviewers can
+-- verify the separate BMC agreement and privacy acknowledgement before approval.
+drop function if exists public.admin_list_bmc_division_applications();
+create function public.admin_list_bmc_division_applications()
+returns table (
+  application_id uuid,
+  user_id uuid,
+  division text,
+  application_status text,
+  requested_at timestamptz,
+  reviewed_at timestamptz,
+  first_name text,
+  last_name text,
+  referral_code text,
+  agreement_version text,
+  agreement_accepted_at timestamptz,
+  privacy_notice_acknowledged boolean
+)
+language plpgsql
+security definer
+set search_path = ''
+as $bmc_list$
+begin
+  if auth.uid() is null
+     or not (
+       public.user_has_permission(auth.uid(), 'admin:view_approvals'::text)
+       or public.user_has_permission(auth.uid(), 'admin:all'::text)
+     ) then
+    raise exception 'BMC approval permission required';
+  end if;
+
+  return query
+  select d.id, d.user_id, d.division, d.application_status, d.requested_at,
+         d.reviewed_at, p.first_name, p.last_name, p.pbo_referral_code,
+         acceptance.agreement_version, acceptance.accepted_at,
+         acceptance.privacy_notice_acknowledged
+  from public.bmc_partner_divisions d
+  left join public.profiles p on p.id = d.user_id
+  left join lateral (
+    select a.agreement_version, a.accepted_at, a.privacy_notice_acknowledged
+    from public.bmc_agreement_acceptances a
+    where a.user_id = d.user_id
+    order by a.accepted_at desc
+    limit 1
+  ) acceptance on true
+  order by d.requested_at desc;
+end;
+$bmc_list$;
+
+revoke all on function public.admin_list_bmc_division_applications() from public, anon;
+grant execute on function public.admin_list_bmc_division_applications() to authenticated;
+
 create or replace function public.admin_review_bmc_division_application(
   _application_id uuid,
   _decision text,
@@ -159,6 +211,16 @@ begin
 
   if current_application.application_status = 'withdrawn' then
     raise exception 'Withdrawn applications cannot be reviewed';
+  end if;
+
+  if _decision = 'approved' and not exists (
+    select 1
+    from public.bmc_agreement_acceptances a
+    where a.user_id = current_application.user_id
+      and a.agreement_version is not null
+      and a.privacy_notice_acknowledged is true
+  ) then
+    raise exception 'Verified BMC Agreement acceptance and privacy acknowledgement are required before approval';
   end if;
 
   update public.bmc_partner_divisions
