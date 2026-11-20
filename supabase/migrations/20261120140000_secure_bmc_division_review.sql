@@ -78,51 +78,9 @@ revoke update (application_status, reviewed_at, updated_at)
 drop policy if exists "BMC approvers can update division application status"
   on public.bmc_partner_divisions;
 
-create or replace function public.sync_bmc_homes_membership()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  if new.division = 'homes' and new.application_status is distinct from old.application_status then
-    if new.application_status = 'approved' then
-      -- The profile guard permits this flag only while this trusted trigger
-      -- holds the transaction-local membership-sync marker.
-      perform set_config('bridgefort.bmc_membership_sync', '1', true);
-      update public.profiles
-      set is_pbo = true,
-          current_package = coalesce(nullif(current_package, ''), 'associate'),
-          updated_at = now()
-      where id = new.user_id;
-      perform set_config('bridgefort.bmc_membership_sync', '0', true);
-    elsif old.application_status = 'approved'
-       and new.application_status in ('suspended', 'rejected', 'withdrawn', 'pending_review') then
-      -- Only revoke the legacy BH-Realtors flag for a new approved BMC
-      -- membership. Existing legacy accounts are represented by
-      -- legacy_existing and are not changed by this transition.
-      perform set_config('bridgefort.bmc_membership_sync', '1', true);
-      update public.profiles
-      set is_pbo = false,
-          updated_at = now()
-      where id = new.user_id
-        and exists (
-          select 1 from public.profiles p
-          where p.id = new.user_id
-            and p.is_pbo is true
-        );
-      perform set_config('bridgefort.bmc_membership_sync', '0', true);
-    end if;
-  end if;
-  return new;
-end;
-$$;
-
-revoke all on function public.sync_bmc_homes_membership() from public, anon, authenticated;
-drop trigger if exists bmc_sync_homes_membership on public.bmc_partner_divisions;
-create trigger bmc_sync_homes_membership
-  after update of application_status on public.bmc_partner_divisions
-  for each row execute function public.sync_bmc_homes_membership();
+-- BMC Homes approval is intentionally separate from legacy BH-Realtors paid
+-- membership. It must not set profiles.is_pbo, current_package or is_active.
+-- Existing BH-Realtors accounts and their historical membership remain untouched.
 
 -- Include acceptance evidence in the approval queue so reviewers can
 -- verify the separate BMC agreement and privacy acknowledgement before approval.
