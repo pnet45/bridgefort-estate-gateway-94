@@ -47,6 +47,7 @@ const Auth = ({
   const [agreedToBmcAgreement, setAgreedToBmcAgreement] = useState(false);
   const [acknowledgedBmcPrivacy, setAcknowledgedBmcPrivacy] = useState(false);
   const [bmcMarketingConsent, setBmcMarketingConsent] = useState(false);
+  const [selectedBmcDivisions, setSelectedBmcDivisions] = useState<string[]>([]);
   const [accountLockedOpen, setAccountLockedOpen] = useState(false);
   const [lockedReason, setLockedReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -89,6 +90,7 @@ const Auth = ({
     setAgreedToBmcAgreement(false);
     setAcknowledgedBmcPrivacy(false);
     setBmcMarketingConsent(false);
+    setSelectedBmcDivisions([]);
     setRecaptchaToken(null);
     if (recaptchaRef.current) {
       recaptchaRef.current.reset();
@@ -286,6 +288,11 @@ const Auth = ({
       return;
     }
 
+    if (isRegisteringAsPBO && selectedBmcDivisions.length === 0) {
+      toast({ title: 'Select a business division', description: 'Choose at least one Bridgefort division for your BMC application.', variant: 'destructive' });
+      return;
+    }
+
     if (isRegisteringAsPBO && (!agreedToBmcAgreement || !acknowledgedBmcPrivacy)) {
       toast({ title: 'BMC Partner Agreement required', description: 'Please accept the BMC Partner Agreement and acknowledge the separate BMC Privacy Notice to continue.', variant: 'destructive' });
       return;
@@ -331,7 +338,7 @@ const Auth = ({
       const normalizedSponsorCode = sponsorCode.trim().toUpperCase();
       // Persist the captured code in auth metadata as a recovery path when
       // email confirmation means signup has no authenticated session yet.
-      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked, isRegisteringAsPBO ? { bmc_agreement_accepted: true, bmc_agreement_version: '1.0', bmc_agreement_accepted_at: new Date().toISOString(), bmc_agreement_name: 'Bridgefort Multi-Business Consultants Partner Agreement', bmc_privacy_acknowledged: acknowledgedBmcPrivacy, bmc_privacy_notice_version: '1.0', bmc_marketing_consent: bmcMarketingConsent } : undefined);
+      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked, isRegisteringAsPBO ? { bmc_agreement_accepted: true, bmc_agreement_version: '1.0', bmc_agreement_accepted_at: new Date().toISOString(), bmc_agreement_name: 'Bridgefort Multi-Business Consultants Partner Agreement', bmc_privacy_acknowledged: acknowledgedBmcPrivacy, bmc_privacy_notice_version: '1.0', bmc_marketing_consent: bmcMarketingConsent, bmc_selected_divisions: selectedBmcDivisions } : undefined);
       if (error) throw error;
 
       // Supabase can return a *truthy* user object with an empty
@@ -678,7 +685,7 @@ const Auth = ({
                     id="registerAsPBO"
                     type="checkbox"
                     checked={isRegisteringAsPBO}
-                    onChange={(e) => { setIsRegisteringAsPBO(e.target.checked); if (!e.target.checked) { setAgreedToBmcAgreement(false); setAcknowledgedBmcPrivacy(false); setBmcMarketingConsent(false); } }}
+                    onChange={(e) => { setIsRegisteringAsPBO(e.target.checked); if (!e.target.checked) { setAgreedToBmcAgreement(false); setAcknowledgedBmcPrivacy(false); setBmcMarketingConsent(false); setSelectedBmcDivisions([]); } }}
                     className="h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
                   />
                   <Label htmlFor="registerAsPBO">Join BMC – Bridgefort Multi-Business Consultants</Label>
@@ -716,6 +723,30 @@ const Auth = ({
                   )}
                 </div>
 
+                {isRegisteringAsPBO && (
+                  <fieldset className="rounded-lg border border-border p-3 space-y-3">
+                    <legend className="px-1 text-sm font-semibold text-foreground">Choose your business divisions</legend>
+                    <p className="text-xs text-muted-foreground">Select one or more areas you wish to apply for. Each division has its own verification and approval process; selecting a division does not activate partner status.</p>
+                    {[
+                      { value: 'homes', label: 'Bridgefort Homes', detail: 'Real estate and property services' },
+                      { value: 'travels', label: 'Bridgefort Travels', detail: 'Travel, flights, accommodation and tours' },
+                      { value: 'agrovest', label: 'Bridgefort Agrovest', detail: 'Agriculture and agribusiness' },
+                    ].map((division) => (
+                      <label key={division.value} className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedBmcDivisions.includes(division.value)}
+                          onChange={(e) => setSelectedBmcDivisions((current) => e.target.checked ? [...current, division.value] : current.filter((value) => value !== division.value))}
+                          className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium text-foreground">{division.label}</span>
+                          <span className="block text-xs text-muted-foreground">{division.detail}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </fieldset>
+                )}
                 {isRegisteringAsPBO && (
                 <div className="flex items-start gap-3 pt-1 rounded-lg border border-estate-blue/20 bg-estate-blue/5 p-3">
                   <input id="agreedToBmcAgreement" type="checkbox" checked={agreedToBmcAgreement} onChange={(e) => setAgreedToBmcAgreement(e.target.checked)} required className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
