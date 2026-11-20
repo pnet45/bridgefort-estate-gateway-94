@@ -51,15 +51,15 @@ create policy "BMC approvers can review division applications"
   on public.bmc_partner_divisions
   for select
   to authenticated
-  using (admin_has_permission('admin:view_approvals'::text));
+  using ((public.user_has_permission((select auth.uid()), 'admin:view_approvals'::text) or public.user_has_permission((select auth.uid()), 'admin:all'::text)));
 
 drop policy if exists "BMC approvers can update division application status" on public.bmc_partner_divisions;
 create policy "BMC approvers can update division application status"
   on public.bmc_partner_divisions
   for update
   to authenticated
-  using (admin_has_permission('admin:view_approvals'::text))
-  with check (admin_has_permission('admin:view_approvals'::text));
+  using ((public.user_has_permission((select auth.uid()), 'admin:view_approvals'::text) or public.user_has_permission((select auth.uid()), 'admin:all'::text)))
+  with check ((public.user_has_permission((select auth.uid()), 'admin:view_approvals'::text) or public.user_has_permission((select auth.uid()), 'admin:all'::text)));
 
 create table if not exists public.bmc_partner_division_audit (
   id uuid primary key default gen_random_uuid(),
@@ -85,7 +85,7 @@ create policy "BMC approvers can read division audit"
   on public.bmc_partner_division_audit
   for select
   to authenticated
-  using (admin_has_permission('admin:view_approvals'::text));
+  using ((public.user_has_permission((select auth.uid()), 'admin:view_approvals'::text) or public.user_has_permission((select auth.uid()), 'admin:all'::text)));
 
 create or replace function public.audit_bmc_partner_division_change()
 returns trigger
