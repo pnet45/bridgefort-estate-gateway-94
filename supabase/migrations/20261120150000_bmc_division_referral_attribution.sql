@@ -162,7 +162,7 @@ begin
     and d.application_status = 'approved'
   for share of c, d;
 
-  if found then
+  if found and referral.user_id <> new.id then
     insert into public.bmc_division_referral_attributions
       (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
     values
@@ -207,11 +207,13 @@ begin
     raise exception 'Invalid or inactive Bridgefort Travels referral code';
   end if;
 
-  insert into public.bmc_division_referral_attributions
-    (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
-  values
-    (referral.id, 'travels', referral.user_id, new.customer_id, 'travel_booking', new.id)
-  on conflict (source_type, source_record_id) do nothing;
+  if referral.user_id <> new.customer_id then
+    insert into public.bmc_division_referral_attributions
+      (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
+    values
+      (referral.id, 'travels', referral.user_id, new.customer_id, 'travel_booking', new.id)
+    on conflict (source_type, source_record_id) do nothing;
+  end if;
 
   return new;
 end;
@@ -274,11 +276,13 @@ begin
     raise exception 'Homes referral codes cannot be used for Agrovest items';
   end if;
 
-  insert into public.bmc_division_referral_attributions
-    (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
-  values
-    (referral.id, referral.division, referral.user_id, new.user_id, 'order', new.id)
-  on conflict (source_type, source_record_id) do nothing;
+  if referral.user_id <> new.user_id then
+    insert into public.bmc_division_referral_attributions
+      (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
+    values
+      (referral.id, referral.division, referral.user_id, new.user_id, 'order', new.id)
+    on conflict (source_type, source_record_id) do nothing;
+  end if;
 
   return new;
 end;
