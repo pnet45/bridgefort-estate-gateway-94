@@ -41,7 +41,7 @@ export default function AdminBMCApplications() {
   const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase.rpc('admin_list_bmc_division_applications' as never, {} as never) as unknown as {
-      data: Array<Application & { application_id: string }> | null;
+      data: Array<Omit<Application, 'id'> & { application_id: string }> | null;
       error: { message: string } | null;
     };
     if (error) {
