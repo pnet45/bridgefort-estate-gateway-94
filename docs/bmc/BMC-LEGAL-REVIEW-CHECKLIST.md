@@ -60,7 +60,7 @@ Each division must approve its own written operating and commission schedule bef
 
 ## 5. Technology and security release gates
 
-- Independently review migrations 20261120120000, 20261120130000, 20261120140000 and 20261120150000 against the actual production schema.
+- Independently review migrations 20261120120000, 20261120130000, 20261120140000, 20261120150000 and 20261120160000 against the actual production schema.
 - Execute the migrations in an approved safe test database and verify rollback/recovery procedures before production release.
 - Test signup acceptance capture, exact agreement/privacy versions, independent division approval, rejection reasons, suspension/reinstatement and audit history.
 - Verify no BMC approval changes legacy profiles.is_pbo, current_package, is_active, paid membership purchases or historical sponsor relationships.
