@@ -21,9 +21,11 @@ This guide supports authorised staff administering the Bridgefort Multi-Business
 
 ## Division permissions
 
-- Homes approval is the event that activates the legacy BH-Realtors/Homes membership entitlement for a new BMC applicant.
+- Homes approval grants only the BMC Homes division entitlement. It does not enrol the partner in the legacy paid BH-Realtors membership, activate a legacy Realtor package, or unlock BH-Realtors commission privileges.
 - Travels approval does not confer Homes or BH-Realtors permissions.
 - Agrovest approval does not confer Homes or BH-Realtors permissions.
+- Approved BMC Homes, Travels and Agrovest applications receive separate division referral codes. Homes referral attribution is recorded on referred-user signup; Travels attribution is recorded on travel bookings; Agrovest attribution is recorded on Agrovest-only orders.
+- Existing BH-Realtors members retain their original Homes status, paid membership, referral code and sponsor relationships. Do not merge their legacy identity with the new BMC division code.
 - Approval in one division must never be used as evidence of approval in another division.
 - Existing BH-Realtors members are retained as legacy Homes members; their referral codes, sponsor relationships and valid historical attribution must not be overwritten during transition.
 - New BMC applications remain pending until reviewed. Staff must not manually set profile membership or package fields to bypass the protected approval process.
