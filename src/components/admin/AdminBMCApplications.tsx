@@ -13,6 +13,9 @@ type Application = {
   application_status: 'pending_review' | 'legacy_existing' | 'approved' | 'rejected' | 'suspended' | 'withdrawn';
   requested_at: string;
   reviewed_at: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  referral_code: string | null;
 };
 
 const divisionNames = {
@@ -37,16 +40,16 @@ export default function AdminBMCApplications() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await (supabase as any)
-      .from('bmc_partner_divisions')
-      .select('id,user_id,division,application_status,requested_at,reviewed_at')
-      .order('requested_at', { ascending: false });
+    const { data, error } = await supabase.rpc('admin_list_bmc_division_applications' as never, {} as never) as unknown as {
+      data: Array<Application & { application_id: string }> | null;
+      error: { message: string } | null;
+    };
     if (error) {
       console.error('BMC application queue failed:', error);
       toast({ title: 'Unable to load BMC applications', description: 'Confirm the BMC database migration has been applied and that you have approval permissions.', variant: 'destructive' });
       setRows([]);
     } else {
-      setRows(Array.isArray(data) ? data as Application[] : []);
+      setRows(Array.isArray(data) ? data.map((row) => ({ ...row, id: row.application_id })) as Application[] : []);
     }
     setLoading(false);
   }, []);
@@ -109,7 +112,8 @@ export default function AdminBMCApplications() {
                     <h3 className="font-semibold text-foreground">{divisionNames[application.division]}</h3>
                     <Badge variant="outline">{statusNames[application.application_status]}</Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground">Partner account: {application.user_id.slice(0, 8)}… · Submitted {new Date(application.requested_at).toLocaleDateString()}</p>
+                  <p className="text-sm text-foreground">{[application.first_name, application.last_name].filter(Boolean).join(' ') || 'Name not available'}</p>
+                  <p className="text-xs text-muted-foreground">Partner account: {application.user_id.slice(0, 8)}…{application.referral_code ? ` · BMC ID: ${application.referral_code}` : ''} · Submitted {new Date(application.requested_at).toLocaleDateString()}</p>
                   {application.reviewed_at && <p className="text-xs text-muted-foreground">Last reviewed {new Date(application.reviewed_at).toLocaleString()}</p>}
                 </div>
                 <div className="flex flex-wrap gap-2">
