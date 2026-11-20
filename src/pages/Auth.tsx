@@ -45,6 +45,7 @@ const Auth = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [agreedToBmcAgreement, setAgreedToBmcAgreement] = useState(false);
+  const [acknowledgedBmcPrivacy, setAcknowledgedBmcPrivacy] = useState(false);
   const [bmcMarketingConsent, setBmcMarketingConsent] = useState(false);
   const [accountLockedOpen, setAccountLockedOpen] = useState(false);
   const [lockedReason, setLockedReason] = useState<string | null>(null);
@@ -86,6 +87,7 @@ const Auth = ({
     setConfirmPassword('');
     setAgreedToTerms(false);
     setAgreedToBmcAgreement(false);
+    setAcknowledgedBmcPrivacy(false);
     setBmcMarketingConsent(false);
     setRecaptchaToken(null);
     if (recaptchaRef.current) {
@@ -284,8 +286,8 @@ const Auth = ({
       return;
     }
 
-    if (isRegisteringAsPBO && !agreedToBmcAgreement) {
-      toast({ title: 'BMC Partner Agreement required', description: 'Please read and accept the BMC Partner Agreement to continue.', variant: 'destructive' });
+    if (isRegisteringAsPBO && (!agreedToBmcAgreement || !acknowledgedBmcPrivacy)) {
+      toast({ title: 'BMC Partner Agreement required', description: 'Please accept the BMC Partner Agreement and acknowledge the separate BMC Privacy Notice to continue.', variant: 'destructive' });
       return;
     }
 
@@ -329,7 +331,7 @@ const Auth = ({
       const normalizedSponsorCode = sponsorCode.trim().toUpperCase();
       // Persist the captured code in auth metadata as a recovery path when
       // email confirmation means signup has no authenticated session yet.
-      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked, isRegisteringAsPBO ? { bmc_agreement_accepted: true, bmc_agreement_version: '1.0', bmc_agreement_accepted_at: new Date().toISOString(), bmc_agreement_name: 'Bridgefort Multi-Business Consultants Partner Agreement', bmc_marketing_consent: bmcMarketingConsent } : undefined);
+      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked, isRegisteringAsPBO ? { bmc_agreement_accepted: true, bmc_agreement_version: '1.0', bmc_agreement_accepted_at: new Date().toISOString(), bmc_agreement_name: 'Bridgefort Multi-Business Consultants Partner Agreement', bmc_privacy_acknowledged: acknowledgedBmcPrivacy, bmc_privacy_notice_version: '1.0', bmc_marketing_consent: bmcMarketingConsent } : undefined);
       if (error) throw error;
 
       // Supabase can return a *truthy* user object with an empty
@@ -676,7 +678,7 @@ const Auth = ({
                     id="registerAsPBO"
                     type="checkbox"
                     checked={isRegisteringAsPBO}
-                    onChange={(e) => { setIsRegisteringAsPBO(e.target.checked); if (!e.target.checked) { setAgreedToBmcAgreement(false); setBmcMarketingConsent(false); } }}
+                    onChange={(e) => { setIsRegisteringAsPBO(e.target.checked); if (!e.target.checked) { setAgreedToBmcAgreement(false); setAcknowledgedBmcPrivacy(false); setBmcMarketingConsent(false); } }}
                     className="h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
                   />
                   <Label htmlFor="registerAsPBO">Join BMC – Bridgefort Multi-Business Consultants</Label>
@@ -768,7 +770,7 @@ const Auth = ({
 
             <Button 
               type="submit" 
-              disabled={loading || (!isLogin && (!agreedToTerms || (isRegisteringAsPBO && !agreedToBmcAgreement)))} 
+              disabled={loading || (!isLogin && (!agreedToTerms || (isRegisteringAsPBO && (!agreedToBmcAgreement || !acknowledgedBmcPrivacy))))} 
               className="w-full bg-estate-blue hover:bg-estate-darkBlue"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
