@@ -132,6 +132,74 @@ create trigger bmc_partner_division_audit_update
   after update of application_status on public.bmc_partner_divisions
   for each row execute function public.audit_bmc_partner_division_change();
 
+-- Existing BH-Realtors partners can apply for additional divisions after
+-- explicitly accepting the BMC-specific agreement and privacy notice.
+create or replace function public.request_bmc_division_application(
+  _division text,
+  _agree_to_bmc_terms boolean,
+  _acknowledge_bmc_privacy boolean,
+  _marketing_consent boolean default false
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  current_user_id uuid;
+  application_id uuid;
+begin
+  current_user_id := auth.uid();
+  if current_user_id is null then
+    raise exception 'Authentication required';
+  end if;
+
+  if _division not in ('homes', 'travels', 'agrovest') then
+    raise exception 'Invalid BMC division';
+  end if;
+
+  if coalesce(_agree_to_bmc_terms, false) is not true
+     or coalesce(_acknowledge_bmc_privacy, false) is not true then
+    raise exception 'BMC agreement acceptance and privacy acknowledgement are required';
+  end if;
+
+  if not exists (
+    select 1 from public.profiles p
+    where p.id = current_user_id and p.is_pbo is true
+  ) and not exists (
+    select 1 from public.bmc_partner_divisions d
+    where d.user_id = current_user_id
+  ) then
+    raise exception 'Only an existing BMC or BH-Realtors partner can apply for a division';
+  end if;
+
+  insert into public.bmc_agreement_acceptances (
+    user_id, agreement_version, agreement_name, accepted_at,
+    acceptance_source, marketing_consent, privacy_notice_version,
+    privacy_notice_acknowledged
+  ) values (
+    current_user_id, '1.0', 'Bridgefort Multi-Business Consultants Partner Agreement',
+    now(), 'partner_hub', coalesce(_marketing_consent, false), '1.0', true
+  );
+
+  insert into public.bmc_partner_divisions (user_id, division, application_status)
+  values (current_user_id, _division, 'pending_review')
+  on conflict (user_id, division) do nothing
+  returning id into application_id;
+
+  if application_id is null then
+    select d.id into application_id
+    from public.bmc_partner_divisions d
+    where d.user_id = current_user_id and d.division = _division;
+  end if;
+
+  return application_id;
+end;
+$function$;
+
+revoke all on function public.request_bmc_division_application(text, boolean, boolean, boolean) from public, anon;
+grant execute on function public.request_bmc_division_application(text, boolean, boolean, boolean) to authenticated;
+
 -- Applications are created only by this trusted auth trigger. Clients cannot
 -- insert or change their own approval state or review notes.
 create or replace function public.create_bmc_division_applications()
