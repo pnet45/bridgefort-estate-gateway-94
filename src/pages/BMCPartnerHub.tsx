@@ -46,6 +46,11 @@ export default function BMCPartnerHub() {
   const [applications, setApplications] = useState<DivisionApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
+  const [selectedAdditionalDivisions, setSelectedAdditionalDivisions] = useState<Division[]>([]);
+  const [agreedToBmcTerms, setAgreedToBmcTerms] = useState(false);
+  const [acknowledgedBmcPrivacy, setAcknowledgedBmcPrivacy] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [submittingApplications, setSubmittingApplications] = useState(false);
 
   const loadApplications = useCallback(async () => {
     if (!user) return;
@@ -72,6 +77,35 @@ export default function BMCPartnerHub() {
   }, [user, authLoading, loadApplications]);
 
   const referralCode = profile?.pbo_referral_code || '';
+
+  const existingDivisions = applications.map((application) => application.division);
+  const availableDivisions = (['homes', 'travels', 'agrovest'] as Division[]).filter((division) => !existingDivisions.includes(division));
+
+  const submitAdditionalApplications = async () => {
+    if (selectedAdditionalDivisions.length === 0 || !agreedToBmcTerms || !acknowledgedBmcPrivacy) return;
+    setSubmittingApplications(true);
+    const results = await Promise.all(selectedAdditionalDivisions.map((division) =>
+      supabase.rpc('request_bmc_division_application' as never, {
+        _division: division,
+        _agree_to_bmc_terms: true,
+        _acknowledge_bmc_privacy: true,
+        _marketing_consent: marketingConsent,
+      } as never) as unknown as Promise<{ error: { message: string } | null }>
+    ));
+    const succeeded = results.filter((result) => !result.error).length;
+    if (succeeded > 0) {
+      toast({ title: 'BMC applications submitted', description: `${succeeded} division application(s) have been sent for separate review.` });
+      setSelectedAdditionalDivisions([]);
+      setAgreedToBmcTerms(false);
+      setAcknowledgedBmcPrivacy(false);
+      setMarketingConsent(false);
+      await loadApplications();
+    }
+    if (succeeded < results.length) {
+      toast({ title: 'Some applications could not be submitted', description: 'Please refresh and retry the remaining division applications.', variant: 'destructive' });
+    }
+    setSubmittingApplications(false);
+  };
 
   if (authLoading) {
     return <div className="flex min-h-screen items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-estate-blue" /></div>;
@@ -175,6 +209,44 @@ export default function BMCPartnerHub() {
             </div>
           )}
         </section>
+
+        {!unavailable && availableDivisions.length > 0 && (Boolean(profile?.is_pbo) || applications.length > 0) && (
+          <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+            <h2 className="text-xl font-semibold text-foreground">Apply for additional divisions</h2>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">Your existing BMC identity can request access to other Bridgefort businesses. Every selected division is reviewed independently. Your current approval and referral history will not be changed.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {availableDivisions.map((division) => {
+                const details = divisionDetails[division];
+                return (
+                  <label key={division} className="flex cursor-pointer items-start gap-3 rounded-xl border border-border p-3">
+                    <input type="checkbox" checked={selectedAdditionalDivisions.includes(division)} onChange={(event) => setSelectedAdditionalDivisions((current) => event.target.checked ? [...current, division] : current.filter((item) => item !== division))} className="mt-1 h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-2 text-sm font-semibold text-foreground">{details.icon}{details.title}</span>
+                      <span className="mt-1 block text-xs text-muted-foreground">{details.description}</span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <div className="mt-5 space-y-3 border-t border-border pt-4">
+              <label className="flex items-start gap-3 text-sm text-foreground">
+                <input type="checkbox" checked={agreedToBmcTerms} onChange={(event) => setAgreedToBmcTerms(event.target.checked)} className="mt-1 h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
+                <span>I have read and agree to the separate <Link to="/bmc-partner-agreement" target="_blank" className="font-semibold text-estate-blue hover:underline">BMC Partner Agreement</Link>.</span>
+              </label>
+              <label className="flex items-start gap-3 text-sm text-foreground">
+                <input type="checkbox" checked={acknowledgedBmcPrivacy} onChange={(event) => setAcknowledgedBmcPrivacy(event.target.checked)} className="mt-1 h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
+                <span>I acknowledge that I have read the separate <Link to="/bmc-privacy-notice" target="_blank" className="font-semibold text-estate-blue hover:underline">BMC Privacy Notice</Link>.</span>
+              </label>
+              <label className="flex items-start gap-3 text-sm text-muted-foreground">
+                <input type="checkbox" checked={marketingConsent} onChange={(event) => setMarketingConsent(event.target.checked)} className="mt-1 h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
+                <span>I would like to receive optional Bridgefort marketing communications. This choice is not required for partner applications.</span>
+              </label>
+              <Button onClick={() => void submitAdditionalApplications()} disabled={submittingApplications || selectedAdditionalDivisions.length === 0 || !agreedToBmcTerms || !acknowledgedBmcPrivacy}>
+                {submittingApplications ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Submit division application(s)
+              </Button>
+            </div>
+          </section>
+        )}
 
         <section className="flex flex-wrap gap-3">
           <Link to="/bh-realtors"><Button variant="outline">Existing BH-Realtors workspace</Button></Link>
