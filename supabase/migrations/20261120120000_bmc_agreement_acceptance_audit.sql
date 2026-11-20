@@ -10,6 +10,7 @@ create table if not exists public.bmc_agreement_acceptances (
   agreement_name text not null,
   accepted_at timestamptz not null default now(),
   acceptance_source text not null default 'web_signup',
+  marketing_consent boolean not null default false,
   created_at timestamptz not null default now(),
   constraint bmc_agreement_acceptances_version_nonempty check (length(trim(agreement_version)) > 0)
 );
@@ -40,7 +41,7 @@ begin
   metadata := coalesce(new.raw_user_meta_data, '{}'::jsonb);
   if metadata ->> 'bmc_agreement_accepted' = 'true' then
     insert into public.bmc_agreement_acceptances (
-      user_id, agreement_version, agreement_name, accepted_at, acceptance_source
+      user_id, agreement_version, agreement_name, accepted_at, acceptance_source, marketing_consent
     )
     values (
       new.id,
