@@ -49,9 +49,10 @@ begin
     new.is_pbo := false;
   else
     new.is_pbo := old.is_pbo;
-    -- Referral identifiers may be assigned during profile creation, but
-    -- cannot be added, removed or changed through a self-service profile edit.
-    if new.pbo_referral_code is distinct from old.pbo_referral_code then
+    -- Referral identifiers may be assigned once during onboarding, but an
+    -- existing identifier cannot be replaced by a self-service profile edit.
+    if old.pbo_referral_code is not null
+       and new.pbo_referral_code is distinct from old.pbo_referral_code then
       new.pbo_referral_code := old.pbo_referral_code;
     end if;
   end if;
