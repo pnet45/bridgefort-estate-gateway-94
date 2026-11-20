@@ -76,6 +76,11 @@ jobs:
           const signup = readFileSync('src/pages/Auth.tsx', 'utf8');
           const hub = readFileSync('src/pages/BMCPartnerHub.tsx', 'utf8');
           const admin = readFileSync('src/components/admin/AdminBMCApplications.tsx', 'utf8');
+          const referrals = readFileSync('supabase/migrations/20261120150000_bmc_division_referral_attribution.sql', 'utf8');
+          const travelForm = readFileSync('src/components/travels/TravelsBookingForm.tsx', 'utf8');
+          const travelEdge = readFileSync('supabase/functions/submit-travel-booking/index.ts', 'utf8');
+          const checkoutForm = readFileSync('src/components/ecommerce/CheckoutForm.tsx', 'utf8');
+          const checkoutEdge = readFileSync('supabase/functions/create-checkout-order/index.ts', 'utf8');
 
           assert.match(acceptance, /create table if not exists public\.bmc_agreement_acceptances/i);
           assert.match(acceptance, /revoke all on public\.bmc_agreement_acceptances from anon, authenticated/i);
@@ -100,6 +105,16 @@ jobs:
           assert.match(admin, /Review reason required/i);
           assert.match(admin, /admin_list_bmc_division_audit/i);
           assert.match(admin, /Review history/i);
+          assert.match(referrals, /create table if not exists public\\.bmc_division_referral_codes/i);
+          assert.match(referrals, /create table if not exists public\\.bmc_division_referral_attributions/i);
+          assert.match(referrals, /get_my_bmc_division_referral_codes/i);
+          assert.match(referrals, /division = 'travels'/i);
+          assert.match(referrals, /division = 'agrovest'/i);
+          assert.match(travelForm, /bmc_referral_code: bmcReferralCode/i);
+          assert.match(travelEdge, /bmc_referral_code_id: bmcReferralCodeId/i);
+          assert.match(checkoutForm, /bmcReferralCode/i);
+          assert.match(checkoutEdge, /bmc_referral_code_id: bmcReferralCodeId/i);
+          console.log('BMC division referral attribution safeguards passed.');
           console.log('BMC migration and UI safeguard assertions passed.');
           NODE
 
