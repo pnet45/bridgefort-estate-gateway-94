@@ -177,6 +177,47 @@ $bmc_list$;
 revoke all on function public.admin_list_bmc_division_applications() from public, anon;
 grant execute on function public.admin_list_bmc_division_applications() to authenticated;
 
+create or replace function public.admin_list_bmc_division_audit(_application_id uuid)
+returns table (
+  audit_id uuid,
+  event_type text,
+  previous_status text,
+  new_status text,
+  actor_user_id uuid,
+  review_note text,
+  created_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = ''
+as $bmc_audit_list$
+begin
+  if auth.uid() is null
+     or not (
+       public.user_has_permission(auth.uid(), 'admin:view_approvals'::text)
+       or public.user_has_permission(auth.uid(), 'admin:all'::text)
+     ) then
+    raise exception 'BMC approval permission required';
+  end if;
+
+  if not exists (
+    select 1 from public.bmc_partner_divisions d where d.id = _application_id
+  ) then
+    raise exception 'BMC division application not found';
+  end if;
+
+  return query
+  select a.id, a.event_type, a.previous_status, a.new_status,
+         a.actor_user_id, a.review_note, a.created_at
+  from public.bmc_partner_division_audit a
+  where a.application_id = _application_id
+  order by a.created_at desc;
+end;
+$bmc_audit_list$;
+
+revoke all on function public.admin_list_bmc_division_audit(uuid) from public, anon;
+grant execute on function public.admin_list_bmc_division_audit(uuid) to authenticated;
+
 create or replace function public.admin_review_bmc_division_application(
   _application_id uuid,
   _decision text,
