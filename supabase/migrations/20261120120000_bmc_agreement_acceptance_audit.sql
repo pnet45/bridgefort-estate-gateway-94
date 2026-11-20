@@ -48,7 +48,8 @@ begin
       coalesce(nullif(metadata ->> 'bmc_agreement_version', ''), '1.0'),
       coalesce(nullif(metadata ->> 'bmc_agreement_name', ''), 'BMC Partner Agreement'),
       now(),
-      'web_signup'
+      'web_signup',
+      coalesce((metadata ->> 'bmc_marketing_consent')::boolean, false)
     )
     on conflict do nothing;
   end if;
