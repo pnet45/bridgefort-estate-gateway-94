@@ -40,7 +40,7 @@ This checklist accompanies the BMC Partner Agreement and BMC Privacy Notice. It 
 
 ## 3. Division heads — operating schedules
 
-Each division must approve its own written operating and commission schedule before partner activation is treated as permission to conduct commercial activity.
+Each division must approve its own written operating and commission schedule before partner activation is treated as permission to conduct commercial activity. Use the companion template at `docs/bmc/BMC-DIVISION-SCHEDULE-APPROVAL-TEMPLATE.md`; do not fill in rates or payout promises until Finance and Management approve them.
 
 - **Homes:** property lead qualification, inspection, subscription, reservation, payment, documentation, allocation, cancellation/refund, attribution and commission conditions.
 - **Travels:** enquiry qualification, booking, payment, cancellation/refund, supplier fulfilment, chargebacks, attribution and commission conditions.
