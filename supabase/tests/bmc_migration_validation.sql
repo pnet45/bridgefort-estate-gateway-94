@@ -55,6 +55,25 @@ create table public.users (
   role text
 );
 
+create table public.permissions (
+  id uuid primary key default gen_random_uuid(),
+  key text not null unique,
+  label text not null,
+  category text not null,
+  description text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create table public.role_permissions (
+  id uuid primary key default gen_random_uuid(),
+  role text not null,
+  permission_key text not null,
+  is_enabled boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique (role, permission_key)
+);
+
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public
 as $$
