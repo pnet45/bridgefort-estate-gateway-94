@@ -154,7 +154,7 @@ begin
     raise exception 'Authentication required';
   end if;
 
-  if _division not in ('homes', 'travels', 'agrovest') then
+  if _division is null or _division not in ('homes', 'travels', 'agrovest') then
     raise exception 'Invalid BMC division';
   end if;
 
