@@ -34,6 +34,7 @@ serve(async (req) => {
     const planType = String(body?.plan_type ?? "outright");
     const monthsToPay = Math.max(1, Math.min(12, Number(body?.months_to_pay ?? 1) || 1));
     const customer = body?.customer ?? {};
+    const bmcReferralCode = String(body?.bmc_referral_code ?? '').trim().toUpperCase();
     if (!items.length) return json({ error: "Cart is empty" }, 400);
     if (!PLAN_RATES[planType]) return json({ error: "Invalid payment plan" }, 400);
     const customerEmail = String(customer.email ?? "");
@@ -103,6 +104,32 @@ serve(async (req) => {
       pricedItems.push({ plot_id: itemId, item_id: itemId, property_id: propertyId, property_type: propertyType, property_name: label, plot_number: raw?.plot_number ?? null, quantity, price: unitPrice, price_source: "server_authoritative", investment_unit: propertyType === 'Agrovest' ? (AGROVEST_PRICING[String(itemId).replace(/^agrovest-/, '').toLowerCase()]?.unit ?? 'unit') : undefined });
     }
 
+    let bmcReferralCodeId: string | null = null;
+    if (bmcReferralCode) {
+      const agrovestOnly = pricedItems.length > 0 && pricedItems.every((item) => String(item.property_type ?? '') === 'Agrovest');
+      if (!agrovestOnly) return json({ error: "An Agrovest referral link can only be used for Agrovest-only orders." }, 400);
+
+      const { data: referral, error: referralError } = await admin
+        .from("bmc_division_referral_codes")
+        .select("id, application_id")
+        .eq("referral_code", bmcReferralCode)
+        .eq("division", "agrovest")
+        .eq("is_active", true)
+        .maybeSingle();
+      if (referralError) throw referralError;
+      if (!referral) return json({ error: "This Bridgefort Agrovest referral link is invalid or inactive." }, 400);
+
+      const { data: approvedApplication, error: applicationError } = await admin
+        .from("bmc_partner_divisions")
+        .select("id")
+        .eq("id", referral.application_id)
+        .eq("application_status", "approved")
+        .maybeSingle();
+      if (applicationError) throw applicationError;
+      if (!approvedApplication) return json({ error: "This Bridgefort Agrovest referral link is no longer active." }, 400);
+      bmcReferralCodeId = referral.id;
+    }
+
     const effectivePlan = isDocumentationPurchase ? "outright" : planType;
     const { months, rate } = PLAN_RATES[effectivePlan];
     const interestAmount = Math.round(principal * rate);
@@ -111,7 +138,7 @@ serve(async (req) => {
     const payAmount = effectivePlan === "outright" ? totalAmount : Math.min(totalAmount, monthlyPayment * monthsToPay);
     const reference = `PWAN_${Date.now()}_${userId}`;
 
-    const { data: order, error: orderError } = await admin.from("orders").insert({ user_id: userId, customer_email: customerEmail, customer_name: String(customer.name ?? "").slice(0, 200), total_amount: payAmount, payment_reference: reference, payment_status: "pending", items: pricedItems }).select().single();
+    const { data: order, error: orderError } = await admin.from("orders").insert({ user_id: userId, customer_email: customerEmail, customer_name: String(customer.name ?? "").slice(0, 200), total_amount: payAmount, payment_reference: reference, payment_status: "pending", items: pricedItems, bmc_referral_code_id: bmcReferralCodeId }).select().single();
     if (orderError) return json({ error: "Failed to create order" }, 500);
 
     const { error: planError } = await admin.from("payments").insert({ user_id: userId, property_id: String(pricedItems[0]?.property_id ?? ""), plan_type: effectivePlan, months, principal_amount: principal, interest_percent: rate * 100, interest_amount: interestAmount, total_amount: totalAmount, amount_paid: 0, balance: totalAmount, status: "pending", reference });
