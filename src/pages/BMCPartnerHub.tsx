@@ -231,6 +231,48 @@ export default function BMCPartnerHub() {
           )}
         </section>
 
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+          <h2 className="text-xl font-semibold text-foreground">Approved division referral links</h2>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">Only approved divisions receive active share links. Referral activity is recorded for attribution; commission eligibility and any payment remain subject to the relevant approved written division schedule.</p>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {applications.some((application) => application.division === 'homes' && ['approved', 'legacy_existing'].includes(application.application_status)) && referralCode && (
+              <article className="rounded-xl border border-border p-4">
+                <p className="font-semibold text-foreground">Bridgefort Homes</p>
+                <p className="mt-1 break-all font-mono text-sm text-muted-foreground">{referralCode}</p>
+                <p className="mt-2 text-xs text-muted-foreground">Existing BH-Realtors referral identity</p>
+                <Button size="sm" variant="outline" className="mt-3 w-full" onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(`${window.location.origin}/bridgefort-realtors-login?ref=${encodeURIComponent(referralCode)}`);
+                    toast({ title: 'Homes referral link copied' });
+                  } catch {
+                    toast({ title: 'Unable to copy link', description: 'Please copy the link manually.', variant: 'destructive' });
+                  }
+                }}>
+                  <Copy className="mr-2 h-4 w-4" /> Copy Homes link
+                </Button>
+              </article>
+            )}
+            {divisionReferralCodes.map((item) => (
+              <article key={item.division} className="rounded-xl border border-border p-4">
+                <p className="font-semibold text-foreground">{divisionDetails[item.division].title}</p>
+                <p className="mt-1 break-all font-mono text-sm text-muted-foreground">{item.referral_code}</p>
+                <p className="mt-2 text-xs text-muted-foreground">Approved division referral link</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" className="flex-1" onClick={() => void copyReferralLink(item.division, item.referral_code)}>
+                    <Copy className="mr-2 h-4 w-4" /> Copy link
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => window.open(referralLinkFor(item.division, item.referral_code), '_blank', 'noopener,noreferrer')} aria-label={`Open ${divisionDetails[item.division].title} referral link`}>
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
+              </article>
+            ))}
+          </div>
+          {divisionReferralCodes.length === 0 && !applications.some((application) => application.division === 'homes' && ['approved', 'legacy_existing'].includes(application.application_status) && referralCode) && (
+            <p className="mt-3 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No active division referral links are available yet. They will appear here after approval and activation.</p>
+          )}
+        </section>
+
         {!unavailable && availableDivisions.length > 0 && (Boolean(profile?.is_pbo) || applications.length > 0) && (
           <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
             <h2 className="text-xl font-semibold text-foreground">Apply for additional divisions</h2>
