@@ -157,7 +157,8 @@ begin
   where c.id = new.bmc_referral_code_id
     and c.division = 'travels'
     and c.is_active is true
-    and d.application_status = 'approved';
+    and d.application_status = 'approved'
+  for share of c, d;
 
   if not found then
     raise exception 'Invalid or inactive Bridgefort Travels referral code';
@@ -215,7 +216,8 @@ begin
   where c.id = new.bmc_referral_code_id
     and c.division = 'agrovest'
     and c.is_active is true
-    and d.application_status = 'approved';
+    and d.application_status = 'approved'
+  for share of c, d;
 
   if not found then
     raise exception 'Invalid or inactive Bridgefort Agrovest referral code';
