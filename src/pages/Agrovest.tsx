@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import WhatsAppChat from '../components/WhatsAppChat';
@@ -211,6 +211,8 @@ const OptimizedImg: React.FC<{ src: string; alt: string; className?: string }> =
 
 const Agrovest: React.FC = () => {
   const { addToCart } = useEcommerce();
+  const location = useLocation();
+  const bmcReferralCode = new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase() || undefined;
   const [quantity, setQuantity] = useState(1);
   const [sector, setSector] = useState<AgrovestOptionKey>('food');
 
@@ -235,6 +237,7 @@ const Agrovest: React.FC = () => {
         size: 1,
         propertyType: 'Agrovest',
         unit: selected.unit,
+        bmcReferralCode,
       },
       quantity
     );
