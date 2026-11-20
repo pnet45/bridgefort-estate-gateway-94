@@ -77,6 +77,7 @@ jobs:
           const hub = readFileSync('src/pages/BMCPartnerHub.tsx', 'utf8');
           const admin = readFileSync('src/components/admin/AdminBMCApplications.tsx', 'utf8');
           const referrals = readFileSync('supabase/migrations/20261120150000_bmc_division_referral_attribution.sql', 'utf8');
+          const reviewerPermission = readFileSync('supabase/migrations/20261120160000_bmc_reviewer_permission.sql', 'utf8');
           const travelForm = readFileSync('src/components/travels/TravelsBookingForm.tsx', 'utf8');
           const travelEdge = readFileSync('supabase/functions/submit-travel-booking/index.ts', 'utf8');
           const checkoutForm = readFileSync('src/components/ecommerce/CheckoutForm.tsx', 'utf8');
@@ -99,6 +100,10 @@ jobs:
           assert.match(security, /create or replace function public\.admin_list_bmc_division_audit/i);
           assert.match(security, /create or replace function public\.admin_review_bmc_division_application/i);
           assert.match(security, /BMC Agreement acceptance and privacy acknowledgement are required before approval/i);
+          assert.match(security, /admin:manage_bmc_partners/i, 'BMC decisions require dedicated management permission');
+          assert.match(reviewerPermission, /admin:manage_bmc_partners/i);
+          assert.match(reviewerPermission, /'super_admin'.*'admin:manage_bmc_partners'/i);
+          assert.match(reviewerPermission, /'manager'.*'admin:manage_bmc_partners'/i);
           assert.match(security, /Invalid BMC application status transition/i);
           assert.match(security, /A review reason is required for rejection or suspension/i);
           assert.doesNotMatch(security, /sync_bmc_homes_membership/i, 'BMC Homes approval must not activate paid BH-Realtors membership');
