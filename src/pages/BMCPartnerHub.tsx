@@ -150,7 +150,7 @@ export default function BMCPartnerHub() {
             <div className="rounded-xl border border-border bg-muted/30 p-4">
               <p className="text-xs text-muted-foreground">BMC ID / referral code</p>
               <p className="mt-1 font-mono text-lg font-semibold text-foreground">{referralCode || 'Not yet assigned'}</p>
-              <p className="mt-1 text-xs text-muted-foreground">Legacy BH-Realtors referral identity is preserved where one already exists.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Your code is an account identifier. Do not distribute it as an active referral link until the relevant division approval and referral activation are confirmed. Existing BH-Realtors referral identity is preserved.</p>
             </div>
           </div>
         </section>
