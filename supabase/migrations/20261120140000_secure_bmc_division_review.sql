@@ -192,7 +192,7 @@ begin
   reviewer := auth.uid();
   if reviewer is null
      or not (
-       public.user_has_permission(reviewer, 'admin:view_approvals'::text)
+       public.user_has_permission(reviewer, 'admin:manage_bmc_partners'::text)
        or public.user_has_permission(reviewer, 'admin:all'::text)
      ) then
     raise exception 'BMC approval permission required';
