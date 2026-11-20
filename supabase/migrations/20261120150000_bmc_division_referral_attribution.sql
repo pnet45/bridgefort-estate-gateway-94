@@ -6,7 +6,7 @@ create table if not exists public.bmc_division_referral_codes (
   id uuid primary key default gen_random_uuid(),
   application_id uuid not null references public.bmc_partner_divisions(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
-  division text not null check (division in ('travels', 'agrovest')),
+  division text not null check (division in ('homes', 'travels', 'agrovest')),
   referral_code text not null unique,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
@@ -26,7 +26,7 @@ create table if not exists public.bmc_division_referral_attributions (
   division text not null check (division in ('travels', 'agrovest')),
   referrer_user_id uuid not null references auth.users(id) on delete restrict,
   referred_user_id uuid references auth.users(id) on delete set null,
-  source_type text not null check (source_type in ('travel_booking', 'order')),
+  source_type text not null check (source_type in ('signup', 'travel_booking', 'order')),
   source_record_id uuid not null,
   created_at timestamptz not null default now(),
   constraint bmc_division_referral_attribution_source_unique unique (source_type, source_record_id)
@@ -54,7 +54,7 @@ declare
   candidate text;
   inserted_id uuid;
 begin
-  if new.division not in ('travels', 'agrovest') then
+  if new.division not in ('homes', 'travels', 'agrovest') then
     return new;
   end if;
 
@@ -106,7 +106,7 @@ create trigger bmc_sync_division_referral_code
 -- only provisions the missing referral code.
 update public.bmc_partner_divisions
 set application_status = application_status
-where division in ('travels', 'agrovest')
+where division in ('homes', 'travels', 'agrovest')
   and application_status = 'approved';
 
 create or replace function public.get_my_bmc_division_referral_codes()
@@ -137,6 +137,49 @@ $bmc_my_codes$;
 
 revoke all on function public.get_my_bmc_division_referral_codes() from public, anon;
 grant execute on function public.get_my_bmc_division_referral_codes() to authenticated;
+
+create or replace function public.record_bmc_homes_signup_referral()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $bmc_homes_signup$
+declare
+  referral public.bmc_division_referral_codes;
+  submitted_code text;
+begin
+  submitted_code := upper(trim(coalesce(new.raw_user_meta_data ->> 'bmc_referral_code', '')));
+  if submitted_code = '' then
+    return new;
+  end if;
+
+  select c.* into referral
+  from public.bmc_division_referral_codes c
+  join public.bmc_partner_divisions d on d.id = c.application_id
+  where c.referral_code = submitted_code
+    and c.division = 'homes'
+    and c.is_active is true
+    and d.application_status = 'approved'
+  for share of c, d;
+
+  if found then
+    insert into public.bmc_division_referral_attributions
+      (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
+    values
+      (referral.id, 'homes', referral.user_id, new.id, 'signup', new.id)
+    on conflict (source_type, source_record_id) do nothing;
+  end if;
+
+  return new;
+end;
+$bmc_homes_signup$;
+
+revoke all on function public.record_bmc_homes_signup_referral() from public, anon, authenticated;
+
+drop trigger if exists on_auth_user_created_record_bmc_homes_referral on auth.users;
+create trigger on_auth_user_created_record_bmc_homes_referral
+  after insert on auth.users
+  for each row execute function public.record_bmc_homes_signup_referral();
 
 create or replace function public.record_bmc_travel_booking_referral()
 returns trigger
@@ -181,12 +224,12 @@ create trigger bmc_record_travel_booking_referral
   after insert on public.travel_bookings
   for each row execute function public.record_bmc_travel_booking_referral();
 
-create or replace function public.record_bmc_agrovest_order_referral()
+create or replace function public.record_bmc_division_order_referral()
 returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $bmc_agro_referral$
+as $bmc_order_referral$
 declare
   referral public.bmc_division_referral_codes;
 begin
@@ -194,15 +237,28 @@ begin
     return new;
   end if;
 
+  select c.* into referral
+  from public.bmc_division_referral_codes c
+  join public.bmc_partner_divisions d on d.id = c.application_id
+  where c.id = new.bmc_referral_code_id
+    and c.division in ('homes', 'agrovest')
+    and c.is_active is true
+    and d.application_status = 'approved'
+  for share of c, d;
+
+  if not found then
+    raise exception 'Invalid or inactive Bridgefort division referral code';
+  end if;
+
   if jsonb_typeof(coalesce(new.items, '[]'::jsonb)) <> 'array' then
-    raise exception 'Agrovest referral codes can only be used for Agrovest-only orders';
+    raise exception 'Referral code cannot be used with this order';
   end if;
 
   if jsonb_array_length(coalesce(new.items, '[]'::jsonb)) = 0 then
-    raise exception 'Agrovest referral codes can only be used for Agrovest-only orders';
+    raise exception 'Referral code cannot be used with an empty order';
   end if;
 
-  if exists (
+  if referral.division = 'agrovest' and exists (
     select 1
     from jsonb_array_elements(coalesce(new.items, '[]'::jsonb)) as entries(item)
     where coalesce(entries.item ->> 'property_type', '') <> 'Agrovest'
@@ -210,32 +266,28 @@ begin
     raise exception 'Agrovest referral codes can only be used for Agrovest-only orders';
   end if;
 
-  select c.* into referral
-  from public.bmc_division_referral_codes c
-  join public.bmc_partner_divisions d on d.id = c.application_id
-  where c.id = new.bmc_referral_code_id
-    and c.division = 'agrovest'
-    and c.is_active is true
-    and d.application_status = 'approved'
-  for share of c, d;
-
-  if not found then
-    raise exception 'Invalid or inactive Bridgefort Agrovest referral code';
+  if referral.division = 'homes' and exists (
+    select 1
+    from jsonb_array_elements(coalesce(new.items, '[]'::jsonb)) as entries(item)
+    where coalesce(entries.item ->> 'property_type', '') = 'Agrovest'
+  ) then
+    raise exception 'Homes referral codes cannot be used for Agrovest items';
   end if;
 
   insert into public.bmc_division_referral_attributions
     (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
   values
-    (referral.id, 'agrovest', referral.user_id, new.user_id, 'order', new.id)
+    (referral.id, referral.division, referral.user_id, new.user_id, 'order', new.id)
   on conflict (source_type, source_record_id) do nothing;
 
   return new;
 end;
-$bmc_agro_referral$;
+$bmc_order_referral$;
 
-revoke all on function public.record_bmc_agrovest_order_referral() from public, anon, authenticated;
+revoke all on function public.record_bmc_division_order_referral() from public, anon, authenticated;
 
 drop trigger if exists bmc_record_agrovest_order_referral on public.orders;
-create trigger bmc_record_agrovest_order_referral
+drop trigger if exists bmc_record_division_order_referral on public.orders;
+create trigger bmc_record_division_order_referral
   after insert on public.orders
-  for each row execute function public.record_bmc_agrovest_order_referral();
+  for each row execute function public.record_bmc_division_order_referral();
