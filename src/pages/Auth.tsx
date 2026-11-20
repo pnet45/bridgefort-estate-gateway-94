@@ -44,6 +44,7 @@ const Auth = ({
   const [lastName, setLastName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToBmcAgreement, setAgreedToBmcAgreement] = useState(false);
   const [accountLockedOpen, setAccountLockedOpen] = useState(false);
   const [lockedReason, setLockedReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -280,6 +281,11 @@ const Auth = ({
       return;
     }
 
+    if (isRegisteringAsPBO && !agreedToBmcAgreement) {
+      toast({ title: 'BMC Partner Agreement required', description: 'Please read and accept the BMC Partner Agreement to continue.', variant: 'destructive' });
+      return;
+    }
+
     if (!agreedToTerms) {
       toast({
         title: "Terms & Privacy Policy",
@@ -320,7 +326,7 @@ const Auth = ({
       const normalizedSponsorCode = sponsorCode.trim().toUpperCase();
       // Persist the captured code in auth metadata as a recovery path when
       // email confirmation means signup has no authenticated session yet.
-      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked);
+      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked, isRegisteringAsPBO ? { bmc_agreement_accepted: true, bmc_agreement_version: '1.0', bmc_agreement_accepted_at: new Date().toISOString(), bmc_agreement_name: 'Bridgefort Multi-Business Consultants Partner Agreement' } : undefined);
       if (error) throw error;
 
       // Supabase can return a *truthy* user object with an empty
@@ -344,6 +350,7 @@ const Auth = ({
       if (data.user) {
         const profileUpdate: Record<string, any> = {
           updated_at: new Date().toISOString(),
+          ...(isRegisteringAsPBO ? { terms_accepted: true } : {}),
         };
 
         if (isRegisteringAsPBO) {
@@ -669,12 +676,12 @@ const Auth = ({
                     onChange={(e) => setIsRegisteringAsPBO(e.target.checked)}
                     className="h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
                   />
-                  <Label htmlFor="registerAsPBO">Register as a PBO</Label>
+                  <Label htmlFor="registerAsPBO">Join BMC – Bridgefort Multi-Business Consultants</Label>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   {isRegisteringAsPBO
-                    ? 'Your personal PBO referral code and signup link will be generated automatically.'
-                    : 'If you were referred by a PBO, enter their code here.'}
+                    ? 'Your existing referral identity will be preserved, or a new BMC referral code will be generated.'
+                    : 'If you were referred by a BMC, enter their existing referral code here.'}
                 </p>
 
                 <div>
@@ -694,7 +701,7 @@ const Auth = ({
                   <p className="text-xs text-gray-500 mt-1">
                     {sponsorCodeLocked
                       ? "This code came from your referral link and can't be changed here."
-                      : 'If you have a sponsoring PBO, enter their code so they receive credit for your signup.'}
+                      : 'If you have a sponsoring BMC, enter their code so they receive credit for your signup.'}
                   </p>
                   {referralMessage && <p className="text-xs text-emerald-600 mt-1">{referralMessage}</p>}
                   {referralEmailSent !== null && (
@@ -704,7 +711,17 @@ const Auth = ({
                   )}
                 </div>
 
-                <div className="flex items-start gap-3 pt-1">
+                {isRegisteringAsPBO && (
+                <div className="flex items-start gap-3 pt-1 rounded-lg border border-estate-blue/20 bg-estate-blue/5 p-3">
+                  <input id="agreedToBmcAgreement" type="checkbox" checked={agreedToBmcAgreement} onChange={(e) => setAgreedToBmcAgreement(e.target.checked)} required className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
+                  <Label htmlFor="agreedToBmcAgreement" className="font-normal leading-snug">
+                    I have read and agree to the website{' '}
+                    <Link to="/bmc-partner-agreement" target="_blank" className="text-estate-blue hover:underline font-semibold">BMC Partner Agreement and Terms of Engagement</Link>.
+                    {' '}I understand that BMC status is subject to verification and formal Company approval.
+                  </Label>
+                </div>
+              )}
+              <div className="flex items-start gap-3 pt-1">
                   <input
                     id="agreedToTerms"
                     type="checkbox"
@@ -742,7 +759,7 @@ const Auth = ({
 
             <Button 
               type="submit" 
-              disabled={loading || (!isLogin && !agreedToTerms)} 
+              disabled={loading || (!isLogin && (!agreedToTerms || (isRegisteringAsPBO && !agreedToBmcAgreement)))} 
               className="w-full bg-estate-blue hover:bg-estate-darkBlue"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
