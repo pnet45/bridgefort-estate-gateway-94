@@ -41,7 +41,8 @@ declare
   metadata jsonb;
 begin
   metadata := coalesce(new.raw_user_meta_data, '{}'::jsonb);
-  if metadata ->> 'bmc_agreement_accepted' = 'true' then
+  if metadata ->> 'bmc_agreement_accepted' = 'true'
+     and metadata ->> 'bmc_privacy_acknowledged' = 'true' then
     insert into public.bmc_agreement_acceptances (
       user_id, agreement_version, agreement_name, accepted_at, acceptance_source, marketing_consent, privacy_notice_version, privacy_notice_acknowledged
     )
