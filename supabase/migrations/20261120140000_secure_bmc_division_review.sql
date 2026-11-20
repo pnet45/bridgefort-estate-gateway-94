@@ -3,15 +3,39 @@
 -- general privacy policy, or production data until explicitly deployed.
 
 -- Prevent direct client-side edits to approval state and reviewer metadata.
--- A user's broad self-profile UPDATE policy must never allow self-promotion
--- into BH-Realtors. The existing financial-field trigger does not protect
--- is_pbo, so enforce membership authority independently at the row level.
+-- The existing self-profile UPDATE policy is broad. Protect both updates and
+-- any exceptional self-service insert so an applicant cannot self-promote.
+-- The existing financial-field guard is extended only for the transaction-local
+-- marker set by the trusted BMC approval trigger.
+create or replace function public.protect_profile_financial_fields()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $financial_guard$
+begin
+  if auth.uid() is null
+     or current_setting('bridgefort.bmc_membership_sync', true) = '1'
+     or public.has_role(auth.uid(), 'admin') then
+    return new;
+  end if;
+
+  new.wallet_balance := old.wallet_balance;
+  new.total_commissions := old.total_commissions;
+  new.current_package := old.current_package;
+  new.current_rank := old.current_rank;
+  new.total_personal_volume := old.total_personal_volume;
+  new.is_active := old.is_active;
+  return new;
+end;
+$financial_guard$;
+
 create or replace function public.protect_bmc_membership_fields()
 returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $bmc_guard$
 begin
   if auth.uid() is null
      or current_setting('bridgefort.bmc_membership_sync', true) = '1'
@@ -21,23 +45,27 @@ begin
     return new;
   end if;
 
-  new.is_pbo := old.is_pbo;
-
-  -- Referral identifiers may be assigned once during onboarding, but an
-  -- existing identifier cannot be replaced by a self-service profile edit.
-  if old.pbo_referral_code is not null
-     and new.pbo_referral_code is distinct from old.pbo_referral_code then
-    new.pbo_referral_code := old.pbo_referral_code;
+  if tg_op = 'INSERT' then
+    new.is_pbo := false;
+  else
+    new.is_pbo := old.is_pbo;
+    -- Referral identifiers may be assigned once during onboarding, but an
+    -- existing identifier cannot be replaced by a self-service profile edit.
+    if old.pbo_referral_code is not null
+       and new.pbo_referral_code is distinct from old.pbo_referral_code then
+      new.pbo_referral_code := old.pbo_referral_code;
+    end if;
   end if;
 
   return new;
 end;
-$;
+$bmc_guard$;
 
+revoke all on function public.protect_profile_financial_fields() from public, anon, authenticated;
 revoke all on function public.protect_bmc_membership_fields() from public, anon, authenticated;
 drop trigger if exists protect_bmc_membership_fields on public.profiles;
 create trigger protect_bmc_membership_fields
-  before update on public.profiles
+  before insert or update on public.profiles
   for each row execute function public.protect_bmc_membership_fields();
 
 revoke update on public.bmc_partner_divisions from anon, authenticated;
