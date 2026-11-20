@@ -105,8 +105,8 @@ jobs:
           assert.match(admin, /Review reason required/i);
           assert.match(admin, /admin_list_bmc_division_audit/i);
           assert.match(admin, /Review history/i);
-          assert.match(referrals, /create table if not exists public\\.bmc_division_referral_codes/i);
-          assert.match(referrals, /create table if not exists public\\.bmc_division_referral_attributions/i);
+          assert.match(referrals, /create table if not exists public\.bmc_division_referral_codes/i);
+          assert.match(referrals, /create table if not exists public\.bmc_division_referral_attributions/i);
           assert.match(referrals, /get_my_bmc_division_referral_codes/i);
           assert.match(referrals, /division = 'travels'/i);
           assert.match(referrals, /division = 'agrovest'/i);
