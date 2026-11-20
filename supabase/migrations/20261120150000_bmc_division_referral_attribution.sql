@@ -207,7 +207,7 @@ begin
     raise exception 'Invalid or inactive Bridgefort Travels referral code';
   end if;
 
-  if referral.user_id <> new.customer_id then
+  if new.customer_id is null or referral.user_id <> new.customer_id then
     insert into public.bmc_division_referral_attributions
       (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
     values
