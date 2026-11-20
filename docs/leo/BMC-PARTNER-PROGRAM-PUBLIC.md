@@ -30,7 +30,7 @@ Approved BMCs must communicate honestly, use approved marketing materials, prote
 
 ## Referral identity
 
-A referral code or link is used for attribution. It is not proof of employment, partner approval, commission entitlement or authority to represent Bridgefort. Referral activity and commission eligibility depend on the applicable division rules, verified attribution and completed transaction conditions. Existing BH-Realtors referral codes and sponsor relationships are intended to remain preserved during the programme transition.
+A referral code or link is used for attribution. It is not proof of employment, partner approval, commission entitlement or authority to represent Bridgefort. Approved Homes partners continue to use the existing BH-Realtors referral system. Approved Travels and Agrovest partners receive separate division-specific referral links in the BMC Partner Hub; those links are disabled if the relevant division is suspended or no longer approved. Referral attribution is recorded for travel bookings and Agrovest-only orders, but attribution alone does not guarantee a commission. Commission eligibility depends on the applicable approved written division schedule, verified attribution and completed transaction conditions. Existing BH-Realtors referral codes and sponsor relationships remain separate and preserved.
 
 ## Commissions
 
