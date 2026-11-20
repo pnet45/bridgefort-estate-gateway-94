@@ -161,22 +161,43 @@ const AdminDashboardStats = () => {
 
     void loadInitialStats();
 
+    // Subscribe only to tables verified in the existing Supabase Realtime
+    // publication. Do not change production publication settings just to make
+    // dashboard metrics appear real-time.
     const channel = supabase
       .channel('admin-dashboard-stats')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => void fetchMetric('totalUsers'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'estate' }, () => void fetchMetric('totalProperties'))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => void fetchOrdersMetrics())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => void fetchMetric('totalBlogs'))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'pending_admin_requests' }, () => void fetchMetric('pendingApprovals'))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, () => void fetchMetric('contactMessages'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'training_events' }, () => void fetchMetric('trainingEvents'))
       .subscribe();
 
+    // Other admin tables are not in the current Realtime publication. Refresh
+    // those metrics on return to the dashboard and periodically while visible.
+    const refreshNonRealtimeMetrics = () => {
+      if (document.visibilityState !== 'visible' || !navigator.onLine) return;
+      void Promise.all([
+        fetchMetric('totalUsers'),
+        fetchOrdersMetrics(),
+        fetchMetric('pendingApprovals'),
+        fetchMetric('contactMessages'),
+      ]);
+    };
+    const pollId = window.setInterval(refreshNonRealtimeMetrics, 60_000);
+    window.addEventListener('focus', refreshNonRealtimeMetrics);
+    window.addEventListener('online', refreshNonRealtimeMetrics);
+    document.addEventListener('visibilitychange', refreshNonRealtimeMetrics);
+
     return () => {
       active = false;
+      window.clearInterval(pollId);
+      window.removeEventListener('focus', refreshNonRealtimeMetrics);
+      window.removeEventListener('online', refreshNonRealtimeMetrics);
+      document.removeEventListener('visibilitychange', refreshNonRealtimeMetrics);
       metricKeys.forEach((key) => {
         requestVersions.current[key] += 1;
       });
+      requestVersions.current.totalOrders += 1;
+      requestVersions.current.totalRevenue += 1;
       void supabase.removeChannel(channel);
     };
   }, [fetchMetric, fetchOrdersMetrics]);
