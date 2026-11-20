@@ -106,18 +106,20 @@ serve(async (req) => {
 
     let bmcReferralCodeId: string | null = null;
     if (bmcReferralCode) {
+      const hasAgrovest = pricedItems.some((item) => String(item.property_type ?? '') === 'Agrovest');
       const agrovestOnly = pricedItems.length > 0 && pricedItems.every((item) => String(item.property_type ?? '') === 'Agrovest');
-      if (!agrovestOnly) return json({ error: "An Agrovest referral link can only be used for Agrovest-only orders." }, 400);
+      if (hasAgrovest && !agrovestOnly) return json({ error: "Homes and Agrovest items must be checked out separately when using a division referral link." }, 400);
+      const referralDivision = agrovestOnly ? 'agrovest' : 'homes';
 
       const { data: referral, error: referralError } = await admin
         .from("bmc_division_referral_codes")
         .select("id, application_id")
         .eq("referral_code", bmcReferralCode)
-        .eq("division", "agrovest")
+        .eq("division", referralDivision)
         .eq("is_active", true)
         .maybeSingle();
       if (referralError) throw referralError;
-      if (!referral) return json({ error: "This Bridgefort Agrovest referral link is invalid or inactive." }, 400);
+      if (!referral) return json({ error: "This Bridgefort division referral link is invalid or inactive." }, 400);
 
       const { data: approvedApplication, error: applicationError } = await admin
         .from("bmc_partner_divisions")
@@ -126,7 +128,7 @@ serve(async (req) => {
         .eq("application_status", "approved")
         .maybeSingle();
       if (applicationError) throw applicationError;
-      if (!approvedApplication) return json({ error: "This Bridgefort Agrovest referral link is no longer active." }, 400);
+      if (!approvedApplication) return json({ error: "This Bridgefort division referral link is no longer active." }, 400);
       bmcReferralCodeId = referral.id;
     }
 
