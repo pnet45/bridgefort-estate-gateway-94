@@ -69,7 +69,7 @@ begin
     raise exception 'BMC approval permission required';
   end if;
 
-  if _decision not in ('approved', 'rejected', 'suspended', 'pending_review') then
+  if coalesce(_decision, '') not in ('approved', 'rejected', 'suspended', 'pending_review') then
     raise exception 'Unsupported BMC application decision';
   end if;
 
