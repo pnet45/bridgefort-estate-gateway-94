@@ -923,7 +923,7 @@ const Agrovest: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
             {facilityGallery.map((f) => (
               <Link
-                to={`/agrovest/${f.slug}`}
+                to={`/agrovest/${f.slug}${referralQuery}`}
                 key={f.slug}
                 className="relative rounded-2xl overflow-hidden aspect-square group cursor-pointer block focus:outline-none focus:ring-2 focus:ring-amber-400"
               >
