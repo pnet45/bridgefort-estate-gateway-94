@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock, ArrowRight } from 'lucide-react';
 
@@ -144,10 +145,10 @@ export default function BMCPartnerHub() {
             <div className="rounded-xl border border-border bg-muted/30 p-4">
               <p className="text-xs text-muted-foreground">Partner account</p>
               <p className="mt-1 font-semibold text-foreground">{profile?.first_name || user.email?.split('@')[0] || 'BMC Partner'}</p>
-              <p className="mt-1 text-xs text-muted-foreground">Your authenticated Bridgefort account is your unified partner identity.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Your authenticated Bridgefort account is your unified partner identity across selected divisions.</p>
             </div>
             <div className="rounded-xl border border-border bg-muted/30 p-4">
-              <p className="text-xs text-muted-foreground">Existing referral code</p>
+              <p className="text-xs text-muted-foreground">BMC ID / referral code</p>
               <p className="mt-1 font-mono text-lg font-semibold text-foreground">{referralCode || 'Not yet assigned'}</p>
               <p className="mt-1 text-xs text-muted-foreground">Legacy BH-Realtors referral identity is preserved where one already exists.</p>
             </div>
