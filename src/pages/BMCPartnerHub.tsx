@@ -312,7 +312,7 @@ export default function BMCPartnerHub() {
         )}
 
         <section className="flex flex-wrap gap-3">
-          <Link to="/bh-realtors"><Button variant="outline">Existing BH-Realtors workspace</Button></Link>
+          <Link to="/bh-realtors/legacy"><Button variant="outline">Existing BH-Realtors workspace</Button></Link>
           <Link to="/bmc-partner-agreement"><Button variant="outline">BMC Partner Agreement</Button></Link>
           <Link to="/bmc-privacy-notice"><Button variant="outline">BMC Privacy Notice</Button></Link>
         </section>
