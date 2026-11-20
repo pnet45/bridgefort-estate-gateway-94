@@ -222,6 +222,21 @@ begin
     raise exception 'Withdrawn applications cannot be reviewed';
   end if;
 
+  -- Enforce the review lifecycle in the database, not only in the browser UI.
+  if not (
+    (current_application.application_status = 'pending_review' and _decision in ('approved', 'rejected'))
+    or (current_application.application_status = 'approved' and _decision = 'suspended')
+    or (current_application.application_status = 'suspended' and _decision = 'approved')
+    or (current_application.application_status = 'rejected' and _decision = 'pending_review')
+  ) then
+    raise exception 'Invalid BMC application status transition';
+  end if;
+
+  if _decision in ('rejected', 'suspended')
+     and nullif(trim(coalesce(_review_note, '')), '') is null then
+    raise exception 'A review reason is required for rejection or suspension';
+  end if;
+
   if _decision = 'approved' and not exists (
     select 1
     from public.bmc_agreement_acceptances a
