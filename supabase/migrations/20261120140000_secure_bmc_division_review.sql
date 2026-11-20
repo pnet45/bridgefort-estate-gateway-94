@@ -41,7 +41,7 @@ begin
      or current_setting('bridgefort.bmc_membership_sync', true) = '1'
      or public.is_global_admin(auth.uid())
      or public.user_has_permission(auth.uid(), 'admin:all'::text)
-     or public.user_has_permission(auth.uid(), 'admin:view_users'::text) then
+ then
     return new;
   end if;
 
