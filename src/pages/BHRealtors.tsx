@@ -213,6 +213,7 @@ const BHRealtors: React.FC = () => {
                 <p className="mt-5 max-w-3xl text-base leading-7 text-slate-100 md:text-lg">BHRealtors gives you more than a referral link. Build a genuine sales network, introduce people to quality real estate opportunities, earn according to your package, and grow through property.</p>
                 <div className="mt-7 flex flex-wrap gap-3">
                   <a href="#packages"><Button className="bg-white text-slate-950 hover:bg-slate-100">Explore Packages</Button></a>
+                  <Link to="/bmc-partner-hub"><Button variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">BMC Partner Hub</Button></Link>
                 </div>
               </div>
             </div>
