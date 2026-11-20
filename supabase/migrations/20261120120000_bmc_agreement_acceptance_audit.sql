@@ -31,6 +31,16 @@ create policy "BMCs can read their own agreement acceptance"
   to authenticated
   using (user_id = (select auth.uid()));
 
+drop policy if exists "BMC approvers can verify agreement acceptance" on public.bmc_agreement_acceptances;
+create policy "BMC approvers can verify agreement acceptance"
+  on public.bmc_agreement_acceptances
+  for select
+  to authenticated
+  using (
+    public.user_has_permission((select auth.uid()), 'admin:view_approvals'::text)
+    or public.user_has_permission((select auth.uid()), 'admin:all'::text)
+  );
+
 create or replace function public.capture_bmc_agreement_acceptance()
 returns trigger
 language plpgsql
