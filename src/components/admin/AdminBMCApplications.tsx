@@ -147,7 +147,7 @@ export default function AdminBMCApplications() {
                     <Badge variant="outline">{statusNames[application.application_status]}</Badge>
                   </div>
                   <p className="text-sm text-foreground">{[application.first_name, application.last_name].filter(Boolean).join(' ') || 'Name not available'}</p>
-                  <p className="text-xs text-muted-foreground">Partner account: {application.user_id.slice(0, 8)}…{application.referral_code ? ` · BMC ID: ${application.referral_code}` : ''} · Submitted {new Date(application.requested_at).toLocaleDateString()}</p>
+                  <p className="text-xs text-muted-foreground">Partner account: {application.user_id.slice(0, 8)}…{application.referral_code ? ` · Legacy BH-Realtors code: ${application.referral_code}` : ''} · Submitted {new Date(application.requested_at).toLocaleDateString()}</p>
                   <p className="text-xs text-muted-foreground">
                     {application.agreement_version && application.agreement_accepted_at
                       ? `BMC Agreement v${application.agreement_version} accepted ${new Date(application.agreement_accepted_at).toLocaleDateString()}`
