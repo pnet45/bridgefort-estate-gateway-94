@@ -58,11 +58,11 @@ export default function AdminBMCApplications() {
 
   const changeStatus = async (application: Application, nextStatus: Application['application_status']) => {
     setSavingId(application.id);
-    const reviewedAt = nextStatus === 'pending_review' || nextStatus === 'legacy_existing' ? null : new Date().toISOString();
-    const { error } = await (supabase as any)
-      .from('bmc_partner_divisions')
-      .update({ application_status: nextStatus, reviewed_at: reviewedAt, updated_at: new Date().toISOString() })
-      .eq('id', application.id);
+    const { error } = await supabase.rpc('admin_review_bmc_division_application' as never, {
+      _application_id: application.id,
+      _decision: nextStatus,
+      _review_note: null,
+    } as never);
     if (error) {
       console.error('BMC application status update failed:', error);
       toast({ title: 'Status update failed', description: 'The server rejected this change. Check your approval permission and try again.', variant: 'destructive' });
