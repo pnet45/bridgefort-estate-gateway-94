@@ -215,14 +215,21 @@ function AppLayout() {
                         <Profile />
                       </PrivateRoute>
                     } />
+                    {/* BMC is now the unified partner destination. Keep the legacy BH-Realtors
+                        workspace reachable without changing existing membership or referral records. */}
                     <Route path="/bh-realtors" element={
                       <PrivateRoute>
-                        <BHRealtors />
+                        <BMCPartnerHub />
                       </PrivateRoute>
                     } />
                     <Route path="/bmc-partner-hub" element={
                       <PrivateRoute>
                         <BMCPartnerHub />
+                      </PrivateRoute>
+                    } />
+                    <Route path="/bh-realtors/legacy" element={
+                      <PrivateRoute>
+                        <BHRealtors />
                       </PrivateRoute>
                     } />
                     <Route path="/bh-realtors/withdraw" element={
