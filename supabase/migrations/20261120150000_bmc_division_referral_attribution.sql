@@ -143,7 +143,7 @@ begin
     return new;
   end if;
 
-  select * into referral
+  select c.* into referral
   from public.bmc_division_referral_codes c
   join public.bmc_partner_divisions d on d.id = c.application_id
   where c.id = new.bmc_referral_code_id
@@ -194,7 +194,7 @@ begin
     raise exception 'Agrovest referral codes can only be used for Agrovest-only orders';
   end if;
 
-  select * into referral
+  select c.* into referral
   from public.bmc_division_referral_codes c
   join public.bmc_partner_divisions d on d.id = c.application_id
   where c.id = new.bmc_referral_code_id
