@@ -132,7 +132,7 @@ const AdminConsole = () => {
       {canManageHR && <TabsContent value="hr-workspace" className="min-w-0"><AdminHRWorkspace/></TabsContent>}
       <TabsContent value="users" className="min-w-0"><UserManagementTab/></TabsContent>
       <TabsContent value="approvals" className="min-w-0"><AdminApprovalsHub onCountChange={setPendingCount}/></TabsContent>
-      {hasPermission('admin:view_approvals') && <TabsContent value="bmc-applications" className="min-w-0"><AdminBMCApplications/></TabsContent>}
+      {hasPermission('admin:view_approvals') && <TabsContent value="bmc-applications" className="min-w-0"><AdminBMCApplications canManage={hasPermission('admin:manage_bmc_partners') || isGlobalAdmin} /></TabsContent>}
       <TabsContent value="subscribers" className="min-w-0"><AdminEstateSubscribers/></TabsContent>
       <TabsContent value="emails" className="min-w-0"><AdminEmailCenter/></TabsContent>
       <TabsContent value="analytics" className="min-w-0"><AdminPropertyAnalytics/></TabsContent>
