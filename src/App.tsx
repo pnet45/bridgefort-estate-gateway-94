@@ -76,6 +76,7 @@ const AnnouncementArticle = lazy(() => import('@/pages/AnnouncementArticle'));
 const LocationsIndex = lazy(() => import('@/pages/LocationsIndex'));
 const LocationLanding = lazy(() => import('@/pages/LocationLanding'));
 const BHRealtors = lazy(() => import('@/pages/BHRealtors'));
+const BMCPartnerHub = lazy(() => import('@/pages/BMCPartnerHub'));
 const BHRealtorsWithdraw = lazy(() => import('@/pages/BHRealtorsWithdraw'));
 const Travels = lazy(() => import('@/pages/Travels'));
 const TravelDestination = lazy(() => import('@/pages/TravelDestination'));
@@ -217,6 +218,11 @@ function AppLayout() {
                     <Route path="/bh-realtors" element={
                       <PrivateRoute>
                         <BHRealtors />
+                      </PrivateRoute>
+                    } />
+                    <Route path="/bmc-partner-hub" element={
+                      <PrivateRoute>
+                        <BMCPartnerHub />
                       </PrivateRoute>
                     } />
                     <Route path="/bh-realtors/withdraw" element={
