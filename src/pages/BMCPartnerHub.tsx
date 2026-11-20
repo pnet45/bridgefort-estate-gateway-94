@@ -6,7 +6,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock3, ArrowRight } from 'lucide-react';
+import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock, ArrowRight } from 'lucide-react';
 
 type Division = 'homes' | 'travels' | 'agrovest';
 type DivisionApplication = {
@@ -167,7 +167,7 @@ export default function BMCPartnerHub() {
           ) : (
             <div className="rounded-2xl border border-dashed border-border bg-card p-6">
               <div className="flex items-center gap-3">
-                <Clock3 className="h-5 w-5 text-muted-foreground" />
+                <Clock className="h-5 w-5 text-muted-foreground" />
                 <h3 className="font-semibold text-foreground">No division applications recorded</h3>
               </div>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">When you submit a BMC application and select your business divisions, the requested divisions will appear here separately. You can continue using your existing Bridgefort services in the meantime.</p>
