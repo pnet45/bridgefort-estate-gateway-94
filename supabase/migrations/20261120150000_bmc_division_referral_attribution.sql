@@ -1,6 +1,6 @@
--- Division-specific BMC referral attribution for Travels and Agrovest.
+-- Division-specific BMC referral attribution for Homes, Travels and Agrovest.
 -- This records attribution only; it does not calculate or promise commissions.
--- Homes continues to use the established BH-Realtors referral system.
+-- Existing paid BH-Realtors membership and referral identities remain separate.
 
 create table if not exists public.bmc_division_referral_codes (
   id uuid primary key default gen_random_uuid(),
@@ -23,7 +23,7 @@ revoke all on public.bmc_division_referral_codes from anon, authenticated;
 create table if not exists public.bmc_division_referral_attributions (
   id uuid primary key default gen_random_uuid(),
   referral_code_id uuid not null references public.bmc_division_referral_codes(id) on delete restrict,
-  division text not null check (division in ('travels', 'agrovest')),
+  division text not null check (division in ('homes', 'travels', 'agrovest')),
   referrer_user_id uuid not null references auth.users(id) on delete restrict,
   referred_user_id uuid references auth.users(id) on delete set null,
   source_type text not null check (source_type in ('signup', 'travel_booking', 'order')),
@@ -101,7 +101,7 @@ create trigger bmc_sync_division_referral_code
   after insert or update of application_status on public.bmc_partner_divisions
   for each row execute function public.sync_bmc_division_referral_code();
 
--- Backfill links for any Travels/Agrovest applications that were approved
+-- Backfill links for any division applications that were approved
 -- before this migration is applied. The status value is unchanged; the trigger
 -- only provisions the missing referral code.
 update public.bmc_partner_divisions
