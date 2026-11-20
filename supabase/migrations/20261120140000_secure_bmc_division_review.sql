@@ -69,6 +69,14 @@ create trigger protect_bmc_membership_fields
   for each row execute function public.protect_bmc_membership_fields();
 
 revoke update on public.bmc_partner_divisions from anon, authenticated;
+-- Migration 20261120130000 granted column-level UPDATE privileges. A table-level
+-- REVOKE does not remove those independent column grants, so revoke them
+-- explicitly and remove the direct-update RLS policy. All decisions must pass
+-- through admin_review_bmc_division_application(), which verifies consent.
+revoke update (application_status, reviewed_at, updated_at)
+  on public.bmc_partner_divisions from anon, authenticated;
+drop policy if exists "BMC approvers can update division application status"
+  on public.bmc_partner_divisions;
 
 create or replace function public.sync_bmc_homes_membership()
 returns trigger
