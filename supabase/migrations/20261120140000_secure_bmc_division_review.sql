@@ -282,7 +282,8 @@ begin
     select 1
     from public.bmc_agreement_acceptances a
     where a.user_id = current_application.user_id
-      and a.agreement_version is not null
+      and a.agreement_version = '1.0'
+      and a.privacy_notice_version = '1.0'
       and a.privacy_notice_acknowledged is true
   ) then
     raise exception 'Verified BMC Agreement acceptance and privacy acknowledgement are required before approval';
