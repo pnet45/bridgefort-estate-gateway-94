@@ -70,6 +70,7 @@ create table if not exists public.bmc_partner_division_audit (
   previous_status text,
   new_status text not null,
   actor_user_id uuid references auth.users(id) on delete set null,
+  review_note text,
   created_at timestamptz not null default now()
 );
 
@@ -99,8 +100,8 @@ begin
   if tg_op = 'INSERT' then
     next_event := 'submitted';
     insert into public.bmc_partner_division_audit
-      (application_id, user_id, division, event_type, previous_status, new_status, actor_user_id)
-    values (new.id, new.user_id, new.division, next_event, null, new.application_status, auth.uid());
+      (application_id, user_id, division, event_type, previous_status, new_status, actor_user_id, review_note)
+    values (new.id, new.user_id, new.division, next_event, null, new.application_status, auth.uid(), new.review_note);
     return new;
   end if;
 
@@ -113,8 +114,8 @@ begin
       else 'reopened'
     end;
     insert into public.bmc_partner_division_audit
-      (application_id, user_id, division, event_type, previous_status, new_status, actor_user_id)
-    values (new.id, new.user_id, new.division, next_event, old.application_status, new.application_status, auth.uid());
+      (application_id, user_id, division, event_type, previous_status, new_status, actor_user_id, review_note)
+    values (new.id, new.user_id, new.division, next_event, old.application_status, new.application_status, auth.uid(), new.review_note);
   end if;
   return new;
 end;
