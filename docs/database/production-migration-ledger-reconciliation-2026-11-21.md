@@ -7,17 +7,17 @@
 
 ## Executive result
 
-The production ledger contains **322** migration records. The repository contains **313** SQL migration files after five historical migrations were restored.
+The production ledger contains **322** migration records. The active migration directory contains **308** SQL migration files after five historical recoveries, two forward-only repairs, and archival of seven unmatched local migration artifacts.
 
 Nine local migration files were matched to existing production ledger versions after checking their SQL intent against the deployed schema state. Their filenames were aligned to the production versions in this branch; SQL bodies were preserved unchanged.
 
 After the initial source-control corrections and two additional historical-source recoveries:
 
 - **16** production ledger versions still have no exact local version file.
-- **7** local migration files still have versions not present in the production ledger.
+- **0** stale local-only migration versions remain in the active migration directory. The seven original artifacts are preserved under `docs/database/unmatched-local-migrations/` and are not candidates for automatic replay.
 - Two production ledger records share the same migration name: `20261016020017` and `20261016020023`, both named `20261015215000_grant_manager_documentation_management`.
 
-This branch does **not** claim the migration history is fully reconciled. The remaining historical SQL has not been recovered, and Supabase Preview may continue to report missing local migration versions until the outstanding records are resolved.
+This branch does **not** claim the production migration history is fully reconciled. Sixteen production ledger versions still lack their exact historical SQL. Two new forward-only migrations are staged in the active directory and are expected to be pending until separately reviewed and applied.
 
 ## Verified filename/version alignments
 
@@ -88,6 +88,24 @@ These **7** local files remain unaligned:
 | `20261106190100_harden_supabase_admin_default_privileges.sql` | Not recorded as applied; requires elevated `supabase_admin` authority and separate security review. Do not replay through an executor lacking that authority. |
 | `20261108215900_enable_auth_and_mlm_realtime.sql` | `mlm_packages` is published but `auth_carousel_slides` is not. The migration is not confirmed as applied as a whole. |
 
+## Local-only migration disposition and forward repairs
+
+The seven original local-only migration files were preserved verbatim under `docs/database/unmatched-local-migrations/` and removed from the active migration directory so a future migration push cannot blindly replay them:
+
+| Archived artifact | Evidence and disposition |
+|---|---|
+| `20261007193000_leo_knowledge_role_filtered_search.sql` | The live `search_leo_knowledge_v2` definition matches the role/audience/review/expiry search behavior and is executable only by `service_role`. Exact original ledger provenance remains unproven; archived. |
+| `20261007194500_leo_knowledge_version_history.sql` | Live version table and snapshot/increment triggers exist; snapshot execution is restricted to `service_role`. Exact applied version remains unproven; archived. |
+| `20261015215000_grant_manager_documentation_management.sql` | Manager documentation permission is present, but the two same-name ledger entries remain ambiguous; archived pending provenance. |
+| `20261019160000_crm_admin_hr_it_workspace.sql` | HR tables, RLS policies, and trigger functions exist; subsequent October 27 repair/tightening and November 2 access migrations are recorded. Archived to prevent replay over later policy changes. |
+| `20261020120000_guard_admin_tab_permission_changes.sql` | Guard function/trigger absent. Original retained in archive; replaced in active migrations by forward-only `20261121150000_guard_admin_tab_permission_changes_forward.sql`. |
+| `20261106190100_harden_supabase_admin_default_privileges.sql` | Not applied; current migration executor is `postgres` and is not a member of `supabase_admin`. Archived until an appropriately authorized executor can perform a reviewed privilege change. |
+| `20261108215900_enable_auth_and_mlm_realtime.sql` | Production already publishes `mlm_packages`; `auth_carousel_slides` is RLS-enabled with a public active-row SELECT policy but is not published. Original retained in archive; forward-only `20261121150100_enable_auth_carousel_realtime_forward.sql` stages only the missing publication. |
+
+The HR tables currently grant authenticated CRUD privileges, but their RLS policies restrict row access and no anonymous grants were found. No blanket HR grant revocation was added because the manager policies intentionally support HR administration and a safe role-by-role behavior test is still required.
+
+The two forward migrations are source-control changes only. They have **not** been applied to production. Their versions are newer than the current production ledger maximum and avoid reusing the old timestamps.
+
 ## Production security observations
 
 The audit confirmed:
@@ -105,7 +123,7 @@ The audit confirmed:
 1. Recover the exact original SQL for the 16 unmatched production records from trusted historical source control, deployment artifacts, or an authorized database migration archive.
 2. Compare recovered SQL to the live schema and migration ledger; preserve duplicate records and original ordering.
 3. Determine whether each of the seven local-only migrations was applied out-of-band, superseded, or never applied.
-4. For genuinely unapplied changes, review and create a new forward-only migration with a fresh version; never reuse an old timestamp.
+4. For genuinely unapplied changes, review and create a new forward-only migration with a fresh version; never reuse an old timestamp. Two such forward repairs are staged for the absent admin-tab guard and missing auth-carousel Realtime publication.
 5. Validate the complete local migration directory against production in a disposable PostgreSQL environment.
 6. Recheck Supabase Preview after source recovery. Do not use no-op placeholder files, delete migration-ledger rows, run old migrations again, or apply a blanket `migration repair` merely to silence the warning.
 
