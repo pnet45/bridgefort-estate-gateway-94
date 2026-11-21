@@ -178,9 +178,9 @@ create table public.payment_requests (
 create or replace function public.resolve_payment_order(_payment_request_id uuid)
 returns public.orders
 language sql stable
-as $
+as $resolver$
   select null::public.orders
-$;
+$resolver$;
 
 
 grant usage on schema public to anon, authenticated;
