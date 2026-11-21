@@ -103,12 +103,12 @@ export default function AdminBMCCommissions() {
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-sm text-muted-foreground">Agrovest earned · awaiting payout</p>
           <p className="mt-1 text-2xl font-bold text-foreground">{money(totals.agrovest)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">10% of full cleared customer payments</p>
+          <p className="mt-1 text-xs text-muted-foreground">10% of each cleared customer instalment</p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-sm text-muted-foreground">Travels earned · awaiting payout</p>
           <p className="mt-1 text-2xl font-bold text-foreground">{money(totals.travels)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">10% of full cleared customer payments</p>
+          <p className="mt-1 text-xs text-muted-foreground">10% of each cleared customer instalment</p>
         </div>
       </div>
 
