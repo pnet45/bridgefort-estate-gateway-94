@@ -11,7 +11,7 @@ The production ledger contains **322** migration records. The active migration d
 
 Nine local migration files were matched to existing production ledger versions after checking their SQL intent against the deployed schema state. Their filenames were aligned to the production versions in this branch; SQL bodies were preserved unchanged.
 
-After the initial source-control corrections and two additional historical-source recoveries:
+After the initial nine filename alignments and seven historical-source recoveries:
 
 - **16** production ledger versions still have no exact local version file.
 - **0** stale local-only migration versions remain in the active migration directory. The seven original artifacts are preserved under `docs/database/unmatched-local-migrations/` and are not candidates for automatic replay.
@@ -74,20 +74,6 @@ Five additional migrations have now been recovered from original Git commit diff
 
 The two manager-documentation entries are duplicate-name ledger records. Do not delete either record or invent two replacement SQL files without recovering their provenance.
 
-## Remaining local files without matching production ledger versions
-
-These **7** local files remain unaligned:
-
-| Local migration | Current evidence / disposition |
-|---|---|
-| `20261007193000_leo_knowledge_role_filtered_search.sql` | `search_leo_knowledge_v2` exists in production, but its exact historical ledger provenance is not established. |
-| `20261007194500_leo_knowledge_version_history.sql` | Version table and snapshot triggers exist in production; original applied version is not established. |
-| `20261015215000_grant_manager_documentation_management.sql` | Manager permission row exists; two duplicate-name production records need provenance review. |
-| `20261019160000_crm_admin_hr_it_workspace.sql` | HR workspace tables/policies exist; later October 27 repair/tightening records are also present. Do not replay the original file. |
-| `20261020120000_guard_admin_tab_permission_changes.sql` | Guard function/trigger is absent in production; treat as unapplied and review separately before any forward migration. |
-| `20261106190100_harden_supabase_admin_default_privileges.sql` | Not recorded as applied; requires elevated `supabase_admin` authority and separate security review. Do not replay through an executor lacking that authority. |
-| `20261108215900_enable_auth_and_mlm_realtime.sql` | `mlm_packages` is published but `auth_carousel_slides` is not. The migration is not confirmed as applied as a whole. |
-
 ## Local-only migration disposition and forward repairs
 
 The seven original local-only migration files were preserved verbatim under `docs/database/unmatched-local-migrations/` and removed from the active migration directory so a future migration push cannot blindly replay them:
@@ -102,7 +88,7 @@ The seven original local-only migration files were preserved verbatim under `doc
 | `20261106190100_harden_supabase_admin_default_privileges.sql` | Not applied; current migration executor is `postgres` and is not a member of `supabase_admin`. Archived until an appropriately authorized executor can perform a reviewed privilege change. |
 | `20261108215900_enable_auth_and_mlm_realtime.sql` | Production already publishes `mlm_packages`; `auth_carousel_slides` is RLS-enabled with a public active-row SELECT policy but is not published. Original retained in archive; forward-only `20261121150100_enable_auth_carousel_realtime_forward.sql` stages only the missing publication. |
 
-The HR tables currently grant authenticated CRUD privileges, but their RLS policies restrict row access and no anonymous grants were found. No blanket HR grant revocation was added because the manager policies intentionally support HR administration and a safe role-by-role behavior test is still required.
+The HR tables currently grant authenticated CRUD privileges, but their RLS policies restrict row access and no anonymous grants were found. The manager policies use `FOR ALL`, so broad revocation was not applied without role-specific regression testing. No blanket HR grant revocation was added because the manager policies intentionally support HR administration and a safe role-by-role behavior test is still required.
 
 The two forward migrations are source-control changes only. They have **not** been applied to production. Their versions are newer than the current production ledger maximum and avoid reusing the old timestamps.
 
@@ -122,7 +108,7 @@ The audit confirmed:
 
 1. Recover the exact original SQL for the 16 unmatched production records from trusted historical source control, deployment artifacts, or an authorized database migration archive.
 2. Compare recovered SQL to the live schema and migration ledger; preserve duplicate records and original ordering.
-3. Determine whether each of the seven local-only migrations was applied out-of-band, superseded, or never applied.
+3. Preserve the seven local-only artifacts outside the migration runner with their current dispositions; continue provenance checks for the three applied-but-unmatched objects, and leave the `supabase_admin` default-privilege change blocked until an authorized executor is available.
 4. For genuinely unapplied changes, review and create a new forward-only migration with a fresh version; never reuse an old timestamp. Two such forward repairs are staged for the absent admin-tab guard and missing auth-carousel Realtime publication.
 5. Validate the complete local migration directory against production in a disposable PostgreSQL environment.
 6. Recheck Supabase Preview after source recovery. Do not use no-op placeholder files, delete migration-ledger rows, run old migrations again, or apply a blanket `migration repair` merely to silence the warning.
