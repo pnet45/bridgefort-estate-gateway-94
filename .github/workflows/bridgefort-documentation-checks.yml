@@ -70,15 +70,15 @@ jobs:
           import { readFileSync } from 'node:fs';
           import assert from 'node:assert/strict';
 
-          const acceptance = readFileSync('supabase/migrations/20261120120000_bmc_agreement_acceptance_audit.sql', 'utf8');
-          const divisions = readFileSync('supabase/migrations/20261120130000_bmc_division_applications.sql', 'utf8');
-          const security = readFileSync('supabase/migrations/20261120140000_secure_bmc_division_review.sql', 'utf8');
+          const acceptance = readFileSync('supabase/migrations/20261121134852_bmc_agreement_acceptance_audit.sql', 'utf8');
+          const divisions = readFileSync('supabase/migrations/20261121134906_bmc_division_applications.sql', 'utf8');
+          const security = readFileSync('supabase/migrations/20261121134914_secure_bmc_division_review.sql', 'utf8');
           const signup = readFileSync('src/pages/Auth.tsx', 'utf8');
           const hub = readFileSync('src/pages/BMCPartnerHub.tsx', 'utf8');
           const admin = readFileSync('src/components/admin/AdminBMCApplications.tsx', 'utf8');
           const adminConsole = readFileSync('src/pages/AdminConsole.tsx', 'utf8');
-          const referrals = readFileSync('supabase/migrations/20261120150000_bmc_division_referral_attribution.sql', 'utf8');
-          const reviewerPermission = readFileSync('supabase/migrations/20261120160000_bmc_reviewer_permission.sql', 'utf8');
+          const referrals = readFileSync('supabase/migrations/20261121134923_bmc_division_referral_attribution.sql', 'utf8');
+          const reviewerPermission = readFileSync('supabase/migrations/20261121134932_bmc_reviewer_permission.sql', 'utf8');
           const travelForm = readFileSync('src/components/travels/TravelsBookingForm.tsx', 'utf8');
           const travelEdge = readFileSync('supabase/functions/submit-travel-booking/index.ts', 'utf8');
           const checkoutForm = readFileSync('src/components/ecommerce/CheckoutForm.tsx', 'utf8');
