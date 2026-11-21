@@ -90,8 +90,8 @@ Record final sign-off from Product Owner, Technology/Security, Legal, DPO/Privac
 ## Commission policy approval and current known state
 
 - Management has approved the division commission schedule: Homes retains the existing BH-Realtors rules; Agrovest pays 10% direct-referral commission; Travels & Tours pays 10% direct-referral commission; neither Agrovest nor Travels pays upliner/downline commission.
-- Agrovest and Travels commission is calculated on the full customer payment received, before third-party cost deductions, after the payment is verified as cleared.
-- The commission engine is being prepared in a reviewable feature branch. It uses a separate BMC ledger and does not modify Homes commission records.
+- Agrovest and Travels commission is calculated at 10% on each individual gross customer payment/instalment, before third-party cost deductions, after the payment is verified as cleared.
+- The Agrovest/Travels commission engine is being prepared in a reviewable feature branch. It uses a separate BMC ledger and does not modify Homes commission records. The existing BH-Realtors Homes property-sale trigger still awards on full-order payment; progressive Homes calculation requires a separate compatibility refactor and remains unchanged in this release.
 - The commission migration and behavioural tests must pass in the disposable PostgreSQL workflow before production release.
 - Production migration history, backup/restore readiness, legal/privacy approval and Finance reconciliation sign-off remain separate release gates. No production migration is authorized by this runbook alone.
 - Vercel preview deployment has previously been blocked by the account's build-rate limit; no paid upgrade has been made.
