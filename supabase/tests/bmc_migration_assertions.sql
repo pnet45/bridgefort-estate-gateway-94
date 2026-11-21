@@ -139,11 +139,13 @@ begin
          jsonb_build_object('source','bmc-installment-test')
   from public.orders where payment_reference='TEST-AGRO-1';
 
-  insert into public.payment_requests (user_id, type, amount, reference, status)
-  values (referred_id, 'agrovest', 400, 'TEST-AGRO-INSTALLMENT-1', 'pending')
+  insert into public.payment_requests (user_id, type, amount, reference, status, order_id)
+  select referred_id, 'agrovest', 400, 'TEST-AGRO-INSTALLMENT-1', 'pending', id
+  from public.orders where payment_reference='TEST-AGRO-1'
   returning id into agro_request_1;
-  insert into public.payment_requests (user_id, type, amount, reference, status)
-  values (referred_id, 'agrovest', 600, 'TEST-AGRO-INSTALLMENT-2', 'pending')
+  insert into public.payment_requests (user_id, type, amount, reference, status, order_id)
+  select referred_id, 'agrovest', 600, 'TEST-AGRO-INSTALLMENT-2', 'pending', id
+  from public.orders where payment_reference='TEST-AGRO-1'
   returning id into agro_request_2;
 
   update public.payment_requests set status='approved' where id=agro_request_1;
