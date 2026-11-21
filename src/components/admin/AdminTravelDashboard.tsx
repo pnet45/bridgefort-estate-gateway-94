@@ -48,6 +48,10 @@ const AdminTravelDashboard: React.FC = () => {
   const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
   const [emailSending, setEmailSending] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
+  const [paymentSaving, setPaymentSaving] = useState(false);
 
   // Blackout form
   const [boForm, setBoForm] = useState({ package: 'Explorer', start_date: '', end_date: '', reason: '' });
@@ -117,6 +121,29 @@ const AdminTravelDashboard: React.FC = () => {
     }
     toast({ title: 'Booking updated', description: 'Customer has been notified by email.' });
     setEditing(null);
+    fetchAll();
+  };
+
+  const recordTravelPayment = async () => {
+    if (!editing || !paymentAmount.trim() || !paymentReference.trim()) return;
+    const amount = Number(paymentAmount);
+    if (!Number.isFinite(amount) || amount <= 0 || !/^\\d+(?:\\.\\d{1,2})?$/.test(paymentAmount.trim())) {
+      toast({ title: 'Invalid payment amount', description: 'Enter a positive amount with no more than two decimal places.', variant: 'destructive' });
+      return;
+    }
+    setPaymentSaving(true);
+    const { data, error } = await supabase.functions.invoke('manage-travel-booking', {
+      body: { action: 'record_payment', bookingId: editing.id, amount: paymentAmount.trim(), paymentReference: paymentReference.trim(), notes: paymentNotes.trim() || null },
+    });
+    setPaymentSaving(false);
+    if (error || !data?.success) {
+      toast({ title: 'Payment record failed', description: error?.message || data?.error || 'Unable to record payment.', variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Payment recorded', description: data.message || 'Confirmed travel payment saved.' });
+    setPaymentAmount('');
+    setPaymentReference('');
+    setPaymentNotes('');
     fetchAll();
   };
 
@@ -456,6 +483,28 @@ Bridgefort Travels`
               <div>
                 <Label>Note to customer (optional)</Label>
                 <Textarea value={editNote} onChange={e => setEditNote(e.target.value)} rows={3} maxLength={500} placeholder="Add context — included in the email…" />
+              </div>
+              <div className="space-y-3 rounded-lg border border-slate-700 p-4">
+                <div>
+                  <h3 className="font-semibold">Record cleared customer payment</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">Use this only after Bridgefort has verified that the customer's funds have cleared. A qualifying BMC Travels referral earns 10% of this full payment amount.</p>
+                </div>
+                <div>
+                  <Label>Payment amount (NGN)</Label>
+                  <Input inputMode="decimal" value={paymentAmount} onChange={e => setPaymentAmount(e.target.value)} placeholder="e.g. 150000.00" />
+                </div>
+                <div>
+                  <Label>Bank / gateway payment reference</Label>
+                  <Input value={paymentReference} onChange={e => setPaymentReference(e.target.value)} maxLength={120} placeholder="Unique payment reference" />
+                </div>
+                <div>
+                  <Label>Internal note (optional)</Label>
+                  <Textarea value={paymentNotes} onChange={e => setPaymentNotes(e.target.value)} rows={2} maxLength={1000} placeholder="Verification details for finance audit" />
+                </div>
+                <Button type="button" variant="outline" onClick={recordTravelPayment} disabled={paymentSaving || !paymentAmount.trim() || !paymentReference.trim()}>
+                  {paymentSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+                  Record confirmed payment
+                </Button>
               </div>
             </div>
           )}
