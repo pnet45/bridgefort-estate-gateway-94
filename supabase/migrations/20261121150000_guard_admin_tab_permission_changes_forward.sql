@@ -6,39 +6,40 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  protected_keys text[] := ARRAY[
+    'admin:view_dashboard',
+    'admin:view_properties',
+    'admin:view_allocations',
+    'admin:view_documentation',
+    'admin:view_crm',
+    'admin:view_users',
+    'admin:view_approvals',
+    'admin:view_subscribers',
+    'admin:view_email_center',
+    'admin:view_analytics',
+    'admin:view_mlm_funnel',
+    'admin:view_activity',
+    'admin:view_content',
+    'admin:view_cms',
+    'admin:view_other_payments',
+    'admin:manage_departments',
+    'admin:view_travels'
+  ];
 BEGIN
-  IF (
-    NEW.permission_key IN (
-      'admin:view_dashboard',
-      'admin:view_properties',
-      'admin:view_allocations',
-      'admin:view_documentation',
-      'admin:view_crm',
-      'admin:view_users',
-      'admin:view_approvals',
-      'admin:view_subscribers',
-      'admin:view_email_center',
-      'admin:view_analytics',
-      'admin:view_mlm_funnel',
-      'admin:view_activity',
-      'admin:view_content',
-      'admin:view_cms',
-      'admin:view_other_payments',
-      'admin:manage_departments',
-      'admin:view_travels'
-    ) OR (
-      TG_OP = 'UPDATE' AND OLD.permission_key IN (
-        'admin:view_dashboard', 'admin:view_properties', 'admin:view_allocations',
-        'admin:view_documentation', 'admin:view_crm', 'admin:view_users',
-        'admin:view_approvals', 'admin:view_subscribers', 'admin:view_email_center',
-        'admin:view_analytics', 'admin:view_mlm_funnel', 'admin:view_activity',
-        'admin:view_content', 'admin:view_cms', 'admin:view_other_payments',
-        'admin:manage_departments', 'admin:view_travels'
-      )
-    )
-  ) AND auth.uid() IS NOT NULL AND NOT public.is_global_admin(auth.uid()) THEN
-    RAISE EXCEPTION 'Only a global administrator may change administrator tab visibility'
-      USING ERRCODE = '42501';
+  IF auth.uid() IS NOT NULL AND NOT public.is_global_admin(auth.uid()) THEN
+    IF TG_OP = 'INSERT' THEN
+      IF NEW.permission_key = ANY(protected_keys) THEN
+        RAISE EXCEPTION 'Only a global administrator may change administrator tab visibility'
+          USING ERRCODE = '42501';
+      END IF;
+    ELSIF TG_OP = 'UPDATE' THEN
+      IF NEW.permission_key = ANY(protected_keys)
+         OR OLD.permission_key = ANY(protected_keys) THEN
+        RAISE EXCEPTION 'Only a global administrator may change administrator tab visibility'
+          USING ERRCODE = '42501';
+      END IF;
+    END IF;
   END IF;
   RETURN NEW;
 END;
