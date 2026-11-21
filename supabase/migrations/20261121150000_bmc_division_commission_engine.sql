@@ -104,8 +104,8 @@ begin
      or jsonb_array_length(coalesce(order_row.items, '[]'::jsonb)) = 0
      or exists (
        select 1
-       from jsonb_array_elements(coalesce(order_row.items, '[]'::jsonb)) item
-       where coalesce(item->>'property_type', '') <> 'Agrovest'
+       from jsonb_array_elements(coalesce(order_row.items, '[]'::jsonb)) as item_row(item)
+       where coalesce(item_row.item->>'property_type', '') <> 'Agrovest'
      ) then
     return new;
   end if;
