@@ -169,10 +169,10 @@ jobs:
           assert.match(migration, /admin_mark_bmc_commission_paid/i);
           assert.doesNotMatch(migration, /mlm_commissions|wallet_balance|referred_by_id/i, 'BMC division commissions must not touch BH-Realtors MLM upliners or wallets');
           assert.match(assertions, /Agrovest instalments did not create exactly one commission entry each/i);
-          assert.match(assertions, /Agrovest instalment commission totals do not equal 10%/i);
+          assert.match(assertions, /Agrovest instalment commission totals do not equal ten percent/i);
           assert.match(assertions, /Travels commission was not calculated as 10%/i);
           assert.match(assertions, /Travels instalments did not create exactly one commission entry each/i);
-          assert.match(assertions, /Travels instalment commission totals do not equal 10%/i);
+          assert.match(assertions, /Travels instalment commission totals do not equal ten percent/i);
           assert.match(assertions, /duplicate or upliner commission rows/i);
           assert.match(assertions, /Duplicate bank transfer reference unexpectedly created a commission/i);
           assert.match(partnerHub, /get_my_bmc_division_referral_codes/i, 'existing partner hub referral workflow must remain intact');
