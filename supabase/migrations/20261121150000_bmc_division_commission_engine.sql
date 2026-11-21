@@ -67,7 +67,11 @@ begin
     return new;
   end if;
 
-  if lower(coalesce(new.type, '')) <> 'agrovest' or coalesce(new.amount, 0) <= 0 then
+  -- Bank-transfer requests are labelled 'property' regardless of division;
+  -- identify the qualifying division from the immutable order snapshot below.
+  -- Documentation-fee requests must never earn property commission.
+  if lower(coalesce(new.type, '')) like '%document%'
+     or coalesce(new.amount, 0) <= 0 then
     return new;
   end if;
 
