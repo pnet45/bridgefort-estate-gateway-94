@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { emailService } from '@/services/emailClient';
 import ReCaptcha from '@/components/ui/ReCaptcha';
 import AuthCarousel from '@/components/auth/AuthCarousel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -35,6 +34,7 @@ const Auth = ({
   const [password, setPassword] = useState('');
   const [pboCode, setPboCode] = useState('');
   const [sponsorCode, setSponsorCode] = useState('');
+  const [bmcReferralCode, setBmcReferralCode] = useState('');
   const [sponsorCodeLocked, setSponsorCodeLocked] = useState(false);
   const [isRegisteringAsPBO, setIsRegisteringAsPBO] = useState(false);
   const [referralMessage, setReferralMessage] = useState('');
@@ -44,6 +44,10 @@ const Auth = ({
   const [lastName, setLastName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToBmcAgreement, setAgreedToBmcAgreement] = useState(false);
+  const [acknowledgedBmcPrivacy, setAcknowledgedBmcPrivacy] = useState(false);
+  const [bmcMarketingConsent, setBmcMarketingConsent] = useState(false);
+  const [selectedBmcDivisions, setSelectedBmcDivisions] = useState<string[]>([]);
   const [accountLockedOpen, setAccountLockedOpen] = useState(false);
   const [lockedReason, setLockedReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -65,6 +69,13 @@ const Auth = ({
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const refCode = params.get('ref')?.trim().toUpperCase();
+    const divisionReferralCode = params.get('bmc_ref')?.trim().toUpperCase();
+
+    if (divisionReferralCode) {
+      setBmcReferralCode(divisionReferralCode);
+      setIsLogin(false);
+      setReferralMessage('A Bridgefort Homes BMC referral link was detected. Its attribution will be verified separately from BH-Realtors sponsor membership.');
+    }
 
     if (refCode) {
       setSponsorCode(refCode);
@@ -83,6 +94,10 @@ const Auth = ({
     setLastName('');
     setConfirmPassword('');
     setAgreedToTerms(false);
+    setAgreedToBmcAgreement(false);
+    setAcknowledgedBmcPrivacy(false);
+    setBmcMarketingConsent(false);
+    setSelectedBmcDivisions([]);
     setRecaptchaToken(null);
     if (recaptchaRef.current) {
       recaptchaRef.current.reset();
@@ -213,7 +228,16 @@ const Auth = ({
         if (nextParam) {
           navigate(nextParam);
         } else if (pageTitle) {
-          navigate(redirectAfterSignIn);
+          if (redirectAfterSignIn === '/bh-realtors') {
+            const { data: partnerProfile } = await supabase
+              .from('profiles')
+              .select('is_pbo')
+              .eq('id', signedInUser?.id || '')
+              .maybeSingle();
+            navigate(partnerProfile?.is_pbo ? '/bh-realtors' : '/bmc-partner-hub');
+          } else {
+            navigate(redirectAfterSignIn);
+          }
         } else {
           let destination = '/dashboard';
           try {
@@ -280,6 +304,16 @@ const Auth = ({
       return;
     }
 
+    if (isRegisteringAsPBO && selectedBmcDivisions.length === 0) {
+      toast({ title: 'Select a business division', description: 'Choose at least one Bridgefort division for your BMC application.', variant: 'destructive' });
+      return;
+    }
+
+    if (isRegisteringAsPBO && (!agreedToBmcAgreement || !acknowledgedBmcPrivacy)) {
+      toast({ title: 'BMC Partner Agreement required', description: 'Please accept the BMC Partner Agreement and acknowledge the separate BMC Privacy Notice to continue.', variant: 'destructive' });
+      return;
+    }
+
     if (!agreedToTerms) {
       toast({
         title: "Terms & Privacy Policy",
@@ -320,7 +354,20 @@ const Auth = ({
       const normalizedSponsorCode = sponsorCode.trim().toUpperCase();
       // Persist the captured code in auth metadata as a recovery path when
       // email confirmation means signup has no authenticated session yet.
-      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked);
+      const signupMetadata = {
+        ...(isRegisteringAsPBO ? {
+          bmc_agreement_accepted: true,
+          bmc_agreement_version: '1.0',
+          bmc_agreement_accepted_at: new Date().toISOString(),
+          bmc_agreement_name: 'Bridgefort Multi-Business Consultants Partner Agreement',
+          bmc_privacy_acknowledged: acknowledgedBmcPrivacy,
+          bmc_privacy_notice_version: '1.0',
+          bmc_marketing_consent: bmcMarketingConsent,
+          bmc_selected_divisions: selectedBmcDivisions,
+        } : {}),
+        ...(bmcReferralCode ? { bmc_referral_code: bmcReferralCode } : {}),
+      };
+      const { data, error } = await signUp(email, password, firstName, lastName, normalizedSponsorCode || undefined, sponsorCodeLocked, Object.keys(signupMetadata).length ? signupMetadata : undefined);
       if (error) throw error;
 
       // Supabase can return a *truthy* user object with an empty
@@ -344,77 +391,13 @@ const Auth = ({
       if (data.user) {
         const profileUpdate: Record<string, any> = {
           updated_at: new Date().toISOString(),
+          ...(isRegisteringAsPBO ? { terms_accepted: true } : {}),
         };
 
         if (isRegisteringAsPBO) {
-          // Automatically generate a unique 5-digit PBO referral code for every PBO registration.
-          const generateUniquePboCode = async () => {
-            let attempts = 0;
-            while (attempts < 10) {
-              const candidate = String(Math.floor(10000 + Math.random() * 90000));
-              const { data: existing } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('pbo_referral_code', candidate)
-                .limit(1)
-                .maybeSingle();
-
-              if (!existing) return candidate;
-              attempts += 1;
-            }
-            return `P${String(Date.now()).slice(-5)}`;
-          };
-
-          const finalPbo = await generateUniquePboCode();
-
-          const { data: existingPBO } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('pbo_referral_code', finalPbo)
-            .limit(1)
-            .maybeSingle();
-
-          if (existingPBO) {
-            toast({
-              title: 'PBO Code Already Used',
-              description: 'Generated referral code collided. Please try again.',
-              variant: 'destructive'
-            });
-            return;
-          }
-
-          profileUpdate.is_pbo = true;
-          profileUpdate.pbo_referral_code = finalPbo;
-          profileUpdate.current_package = 'associate';
-
-          if (data.user?.email) {
-            const referralLink = `${window.location.origin}/bridgefort-realtors-login?ref=${finalPbo}`;
-            const emailResult = await emailService.sendEmail({
-              to: data.user.email,
-              name: `${firstName} ${lastName}`.trim() || 'BHRealtors Partner',
-              subject: 'Your BHRealtors Referral Link',
-              body: `Hello ${firstName || 'Partner'},\n\nYour BHRealtors referral code has been generated successfully:\n\n${finalPbo}\n\nUse the link below to invite new Realtors:\n${referralLink}\n\nThank you for joining BHRealtors!`,
-              html: `<p>Hello ${firstName || 'Partner'},</p><p>Your BHRealtors referral code has been generated successfully:</p><p><strong>${finalPbo}</strong></p><p>Use the link below to invite new Realtors:</p><p><a href="${referralLink}">${referralLink}</a></p><p>Thank you for joining BHRealtors!</p>`,
-            });
-
-            if (emailResult.success) {
-              toast({
-                title: 'Referral link emailed',
-                description: 'Your PBO referral link and code were sent to your email address.',
-              });
-              setReferralEmailNotice(`We emailed your referral link to ${data.user.email}`);
-              setReferralEmailSent(true);
-            } else {
-              console.error('Failed to send PBO referral email:', emailResult.error);
-              toast({
-                title: 'Referral email failed',
-                description: 'Your referral code was generated, but the email could not be delivered. Please check your email address or contact support.',
-                variant: 'destructive',
-              });
-              setReferralEmailNotice('Referral code created but email delivery failed. Please contact support.');
-              setReferralEmailSent(false);
-            }
-          }
+          // BMC division referral codes are generated by the database only
+          // after each selected division has been formally approved. The
+          // legacy BH-Realtors referral identity is never assigned here.
         }
 
         if (normalizedSponsorCode) {
@@ -475,7 +458,7 @@ const Auth = ({
         identifyUser(data.user.id, {
           email: data.user.email,
           name: `${firstName} ${lastName}`.trim() || undefined,
-          role: isRegisteringAsPBO ? 'realtor' : 'client',
+          role: isRegisteringAsPBO ? 'bmc_applicant' : 'client',
         });
         captureEvent('user_signed_up', {
           account_type: isRegisteringAsPBO ? 'realtor' : 'client',
@@ -484,10 +467,12 @@ const Auth = ({
         });
 
         toast({
-          title: "Registration successful!",
-          description: "Please check your email to verify your account."
+          title: isRegisteringAsPBO ? "BMC application received" : "Registration successful!",
+          description: isRegisteringAsPBO
+            ? "Please verify your email. Your selected divisions will remain pending until Bridgefort completes its review."
+            : "Please check your email to verify your account."
         });
-        navigate(nextParam ?? redirectAfterSignUp);
+        navigate(nextParam ?? (isRegisteringAsPBO ? '/bmc-partner-hub' : redirectAfterSignUp));
       } else {
         // Belt-and-suspenders: signUp() returned no error but also no user.
         // Rather than silently doing nothing (which just looks like a
@@ -575,7 +560,7 @@ const Auth = ({
                 onClick={() => setIsPBO(true)}
                 className="flex-1"
               >
-                Realtors Login
+                BMC Login
               </Button>
             </div>
           )}
@@ -666,26 +651,26 @@ const Auth = ({
                     id="registerAsPBO"
                     type="checkbox"
                     checked={isRegisteringAsPBO}
-                    onChange={(e) => setIsRegisteringAsPBO(e.target.checked)}
+                    onChange={(e) => { setIsRegisteringAsPBO(e.target.checked); if (!e.target.checked) { setAgreedToBmcAgreement(false); setAcknowledgedBmcPrivacy(false); setBmcMarketingConsent(false); setSelectedBmcDivisions([]); } }}
                     className="h-4 w-4 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
                   />
-                  <Label htmlFor="registerAsPBO">Register as a PBO</Label>
+                  <Label htmlFor="registerAsPBO">Join BMC – Bridgefort Multi-Business Consultants</Label>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   {isRegisteringAsPBO
-                    ? 'Your personal PBO referral code and signup link will be generated automatically.'
-                    : 'If you were referred by a PBO, enter their code here.'}
+                    ? 'Your existing BH-Realtors referral identity remains separate. BMC division referral links are issued only after the relevant division is approved.'
+                    : 'If a Bridgefort Homes BMC partner referred you, use their Homes referral link so attribution is captured separately from BH-Realtors membership.'}
                 </p>
 
                 <div>
                   <Label htmlFor="sponsorCode" className="flex items-center gap-1.5">
-                    Referral Code (Optional)
+                    BH-Realtors Referral Code (Optional)
                     {sponsorCodeLocked && <Lock className="h-3 w-3 text-slate-400" />}
                   </Label>
                   <Input
                     type="text"
                     id="sponsorCode"
-                    placeholder="Enter the referral code you received"
+                    placeholder="Enter a BH-Realtors referral code"
                     value={sponsorCode}
                     onChange={(e) => setSponsorCode(e.target.value)}
                     readOnly={sponsorCodeLocked}
@@ -694,7 +679,7 @@ const Auth = ({
                   <p className="text-xs text-gray-500 mt-1">
                     {sponsorCodeLocked
                       ? "This code came from your referral link and can't be changed here."
-                      : 'If you have a sponsoring PBO, enter their code so they receive credit for your signup.'}
+                      : 'This field is only for the legacy BH-Realtors referral system. BMC division referral links are captured separately.'}
                   </p>
                   {referralMessage && <p className="text-xs text-emerald-600 mt-1">{referralMessage}</p>}
                   {referralEmailSent !== null && (
@@ -704,7 +689,53 @@ const Auth = ({
                   )}
                 </div>
 
+                {isRegisteringAsPBO && (
+                  <fieldset className="rounded-lg border border-border p-3 space-y-3">
+                    <legend className="px-1 text-sm font-semibold text-foreground">Choose your business divisions</legend>
+                    <p className="text-xs text-muted-foreground">Select one or more areas you wish to apply for. Each division has its own verification and approval process; selecting a division does not activate partner status.</p>
+                    {[
+                      { value: 'homes', label: 'Bridgefort Homes', detail: 'Real estate and property services' },
+                      { value: 'travels', label: 'Bridgefort Travels', detail: 'Travel, flights, accommodation and tours' },
+                      { value: 'agrovest', label: 'Bridgefort Agrovest', detail: 'Agriculture and agribusiness' },
+                    ].map((division) => (
+                      <label key={division.value} className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedBmcDivisions.includes(division.value)}
+                          onChange={(e) => setSelectedBmcDivisions((current) => e.target.checked ? [...current, division.value] : current.filter((value) => value !== division.value))}
+                          className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue"
+                        />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium text-foreground">{division.label}</span>
+                          <span className="block text-xs text-muted-foreground">{division.detail}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </fieldset>
+                )}
+                {isRegisteringAsPBO && (
+                <div className="flex items-start gap-3 pt-1 rounded-lg border border-estate-blue/20 bg-estate-blue/5 p-3">
+                  <input id="agreedToBmcAgreement" type="checkbox" checked={agreedToBmcAgreement} onChange={(e) => setAgreedToBmcAgreement(e.target.checked)} required className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
+                  <Label htmlFor="agreedToBmcAgreement" className="font-normal leading-snug">
+                    I have read and agree to the website{' '}
+                    <Link to="/bmc-partner-agreement" target="_blank" className="text-estate-blue hover:underline font-semibold">BMC Partner Agreement and Terms of Engagement</Link>.
+                    {' '}I understand that BMC status is subject to verification and formal Company approval.
+                  </Label>
+                </div>
+              )}
+              {isRegisteringAsPBO && (
                 <div className="flex items-start gap-3 pt-1">
+                  <input id="acknowledgedBmcPrivacy" type="checkbox" checked={acknowledgedBmcPrivacy} onChange={(e) => setAcknowledgedBmcPrivacy(e.target.checked)} required className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
+                  <Label htmlFor="acknowledgedBmcPrivacy" className="font-normal leading-snug">I acknowledge that I have read the separate <Link to="/bmc-privacy-notice" target="_blank" className="text-estate-blue hover:underline font-semibold">BMC Privacy Notice</Link>, which applies to my BMC application and partner relationship, not the general client Privacy Policy.</Label>
+                </div>
+              )}
+              {isRegisteringAsPBO && (
+                <div className="flex items-start gap-3 pt-1">
+                  <input id="bmcMarketingConsent" type="checkbox" checked={bmcMarketingConsent} onChange={(e) => setBmcMarketingConsent(e.target.checked)} className="h-4 w-4 mt-0.5 rounded border-gray-300 text-estate-blue focus:ring-estate-blue" />
+                  <Label htmlFor="bmcMarketingConsent" className="font-normal leading-snug text-sm">I would like to receive optional Bridgefort news, offers and marketing communications. I can withdraw this consent later.</Label>
+                </div>
+              )}
+              <div className="flex items-start gap-3 pt-1">
                   <input
                     id="agreedToTerms"
                     type="checkbox"
@@ -742,7 +773,7 @@ const Auth = ({
 
             <Button 
               type="submit" 
-              disabled={loading || (!isLogin && !agreedToTerms)} 
+              disabled={loading || (!isLogin && (!agreedToTerms || (isRegisteringAsPBO && (selectedBmcDivisions.length === 0 || !agreedToBmcAgreement || !acknowledgedBmcPrivacy))))} 
               className="w-full bg-estate-blue hover:bg-estate-darkBlue"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}

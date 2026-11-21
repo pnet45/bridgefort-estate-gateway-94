@@ -91,6 +91,15 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
     setIsProcessing(true);
     try {
       // Passive reCAPTCHA v3 — blocks submit only if token missing (mock verify).
+      const referralCodes = Array.from(new Set(cart.map((item) => item.plot.bmcReferralCode?.trim().toUpperCase()).filter((code): code is string => Boolean(code))));
+      if (referralCodes.length > 1) {
+        throw new Error('Your cart contains different BMC referral codes. Please keep one referral source per checkout.');
+      }
+      const bmcReferralCode = referralCodes[0] || null;
+      if (bmcReferralCode && cart.some((item) => item.plot.propertyType !== 'Agrovest')) {
+        throw new Error('An Agrovest referral link can only be used for Agrovest items. Please separate other products into another checkout.');
+      }
+
       const captchaToken = await executeRecaptcha('checkout');
       if (!captchaToken) {
         throw new Error('Verification failed. Please refresh and try again.');
@@ -111,6 +120,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
           })),
           plan_type: selectedPlan.type,
           months_to_pay: monthsToPay,
+          bmc_referral_code: bmcReferralCode,
           customer: {
             email: customerInfo.email,
             name: `${customerInfo.firstName} ${customerInfo.lastName}`,

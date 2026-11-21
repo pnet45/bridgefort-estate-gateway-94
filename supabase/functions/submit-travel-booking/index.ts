@@ -79,6 +79,7 @@ serve(async (req) => {
     const packageName = String(body?.package ?? "").trim();
     const destination = body?.destination ? String(body.destination).trim() : null;
     const notes = body?.notes ? String(body.notes).trim() : null;
+    const bmcReferralCode = String(body?.bmc_referral_code ?? '').trim().toUpperCase();
 
     if (!name || name.length < 2 || name.length > 100) return json({ error: "Valid full name is required" }, 400);
     if (!/^\S+@\S+\.\S+$/.test(email) || email.length > 255) return json({ error: "Valid email is required" }, 400);
@@ -177,6 +178,29 @@ serve(async (req) => {
       }, 409);
     }
 
+    let bmcReferralCodeId: string | null = null;
+    if (bmcReferralCode) {
+      const { data: referral, error: referralError } = await supabase
+        .from("bmc_division_referral_codes")
+        .select("id, application_id")
+        .eq("referral_code", bmcReferralCode)
+        .eq("division", "travels")
+        .eq("is_active", true)
+        .maybeSingle();
+      if (referralError) throw referralError;
+      if (!referral) return json({ error: "This Bridgefort Travels referral link is invalid or inactive." }, 400);
+
+      const { data: approvedApplication, error: applicationError } = await supabase
+        .from("bmc_partner_divisions")
+        .select("id")
+        .eq("id", referral.application_id)
+        .eq("application_status", "approved")
+        .maybeSingle();
+      if (applicationError) throw applicationError;
+      if (!approvedApplication) return json({ error: "This Bridgefort Travels referral link is no longer active." }, 400);
+      bmcReferralCodeId = referral.id;
+    }
+
     const { data: booking, error: insertError } = await supabase
       .from("travel_bookings")
       .insert({
@@ -191,6 +215,7 @@ serve(async (req) => {
         notes,
         status: "received",
         customer_id: customerId,
+        bmc_referral_code_id: bmcReferralCodeId,
         confirmation_token: crypto.randomUUID(),
       })
       .select("*")

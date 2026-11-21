@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import WhatsAppChat from '../components/WhatsAppChat';
@@ -210,6 +210,9 @@ const OptimizedImg: React.FC<{ src: string; alt: string; className?: string }> =
 );
 
 const Agrovest: React.FC = () => {
+  const location = useLocation();
+  const bmcReferralCode = new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase() || '';
+  const referralQuery = bmcReferralCode ? `?bmc_ref=${encodeURIComponent(bmcReferralCode)}` : '';
   const { addToCart } = useEcommerce();
   const [quantity, setQuantity] = useState(1);
   const [sector, setSector] = useState<AgrovestOptionKey>('food');
@@ -235,6 +238,7 @@ const Agrovest: React.FC = () => {
         size: 1,
         propertyType: 'Agrovest',
         unit: selected.unit,
+        bmcReferralCode,
       },
       quantity
     );
@@ -893,7 +897,7 @@ const Agrovest: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 mb-16">
             {plantationGallery.map((c) => (
               <Link
-                to={`/agrovest/${c.slug}`}
+                to={`/agrovest/${c.slug}${referralQuery}`}
                 key={c.slug}
                 className="relative rounded-2xl overflow-hidden aspect-[4/3] group cursor-pointer block focus:outline-none focus:ring-2 focus:ring-amber-400"
               >
@@ -917,7 +921,7 @@ const Agrovest: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
             {facilityGallery.map((f) => (
               <Link
-                to={`/agrovest/${f.slug}`}
+                to={`/agrovest/${f.slug}${referralQuery}`}
                 key={f.slug}
                 className="relative rounded-2xl overflow-hidden aspect-square group cursor-pointer block focus:outline-none focus:ring-2 focus:ring-amber-400"
               >

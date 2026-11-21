@@ -3,7 +3,7 @@ import Auth from '@/pages/Auth';
 const BridgefortRealtorsAuth = () => {
   return (
     <Auth
-      pageTitle="Bridgefort Realtors"
+      pageTitle="BMC Partner Network"
       redirectAfterSignIn="/bh-realtors"
       redirectAfterSignUp="/profile"
     />

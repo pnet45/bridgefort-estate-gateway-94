@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, Navigate } from 'react-router-dom';
+import { useParams, Link, Navigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import WhatsAppChat from '../components/WhatsAppChat';
@@ -32,6 +32,9 @@ const AgrovestCategoryDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const category = getAgrovestCategory(slug || '');
   const { addToCart } = useEcommerce();
+  const location = useLocation();
+  const bmcReferralCode = new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase() || undefined;
+  const referralQuery = bmcReferralCode ? `?bmc_ref=${encodeURIComponent(bmcReferralCode)}` : '';
   const pricing = AGROVEST_CATEGORY_PRICING[category?.slug || ''];
   const [quantity, setQuantity] = useState(1);
 
@@ -60,6 +63,7 @@ const AgrovestCategoryDetail: React.FC = () => {
         size: 1,
         propertyType: 'Agrovest',
         unit: pricing.unit as 'plot' | 'pond' | 'pair',
+        bmcReferralCode,
       },
       quantity
     );
@@ -88,7 +92,7 @@ const AgrovestCategoryDetail: React.FC = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-green-950/70 via-green-950/50 to-green-950" />
         <div className="container-custom relative z-10 py-14 lg:py-20">
-          <Link to="/agrovest" className="inline-flex items-center gap-2 text-green-200 hover:text-white text-sm mb-6">
+          <Link to={`/agrovest${referralQuery}`} className="inline-flex items-center gap-2 text-green-200 hover:text-white text-sm mb-6">
             <ArrowLeft className="h-4 w-4" /> Back to Agrovest
           </Link>
           <Badge className="bg-amber-400 text-green-950 mb-4">{pricing?.operation || category.tag}</Badge>
@@ -187,7 +191,7 @@ const AgrovestCategoryDetail: React.FC = () => {
             {otherCategories.map((c) => (
               <Link
                 key={c.slug}
-                to={`/agrovest/${c.slug}`}
+                to={`/agrovest/${c.slug}${referralQuery}`}
                 className="relative rounded-2xl overflow-hidden aspect-square group"
               >
                 <picture>
@@ -211,7 +215,7 @@ const AgrovestCategoryDetail: React.FC = () => {
           </div>
           <div className="text-center mt-10">
             <Button asChild size="lg" className="bg-amber-500 hover:bg-amber-600 text-green-950 font-bold">
-              <Link to="/agrovest">View Full Agrovest Estate</Link>
+              <Link to={`/agrovest${referralQuery}`}>View Full Agrovest Estate</Link>
             </Button>
           </div>
         </div>

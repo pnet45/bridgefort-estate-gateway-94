@@ -60,6 +60,8 @@ const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('@/pages/TermsOfService'));
+const BMCPartnerAgreement = lazy(() => import('@/pages/BMCPartnerAgreement'));
+const BMCPrivacyNotice = lazy(() => import('@/pages/BMCPrivacyNotice'));
 const Sitemap = lazy(() => import('@/pages/Sitemap'));
 const NDPP = lazy(() => import('@/pages/NDPP'));
 const BridgefortMails = lazy(() => import('@/pages/BridgefortMails'));
@@ -74,6 +76,7 @@ const AnnouncementArticle = lazy(() => import('@/pages/AnnouncementArticle'));
 const LocationsIndex = lazy(() => import('@/pages/LocationsIndex'));
 const LocationLanding = lazy(() => import('@/pages/LocationLanding'));
 const BHRealtors = lazy(() => import('@/pages/BHRealtors'));
+const BMCPartnerHub = lazy(() => import('@/pages/BMCPartnerHub'));
 const BHRealtorsWithdraw = lazy(() => import('@/pages/BHRealtorsWithdraw'));
 const Travels = lazy(() => import('@/pages/Travels'));
 const TravelDestination = lazy(() => import('@/pages/TravelDestination'));
@@ -186,6 +189,8 @@ function AppLayout() {
                     <Route path="/payment-success" element={<PaymentSuccess />} />
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="/terms-of-service" element={<TermsOfService />} />
+                    <Route path="/bmc-partner-agreement" element={<BMCPartnerAgreement />} />
+                    <Route path="/bmc-privacy-notice" element={<BMCPrivacyNotice />} />
                     <Route path="/sitemap" element={<Sitemap />} />
                     <Route path="/NDPP" element={<NDPP />} />
                     <Route path="/admin-login" element={<AdminAuth />} />
@@ -210,7 +215,19 @@ function AppLayout() {
                         <Profile />
                       </PrivateRoute>
                     } />
+                    {/* BMC is now the unified partner destination. Keep the legacy BH-Realtors
+                        workspace reachable without changing existing membership or referral records. */}
                     <Route path="/bh-realtors" element={
+                      <PrivateRoute>
+                        <BMCPartnerHub />
+                      </PrivateRoute>
+                    } />
+                    <Route path="/bmc-partner-hub" element={
+                      <PrivateRoute>
+                        <BMCPartnerHub />
+                      </PrivateRoute>
+                    } />
+                    <Route path="/bh-realtors/legacy" element={
                       <PrivateRoute>
                         <BHRealtors />
                       </PrivateRoute>

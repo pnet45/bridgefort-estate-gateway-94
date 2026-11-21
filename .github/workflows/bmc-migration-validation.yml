@@ -1,0 +1,68 @@
+name: BMC migration validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20261121134852_bmc_agreement_acceptance_audit.sql'
+      - 'supabase/migrations/20261121134906_bmc_division_applications.sql'
+      - 'supabase/migrations/20261121134914_secure_bmc_division_review.sql'
+      - 'supabase/migrations/20261121134923_bmc_division_referral_attribution.sql'
+      - 'supabase/migrations/20261121134932_bmc_reviewer_permission.sql'
+      - 'supabase/tests/bmc_migration_validation.sql'
+      - 'supabase/tests/bmc_migration_assertions.sql'
+      - '.github/workflows/bmc-migration-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  disposable-postgres-migration-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bridgefort_bmc_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d bridgefort_bmc_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: bridgefort_bmc_test
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Build isolated Supabase schema fixture
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/bmc_migration_validation.sql
+
+      - name: Apply BMC migrations in order
+        run: |
+          for migration in \
+            supabase/migrations/20261121134852_bmc_agreement_acceptance_audit.sql \
+            supabase/migrations/20261121134906_bmc_division_applications.sql \
+            supabase/migrations/20261121134914_secure_bmc_division_review.sql \
+            supabase/migrations/20261121134923_bmc_division_referral_attribution.sql \
+            supabase/migrations/20261121134932_bmc_reviewer_permission.sql
+          do
+            echo "Applying $migration"
+            psql -v ON_ERROR_STOP=1 -f "$migration"
+          done
+
+      - name: Verify approval, consent, audit and referral behaviour
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/bmc_migration_assertions.sql

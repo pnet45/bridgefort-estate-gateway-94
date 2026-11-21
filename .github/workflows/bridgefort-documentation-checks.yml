@@ -64,6 +64,86 @@ jobs:
           console.log('Legal-document automation safety assertions passed.');
           NODE
 
+      - name: Verify BMC agreement, division and approval migration safeguards
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+
+          const acceptance = readFileSync('supabase/migrations/20261121134852_bmc_agreement_acceptance_audit.sql', 'utf8');
+          const divisions = readFileSync('supabase/migrations/20261121134906_bmc_division_applications.sql', 'utf8');
+          const security = readFileSync('supabase/migrations/20261121134914_secure_bmc_division_review.sql', 'utf8');
+          const signup = readFileSync('src/pages/Auth.tsx', 'utf8');
+          const hub = readFileSync('src/pages/BMCPartnerHub.tsx', 'utf8');
+          const admin = readFileSync('src/components/admin/AdminBMCApplications.tsx', 'utf8');
+          const adminConsole = readFileSync('src/pages/AdminConsole.tsx', 'utf8');
+          const referrals = readFileSync('supabase/migrations/20261121134923_bmc_division_referral_attribution.sql', 'utf8');
+          const reviewerPermission = readFileSync('supabase/migrations/20261121134932_bmc_reviewer_permission.sql', 'utf8');
+          const travelForm = readFileSync('src/components/travels/TravelsBookingForm.tsx', 'utf8');
+          const travelEdge = readFileSync('supabase/functions/submit-travel-booking/index.ts', 'utf8');
+          const checkoutForm = readFileSync('src/components/ecommerce/CheckoutForm.tsx', 'utf8');
+          const checkoutEdge = readFileSync('supabase/functions/create-checkout-order/index.ts', 'utf8');
+          const agrovestCategory = readFileSync('src/pages/AgrovestCategoryDetail.tsx', 'utf8');
+          const agrovestLanding = readFileSync('src/pages/Agrovest.tsx', 'utf8');
+          const travelsPage = readFileSync('src/pages/Travels.tsx', 'utf8');
+          const travelDestination = readFileSync('src/pages/TravelDestination.tsx', 'utf8');
+
+          assert.match(acceptance, /create table if not exists public\.bmc_agreement_acceptances/i);
+          assert.match(acceptance, /revoke all on public\.bmc_agreement_acceptances from anon, authenticated/i);
+          assert.match(acceptance, /after insert on auth\.users/i);
+          assert.match(divisions, /unique \(user_id, division\)/i, 'one independent application per division');
+          assert.match(divisions, /create table if not exists public\.bmc_partner_division_audit/i);
+          assert.match(divisions, /create or replace function public\.request_bmc_division_application/i);
+          assert.match(divisions, /create or replace function public\.create_bmc_division_applications/i);
+          assert.match(security, /create trigger protect_bmc_membership_fields\s+before insert or update on public\.profiles/i);
+          assert.match(security, /revoke update \(application_status, reviewed_at, updated_at\)\s+on public\.bmc_partner_divisions from anon, authenticated/i);
+          assert.match(security, /drop policy if exists "BMC approvers can update division application status"/i);
+          assert.doesNotMatch(security, /current_setting\('bridgefort\.bmc_membership_sync'/i, 'client-settable custom GUCs must never bypass profile membership guards');
+          assert.match(security, /create or replace function public\.admin_list_bmc_division_audit/i);
+          assert.match(security, /create or replace function public\.admin_review_bmc_division_application/i);
+          assert.match(security, /BMC Agreement acceptance and privacy acknowledgement are required before approval/i);
+          assert.match(security, /admin:manage_bmc_partners/i, 'BMC decisions require dedicated management permission');
+          assert.match(reviewerPermission, /admin:manage_bmc_partners/i);
+          assert.match(reviewerPermission, /'super_admin'.*'admin:manage_bmc_partners'/i);
+          assert.match(reviewerPermission, /'manager'.*'admin:manage_bmc_partners'/i);
+          assert.match(security, /Invalid BMC application status transition/i);
+          assert.match(security, /A review reason is required for rejection or suspension/i);
+          assert.doesNotMatch(security, /sync_bmc_homes_membership/i, 'BMC Homes approval must not activate paid BH-Realtors membership');
+          assert.match(security, /BMC Homes approval is intentionally separate from legacy BH-Realtors paid/i);
+          assert.match(signup, /bmc_selected_divisions: selectedBmcDivisions/i);
+          assert.doesNotMatch(signup, /profileUpdate\.is_pbo\s*=/i);
+          assert.doesNotMatch(signup, /profileUpdate\.current_package\s*=/i);
+          assert.match(signup, /bmc_referral_code: bmcReferralCode/i);
+          assert.match(signup, /BH-Realtors Referral Code/i, 'legacy sponsor-code field must be clearly separated from BMC division codes');
+          assert.doesNotMatch(signup, /sponsoring BMC, enter their code/i, 'do not route BMC codes through the legacy BH-Realtors sponsor field');
+          assert.match(hub, /request_bmc_division_application/i);
+          assert.match(admin, /_review_note: reviewNote \|\| null/i);
+          assert.match(admin, /Review reason required/i);
+          assert.match(admin, /admin_list_bmc_division_audit/i);
+          assert.match(admin, /Review history/i);
+          assert.match(admin, /canManage/i, 'decision controls must be hidden from view-only approvers');
+          assert.match(adminConsole, /canManage=\{hasPermission\('admin:manage_bmc_partners'\) \|\| hasPermission\('admin:all'\) \|\| isGlobalAdmin\}/i);
+          assert.match(referrals, /create table if not exists public\.bmc_division_referral_codes/i);
+          assert.match(referrals, /create table if not exists public\.bmc_division_referral_attributions/i);
+          assert.match(referrals, /get_my_bmc_division_referral_codes/i);
+          assert.match(referrals, /record_bmc_homes_signup_referral/i);
+          assert.match(referrals, /division in \('homes', 'travels', 'agrovest'\)/i);
+          assert.match(referrals, /division = 'travels'/i);
+          assert.match(referrals, /division = 'agrovest'/i);
+          assert.match(travelForm, /bmc_referral_code: bmcReferralCode/i);
+          assert.match(travelEdge, /bmc_referral_code_id: bmcReferralCodeId/i);
+          assert.match(checkoutForm, /bmcReferralCode/i);
+          assert.match(checkoutEdge, /bmc_referral_code_id: bmcReferralCodeId/i);
+          assert.match(agrovestLanding, /referralQuery/i, 'Agrovest landing-page category links must preserve BMC referrals');
+          assert.match(agrovestLanding, /bmcReferralCode,/i, 'Agrovest landing-page checkout must retain BMC referral attribution');
+          assert.match(agrovestCategory, /bmcReferralCode,/i, 'Agrovest category pages must carry BMC referral codes into the cart');
+          assert.match(agrovestCategory, /referralQuery/i, 'Agrovest category navigation must preserve the referral query');
+          assert.match(travelsPage, /referralQuery/i, 'Travel destination navigation must preserve the referral query');
+          assert.match(travelDestination, /referralQuery/i, 'Travel destination enquiry links must preserve the referral query');
+          console.log('BMC division referral attribution safeguards passed.');
+          console.log('BMC migration and UI safeguard assertions passed.');
+          NODE
+
       - name: Lint
         run: npm run lint
 
