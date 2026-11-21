@@ -290,7 +290,7 @@ export default function BMCPartnerHub() {
             <span className="rounded-xl bg-estate-blue/10 p-3 text-estate-blue"><Coins className="h-5 w-5" /></span>
             <div>
               <h2 className="text-xl font-semibold text-foreground">BMC commission history</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Agrovest and Travels commissions are tracked separately at 10% of cleared customer payments. Homes continues under the existing BH-Realtors commission system.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Agrovest and Travels commissions are tracked separately at 10% of each cleared customer instalment. Homes continues under the existing BH-Realtors commission system.</p>
             </div>
           </div>
           {commissionRows.length === 0 ? (
@@ -298,7 +298,7 @@ export default function BMCPartnerHub() {
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
-                <thead><tr className="border-b border-border text-left text-xs uppercase text-muted-foreground"><th className="p-3">Division</th><th className="p-3">Customer payment</th><th className="p-3">Rate</th><th className="p-3">Commission</th><th className="p-3">Status</th><th className="p-3">Date</th></tr></thead>
+                <thead><tr className="border-b border-border text-left text-xs uppercase text-muted-foreground"><th className="p-3">Division</th><th className="p-3">Customer payment</th><th className="p-3">Rate</th><th className="p-3">Commission</th><th className="p-3">Payment reference</th><th className="p-3">Status</th><th className="p-3">Date</th></tr></thead>
                 <tbody>
                   {commissionRows.map((commission) => (
                     <tr key={commission.commission_id} className="border-b border-border/60">
@@ -306,6 +306,7 @@ export default function BMCPartnerHub() {
                       <td className="p-3 text-foreground">{Number(commission.gross_customer_payment).toLocaleString('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 })}</td>
                       <td className="p-3 text-foreground">{commission.commission_rate}%</td>
                       <td className="p-3 font-semibold text-foreground">{Number(commission.commission_amount).toLocaleString('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 })}</td>
+                      <td className="p-3 font-mono text-xs text-muted-foreground">{commission.payment_reference || '—'}</td>
                       <td className="p-3"><Badge variant="outline">{commission.status === 'earned' ? 'Earned · awaiting payout' : commission.status === 'paid' ? 'Paid' : 'Reversed'}</Badge></td>
                       <td className="p-3 text-muted-foreground">{new Date(commission.created_at).toLocaleDateString()}</td>
                     </tr>
