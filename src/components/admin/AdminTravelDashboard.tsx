@@ -8,13 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
+import BMCTravelCommissionPayment from '@/components/admin/BMCTravelCommissionPayment';
 import { Loader2, Mail, RefreshCw, Search, Plane, CalendarX, Plus, Trash2 } from 'lucide-react';
 
 interface Booking {
   id: string; name: string; email: string; phone: string;
   departure_date: string; return_date: string; travelers: number;
   package: string; destination: string | null; notes: string | null;
-  status: string; status_note: string | null;
+  status: string; status_note: string | null; bmc_referral_code_id?: string | null;
   created_at: string;
 }
 
@@ -297,6 +298,7 @@ Bridgefort Travels`
                         {canManage && (
                           <td className="p-3 text-right space-x-1">
                             <Button size="sm" variant="outline" onClick={() => openEdit(b)}>Manage</Button>
+                            <BMCTravelCommissionPayment bookingId={b.id} bookingStatus={b.status} hasBmcReferral={Boolean(b.bmc_referral_code_id)} onRecorded={() => void fetchAll()} />
                             <Button size="sm" variant="ghost" onClick={() => openEmail(b)} className="text-slate-300" title="Email customer">
                               <Mail className="h-3.5 w-3.5" />
                             </Button>
