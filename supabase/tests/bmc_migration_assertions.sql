@@ -38,6 +38,7 @@ declare
   commission_id uuid;
   agro_request_1 uuid;
   agro_request_2 uuid;
+  agro_duplicate_request uuid;
 begin
   if (select count(*) from public.bmc_agreement_acceptances where user_id = partner_id) <> 1 then
     raise exception 'BMC agreement/privacy acceptance was not captured exactly once at signup';
@@ -166,6 +167,18 @@ begin
   ) then
     raise exception 'Agrovest bank-transfer commission did not retain its unique transfer reference';
   end if;
+
+  -- A second request cannot reuse an already-commissioned bank transfer reference.
+  insert into public.payment_requests (user_id, type, amount, reference, status, order_id, transfer_reference, transfer_date)
+  select referred_id, 'property', 25, 'TEST-AGRO-1', 'pending', id, 'TEST-AGRO-INSTALLMENT-2', current_date
+  from public.orders where payment_reference='TEST-AGRO-1'
+  returning id into agro_duplicate_request;
+  begin
+    update public.payment_requests set status='approved' where id=agro_duplicate_request;
+    raise exception 'Duplicate bank transfer reference unexpectedly created a commission';
+  exception when unique_violation then
+    null;
+  end;
   if (select coalesce(sum(gross_customer_payment),0) from public.bmc_division_commissions
       where source_type='agrovest_payment' and source_record_id in (agro_request_1, agro_request_2)) <> 1000
      or (select coalesce(sum(commission_amount),0) from public.bmc_division_commissions
