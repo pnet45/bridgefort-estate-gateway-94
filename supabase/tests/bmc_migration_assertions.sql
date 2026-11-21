@@ -35,6 +35,8 @@ declare
   travel_payment_id uuid;
   commission_count integer;
   commission_id uuid;
+  agro_request_1 uuid;
+  agro_request_2 uuid;
 begin
   if (select count(*) from public.bmc_agreement_acceptances where user_id = partner_id) <> 1 then
     raise exception 'BMC agreement/privacy acceptance was not captured exactly once at signup';
@@ -125,26 +127,54 @@ begin
     raise exception 'Agrovest order referral attribution was not recorded';
   end if;
 
-  -- A fully paid Agrovest order earns exactly 10% for the direct BMC only.
-  update public.orders
-  set amount_paid=total_amount, payment_status='paid'
-  where payment_reference='TEST-AGRO-1';
+  -- Each individually approved Agrovest instalment earns 10% immediately.
+  insert into public.payment_gateway_events
+    (gateway, reference, order_id, user_id, amount, currency, status, metadata)
+  select 'Paystack', 'TEST-AGRO-INSTALLMENT-1', id, user_id, 400, 'NGN', 'success',
+         jsonb_build_object('source','bmc-installment-test')
+  from public.orders where payment_reference='TEST-AGRO-1';
+  insert into public.payment_gateway_events
+    (gateway, reference, order_id, user_id, amount, currency, status, metadata)
+  select 'Paystack', 'TEST-AGRO-INSTALLMENT-2', id, user_id, 600, 'NGN', 'success',
+         jsonb_build_object('source','bmc-installment-test')
+  from public.orders where payment_reference='TEST-AGRO-1';
+
+  insert into public.payment_requests (user_id, type, amount, reference, status)
+  values (referred_id, 'agrovest', 400, 'TEST-AGRO-INSTALLMENT-1', 'pending')
+  returning id into agro_request_1;
+  insert into public.payment_requests (user_id, type, amount, reference, status)
+  values (referred_id, 'agrovest', 600, 'TEST-AGRO-INSTALLMENT-2', 'pending')
+  returning id into agro_request_2;
+
+  update public.payment_requests set status='approved' where id=agro_request_1;
+  update public.payment_requests set status='approved' where id=agro_request_2;
+
   select count(*) into commission_count
   from public.bmc_division_commissions
-  where division='agrovest' and source_type='agrovest_order'
-    and referrer_user_id=partner_id and gross_customer_payment=1000
-    and commission_rate=10 and commission_amount=100 and status='earned';
-  if commission_count <> 1 then
-    raise exception 'Agrovest commission was not calculated as 10% of the full cleared customer payment';
+  where division='agrovest' and source_type='agrovest_payment'
+    and source_record_id in (agro_request_1, agro_request_2)
+    and referrer_user_id=partner_id and commission_rate=10 and status='earned';
+  if commission_count <> 2 then
+    raise exception 'Agrovest instalments did not create exactly one commission entry each';
   end if;
-  if (select count(*) from public.bmc_division_commissions where source_record_id=(select id from public.orders where payment_reference='TEST-AGRO-1')) <> 1 then
-    raise exception 'Agrovest transaction created duplicate or upliner commission rows';
+  if (select coalesce(sum(gross_customer_payment),0) from public.bmc_division_commissions
+      where source_type='agrovest_payment' and source_record_id in (agro_request_1, agro_request_2)) <> 1000
+     or (select coalesce(sum(commission_amount),0) from public.bmc_division_commissions
+         where source_type='agrovest_payment' and source_record_id in (agro_request_1, agro_request_2)) <> 100 then
+    raise exception 'Agrovest instalment commission totals do not equal 10% of cleared customer payments';
+  end if;
+
+  -- Replaying an already-approved request must not create a duplicate commission.
+  update public.payment_requests set admin_notes='duplicate-event-check' where id=agro_request_1;
+  if (select count(*) from public.bmc_division_commissions
+      where source_type='agrovest_payment' and source_record_id=agro_request_1) <> 1 then
+    raise exception 'Duplicate Agrovest payment approval created another commission';
   end if;
 
   -- Management can mark an earned commission paid with an auditable payout reference.
   select id into commission_id from public.bmc_division_commissions
-  where source_type='agrovest_order'
-    and source_record_id=(select id from public.orders where payment_reference='TEST-AGRO-1');
+  where source_type='agrovest_payment'
+    and source_record_id=agro_request_1;
   perform public.admin_mark_bmc_commission_paid(commission_id, 'TEST-AGRO-PAYOUT-1');
   if not exists (
     select 1 from public.bmc_division_commissions
