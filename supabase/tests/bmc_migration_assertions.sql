@@ -144,8 +144,8 @@ begin
   select referred_id, 'agrovest', 400, 'TEST-AGRO-INSTALLMENT-1', 'pending', id
   from public.orders where payment_reference='TEST-AGRO-1'
   returning id into agro_request_1;
-  insert into public.payment_requests (user_id, type, amount, reference, status, order_id)
-  select referred_id, 'property', 600, 'TEST-AGRO-INSTALLMENT-2', 'pending', id
+  insert into public.payment_requests (user_id, type, amount, reference, status, order_id, transfer_reference, transfer_date)
+  select referred_id, 'property', 600, 'TEST-AGRO-1', 'pending', id, 'TEST-AGRO-INSTALLMENT-2', current_date
   from public.orders where payment_reference='TEST-AGRO-1'
   returning id into agro_request_2;
 
@@ -159,6 +159,12 @@ begin
     and referrer_user_id=partner_id and commission_rate=10 and status='earned';
   if commission_count <> 2 then
     raise exception 'Agrovest instalments did not create exactly one commission entry each';
+  end if;
+  if not exists (
+    select 1 from public.bmc_division_commissions
+    where source_record_id=agro_request_2 and payment_reference='TEST-AGRO-INSTALLMENT-2'
+  ) then
+    raise exception 'Agrovest bank-transfer commission did not retain its unique transfer reference';
   end if;
   if (select coalesce(sum(gross_customer_payment),0) from public.bmc_division_commissions
       where source_type='agrovest_payment' and source_record_id in (agro_request_1, agro_request_2)) <> 1000
