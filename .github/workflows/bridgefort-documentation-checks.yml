@@ -144,6 +144,34 @@ jobs:
           console.log('BMC migration and UI safeguard assertions passed.');
           NODE
 
+      - name: Verify BMC division commission separation and safeguards
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+
+          const migration = readFileSync('supabase/migrations/20261121150000_bmc_division_commission_engine.sql', 'utf8');
+          const assertions = readFileSync('supabase/tests/bmc_migration_assertions.sql', 'utf8');
+          const partnerHub = readFileSync('src/pages/BMCPartnerHub.tsx', 'utf8');
+
+          assert.match(migration, /create table if not exists public\\.bmc_division_commissions/i);
+          assert.match(migration, /division text not null check \\(division in \\('agrovest', 'travels'\\)\\)/i);
+          assert.match(migration, /commission_rate numeric\\(5,2\\) not null check \\(commission_rate = 10\\.00\\)/i);
+          assert.match(migration, /gross_customer_payment/i, 'commission basis must be gross customer payment');
+          assert.match(migration, /round\\(gross_amount \\* 0\\.10, 2\\)/i);
+          assert.match(migration, /admin_record_bmc_travel_payment/i, 'travel payment must be explicitly confirmed by an authorized manager');
+          assert.match(migration, /bmc_award_agrovest_order_commission/i);
+          assert.match(migration, /bmc_award_travel_commission_from_payment/i);
+          assert.match(migration, /get_my_bmc_division_commissions/i);
+          assert.match(migration, /admin_mark_bmc_commission_paid/i);
+          assert.doesNotMatch(migration, /mlm_commissions|wallet_balance|referred_by_id/i, 'BMC division commissions must not touch BH-Realtors MLM upliners or wallets');
+          assert.match(assertions, /Agrovest commission was not calculated as 10%/i);
+          assert.match(assertions, /Travels commission was not calculated as 10%/i);
+          assert.match(assertions, /duplicate or upliner commission rows/i);
+          assert.match(partnerHub, /get_my_bmc_division_referral_codes/i, 'existing partner hub referral workflow must remain intact');
+          console.log('BMC division commission separation and safeguards passed.');
+          NODE
+
       - name: Lint
         run: npm run lint
 
