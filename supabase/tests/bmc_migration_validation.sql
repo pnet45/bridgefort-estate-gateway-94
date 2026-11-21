@@ -138,6 +138,51 @@ create table public.orders (
   updated_at timestamptz not null default now()
 );
 
+-- Minimal payment approval/event schema used by the BMC commission migration.
+create table public.payment_gateway_events (
+  id uuid primary key default gen_random_uuid(),
+  gateway text not null,
+  reference text not null,
+  order_id uuid references public.orders(id),
+  user_id uuid not null references auth.users(id),
+  amount numeric not null,
+  currency text not null,
+  status text not null,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  unique (gateway, reference)
+);
+
+create table public.payment_requests (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id),
+  type text not null,
+  amount numeric not null,
+  reference text,
+  related_payment_id uuid,
+  description text,
+  status text not null,
+  admin_notes text,
+  processed_by uuid,
+  processed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  order_id uuid references public.orders(id),
+  receipt_path text,
+  transfer_date date,
+  transfer_reference text
+);
+
+-- The live resolver is exercised elsewhere; the BMC trigger uses direct
+-- order_id / gateway-event links first and needs this compatible fallback.
+create or replace function public.resolve_payment_order(_payment_request_id uuid)
+returns public.orders
+language sql stable
+as $
+  select null::public.orders
+$;
+
+
 grant usage on schema public to anon, authenticated;
 grant execute on function public.user_has_permission(uuid,text) to anon, authenticated;
 
