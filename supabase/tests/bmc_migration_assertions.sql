@@ -183,7 +183,7 @@ begin
       where source_type='agrovest_payment' and source_record_id in (agro_request_1, agro_request_2)) <> 1000
      or (select coalesce(sum(commission_amount),0) from public.bmc_division_commissions
          where source_type='agrovest_payment' and source_record_id in (agro_request_1, agro_request_2)) <> 100 then
-    raise exception 'Agrovest instalment commission totals do not equal 10% of cleared customer payments';
+    raise exception 'Agrovest instalment commission totals do not equal ten percent of cleared customer payments';
   end if;
 
   -- Replaying an already-approved request must not create a duplicate commission.
@@ -227,7 +227,7 @@ begin
       where source_type='travel_payment' and source_record_id in (travel_payment_id, travel_payment_id_2)) <> 1500000
      or (select coalesce(sum(commission_amount),0) from public.bmc_division_commissions
          where source_type='travel_payment' and source_record_id in (travel_payment_id, travel_payment_id_2)) <> 150000 then
-    raise exception 'Travels instalment commission totals do not equal 10% of cleared customer payments';
+    raise exception 'Travels instalment commission totals do not equal ten percent of cleared customer payments';
   end if;
   if not exists (
     select 1 from public.bmc_division_commissions
