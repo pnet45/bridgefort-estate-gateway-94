@@ -11,9 +11,9 @@ The production ledger contains **322** migration records. The repository contain
 
 Nine local migration files were matched to existing production ledger versions after checking their SQL intent against the deployed schema state. Their filenames were aligned to the production versions in this branch; SQL bodies were preserved unchanged.
 
-After those source-control corrections:
+After the initial source-control corrections and two additional historical-source recoveries:
 
-- **21** production ledger versions still have no exact local version file.
+- **19** production ledger versions still have no exact local version file.
 - **7** local migration files still have versions not present in the production ledger.
 - Two production ledger records share the same migration name: `20261016020017` and `20261016020023`, both named `20261015215000_grant_manager_documentation_management`.
 
@@ -49,7 +49,7 @@ These checks establish that the corresponding features are present in production
 
 ## Remaining production ledger versions without exact local files
 
-The following **21** versions remain unmatched:
+The following **19** versions remain unmatched:
 
 - `20261007164836 leo_knowledge_base_rag`
 - `20261007164939 leo_knowledge_source_unique`
@@ -61,12 +61,10 @@ The following **21** versions remain unmatched:
 - `20261008115443 promo_public_home_seed_20261008`
 - `20261008135304 email_campaign_rich_content_and_attachments`
 - `20261009095237 admin_menu_visibility_overrides`
-- `20261010100741 manager_admin_menu_visibility_controls`
 - `20261010101105 admin_menu_visibility_audit_trail`
 - `20261010181827 enable_manager_admin_workspace_permissions`
 - `20261010222819 revoke_client_execute_welcome_email_trigger`
 - `20261010223058 bound_bhrealtor_network_tree_results`
-- `20261011152023 bound_downline_ids_recursion`
 - `20261011152647 remove_promo_emojis`
 - `20261016020017 20261015215000_grant_manager_documentation_management`
 - `20261016020023 20261015215000_grant_manager_documentation_management`
@@ -74,6 +72,8 @@ The following **21** versions remain unmatched:
 - `20261027041927 tighten_hr_workspace_table_grants_20261027`
 
 Read-only state checks show several corresponding objects/features currently exist: Leo knowledge tables and source constraints, BH-Realtor promotions, rich email campaign columns, admin menu visibility/audit tables, downline/network functions, HR workspace tables, and the welcome-email trigger's execute permission is denied to both `anon` and `authenticated`. The exact SQL provenance for these 21 records is not present in the current migration directory and has not been reconstructed from database state.
+
+Two additional migrations have now been recovered from original Git commit diffs and restored with their production ledger versions: `20261010100741_manager_admin_menu_visibility_controls.sql` (commit `88daa0594920c4cc0e789893aeaaaf5ba2f8c31c`) and `20261011152023_bound_downline_ids_recursion.sql` (commit `799211b9faeed6e1fb8b7315db2668d222f2acaf`). Their SQL was transcribed from the original commit diffs; they have not been replayed against production.
 
 The two manager-documentation entries are duplicate-name ledger records. Do not delete either record or invent two replacement SQL files without recovering their provenance.
 
