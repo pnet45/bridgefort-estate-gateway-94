@@ -71,19 +71,23 @@ begin
     return new;
   end if;
 
-  -- Paystack and other gateway payments carry an immutable per-instalment
-  -- reference and the original order id in payment_gateway_events.
-  select o.* into order_row
-  from public.payment_gateway_events e
-  join public.orders o on o.id = e.order_id
-  where e.reference = new.reference
-    and e.status = 'success'
-  order by e.created_at desc
-  limit 1;
+  -- Prefer the direct order link when present, then use the gateway event
+  -- reference for flexible Paystack instalments, then the legacy resolver.
+  if new.order_id is not null then
+    select * into order_row from public.orders where id = new.order_id;
+  end if;
 
-  -- Bank-transfer/manual approvals may resolve through the established
-  -- payment-request/order reference relationship instead.
-  if not found then
+  if order_row.id is null then
+    select o.* into order_row
+    from public.payment_gateway_events e
+    join public.orders o on o.id = e.order_id
+    where e.reference = new.reference
+      and e.status = 'success'
+    order by e.created_at desc
+    limit 1;
+  end if;
+
+  if order_row.id is null then
     select (public.resolve_payment_order(new.id)).* into order_row;
   end if;
 
