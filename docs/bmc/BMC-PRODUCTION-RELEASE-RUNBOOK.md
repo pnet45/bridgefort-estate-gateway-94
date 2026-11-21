@@ -57,7 +57,11 @@ Run read-only checks to confirm:
 - Approval requires verified agreement and privacy evidence; rejection/suspension requires a reason; audit events retain reviewer and decision history.
 - Referral codes are generated only for approved divisions and are disabled when a division is not approved.
 - Homes signup, Travels booking and Agrovest-only order attribution work as designed; self-referrals and mixed-division orders are rejected or excluded as appropriate.
-- Attribution records do not calculate commissions or initiate payouts.
+- Agrovest and Travels commissions are written only to the separate BMC commission ledger at 10% of verified cleared customer payments; no upliner/downline rows are created.
+- Homes transactions continue to use the existing BH-Realtors commission engine and do not write to the BMC commission ledger.
+- BMC commission history is visible only to the owning partner through the authenticated RPC; management listing, payout and reversal actions enforce dedicated permissions and audit references.
+- Travel enquiries alone do not earn commission; an authorized travel manager must confirm the booking and record a verified cleared payment.
+- Commission payouts are not automatic; management records a verified payout reference. Full refund/cancellation reversals must retain a reason, and already-paid commissions require Finance recovery reconciliation.
 
 Do not create production test accounts, submit test enquiries, or place test orders unless the product owner has explicitly approved a controlled production UAT plan and the tests cannot settle real payments.
 
@@ -83,10 +87,11 @@ Execute `docs/bmc/BMC-USER-ACCEPTANCE-TEST-PLAN.md` in an approved test environm
 
 Record final sign-off from Product Owner, Technology/Security, Legal, DPO/Privacy, Finance, Management and each division head in the Company's controlled document process.
 
-## Current known state
+## Commission policy approval and current known state
 
-- The BMC migrations have passed the disposable PostgreSQL CI test; this does not change production.
-- Production was checked read-only and remained at migration head `20261116050025` at the time of preparation.
-- No BMC migration has been applied to production by this runbook.
-- Vercel preview deployment has been blocked by the account's build-rate limit; no paid upgrade has been made.
-- BMC Agreement, Privacy Notice, division schedules and Leo knowledge items remain drafts pending the approvals above.
+- Management has approved the division commission schedule: Homes retains the existing BH-Realtors rules; Agrovest pays 10% direct-referral commission; Travels & Tours pays 10% direct-referral commission; neither Agrovest nor Travels pays upliner/downline commission.
+- Agrovest and Travels commission is calculated on the full customer payment received, before third-party cost deductions, after the payment is verified as cleared.
+- The commission engine is being prepared in a reviewable feature branch. It uses a separate BMC ledger and does not modify Homes commission records.
+- The commission migration and behavioural tests must pass in the disposable PostgreSQL workflow before production release.
+- Production migration history, backup/restore readiness, legal/privacy approval and Finance reconciliation sign-off remain separate release gates. No production migration is authorized by this runbook alone.
+- Vercel preview deployment has previously been blocked by the account's build-rate limit; no paid upgrade has been made.
