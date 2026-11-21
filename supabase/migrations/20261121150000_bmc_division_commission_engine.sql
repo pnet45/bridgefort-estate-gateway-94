@@ -23,7 +23,7 @@ create table if not exists public.bmc_division_commissions (
   division text not null check (division in ('agrovest', 'travels')),
   referral_attribution_id uuid not null references public.bmc_division_referral_attributions(id) on delete restrict,
   referrer_user_id uuid not null references auth.users(id) on delete restrict,
-  source_type text not null check (source_type in ('agrovest_order', 'travel_payment')),
+  source_type text not null check (source_type in ('agrovest_payment', 'travel_payment')),
   source_record_id uuid not null,
   gross_customer_payment numeric(14,2) not null check (gross_customer_payment > 0),
   commission_rate numeric(5,2) not null check (commission_rate = 10.00),
@@ -49,35 +49,68 @@ alter table public.bmc_division_commissions enable row level security;
 revoke all on public.bmc_travel_commission_payments from anon, authenticated;
 revoke all on public.bmc_division_commissions from anon, authenticated;
 
-create or replace function public.award_bmc_agrovest_order_commission()
+-- Award 10% for every individually approved and cleared Agrovest customer payment.
+-- Payment requests are the authoritative approval event; gateway references map
+-- each unique instalment to its original order. Homes remains on the legacy engine.
+create or replace function public.award_bmc_agrovest_installment_commission()
 returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $bmc_agrovest_commission$
+as $bmc_agrovest_installment_commission$
 declare
+  order_row public.orders;
   attribution public.bmc_division_referral_attributions;
-  gross_amount numeric(14,2);
 begin
-  if new.payment_status is distinct from 'paid'
-     or old.payment_status is not distinct from 'paid' then
+  if new.status is distinct from 'approved'
+     or old.status is not distinct from 'approved' then
+    return new;
+  end if;
+
+  if lower(coalesce(new.type, '')) <> 'agrovest' or coalesce(new.amount, 0) <= 0 then
+    return new;
+  end if;
+
+  -- Paystack and other gateway payments carry an immutable per-instalment
+  -- reference and the original order id in payment_gateway_events.
+  select o.* into order_row
+  from public.payment_gateway_events e
+  join public.orders o on o.id = e.order_id
+  where e.reference = new.reference
+    and e.status = 'success'
+  order by e.created_at desc
+  limit 1;
+
+  -- Bank-transfer/manual approvals may resolve through the established
+  -- payment-request/order reference relationship instead.
+  if not found then
+    select (public.resolve_payment_order(new.id)).* into order_row;
+  end if;
+
+  if order_row.id is null then
+    return new;
+  end if;
+
+  -- Only a pure Agrovest order qualifies; mixed-division baskets are excluded.
+  if jsonb_typeof(order_row.items) is distinct from 'array'
+     or jsonb_array_length(coalesce(order_row.items, '[]'::jsonb)) = 0
+     or exists (
+       select 1
+       from jsonb_array_elements(coalesce(order_row.items, '[]'::jsonb)) item
+       where coalesce(item->>'property_type', '') <> 'Agrovest'
+     ) then
     return new;
   end if;
 
   select a.* into attribution
   from public.bmc_division_referral_attributions a
   where a.source_type = 'order'
-    and a.source_record_id = new.id
+    and a.source_record_id = order_row.id
     and a.division = 'agrovest'
   for share;
 
   if not found then
     return new;
-  end if;
-
-  gross_amount := coalesce(new.amount_paid, 0);
-  if gross_amount <= 0 or gross_amount < coalesce(new.total_amount, 0) then
-    raise exception 'Agrovest BMC commission requires the full customer payment to be confirmed';
   end if;
 
   insert into public.bmc_division_commissions (
@@ -86,20 +119,21 @@ begin
     commission_rate, commission_amount, status, payment_reference
   ) values (
     'agrovest', attribution.id, attribution.referrer_user_id,
-    'agrovest_order', new.id, gross_amount,
-    10.00, round(gross_amount * 0.10, 2), 'earned', new.payment_reference
+    'agrovest_payment', new.id, round(new.amount, 2),
+    10.00, round(new.amount * 0.10, 2), 'earned', new.reference
   )
   on conflict (source_type, source_record_id) do nothing;
 
   return new;
 end;
-$bmc_agrovest_commission$;
+$bmc_agrovest_installment_commission$;
 
-revoke all on function public.award_bmc_agrovest_order_commission() from public, anon, authenticated;
+revoke all on function public.award_bmc_agrovest_installment_commission() from public, anon, authenticated;
 drop trigger if exists bmc_award_agrovest_order_commission on public.orders;
-create trigger bmc_award_agrovest_order_commission
-  after update of payment_status on public.orders
-  for each row execute function public.award_bmc_agrovest_order_commission();
+drop trigger if exists bmc_award_agrovest_installment_commission on public.payment_requests;
+create trigger bmc_award_agrovest_installment_commission
+  after update of status on public.payment_requests
+  for each row execute function public.award_bmc_agrovest_installment_commission();
 
 create or replace function public.award_bmc_travel_commission_from_payment()
 returns trigger
