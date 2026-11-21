@@ -44,6 +44,10 @@ create index if not exists bmc_division_commissions_owner_idx
 create index if not exists bmc_division_commissions_status_idx
   on public.bmc_division_commissions(division, status, created_at desc);
 
+create unique index if not exists bmc_division_commissions_payment_reference_uidx
+  on public.bmc_division_commissions(division, payment_reference)
+  where payment_reference is not null;
+
 alter table public.bmc_travel_commission_payments enable row level security;
 alter table public.bmc_division_commissions enable row level security;
 revoke all on public.bmc_travel_commission_payments from anon, authenticated;
@@ -61,6 +65,7 @@ as $bmc_agrovest_installment_commission$
 declare
   order_row public.orders;
   attribution public.bmc_division_referral_attributions;
+  payment_ref text;
 begin
   if new.status is distinct from 'approved'
      or old.status is not distinct from 'approved' then
@@ -121,6 +126,11 @@ begin
     return new;
   end if;
 
+  payment_ref := coalesce(nullif(trim(new.transfer_reference), ''), nullif(trim(new.reference), ''));
+  if payment_ref is null then
+    raise exception 'A unique customer payment reference is required for Agrovest commission';
+  end if;
+
   insert into public.bmc_division_commissions (
     division, referral_attribution_id, referrer_user_id,
     source_type, source_record_id, gross_customer_payment,
@@ -128,7 +138,7 @@ begin
   ) values (
     'agrovest', attribution.id, attribution.referrer_user_id,
     'agrovest_payment', new.id, round(new.amount, 2),
-    10.00, round(new.amount * 0.10, 2), 'earned', new.reference
+    10.00, round(new.amount * 0.10, 2), 'earned', payment_ref
   )
   on conflict (source_type, source_record_id) do nothing;
 
