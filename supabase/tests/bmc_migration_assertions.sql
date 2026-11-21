@@ -34,6 +34,7 @@ declare
   travel_booking_id uuid;
   travel_payment_id uuid;
   commission_count integer;
+  commission_id uuid;
 begin
   if (select count(*) from public.bmc_agreement_acceptances where user_id = partner_id) <> 1 then
     raise exception 'BMC agreement/privacy acceptance was not captured exactly once at signup';
@@ -140,6 +141,19 @@ begin
     raise exception 'Agrovest transaction created duplicate or upliner commission rows';
   end if;
 
+  -- Management can mark an earned commission paid with an auditable payout reference.
+  select id into commission_id from public.bmc_division_commissions
+  where source_type='agrovest_order'
+    and source_record_id=(select id from public.orders where payment_reference='TEST-AGRO-1');
+  perform public.admin_mark_bmc_commission_paid(commission_id, 'TEST-AGRO-PAYOUT-1');
+  if not exists (
+    select 1 from public.bmc_division_commissions
+    where id=commission_id and status='paid' and payout_reference='TEST-AGRO-PAYOUT-1'
+      and paid_by=admin_id and paid_at is not null
+  ) then
+    raise exception 'Agrovest commission payout was not recorded with its audit reference';
+  end if;
+
   -- Travel bookings are enquiries, so commission is recorded only after a manager
   -- confirms the booking and records an independently verified cleared payment.
   update public.travel_bookings set status='confirmed' where id=travel_booking_id;
@@ -160,6 +174,24 @@ begin
     raise exception 'Travels payment created duplicate or upliner commission rows';
   end if;
   perform set_config('test.permission', 'admin:manage_bmc_partners', true);
+
+  -- A verified full refund reverses an unpaid Travels commission and its payment record.
+  select id into commission_id from public.bmc_division_commissions
+  where source_type='travel_payment' and source_record_id=travel_payment_id;
+  perform public.admin_reverse_bmc_division_commission(commission_id, 'Verified full customer refund');
+  if not exists (
+    select 1 from public.bmc_division_commissions
+    where id=commission_id and status='reversed'
+      and reversal_reason='Verified full customer refund'
+  ) then
+    raise exception 'Travels commission reversal was not recorded';
+  end if;
+  if not exists (
+    select 1 from public.bmc_travel_commission_payments
+    where id=travel_payment_id and payment_status='reversed'
+  ) then
+    raise exception 'Travels payment ledger was not reversed with its commission';
+  end if;
 
   -- Invalid division mix must be rejected by the database trigger.
   begin
