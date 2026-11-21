@@ -33,6 +33,7 @@ declare
   attribution_count integer;
   travel_booking_id uuid;
   travel_payment_id uuid;
+  travel_payment_id_2 uuid;
   commission_count integer;
   commission_id uuid;
   agro_request_1 uuid;
@@ -193,13 +194,27 @@ begin
   perform set_config('test.permission', 'admin:manage_travels', true);
   select public.admin_record_bmc_travel_payment(travel_booking_id, 500000, 'TEST-TRAVEL-PAID-1')
     into travel_payment_id;
+  select public.admin_record_bmc_travel_payment(travel_booking_id, 1000000, 'TEST-TRAVEL-PAID-2')
+    into travel_payment_id_2;
   select count(*) into commission_count
   from public.bmc_division_commissions
   where division='travels' and source_type='travel_payment'
-    and source_record_id=travel_payment_id
-    and referrer_user_id=partner_id and gross_customer_payment=500000
-    and commission_rate=10 and commission_amount=50000 and status='earned';
-  if commission_count <> 1 then
+    and source_record_id in (travel_payment_id, travel_payment_id_2)
+    and referrer_user_id=partner_id and commission_rate=10 and status='earned';
+  if commission_count <> 2 then
+    raise exception 'Travels instalments did not create exactly one commission entry each';
+  end if;
+  if (select coalesce(sum(gross_customer_payment),0) from public.bmc_division_commissions
+      where source_type='travel_payment' and source_record_id in (travel_payment_id, travel_payment_id_2)) <> 1500000
+     or (select coalesce(sum(commission_amount),0) from public.bmc_division_commissions
+         where source_type='travel_payment' and source_record_id in (travel_payment_id, travel_payment_id_2)) <> 150000 then
+    raise exception 'Travels instalment commission totals do not equal 10% of cleared customer payments';
+  end if;
+  if not exists (
+    select 1 from public.bmc_division_commissions
+    where source_record_id=travel_payment_id
+      and gross_customer_payment=500000 and commission_amount=50000
+  ) then
     raise exception 'Travels commission was not calculated as 10% of the full cleared customer payment';
   end if;
   if (select count(*) from public.bmc_division_commissions where source_record_id=travel_payment_id) <> 1 then
