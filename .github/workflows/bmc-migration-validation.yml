@@ -4,11 +4,11 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'supabase/migrations/20261120120000_bmc_agreement_acceptance_audit.sql'
-      - 'supabase/migrations/20261120130000_bmc_division_applications.sql'
-      - 'supabase/migrations/20261120140000_secure_bmc_division_review.sql'
-      - 'supabase/migrations/20261120150000_bmc_division_referral_attribution.sql'
-      - 'supabase/migrations/20261120160000_bmc_reviewer_permission.sql'
+      - 'supabase/migrations/20261121134852_bmc_agreement_acceptance_audit.sql'
+      - 'supabase/migrations/20261121134906_bmc_division_applications.sql'
+      - 'supabase/migrations/20261121134914_secure_bmc_division_review.sql'
+      - 'supabase/migrations/20261121134923_bmc_division_referral_attribution.sql'
+      - 'supabase/migrations/20261121134932_bmc_reviewer_permission.sql'
       - 'supabase/tests/bmc_migration_validation.sql'
       - 'supabase/tests/bmc_migration_assertions.sql'
       - '.github/workflows/bmc-migration-validation.yml'
@@ -54,11 +54,11 @@ jobs:
       - name: Apply BMC migrations in order
         run: |
           for migration in \
-            supabase/migrations/20261120120000_bmc_agreement_acceptance_audit.sql \
-            supabase/migrations/20261120130000_bmc_division_applications.sql \
-            supabase/migrations/20261120140000_secure_bmc_division_review.sql \
-            supabase/migrations/20261120150000_bmc_division_referral_attribution.sql \
-            supabase/migrations/20261120160000_bmc_reviewer_permission.sql
+            supabase/migrations/20261121134852_bmc_agreement_acceptance_audit.sql \
+            supabase/migrations/20261121134906_bmc_division_applications.sql \
+            supabase/migrations/20261121134914_secure_bmc_division_review.sql \
+            supabase/migrations/20261121134923_bmc_division_referral_attribution.sql \
+            supabase/migrations/20261121134932_bmc_reviewer_permission.sql
           do
             echo "Applying $migration"
             psql -v ON_ERROR_STOP=1 -f "$migration"
