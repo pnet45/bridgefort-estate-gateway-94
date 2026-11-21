@@ -7,7 +7,7 @@
 
 ## Executive result
 
-The production ledger contains **322** migration records. The repository contains **308** SQL migration files.
+The production ledger contains **322** migration records. The repository contains **310** SQL migration files after the two recovered files were restored.
 
 Nine local migration files were matched to existing production ledger versions after checking their SQL intent against the deployed schema state. Their filenames were aligned to the production versions in this branch; SQL bodies were preserved unchanged.
 
@@ -71,7 +71,7 @@ The following **19** versions remain unmatched:
 - `20261027041852 production_repair_hr_admin_it_workspace_20261027`
 - `20261027041927 tighten_hr_workspace_table_grants_20261027`
 
-Read-only state checks show several corresponding objects/features currently exist: Leo knowledge tables and source constraints, BH-Realtor promotions, rich email campaign columns, admin menu visibility/audit tables, downline/network functions, HR workspace tables, and the welcome-email trigger's execute permission is denied to both `anon` and `authenticated`. The exact SQL provenance for these 21 records is not present in the current migration directory and has not been reconstructed from database state.
+Read-only state checks show several corresponding objects/features currently exist: Leo knowledge tables and source constraints, BH-Realtor promotions, rich email campaign columns, admin menu visibility/audit tables, downline/network functions, HR workspace tables, and the welcome-email trigger's execute permission is denied to both `anon` and `authenticated`. The exact SQL provenance for these 19 records is not present in the current migration directory and has not been reconstructed from database state.
 
 Two additional migrations have now been recovered from original Git commit diffs and restored with their production ledger versions: `20261010100741_manager_admin_menu_visibility_controls.sql` (commit `88daa0594920c4cc0e789893aeaaaf5ba2f8c31c`) and `20261011152023_bound_downline_ids_recursion.sql` (commit `799211b9faeed6e1fb8b7315db2668d222f2acaf`). Their SQL was transcribed from the original commit diffs; they have not been replayed against production.
 
@@ -105,7 +105,7 @@ The audit confirmed:
 
 ## Safe completion plan
 
-1. Recover the exact original SQL for the 21 unmatched production records from trusted historical source control, deployment artifacts, or an authorized database migration archive.
+1. Recover the exact original SQL for the 19 unmatched production records from trusted historical source control, deployment artifacts, or an authorized database migration archive.
 2. Compare recovered SQL to the live schema and migration ledger; preserve duplicate records and original ordering.
 3. Determine whether each of the seven local-only migrations was applied out-of-band, superseded, or never applied.
 4. For genuinely unapplied changes, review and create a new forward-only migration with a fresh version; never reuse an old timestamp.
