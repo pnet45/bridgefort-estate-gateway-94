@@ -234,7 +234,7 @@ begin
     where source_record_id=travel_payment_id
       and gross_customer_payment=500000 and commission_amount=50000
   ) then
-    raise exception 'Travels commission was not calculated as 10% of the full cleared customer payment';
+    raise exception '%', 'Travels commission was not calculated as 10% of the full cleared customer payment';
   end if;
   if (select count(*) from public.bmc_division_commissions where source_record_id=travel_payment_id) <> 1 then
     raise exception 'Travels payment created duplicate or upliner commission rows';
