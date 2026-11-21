@@ -4,10 +4,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
-import { RefreshCw, Loader2, CheckCircle2, XCircle, RotateCcw, ShieldAlert, History } from 'lucide-react';
+import { RefreshCw, Loader2, CheckCircle2, XCircle, RotateCcw, ShieldAlert, History, Coins } from 'lucide-react';
 
 type AuditEvent = { audit_id: string; event_type: string; previous_status: string | null; new_status: string; actor_user_id: string | null; review_note: string | null; created_at: string; };
+
+type Commission = {
+  commission_id: string;
+  division: 'agrovest' | 'travels';
+  referrer_user_id: string;
+  referrer_name: string | null;
+  source_type: string;
+  gross_customer_payment: number;
+  commission_rate: number;
+  commission_amount: number;
+  status: 'earned' | 'paid' | 'reversed';
+  payment_reference: string | null;
+  created_at: string;
+  paid_at: string | null;
+  payout_reference: string | null;
+};
 
 type Application = {
   id: string;
@@ -48,6 +65,10 @@ export default function AdminBMCApplications({ canManage }: { canManage: boolean
   const [auditByApplication, setAuditByApplication] = useState<Record<string, AuditEvent[]>>({});
   const [expandedAuditId, setExpandedAuditId] = useState<string | null>(null);
   const [auditLoadingId, setAuditLoadingId] = useState<string | null>(null);
+  const [commissions, setCommissions] = useState<Commission[]>([]);
+  const [commissionLoading, setCommissionLoading] = useState(false);
+  const [payoutReferences, setPayoutReferences] = useState<Record<string, string>>({});
+  const [reversalReasons, setReversalReasons] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -62,8 +83,23 @@ export default function AdminBMCApplications({ canManage }: { canManage: boolean
     } else {
       setRows(Array.isArray(data) ? data.map((row) => ({ ...row, id: row.application_id })) as Application[] : []);
     }
+    if (canManage) {
+      setCommissionLoading(true);
+      const { data: commissionData, error: commissionError } = await supabase.rpc('admin_list_bmc_division_commissions' as never, { _division: null } as never) as unknown as {
+        data: Commission[] | null;
+        error: { message: string } | null;
+      };
+      if (commissionError) {
+        console.error('BMC commission ledger failed:', commissionError);
+        toast({ title: 'Unable to load BMC commissions', description: 'Check BMC commission management permission and migration status.', variant: 'destructive' });
+        setCommissions([]);
+      } else {
+        setCommissions(Array.isArray(commissionData) ? commissionData : []);
+      }
+      setCommissionLoading(false);
+    }
     setLoading(false);
-  }, []);
+  }, [canManage]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -107,6 +143,44 @@ export default function AdminBMCApplications({ canManage }: { canManage: boolean
     setSavingId(null);
   };
 
+  const markCommissionPaid = async (commission: Commission) => {
+    const payoutReference = (payoutReferences[commission.commission_id] || '').trim();
+    if (payoutReference.length < 3) {
+      toast({ title: 'Payout reference required', description: 'Enter the verified bank transfer or payout reference.', variant: 'destructive' });
+      return;
+    }
+    const { error } = await supabase.rpc('admin_mark_bmc_commission_paid' as never, {
+      _commission_id: commission.commission_id,
+      _payout_reference: payoutReference,
+    } as never);
+    if (error) {
+      toast({ title: 'Commission payout update failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Commission marked as paid', description: 'The payout reference has been recorded.' });
+    setPayoutReferences((current) => ({ ...current, [commission.commission_id]: '' }));
+    await load();
+  };
+
+  const reverseCommission = async (commission: Commission) => {
+    const reason = (reversalReasons[commission.commission_id] || '').trim();
+    if (reason.length < 5) {
+      toast({ title: 'Reversal reason required', description: 'Record the verified refund or cancellation reason.', variant: 'destructive' });
+      return;
+    }
+    const { error } = await supabase.rpc('admin_reverse_bmc_division_commission' as never, {
+      _commission_id: commission.commission_id,
+      _reason: reason,
+    } as never);
+    if (error) {
+      toast({ title: 'Commission reversal failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Commission reversed', description: 'The reversal reason is recorded in the commission ledger.' });
+    setReversalReasons((current) => ({ ...current, [commission.commission_id]: '' }));
+    await load();
+  };
+
   const pending = rows.filter((row) => row.application_status === 'pending_review').length;
   const approved = rows.filter((row) => row.application_status === 'approved').length;
 
@@ -127,6 +201,54 @@ export default function AdminBMCApplications({ canManage }: { canManage: boolean
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Awaiting review</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold text-amber-600">{pending}</p></CardContent></Card>
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Approved divisions</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold text-emerald-600">{approved}</p></CardContent></Card>
       </div>
+
+      {canManage && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Coins className="h-5 w-5" /> BMC Division Commissions</CardTitle>
+            <p className="text-sm text-muted-foreground">Agrovest and Travels are separate 10% direct-referral commission ledgers. Homes remains under BH-Realtors. Only verified cleared customer payments qualify.</p>
+          </CardHeader>
+          <CardContent>
+            {commissionLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading commission ledger…</div>
+            ) : commissions.length === 0 ? (
+              <p className="rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No Agrovest or Travels commissions have been earned yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {commissions.map((commission) => (
+                  <div key={commission.commission_id} className="rounded-xl border border-border p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-foreground">{commission.referrer_name || ('BMC ' + commission.referrer_user_id.slice(0, 8))} · <span className="capitalize">{commission.division}</span></p>
+                        <p className="mt-1 text-xs text-muted-foreground">Customer payment: {Number(commission.gross_customer_payment).toLocaleString('en-NG', { style: 'currency', currency: 'NGN' })} · {commission.commission_rate}% direct commission</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Payment reference: {commission.payment_reference || 'Not supplied'} · {new Date(commission.created_at).toLocaleString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-foreground">{Number(commission.commission_amount).toLocaleString('en-NG', { style: 'currency', currency: 'NGN' })}</p>
+                        <Badge variant="outline">{commission.status}</Badge>
+                      </div>
+                    </div>
+                    {commission.status === 'earned' && (
+                      <div className="mt-4 grid gap-3 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Input value={payoutReferences[commission.commission_id] || ''} onChange={(event) => setPayoutReferences((current) => ({ ...current, [commission.commission_id]: event.target.value }))} placeholder="Verified payout reference" maxLength={120} />
+                          <Button size="sm" onClick={() => void markCommissionPaid(commission)}>Mark paid</Button>
+                        </div>
+                        <div className="space-y-2">
+                          <Textarea value={reversalReasons[commission.commission_id] || ''} onChange={(event) => setReversalReasons((current) => ({ ...current, [commission.commission_id]: event.target.value }))} placeholder="Verified full refund / cancellation reason" rows={2} maxLength={1000} />
+                          <Button size="sm" variant="destructive" onClick={() => void reverseCommission(commission)}>Reverse unpaid commission</Button>
+                        </div>
+                      </div>
+                    )}
+                    {commission.status === 'paid' && <p className="mt-2 text-xs text-muted-foreground">Paid {commission.paid_at ? new Date(commission.paid_at).toLocaleString() : ''} · Payout reference: {commission.payout_reference || 'Not recorded'}</p>}
+                    {commission.status === 'reversed' && <p className="mt-2 text-xs text-muted-foreground">Reversed. The reason is retained in the database audit record.</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {loading ? (
         <div className="flex items-center gap-3 rounded-xl border border-border p-6 text-sm text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /> Loading applications…</div>

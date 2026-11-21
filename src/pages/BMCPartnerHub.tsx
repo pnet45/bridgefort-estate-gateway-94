@@ -7,10 +7,11 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock, ArrowRight, Copy, ExternalLink } from 'lucide-react';
+import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock, ArrowRight, Copy, ExternalLink, Coins } from 'lucide-react';
 
 type Division = 'homes' | 'travels' | 'agrovest';
 type DivisionReferralCode = { division: Division; referral_code: string; created_at: string; };
+type BmcCommission = { commission_id: string; division: 'agrovest' | 'travels'; source_type: string; gross_customer_payment: number; commission_rate: number; commission_amount: number; status: 'earned' | 'paid' | 'reversed'; payment_reference: string | null; created_at: string; paid_at: string | null; payout_reference: string | null; };
 
 type DivisionApplication = {
   id: string;
@@ -48,6 +49,7 @@ export default function BMCPartnerHub() {
   const { user, profile, loading: authLoading } = useAuth();
   const [applications, setApplications] = useState<DivisionApplication[]>([]);
   const [divisionReferralCodes, setDivisionReferralCodes] = useState<DivisionReferralCode[]>([]);
+  const [commissionRows, setCommissionRows] = useState<BmcCommission[]>([]);
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
   const [selectedAdditionalDivisions, setSelectedAdditionalDivisions] = useState<Division[]>([]);
@@ -78,6 +80,16 @@ export default function BMCPartnerHub() {
       setDivisionReferralCodes([]);
     } else {
       setDivisionReferralCodes(Array.isArray(referralData) ? referralData : []);
+    }
+    const { data: commissionData, error: commissionError } = await supabase.rpc(
+      'get_my_bmc_division_commissions' as never,
+      {} as never
+    ) as unknown as { data: BmcCommission[] | null; error: { message: string } | null };
+    if (commissionError) {
+      console.warn('BMC commission history is not available:', commissionError.message);
+      setCommissionRows([]);
+    } else {
+      setCommissionRows(Array.isArray(commissionData) ? commissionData : []);
     }
     setLoading(false);
   }, [user]);
@@ -270,6 +282,38 @@ export default function BMCPartnerHub() {
           </div>
           {divisionReferralCodes.length === 0 && !applications.some((application) => application.division === 'homes' && ['approved', 'legacy_existing'].includes(application.application_status) && referralCode) && (
             <p className="mt-3 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No active division referral links are available yet. They will appear here after approval and activation.</p>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="rounded-xl bg-estate-blue/10 p-3 text-estate-blue"><Coins className="h-5 w-5" /></span>
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">BMC commission history</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Agrovest and Travels commissions are tracked separately at 10% of each cleared customer instalment. Homes continues under the existing BH-Realtors commission system.</p>
+            </div>
+          </div>
+          {commissionRows.length === 0 ? (
+            <p className="mt-4 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No Agrovest or Travels commission entries are available yet. A referral or enquiry alone does not earn commission; the qualifying customer payment must be confirmed and cleared.</p>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead><tr className="border-b border-border text-left text-xs uppercase text-muted-foreground"><th className="p-3">Division</th><th className="p-3">Customer payment</th><th className="p-3">Rate</th><th className="p-3">Commission</th><th className="p-3">Payment reference</th><th className="p-3">Status</th><th className="p-3">Date</th></tr></thead>
+                <tbody>
+                  {commissionRows.map((commission) => (
+                    <tr key={commission.commission_id} className="border-b border-border/60">
+                      <td className="p-3 font-medium text-foreground">{divisionDetails[commission.division].title}</td>
+                      <td className="p-3 text-foreground">{Number(commission.gross_customer_payment).toLocaleString('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 })}</td>
+                      <td className="p-3 text-foreground">{commission.commission_rate}%</td>
+                      <td className="p-3 font-semibold text-foreground">{Number(commission.commission_amount).toLocaleString('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 })}</td>
+                      <td className="p-3 font-mono text-xs text-muted-foreground">{commission.payment_reference || '—'}</td>
+                      <td className="p-3"><Badge variant="outline">{commission.status === 'earned' ? 'Earned · awaiting payout' : commission.status === 'paid' ? 'Paid' : 'Reversed'}</Badge></td>
+                      <td className="p-3 text-muted-foreground">{new Date(commission.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
 

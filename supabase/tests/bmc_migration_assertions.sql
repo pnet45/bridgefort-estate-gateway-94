@@ -31,6 +31,14 @@ declare
   referred_id uuid := '33333333-3333-4333-8333-333333333333';
   no_consent_id uuid := '44444444-4444-4444-8444-444444444444';
   attribution_count integer;
+  travel_booking_id uuid;
+  travel_payment_id uuid;
+  travel_payment_id_2 uuid;
+  commission_count integer;
+  commission_id uuid;
+  agro_request_1 uuid;
+  agro_request_2 uuid;
+  agro_duplicate_request uuid;
 begin
   if (select count(*) from public.bmc_agreement_acceptances where user_id = partner_id) <> 1 then
     raise exception 'BMC agreement/privacy acceptance was not captured exactly once at signup';
@@ -97,7 +105,8 @@ begin
   insert into public.travel_bookings
     (name,email,phone,departure_date,return_date,travelers,package,status,customer_id,bmc_referral_code_id)
   values
-    ('Referred Customer','travel@example.test','08000000000',current_date+10,current_date+15,1,'Explorer','received',referred_id,travels_code_id);
+    ('Referred Customer','travel@example.test','08000000000',current_date+10,current_date+15,1,'Explorer','received',referred_id,travels_code_id)
+  returning id into travel_booking_id;
   if not exists (
     select 1 from public.bmc_division_referral_attributions
     where source_type='travel_booking' and division='travels'
@@ -118,6 +127,136 @@ begin
       and referrer_user_id=partner_id and referred_user_id=referred_id
   ) then
     raise exception 'Agrovest order referral attribution was not recorded';
+  end if;
+
+  -- Each individually approved Agrovest instalment earns 10% immediately.
+  insert into public.payment_gateway_events
+    (gateway, reference, order_id, user_id, amount, currency, status, metadata)
+  select 'Paystack', 'TEST-AGRO-INSTALLMENT-1', id, user_id, 400, 'NGN', 'success',
+         jsonb_build_object('source','bmc-installment-test')
+  from public.orders where payment_reference='TEST-AGRO-1';
+  insert into public.payment_gateway_events
+    (gateway, reference, order_id, user_id, amount, currency, status, metadata)
+  select 'Paystack', 'TEST-AGRO-INSTALLMENT-2', id, user_id, 600, 'NGN', 'success',
+         jsonb_build_object('source','bmc-installment-test')
+  from public.orders where payment_reference='TEST-AGRO-1';
+
+  insert into public.payment_requests (user_id, type, amount, reference, status, order_id)
+  select referred_id, 'agrovest', 400, 'TEST-AGRO-INSTALLMENT-1', 'pending', id
+  from public.orders where payment_reference='TEST-AGRO-1'
+  returning id into agro_request_1;
+  insert into public.payment_requests (user_id, type, amount, reference, status, order_id, transfer_reference, transfer_date)
+  select referred_id, 'property', 600, 'TEST-AGRO-1', 'pending', id, 'TEST-AGRO-INSTALLMENT-2', current_date
+  from public.orders where payment_reference='TEST-AGRO-1'
+  returning id into agro_request_2;
+
+  update public.payment_requests set status='approved' where id=agro_request_1;
+  update public.payment_requests set status='approved' where id=agro_request_2;
+
+  select count(*) into commission_count
+  from public.bmc_division_commissions
+  where division='agrovest' and source_type='agrovest_payment'
+    and source_record_id in (agro_request_1, agro_request_2)
+    and referrer_user_id=partner_id and commission_rate=10 and status='earned';
+  if commission_count <> 2 then
+    raise exception 'Agrovest instalments did not create exactly one commission entry each';
+  end if;
+  if not exists (
+    select 1 from public.bmc_division_commissions
+    where source_record_id=agro_request_2 and payment_reference='TEST-AGRO-INSTALLMENT-2'
+  ) then
+    raise exception 'Agrovest bank-transfer commission did not retain its unique transfer reference';
+  end if;
+
+  -- A second request cannot reuse an already-commissioned bank transfer reference.
+  insert into public.payment_requests (user_id, type, amount, reference, status, order_id, transfer_reference, transfer_date)
+  select referred_id, 'property', 25, 'TEST-AGRO-1', 'pending', id, 'TEST-AGRO-INSTALLMENT-2', current_date
+  from public.orders where payment_reference='TEST-AGRO-1'
+  returning id into agro_duplicate_request;
+  begin
+    update public.payment_requests set status='approved' where id=agro_duplicate_request;
+    raise exception 'Duplicate bank transfer reference unexpectedly created a commission';
+  exception when unique_violation then
+    null;
+  end;
+  if (select coalesce(sum(gross_customer_payment),0) from public.bmc_division_commissions
+      where source_type='agrovest_payment' and source_record_id in (agro_request_1, agro_request_2)) <> 1000
+     or (select coalesce(sum(commission_amount),0) from public.bmc_division_commissions
+         where source_type='agrovest_payment' and source_record_id in (agro_request_1, agro_request_2)) <> 100 then
+    raise exception 'Agrovest instalment commission totals do not equal ten percent of cleared customer payments';
+  end if;
+
+  -- Replaying an already-approved request must not create a duplicate commission.
+  update public.payment_requests set admin_notes='duplicate-event-check' where id=agro_request_1;
+  if (select count(*) from public.bmc_division_commissions
+      where source_type='agrovest_payment' and source_record_id=agro_request_1) <> 1 then
+    raise exception 'Duplicate Agrovest payment approval created another commission';
+  end if;
+
+  -- Management can mark an earned commission paid with an auditable payout reference.
+  select id into commission_id from public.bmc_division_commissions
+  where source_type='agrovest_payment'
+    and source_record_id=agro_request_1;
+  perform public.admin_mark_bmc_commission_paid(commission_id, 'TEST-AGRO-PAYOUT-1');
+  if not exists (
+    select 1 from public.bmc_division_commissions
+    where id=commission_id and status='paid' and payout_reference='TEST-AGRO-PAYOUT-1'
+      and paid_by=admin_id and paid_at is not null
+  ) then
+    raise exception 'Agrovest commission payout was not recorded with its audit reference';
+  end if;
+
+  -- Travel bookings are enquiries, so commission is recorded only after a manager
+  -- confirms the booking and records an independently verified cleared payment.
+  update public.travel_bookings set status='confirmed' where id=travel_booking_id;
+  perform set_config('request.jwt.claim.sub', admin_id::text, true);
+  perform set_config('test.permission', 'admin:manage_travels', true);
+  select public.admin_record_bmc_travel_payment(travel_booking_id, 500000, 'TEST-TRAVEL-PAID-1')
+    into travel_payment_id;
+  select public.admin_record_bmc_travel_payment(travel_booking_id, 1000000, 'TEST-TRAVEL-PAID-2')
+    into travel_payment_id_2;
+  select count(*) into commission_count
+  from public.bmc_division_commissions
+  where division='travels' and source_type='travel_payment'
+    and source_record_id in (travel_payment_id, travel_payment_id_2)
+    and referrer_user_id=partner_id and commission_rate=10 and status='earned';
+  if commission_count <> 2 then
+    raise exception 'Travels instalments did not create exactly one commission entry each';
+  end if;
+  if (select coalesce(sum(gross_customer_payment),0) from public.bmc_division_commissions
+      where source_type='travel_payment' and source_record_id in (travel_payment_id, travel_payment_id_2)) <> 1500000
+     or (select coalesce(sum(commission_amount),0) from public.bmc_division_commissions
+         where source_type='travel_payment' and source_record_id in (travel_payment_id, travel_payment_id_2)) <> 150000 then
+    raise exception 'Travels instalment commission totals do not equal ten percent of cleared customer payments';
+  end if;
+  if not exists (
+    select 1 from public.bmc_division_commissions
+    where source_record_id=travel_payment_id
+      and gross_customer_payment=500000 and commission_amount=50000
+  ) then
+    raise exception '%', 'Travels commission was not calculated as 10% of the full cleared customer payment';
+  end if;
+  if (select count(*) from public.bmc_division_commissions where source_record_id=travel_payment_id) <> 1 then
+    raise exception 'Travels payment created duplicate or upliner commission rows';
+  end if;
+  perform set_config('test.permission', 'admin:manage_bmc_partners', true);
+
+  -- A verified full refund reverses an unpaid Travels commission and its payment record.
+  select id into commission_id from public.bmc_division_commissions
+  where source_type='travel_payment' and source_record_id=travel_payment_id;
+  perform public.admin_reverse_bmc_division_commission(commission_id, 'Verified full customer refund');
+  if not exists (
+    select 1 from public.bmc_division_commissions
+    where id=commission_id and status='reversed'
+      and reversal_reason='Verified full customer refund'
+  ) then
+    raise exception 'Travels commission reversal was not recorded';
+  end if;
+  if not exists (
+    select 1 from public.bmc_travel_commission_payments
+    where id=travel_payment_id and payment_status='reversed'
+  ) then
+    raise exception 'Travels payment ledger was not reversed with its commission';
   end if;
 
   -- Invalid division mix must be rejected by the database trigger.
