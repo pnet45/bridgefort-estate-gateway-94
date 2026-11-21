@@ -11,7 +11,7 @@ BMC commissions are calculated and reported independently for each business divi
 | Division | Commission | Attribution |
 |---|---:|---|
 | Bridgefort Homes | Existing BH-Realtors schedule | Existing Homes rules remain unchanged |
-| Bridgefort Agrovest | 10% of full customer payment received | Direct referral only; no upliner/downline |
+| Bridgefort Agrovest | 10% of each cleared customer instalment | Direct referral only; no upliner/downline |
 | Bridgefort Travels & Tours | 10% of full customer payment received | Direct referral only; no upliner/downline |
 
 ## 2. Agrovest
@@ -34,7 +34,7 @@ Agrovest and Travels & Tours must never generate recruitment-based, upliner or d
 
 ## 6. Payment, reversal and payout controls
 
-Commissions are calculated on gross customer payment received, not net profit. A commission is earned only after the applicable customer funds have been confirmed and cleared. Refunds, reversals and chargebacks must be reviewed and the corresponding commission record adjusted or reversed. Payouts require authorized approval and a recorded payout reference.
+Commissions are calculated on gross customer payment received, not net profit. A commission is earned only after the applicable customer funds have been confirmed and cleared. A full refund, reversal or chargeback must reverse the corresponding unpaid commission entry. A partial refund or a recovery against an already-paid commission requires a separately recorded Finance-approved adjustment; it must not be silently deducted from another commission or wallet. Payouts require authorized approval and a recorded payout reference.
 
 ## 7. Management authority
 
