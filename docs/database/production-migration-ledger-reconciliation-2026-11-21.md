@@ -11,7 +11,7 @@ The production ledger contains **322** migration records. The active migration d
 
 Nine local migration files were matched to existing production ledger versions after checking their SQL intent against the deployed schema state. Their filenames were aligned to the production versions in this branch; SQL bodies were preserved unchanged.
 
-After the initial nine filename alignments and seven historical-source recoveries:
+After the initial nine filename alignments and fourteen historical-source recoveries:
 
 - **7** production ledger versions still have no exact local version file.
 - **0** stale local-only migration versions remain in the active migration directory. The seven original artifacts are preserved under `docs/database/unmatched-local-migrations/` and are not candidates for automatic replay.
@@ -67,7 +67,7 @@ Six further exact scripts were recovered from historical repository trees and ma
 
 The promo emoji cleanup migration (`20261011152647`) was recovered from historical commit `36c74298c213b516a7370ed853ce3509f1735c20`. The two duplicate manager-documentation ledger records (`20261016020017` and `20261016020023`) were both restored from the same original migration file in commit `e698034834787b49b6f6e044c4746f225b75282b`; the recovered SQL is an idempotent permission-row update. Neither copy has been replayed against production.
 
-The two manager-documentation entries are duplicate-name ledger records. Do not delete either record or invent two replacement SQL files without recovering their provenance.
+The two manager-documentation entries are duplicate-name ledger records. Their original SQL source is now recovered from the historical PR #48 commit and copied under both production ledger versions. Preserve both records; do not delete either entry.
 
 ## Local-only migration disposition and forward repairs
 
@@ -77,7 +77,7 @@ The seven original local-only migration files were preserved verbatim under `doc
 |---|---|
 | `20261007193000_leo_knowledge_role_filtered_search.sql` | The live `search_leo_knowledge_v2` definition matches the role/audience/review/expiry search behavior and is executable only by `service_role`. Exact original ledger provenance remains unproven; archived. |
 | `20261007194500_leo_knowledge_version_history.sql` | Live version table and snapshot/increment triggers exist; snapshot execution is restricted to `service_role`. Exact applied version remains unproven; archived. |
-| `20261015215000_grant_manager_documentation_management.sql` | Manager documentation permission is present, but the two same-name ledger entries remain ambiguous; archived pending provenance. |
+| `20261015215000_grant_manager_documentation_management.sql` | Original local-only filename archived; exact historical SQL was recovered and restored under both production ledger versions `20261016020017` and `20261016020023`. |
 | `20261019160000_crm_admin_hr_it_workspace.sql` | HR tables, RLS policies, and trigger functions exist; subsequent October 27 repair/tightening and November 2 access migrations are recorded. Archived to prevent replay over later policy changes. |
 | `20261020120000_guard_admin_tab_permission_changes.sql` | Guard function/trigger absent. Original retained in archive; replaced in active migrations by forward-only `20261121150000_guard_admin_tab_permission_changes_forward.sql`. |
 | `20261106190100_harden_supabase_admin_default_privileges.sql` | Not applied; current migration executor is `postgres` and is not a member of `supabase_admin`. Archived until an appropriately authorized executor can perform a reviewed privilege change. |
