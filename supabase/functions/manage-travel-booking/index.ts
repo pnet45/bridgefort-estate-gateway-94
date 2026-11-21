@@ -78,6 +78,53 @@ serve(async (req) => {
     const resend = resendKey ? new Resend(resendKey) : null;
     const statusUrl = `https://bridgeforthomes.com/travels/booking/${booking.confirmation_token}`;
 
+    if (action === "record_payment") {
+      const amount = Number(body.amount);
+      const paymentReference = String(body.paymentReference ?? "").trim();
+      const paymentNotes = body.notes ? String(body.notes).trim().slice(0, 1000) : null;
+
+      if (!Number.isFinite(amount) || amount <= 0 || amount > 1_000_000_000_000) {
+        return response({ error: "Enter a valid payment amount greater than zero." }, 400);
+      }
+      if (!/^\\d+(?:\\.\\d{1,2})?$/.test(String(body.amount).trim())) {
+        return response({ error: "Payment amount must have no more than two decimal places." }, 400);
+      }
+      if (paymentReference.length < 3 || paymentReference.length > 120) {
+        return response({ error: "A valid payment reference is required." }, 400);
+      }
+
+      const { data: payment, error: paymentError } = await supabase
+        .from("bmc_travel_payments")
+        .insert({
+          booking_id: bookingId,
+          payment_reference: paymentReference,
+          amount: Number(amount.toFixed(2)),
+          currency: "NGN",
+          payment_status: "confirmed",
+          confirmed_by: userId,
+          notes: paymentNotes,
+        })
+        .select("id,booking_id,payment_reference,amount,currency,payment_status,confirmed_at")
+        .single();
+
+      if (paymentError) {
+        if (paymentError.code === "23505") {
+          return response({ error: "This payment reference has already been recorded." }, 409);
+        }
+        console.error("travel payment record failed", paymentError);
+        return response({ error: "Unable to record the confirmed payment." }, 500);
+      }
+
+      return response({
+        success: true,
+        payment,
+        commissionRate: booking.bmc_referral_code_id ? 0.10 : null,
+        message: booking.bmc_referral_code_id
+          ? "Payment recorded. Any eligible BMC direct-referral commission has been calculated automatically."
+          : "Payment recorded. No BMC referral is linked to this booking.",
+      });
+    }
+
     if (action === "update_status") {
       const status = String(body.status ?? "");
       const statusNote = body.status_note ? String(body.status_note).trim().slice(0, 2000) : null;
