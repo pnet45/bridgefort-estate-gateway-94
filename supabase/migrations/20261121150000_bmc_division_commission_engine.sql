@@ -390,3 +390,71 @@ $admin_reverse_bmc_travel_payment$;
 
 revoke all on function public.admin_reverse_bmc_travel_payment(uuid, text) from public, anon;
 grant execute on function public.admin_reverse_bmc_travel_payment(uuid, text) to authenticated;
+
+
+-- Management reversal for verified full refunds/cancellations.
+-- Paid commissions are not silently erased; Finance must reconcile any recovery separately.
+create or replace function public.admin_reverse_bmc_division_commission(
+  _commission_id uuid,
+  _reason text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $admin_reverse_bmc_division_commission$
+declare
+  actor uuid := auth.uid();
+  commission public.bmc_division_commissions;
+begin
+  if actor is null then
+    raise exception 'Authentication required';
+  end if;
+  if not (
+    public.user_has_permission(actor, 'admin:manage_bmc_partners')
+    or public.user_has_permission(actor, 'admin:all')
+  ) then
+    raise exception 'BMC commission management permission required';
+  end if;
+  if coalesce(length(trim(_reason)), 0) < 5 then
+    raise exception 'A reversal reason is required';
+  end if;
+
+  select * into commission
+  from public.bmc_division_commissions
+  where id = _commission_id
+  for update;
+
+  if not found then
+    raise exception 'BMC commission record not found';
+  end if;
+  if commission.status <> 'earned' then
+    raise exception 'Only earned, unpaid commissions can be reversed here; paid commissions require Finance recovery reconciliation';
+  end if;
+
+  if commission.division = 'travels' then
+    update public.bmc_travel_commission_payments
+    set payment_status = 'reversed',
+        reversed_at = now(),
+        reversal_reason = trim(_reason)
+    where id = commission.source_record_id
+      and payment_status = 'cleared';
+
+    if not found then
+      raise exception 'Underlying Travels payment is not in a reversible state';
+    end if;
+  else
+    update public.bmc_division_commissions
+    set status = 'reversed',
+        reversed_at = now(),
+        reversal_reason = trim(_reason)
+    where id = _commission_id
+      and status = 'earned';
+  end if;
+
+  return true;
+end;
+$admin_reverse_bmc_division_commission$;
+
+revoke all on function public.admin_reverse_bmc_division_commission(uuid, text) from public, anon;
+grant execute on function public.admin_reverse_bmc_division_commission(uuid, text) to authenticated;
