@@ -170,6 +170,8 @@ jobs:
           assert.match(assertions, /Agrovest instalments did not create exactly one commission entry each/i);
           assert.match(assertions, /Agrovest instalment commission totals do not equal 10%/i);
           assert.match(assertions, /Travels commission was not calculated as 10%/i);
+          assert.match(assertions, /Travels instalments did not create exactly one commission entry each/i);
+          assert.match(assertions, /Travels instalment commission totals do not equal 10%/i);
           assert.match(assertions, /duplicate or upliner commission rows/i);
           assert.match(partnerHub, /get_my_bmc_division_referral_codes/i, 'existing partner hub referral workflow must remain intact');
           console.log('BMC division commission separation and safeguards passed.');
