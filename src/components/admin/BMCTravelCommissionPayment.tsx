@@ -37,7 +37,7 @@ export default function BMCTravelCommissionPayment({ bookingId, bookingStatus, h
       toast({ title: 'Unable to record cleared payment', description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'BMC Travels commission recorded', description: 'The direct referrer has earned 10% of the full customer payment.' });
+    toast({ title: 'BMC Travels commission recorded', description: 'The direct referrer has earned 10% of this cleared instalment.' });
     setGrossAmount('');
     setPaymentReference('');
     setOpen(false);
@@ -54,9 +54,9 @@ export default function BMCTravelCommissionPayment({ bookingId, bookingStatus, h
           <DialogHeader>
             <DialogTitle>Record cleared Travels payment</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">This booking has a verified BMC Travels referral. Enter the full customer payment received, before third-party costs. The system will calculate 10% for the direct referrer only.</p>
+          <p className="text-sm text-muted-foreground">This booking has a verified BMC Travels referral. Enter the gross amount received for this instalment, before third-party costs. Each cleared payment reference is recorded separately and earns 10% for the direct referrer only.</p>
           <div className="space-y-2">
-            <Label htmlFor={`bmc-travel-gross-${bookingId}`}>Full customer payment received (₦)</Label>
+            <Label htmlFor={`bmc-travel-gross-${bookingId}`}>Customer instalment received (₦)</Label>
             <Input id={`bmc-travel-gross-${bookingId}`} inputMode="decimal" type="number" min="0.01" step="0.01" value={grossAmount} onChange={(event) => setGrossAmount(event.target.value)} placeholder="e.g. 500000" />
           </div>
           <div className="space-y-2">
