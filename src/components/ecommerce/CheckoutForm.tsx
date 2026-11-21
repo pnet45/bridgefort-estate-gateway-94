@@ -96,8 +96,12 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         throw new Error('Your cart contains different BMC referral codes. Please keep one referral source per checkout.');
       }
       const bmcReferralCode = referralCodes[0] || null;
-      if (bmcReferralCode && cart.some((item) => item.plot.propertyType !== 'Agrovest')) {
-        throw new Error('An Agrovest referral link can only be used for Agrovest items. Please separate other products into another checkout.');
+      // Keep Homes and Agrovest referral carts separate. The server remains
+      // authoritative and validates that the supplied code matches the division.
+      const hasAgrovestItems = cart.some((item) => item.plot.propertyType === 'Agrovest');
+      const hasNonAgrovestItems = cart.some((item) => item.plot.propertyType !== 'Agrovest');
+      if (bmcReferralCode && hasAgrovestItems && hasNonAgrovestItems) {
+        throw new Error('Homes and Agrovest items must be checked out separately when using a division referral link.');
       }
 
       const captchaToken = await executeRecaptcha('checkout');
