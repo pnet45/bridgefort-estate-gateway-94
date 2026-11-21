@@ -7,17 +7,17 @@
 
 ## Executive result
 
-The production ledger contains **322** migration records. The active migration directory contains **308** SQL migration files after five historical recoveries, two forward-only repairs, and archival of seven unmatched local migration artifacts.
+The production ledger contains **322** migration records. The active migration directory contains **317** SQL migration files after historical source recovery, two forward-only repairs, and archival of seven unmatched local migration artifacts.
 
 Nine local migration files were matched to existing production ledger versions after checking their SQL intent against the deployed schema state. Their filenames were aligned to the production versions in this branch; SQL bodies were preserved unchanged.
 
 After the initial nine filename alignments and seven historical-source recoveries:
 
-- **16** production ledger versions still have no exact local version file.
+- **7** production ledger versions still have no exact local version file.
 - **0** stale local-only migration versions remain in the active migration directory. The seven original artifacts are preserved under `docs/database/unmatched-local-migrations/` and are not candidates for automatic replay.
 - Two production ledger records share the same migration name: `20261016020017` and `20261016020023`, both named `20261015215000_grant_manager_documentation_management`.
 
-This branch does **not** claim the production migration history is fully reconciled. Sixteen production ledger versions still lack their exact historical SQL. Two new forward-only migrations are staged in the active directory and are expected to be pending until separately reviewed and applied.
+This branch does **not** claim the production migration history is fully reconciled. Seven production ledger versions still lack their exact historical SQL. Two new forward-only migrations are staged in the active directory and are expected to be pending until separately reviewed and applied.
 
 ## Verified filename/version alignments
 
@@ -49,28 +49,23 @@ These checks establish that the corresponding features are present in production
 
 ## Remaining production ledger versions without exact local files
 
-The following **16** versions remain unmatched:
+The following **7** versions remain unmatched:
 
 - `20261007164836 leo_knowledge_base_rag`
 - `20261007164939 leo_knowledge_source_unique`
 - `20261007164959 leo_knowledge_source_constraint`
 - `20261007165248 leo_public_chat_and_kb_roles`
 - `20261007165714 leo_kb_search_or_terms`
-- `20261008043732 leo_knowledge_reconciliation_20261008050000`
-- `20261008045426 bh_realtor_promotions_glassmorphism_20261008`
-- `20261008115443 promo_public_home_seed_20261008`
-- `20261008135304 email_campaign_rich_content_and_attachments`
-- `20261009095237 admin_menu_visibility_overrides`
-- `20261010222819 revoke_client_execute_welcome_email_trigger`
-- `20261011152647 remove_promo_emojis`
-- `20261016020017 20261015215000_grant_manager_documentation_management`
-- `20261016020023 20261015215000_grant_manager_documentation_management`
 - `20261027041852 production_repair_hr_admin_it_workspace_20261027`
 - `20261027041927 tighten_hr_workspace_table_grants_20261027`
 
-Read-only state checks show several corresponding objects/features currently exist: Leo knowledge tables and source constraints, BH-Realtor promotions, rich email campaign columns, admin menu visibility/audit tables, downline/network functions, HR workspace tables, and the welcome-email trigger's execute permission is denied to both `anon` and `authenticated`. The exact SQL provenance for these 16 records is not present in the current migration directory and has not been reconstructed from database state.
+Read-only state checks show several corresponding objects/features currently exist: Leo knowledge tables and source constraints, BH-Realtor promotions, rich email campaign columns, admin menu visibility/audit tables, downline/network functions, HR workspace tables, and the welcome-email trigger's execute permission is denied to both `anon` and `authenticated`. The exact SQL provenance for these 7 records is not present in the current migration directory and has not been reconstructed from database state.
 
-Five additional migrations have now been recovered from original Git commit diffs and restored with their production ledger versions: `20261010100741_manager_admin_menu_visibility_controls.sql` (commit `88daa0594920c4cc0e789893aeaaaf5ba2f8c31c`), `20261010101105_admin_menu_visibility_audit_trail.sql` (commit `9efdb6cf87229da27e2753c0ad563af60ca1dd21`), `20261010181827_enable_manager_admin_workspace_permissions.sql` (commit `86254270957551a5cc3e80fbd15d83e20958146e`), `20261010223058_bound_bhrealtor_network_tree_results.sql` (commit `7accfdfca1d75b7bb71ab8124bb83eb9f0970b37`), and `20261011152023_bound_downline_ids_recursion.sql` (commit `799211b9faeed6e1fb8b7315db2668d222f2acaf`). Their SQL was transcribed from original commit diffs; they have not been replayed against production.
+Fourteen migration files have now been restored from historical Git source and aligned to production ledger versions. This includes the five recovered from original commit diffs: `20261010100741_manager_admin_menu_visibility_controls.sql` (commit `88daa0594920c4cc0e789893aeaaaf5ba2f8c31c`), `20261010101105_admin_menu_visibility_audit_trail.sql` (commit `9efdb6cf87229da27e2753c0ad563af60ca1dd21`), `20261010181827_enable_manager_admin_workspace_permissions.sql` (commit `86254270957551a5cc3e80fbd15d83e20958146e`), `20261010223058_bound_bhrealtor_network_tree_results.sql` (commit `7accfdfca1d75b7bb71ab8124bb83eb9f0970b37`), and `20261011152023_bound_downline_ids_recursion.sql` (commit `799211b9faeed6e1fb8b7315db2668d222f2acaf`).
+
+Six further exact scripts were recovered from historical repository trees and matched to their production versions: Leo knowledge reconciliation (`20261008043732`, source file from commit `9efdb6cf87229da27e2753c0ad563af60ca1dd21`); BH-Realtor promotions (`20261008045426`); public promo seed (`20261008115443`); email campaign rich content/attachments (`20261008135304`); admin menu visibility base table (`20261009095237`); and welcome-email trigger execute hardening (`20261010222819`, source commit `7accfdfca1d75b7bb71ab8124bb83eb9f0970b37`). Their SQL was copied from the historical files and checked against current production objects/data/privileges.
+
+The promo emoji cleanup migration (`20261011152647`) was recovered from historical commit `36c74298c213b516a7370ed853ce3509f1735c20`. The two duplicate manager-documentation ledger records (`20261016020017` and `20261016020023`) were both restored from the same original migration file in commit `e698034834787b49b6f6e044c4746f225b75282b`; the recovered SQL is an idempotent permission-row update. Neither copy has been replayed against production.
 
 The two manager-documentation entries are duplicate-name ledger records. Do not delete either record or invent two replacement SQL files without recovering their provenance.
 
@@ -106,9 +101,9 @@ The audit confirmed:
 
 ## Safe completion plan
 
-1. Recover the exact original SQL for the 16 unmatched production records from trusted historical source control, deployment artifacts, or an authorized database migration archive.
+1. Recover the exact original SQL for the 7 unmatched production records from trusted historical source control, deployment artifacts, or an authorized database migration archive.
 2. Compare recovered SQL to the live schema and migration ledger; preserve duplicate records and original ordering.
-3. Preserve the seven local-only artifacts outside the migration runner with their current dispositions; continue provenance checks for the three applied-but-unmatched objects, and leave the `supabase_admin` default-privilege change blocked until an authorized executor is available.
+3. Continue source recovery for the seven remaining production-only ledger records. Preserve archived local artifacts and leave the `supabase_admin` default-privilege change blocked until an authorized executor is available.
 4. For genuinely unapplied changes, review and create a new forward-only migration with a fresh version; never reuse an old timestamp. Two such forward repairs are staged for the absent admin-tab guard and missing auth-carousel Realtime publication.
 5. Validate the complete local migration directory against production in a disposable PostgreSQL environment.
 6. Recheck Supabase Preview after source recovery. Do not use no-op placeholder files, delete migration-ledger rows, run old migrations again, or apply a blanket `migration repair` merely to silence the warning.
