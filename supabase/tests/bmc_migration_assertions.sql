@@ -31,6 +31,9 @@ declare
   referred_id uuid := '33333333-3333-4333-8333-333333333333';
   no_consent_id uuid := '44444444-4444-4444-8444-444444444444';
   attribution_count integer;
+  travel_booking_id uuid;
+  travel_payment_id uuid;
+  commission_count integer;
 begin
   if (select count(*) from public.bmc_agreement_acceptances where user_id = partner_id) <> 1 then
     raise exception 'BMC agreement/privacy acceptance was not captured exactly once at signup';
@@ -97,7 +100,8 @@ begin
   insert into public.travel_bookings
     (name,email,phone,departure_date,return_date,travelers,package,status,customer_id,bmc_referral_code_id)
   values
-    ('Referred Customer','travel@example.test','08000000000',current_date+10,current_date+15,1,'Explorer','received',referred_id,travels_code_id);
+    ('Referred Customer','travel@example.test','08000000000',current_date+10,current_date+15,1,'Explorer','received',referred_id,travels_code_id)
+  returning id into travel_booking_id;
   if not exists (
     select 1 from public.bmc_division_referral_attributions
     where source_type='travel_booking' and division='travels'
@@ -119,6 +123,43 @@ begin
   ) then
     raise exception 'Agrovest order referral attribution was not recorded';
   end if;
+
+  -- A fully paid Agrovest order earns exactly 10% for the direct BMC only.
+  update public.orders
+  set amount_paid=total_amount, payment_status='paid'
+  where payment_reference='TEST-AGRO-1';
+  select count(*) into commission_count
+  from public.bmc_division_commissions
+  where division='agrovest' and source_type='agrovest_order'
+    and referrer_user_id=partner_id and gross_customer_payment=1000
+    and commission_rate=10 and commission_amount=100 and status='earned';
+  if commission_count <> 1 then
+    raise exception 'Agrovest commission was not calculated as 10% of the full cleared customer payment';
+  end if;
+  if (select count(*) from public.bmc_division_commissions where source_record_id=(select id from public.orders where payment_reference='TEST-AGRO-1')) <> 1 then
+    raise exception 'Agrovest transaction created duplicate or upliner commission rows';
+  end if;
+
+  -- Travel bookings are enquiries, so commission is recorded only after a manager
+  -- confirms the booking and records an independently verified cleared payment.
+  update public.travel_bookings set status='confirmed' where id=travel_booking_id;
+  perform set_config('request.jwt.claim.sub', admin_id::text, true);
+  perform set_config('test.permission', 'admin:manage_travels', true);
+  select public.admin_record_bmc_travel_payment(travel_booking_id, 500000, 'TEST-TRAVEL-PAID-1')
+    into travel_payment_id;
+  select count(*) into commission_count
+  from public.bmc_division_commissions
+  where division='travels' and source_type='travel_payment'
+    and source_record_id=travel_payment_id
+    and referrer_user_id=partner_id and gross_customer_payment=500000
+    and commission_rate=10 and commission_amount=50000 and status='earned';
+  if commission_count <> 1 then
+    raise exception 'Travels commission was not calculated as 10% of the full cleared customer payment';
+  end if;
+  if (select count(*) from public.bmc_division_commissions where source_record_id=travel_payment_id) <> 1 then
+    raise exception 'Travels payment created duplicate or upliner commission rows';
+  end if;
+  perform set_config('test.permission', 'admin:manage_bmc_partners', true);
 
   -- Invalid division mix must be rejected by the database trigger.
   begin
