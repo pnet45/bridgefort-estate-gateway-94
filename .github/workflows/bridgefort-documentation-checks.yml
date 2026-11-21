@@ -154,15 +154,16 @@ jobs:
           const assertions = readFileSync('supabase/tests/bmc_migration_assertions.sql', 'utf8');
           const partnerHub = readFileSync('src/pages/BMCPartnerHub.tsx', 'utf8');
 
-          assert.match(migration, /create table if not exists public\\.bmc_division_commissions/i);
-          assert.match(migration, /division text not null check \\(division in \\('agrovest', 'travels'\\)\\)/i);
-          assert.match(migration, /commission_rate numeric\\(5,2\\) not null check \\(commission_rate = 10\\.00\\)/i);
+          assert.match(migration, /create table if not exists public\.bmc_division_commissions/i);
+          assert.match(migration, /division text not null check \(division in \('agrovest', 'travels'\)\)/i);
+          assert.match(migration, /source_type text not null check \(source_type in \('agrovest_payment', 'travel_payment'\)\)/i);
+          assert.match(migration, /commission_rate numeric\(5,2\) not null check \(commission_rate = 10\.00\)/i);
           assert.match(migration, /gross_customer_payment/i, 'commission basis must be gross customer payment');
-          assert.match(migration, /round\\(new\\.amount \\* 0\\.10, 2\\)/i);
+          assert.match(migration, /round\(new\.amount \* 0\.10, 2\)/i);
           assert.match(migration, /admin_record_bmc_travel_payment/i, 'travel payment must be explicitly confirmed by an authorized manager');
           assert.match(migration, /bmc_award_agrovest_installment_commission/i);
           assert.match(migration, /bmc_award_travel_commission_from_payment/i);
-          assert.match(migration, /after update of status on public\\.payment_requests/i);
+          assert.match(migration, /after update of status on public\.payment_requests/i);
           assert.match(migration, /agrovest_payment/i);
           assert.match(migration, /get_my_bmc_division_commissions/i);
           assert.match(migration, /admin_mark_bmc_commission_paid/i);
