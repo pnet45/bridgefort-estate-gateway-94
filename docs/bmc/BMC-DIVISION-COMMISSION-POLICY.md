@@ -16,11 +16,11 @@ BMC commissions are calculated and reported independently for each business divi
 
 ## 2. Agrovest
 
-An approved BMC with an approved Agrovest division referral is entitled to 10% of the full customer payment received by Bridgefort for a qualifying Agrovest-only order. No third-party costs are deducted before calculating the commission. Commission is recorded only after the order is fully paid and the full payment is confirmed. The direct referring BMC is the sole beneficiary.
+An approved BMC with an approved Agrovest division referral is entitled to 10% of each customer payment received and confirmed by Bridgefort for a qualifying Agrovest-only order. Each cleared instalment is recorded as a separate commission event using its own payment reference; commission is not deferred until the full order balance is paid. No third-party costs are deducted before calculating the commission. The direct referring BMC is the sole beneficiary.
 
 ## 3. Travels & Tours
 
-An approved BMC with an approved Travels division referral is entitled to 10% of the full customer payment received by Bridgefort for a qualifying travel transaction. No third-party costs are deducted before calculating the commission. A travel enquiry or booking request alone does not constitute a paid transaction. An authorized manager must confirm the booking and record the cleared customer payment and payment reference before a commission is earned. The direct referring BMC is the sole beneficiary.
+An approved BMC with an approved Travels division referral is entitled to 10% of the full customer payment received by Bridgefort for a qualifying travel transaction. No third-party costs are deducted before calculating the commission. A travel enquiry or booking request alone does not constitute a paid transaction. An authorized manager must confirm the booking and record each cleared customer payment and its unique payment reference before the corresponding 10% commission is earned. Multiple instalments create separate commission events. The direct referring BMC is the sole beneficiary.
 
 ## 4. Homes
 
