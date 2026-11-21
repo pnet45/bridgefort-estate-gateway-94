@@ -92,7 +92,7 @@ begin
   end if;
 
   if order_row.id is null then
-    select (public.resolve_payment_order(new.id)).* into order_row;
+    select public.resolve_payment_order(new.id) into order_row;
   end if;
 
   if order_row.id is null then
