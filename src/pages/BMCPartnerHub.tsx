@@ -12,6 +12,20 @@ import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock, Arrow
 type Division = 'homes' | 'travels' | 'agrovest';
 type DivisionReferralCode = { division: Division; referral_code: string; created_at: string; };\ntype BmcCommission = { commission_id: string; division: 'agrovest' | 'travels'; source_type: string; gross_customer_payment: number; commission_rate: number; commission_amount: number; status: 'earned' | 'paid' | 'reversed'; payment_reference: string | null; created_at: string; paid_at: string | null; payout_reference: string | null; };
 
+type BmcDivisionCommission = {
+  id: string;
+  division: 'agrovest' | 'travels';
+  source_type: string;
+  gross_payment_amount: number;
+  commission_rate: number;
+  commission_amount: number;
+  refunded_payment_amount: number;
+  reversed_commission_amount: number;
+  net_commission_amount: number;
+  status: 'earned' | 'partially_reversed' | 'reversed';
+  created_at: string;
+};
+
 type DivisionApplication = {
   id: string;
   division: Division;
@@ -47,7 +61,8 @@ const statusStyles: Record<DivisionApplication['application_status'], string> = 
 export default function BMCPartnerHub() {
   const { user, profile, loading: authLoading } = useAuth();
   const [applications, setApplications] = useState<DivisionApplication[]>([]);
-  const [divisionReferralCodes, setDivisionReferralCodes] = useState<DivisionReferralCode[]>([]);\n  const [commissionRows, setCommissionRows] = useState<BmcCommission[]>([]);
+  const [divisionReferralCodes, setDivisionReferralCodes] = useState<DivisionReferralCode[]>([]);
+  const [divisionCommissions, setDivisionCommissions] = useState<BmcDivisionCommission[]>([]);\n  const [commissionRows, setCommissionRows] = useState<BmcCommission[]>([]);
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
   const [selectedAdditionalDivisions, setSelectedAdditionalDivisions] = useState<Division[]>([]);
@@ -78,6 +93,13 @@ export default function BMCPartnerHub() {
       setDivisionReferralCodes([]);
     } else {
       setDivisionReferralCodes(Array.isArray(referralData) ? referralData : []);
+    }
+    const { data: commissionData, error: commissionError } = await supabase.rpc('get_my_bmc_division_commissions' as never, { _limit: 100 } as never) as unknown as { data: BmcDivisionCommission[] | null; error: { message: string } | null };
+    if (commissionError) {
+      console.info('BMC division commission history is not available in this environment yet.');
+      setDivisionCommissions([]);
+    } else {
+      setDivisionCommissions(Array.isArray(commissionData) ? commissionData : []);
     }
     setLoading(false);
   }, [user]);
@@ -296,6 +318,46 @@ export default function BMCPartnerHub() {
                       <td className="p-3 font-semibold text-foreground">{Number(commission.commission_amount).toLocaleString('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 })}</td>
                       <td className="p-3"><Badge variant="outline">{commission.status === 'earned' ? 'Earned · awaiting payout' : commission.status === 'paid' ? 'Paid' : 'Reversed'}</Badge></td>
                       <td className="p-3 text-muted-foreground">{new Date(commission.created_at).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Agrovest & Travels commission history</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Direct-referral commissions are calculated at 10% of each confirmed customer payment received, before third-party cost deductions. Refunds and reversals appear as adjustments. Homes commissions remain in your existing BH-Realtors commission history.</p>
+            </div>
+            <Badge variant="outline">{divisionCommissions.length} payment {divisionCommissions.length === 1 ? 'record' : 'records'}</Badge>
+          </div>
+          {divisionCommissions.length === 0 ? (
+            <p className="mt-4 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No qualifying Agrovest or Travels commission payments have been recorded yet. Enquiries and unpaid transactions do not generate commissions.</p>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-border text-left text-xs text-muted-foreground">
+                  <tr>
+                    <th className="py-3 pr-4">Date</th>
+                    <th className="py-3 pr-4">Division</th>
+                    <th className="py-3 pr-4">Customer payment</th>
+                    <th className="py-3 pr-4">Rate</th>
+                    <th className="py-3 pr-4">Commission</th>
+                    <th className="py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {divisionCommissions.map((commission) => (
+                    <tr key={commission.id} className="border-b border-border/60">
+                      <td className="py-3 pr-4 text-muted-foreground">{new Date(commission.created_at).toLocaleDateString()}</td>
+                      <td className="py-3 pr-4 font-medium capitalize">{commission.division}</td>
+                      <td className="py-3 pr-4 tabular-nums">₦{Number(commission.gross_payment_amount).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="py-3 pr-4">10%</td>
+                      <td className="py-3 pr-4 tabular-nums font-semibold">₦{Number(commission.net_commission_amount).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                      <td className="py-3"><Badge variant="outline">{commission.status.replace('_', ' ')}</Badge></td>
                     </tr>
                   ))}
                 </tbody>
