@@ -81,6 +81,16 @@ export default function BMCPartnerHub() {
     } else {
       setDivisionReferralCodes(Array.isArray(referralData) ? referralData : []);
     }
+    const { data: commissionData, error: commissionError } = await supabase.rpc(
+      'get_my_bmc_division_commissions' as never,
+      {} as never
+    ) as unknown as { data: BmcCommission[] | null; error: { message: string } | null };
+    if (commissionError) {
+      console.warn('BMC commission history is not available:', commissionError.message);
+      setCommissionRows([]);
+    } else {
+      setCommissionRows(Array.isArray(commissionData) ? commissionData : []);
+    }
     setLoading(false);
   }, [user]);
 
