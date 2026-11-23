@@ -47,7 +47,7 @@ export default function BMCPrivacyNotice() {
               <strong className="text-foreground">Company contact:</strong> <a className="text-estate-blue underline" href="mailto:info@bridgeforthomes.com">info@bridgeforthomes.com</a><br />
               <strong className="text-foreground">Related BMC terms:</strong> <Link className="text-estate-blue underline" to="/bmc-partner-agreement">BMC Partner Agreement</Link>
             </div>
-            <p className="mt-6 text-xs leading-5 text-muted-foreground">This is a BMC-specific working privacy notice. It should be reviewed by the Company’s privacy lead or qualified Nigerian data-protection counsel before final publication.</p>
+            <p className="mt-6 text-xs leading-5 text-muted-foreground">This is a BMC-specific working privacy notice.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/bmc-partner-agreement" className="inline-flex items-center rounded-md bg-estate-blue px-5 py-3 text-sm font-semibold text-white hover:opacity-90">Read BMC Partner Agreement</Link>
               <Link to="/privacy-policy" className="inline-flex items-center rounded-md border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted">General Bridgefort Privacy Policy</Link>
