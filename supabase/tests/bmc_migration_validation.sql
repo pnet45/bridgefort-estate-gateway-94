@@ -218,8 +218,7 @@ create table public.mlm_commissions (
   description text
 );
 create unique index mlm_commissions_property_sale_test_uidx
-  on public.mlm_commissions(source_property_sale_id, beneficiary_id, sponsor_level)
-  where source_property_sale_id is not null;
+  on public.mlm_commissions(source_property_sale_id, beneficiary_id, sponsor_level);
 
 create or replace function public.bhrealtor_package_rank(_package text)
 returns integer language sql immutable
