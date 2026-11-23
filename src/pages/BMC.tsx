@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Building2, Plane, Sprout, Printer, GraduationCap, TrendingUp, Users, Handshake, Settings, Trophy, Phone, Mail, Globe2 } from 'lucide-react';
+import { ArrowRight, Building2, Plane, Sprout, Printer, GraduationCap, TrendingUp, Users, Settings, Trophy, Phone, Mail, Globe2 } from 'lucide-react';
 
 const commissions = [
   { title: 'Land sales', rate: '15%', note: 'Through BH-Realtors', icon: Building2 },
