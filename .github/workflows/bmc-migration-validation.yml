@@ -10,6 +10,8 @@ on:
       - 'supabase/migrations/20261121134923_bmc_division_referral_attribution.sql'
       - 'supabase/migrations/20261121134932_bmc_reviewer_permission.sql'
       - 'supabase/migrations/20261121150000_bmc_division_commission_engine.sql'
+      - 'supabase/migrations/20261123123000_bmc_campaign_house_commission_rates.sql'
+      - 'supabase/tests/bmc_campaign_house_commission_assertions.sql'
       - 'supabase/tests/bmc_migration_validation.sql'
       - 'supabase/tests/bmc_migration_assertions.sql'
       - '.github/workflows/bmc-migration-validation.yml'
@@ -60,7 +62,8 @@ jobs:
             supabase/migrations/20261121134914_secure_bmc_division_review.sql \
             supabase/migrations/20261121134923_bmc_division_referral_attribution.sql \
             supabase/migrations/20261121134932_bmc_reviewer_permission.sql \
-            supabase/migrations/20261121150000_bmc_division_commission_engine.sql
+            supabase/migrations/20261121150000_bmc_division_commission_engine.sql \\
+            supabase/migrations/20261123123000_bmc_campaign_house_commission_rates.sql
           do
             echo "Applying $migration"
             psql -v ON_ERROR_STOP=1 -f "$migration"
@@ -68,3 +71,6 @@ jobs:
 
       - name: Verify approval, consent, audit and referral behaviour
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/bmc_migration_assertions.sql
+
+      - name: Verify fixed land and house commission rates
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/bmc_campaign_house_commission_assertions.sql
