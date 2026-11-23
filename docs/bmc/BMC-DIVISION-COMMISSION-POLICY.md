@@ -15,7 +15,9 @@ BMC commissions are calculated and reported independently for each business divi
 | Bridgefort Agrovest | 10% of each cleared customer instalment | Direct referral only; no upliner/downline |
 | Bridgefort Travels & Tours | 10% of full customer payment received | Direct referral only; no upliner/downline |
 
-All published rates are gross commission rates. Applicable withholding tax (WHT) and approved administrative fees are deducted from the commission payable. The approved fee amounts and tax treatment must be disclosed to partners before payout; no unapproved or undisclosed deductions may be applied.\n\n## 2. Agrovest
+All published rates are gross commission rates. Applicable withholding tax (WHT) and approved administrative fees are deducted from the commission payable. The approved fee amounts and tax treatment must be disclosed to partners before payout; no unapproved or undisclosed deductions may be applied.
+
+## 2. Agrovest
 
 An approved BMC with an approved Agrovest division referral is entitled to 10% of each customer payment received and confirmed by Bridgefort for a qualifying Agrovest-only order. Each cleared instalment is recorded as a separate commission event using its own payment reference; commission is not deferred until the full order balance is paid. No third-party costs are deducted before calculating the commission. The direct referring BMC is the sole beneficiary.
 
@@ -25,7 +27,7 @@ An approved BMC with an approved Travels division referral is entitled to 10% of
 
 ## 4. Homes
 
-The existing BH-Realtors commission framework, including its current rates, eligibility, referral relationships and applicable upliner arrangements, remains unchanged. BMC Homes referral attribution does not replace or modify the legacy BH-Realtors commission engine.
+The existing BH-Realtors referral attribution, eligibility checks, package access rules and eligible land-sale second-level arrangement are retained, subject to the approved asset-class rates in this policy. For newly paid qualifying land sales, the direct referring BH-Realtor earns 15%; the existing eligible 5% second-level land commission remains. For newly paid qualifying house sales, the direct referring BH-Realtor earns 5%, and no second-level property-sale commission is awarded. These rates are fixed by asset class, not by package tier. BMC Homes referral attribution does not replace the legacy BH-Realtors referral relationship.
 
 ## 5. Multi-division participation and controls
 
