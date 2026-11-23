@@ -59,8 +59,8 @@ export default function BMC() {
             <div className="relative mx-auto w-full max-w-xl">
               <div className="absolute -inset-3 rounded-[2rem] border-2 border-[#d5a62d]"></div>
               <img
-                src="/lovable-uploads/bhRealtors-reward-scheme.jpeg"
-                alt="Bridgefort partner rewards and real estate opportunities"
+                src="/images/bmc/bmc-campaign-banner.webp"
+                alt="Bridgefort Multi-Business Consultants campaign banner"
                 className="relative aspect-[4/3] w-full rounded-[1.6rem] border border-[#d5a62d]/70 bg-[#f8f4eb] object-contain shadow-2xl"
                 loading="eager"
               />
