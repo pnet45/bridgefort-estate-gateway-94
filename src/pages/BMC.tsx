@@ -54,7 +54,7 @@ export default function BMC() {
                   <Link to="/bmc-partner-agreement">Read Partner Agreement</Link>
                 </Button>
               </div>
-              <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">Designed for working professionals, 5-to-9 employees, entrepreneurs and self-employed people.</p>
+              <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">Designed for working professionals, 9-to-5 employees, entrepreneurs and self-employed people.</p>
             </div>
             <div className="relative mx-auto w-full max-w-xl">
               <div className="absolute -inset-3 rounded-[2rem] border-2 border-[#d5a62d]"></div>
