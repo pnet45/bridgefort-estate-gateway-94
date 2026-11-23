@@ -511,7 +511,7 @@ const Auth = ({
   const resolvedTitle = pageTitle
     ? `${pageTitle} ${isLogin ? 'Sign In' : 'Register'}`
     : isLogin
-      ? (isPBO ? 'Realtors Login' : 'Client Login')
+      ? (isPBO ? 'BMC Login' : 'Sign In')
       : 'Create Account';
 
   return (
@@ -529,7 +529,7 @@ const Auth = ({
             className="bg-white/10 text-white border-white/30 hover:bg-white/20 shrink-0"
             onClick={() => navigate('/home')}
           >
-            Cancel
+            Home
           </Button>
         </div>
 
@@ -545,24 +545,33 @@ const Auth = ({
           <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
             <div className="w-full max-w-md mx-auto bg-white/75 backdrop-blur-xl lg:backdrop-blur-none lg:bg-transparent border border-white/40 lg:border-0 rounded-2xl lg:rounded-none shadow-[0_8px_40px_rgba(0,0,0,0.45)] lg:shadow-none p-6 sm:p-8 lg:p-0">
           {isLogin && (
-            <div className="mb-6 flex gap-2">
-              <Button
-                type="button"
-                variant={!isPBO ? "default" : "outline"}
-                onClick={() => setIsPBO(false)}
-                className="flex-1"
-              >
-                Client Login
-              </Button>
-              <Button
-                type="button"
-                variant={isPBO ? "default" : "outline"}
-                onClick={() => setIsPBO(true)}
-                className="flex-1"
-              >
-                BMC Login
-              </Button>
-            </div>
+            <>
+              <div className="mb-5 rounded-xl border border-amber-400/50 bg-amber-50/90 dark:bg-amber-950/30 p-4 text-center shadow-sm">
+                <p className="text-sm sm:text-base font-extrabold tracking-wide text-estate-blue dark:text-amber-200">
+                  DO YOU WANT TO BE A PART OF OUR NETWORK AND MAKE MONEY?
+                </p>
+                <p className="mt-1 text-sm font-medium text-slate-700 dark:text-slate-200">
+                  If YES, then SIGN UP.
+                </p>
+                <Button
+                  type="button"
+                  onClick={toggleAuthMode}
+                  className="mt-3 w-full min-h-12 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-base shadow-md"
+                >
+                  SIGN UP
+                </Button>
+              </div>
+              <div className="mb-5 flex justify-end">
+                <Button
+                  type="button"
+                  variant={isPBO ? "default" : "outline"}
+                  onClick={() => setIsPBO(true)}
+                  className="min-w-32"
+                >
+                  BMC Login
+                </Button>
+              </div>
+            </>
           )}
           <form onSubmit={isLogin ? handleSignIn : handleSignUp} className="space-y-6">
             {!isLogin && (
