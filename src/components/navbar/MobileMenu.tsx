@@ -48,6 +48,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
     //{ name: 'Apartments for Rent', icon: <Building size={20} />, path: '/properties/apartments' },
     { name: 'Services', icon: <Briefcase size={20} />, path: '/services' },
     { name: 'Training', icon: <GraduationCap size={20} />, path: '/training' },
+    { name: 'BMC Network', icon: <Users size={20} />, path: '/bmc' },
     { name: 'Agrovest', icon: <Sprout size={20} />, path: '/agrovest' },
     { name: '5K Daily Promo', icon: <PiggyBank size={20} />, path: '/5k-daily-promo' },
     { name: 'Travels', icon: <Plane size={20} />, path: '/travels' },
