@@ -273,7 +273,7 @@ const BHRealtors: React.FC = () => {
                   <div>
                     <p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-300">Current package / rank</p>
                     <h2 className="mt-1 text-3xl font-black text-estate-blue dark:text-white">{currentPackage?.package_name || currentCode}</h2>
-                    <p className={`mt-2 text-sm ${muted}`}>Estate-land sales commission: {currentPackage?.sales_commission_pct ?? (currentCode === 'associate' ? 5 : currentCode === 'gold' ? 10 : 15)}%. {currentRank === 1 ? 'Commission is locked until you upgrade.' : 'Eligible commissions are withdrawable.'}</p>
+                    <p className={`mt-2 text-sm ${muted}`}>Land sales commission: 15%. House sales commission: 5%. {currentRank === 1 ? 'Eligible commissions are locked until you upgrade.' : 'Eligible commissions are withdrawable.'}</p>
                   </div>
                   <Badge className={currentRank >= 2 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200' : 'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200'}>{currentRank >= 2 ? 'Withdrawable' : 'Locked'}</Badge>
                 </div>
@@ -330,7 +330,6 @@ const BHRealtors: React.FC = () => {
               {packages.map((pkg) => {
                 const active = pkg.package_code === currentCode && isPbo;
                 const higher = !isPbo || rank[pkg.package_code] > currentRank;
-                const salesRate = pkg.sales_commission_pct ?? (pkg.package_code === 'associate' ? 5 : pkg.package_code === 'gold' ? 10 : 15);
                 const visual = packageVisuals[pkg.package_code] || packageVisuals.associate;
                 return (
                   <article key={pkg.package_code} className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl dark:bg-slate-950 ${active ? 'ring-2 ring-estate-purple ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-950' : 'border-slate-200 dark:border-white/10'}`}>
@@ -341,9 +340,9 @@ const BHRealtors: React.FC = () => {
                       <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-3"><div><p className="text-sm font-semibold text-white/80">{pkg.package_name}</p><p className="mt-1 text-2xl font-black text-white">{naira(pkg.price)}</p></div>{active && <Badge className="border border-white/20 bg-white/20 text-white">Current</Badge>}</div>
                     </div>
                     <div className="flex flex-1 flex-col p-4">
-                      <div className="flex flex-wrap gap-2"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>L1: {pkg.direct_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>L2: {pkg.indirect_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>Sales: {salesRate}%</span></div>
+                      <div className="flex flex-wrap gap-2"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>Membership L1: {pkg.direct_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>Membership L2: {pkg.indirect_commission_pct}%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>Land sales: 15%</span><span className={`rounded-full px-3 py-1 text-xs font-semibold ${visual.soft}`}>House sales: 5%</span></div>
                       <p className={`mt-3 min-h-[72px] text-sm leading-6 font-medium ${muted}`}>{pkg.description}</p>
-                      <div className="mt-5 grid grid-cols-2 gap-2"><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Membership</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{pkg.direct_commission_pct}% / {pkg.indirect_commission_pct}%</p></div><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Land sales</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{salesRate}%</p></div></div>
+                      <div className="mt-5 grid grid-cols-2 gap-2"><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Membership</p><p className="mt-1 font-bold text-slate-900 dark:text-white">{pkg.direct_commission_pct}% / {pkg.indirect_commission_pct}%</p></div><div className="rounded-xl bg-slate-50 p-3 dark:bg-white/[0.04]"><p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400">Property sales</p><p className="mt-1 font-bold text-slate-900 dark:text-white">Land 15% · House 5%</p></div></div>
                       <div className="mt-auto pt-5">
                         {higher && <Button className={`w-full bg-gradient-to-r ${visual.accent} text-white shadow-lg hover:opacity-95`} onClick={() => openRegistration(pkg)}>{isPbo ? `Upgrade to ${pkg.package_name}` : `Join ${pkg.package_name} — ${naira(pkg.price)}`}</Button>}
                         {active && <div className="mt-3 flex items-start gap-2 rounded-xl bg-emerald-500/10 px-3 py-2.5 text-xs leading-5 text-emerald-700 dark:text-emerald-200"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />You are currently on this package.</div>}

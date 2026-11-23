@@ -167,6 +167,7 @@ export default function BMCPartnerHub() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-estate-blue">Bridgefort Multi-Business Consultants</p>
               <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">BMC Partner Hub</h1>
+              <Link to="/bmc" className="mt-2 inline-flex items-center text-sm font-semibold text-estate-blue hover:underline">View public BMC campaign page <ArrowRight className="ml-1 h-4 w-4" /></Link>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">One Bridgefort partner identity across multiple business divisions. Each division has its own application review and approval status.</p>
             </div>
             <Button variant="outline" onClick={() => void loadApplications()} disabled={loading}>
@@ -290,7 +291,7 @@ export default function BMCPartnerHub() {
             <span className="rounded-xl bg-estate-blue/10 p-3 text-estate-blue"><Coins className="h-5 w-5" /></span>
             <div>
               <h2 className="text-xl font-semibold text-foreground">BMC commission history</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Agrovest and Travels commissions are tracked separately at 10% of each cleared customer instalment. Homes continues under the existing BH-Realtors commission system.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Agrovest lease partnerships and Travels earn 10% of cleared customer payments. BH-Realtors land sales earn 15%; house sales earn 5%. Applicable WHT and approved administrative fees are deducted from commission payable.</p>
             </div>
           </div>
           {commissionRows.length === 0 ? (

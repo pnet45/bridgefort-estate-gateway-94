@@ -10,9 +10,12 @@ BMC commissions are calculated and reported independently for each business divi
 
 | Division | Commission | Attribution |
 |---|---:|---|
-| Bridgefort Homes | Existing BH-Realtors schedule | Existing Homes rules remain unchanged |
+| BH-Realtors land sales | 15% | Existing BH-Realtors direct referral attribution; eligible legacy land-sale upliner arrangement retained |
+| BH-Realtors house sales | 5% | Direct referring BH-Realtor; no additional second-level house-sale commission |
 | Bridgefort Agrovest | 10% of each cleared customer instalment | Direct referral only; no upliner/downline |
 | Bridgefort Travels & Tours | 10% of full customer payment received | Direct referral only; no upliner/downline |
+
+All published rates are gross commission rates. Applicable withholding tax (WHT) and approved administrative fees are deducted from the commission payable. The approved fee amounts and tax treatment must be disclosed to partners before payout; no unapproved or undisclosed deductions may be applied.
 
 ## 2. Agrovest
 
@@ -24,7 +27,7 @@ An approved BMC with an approved Travels division referral is entitled to 10% of
 
 ## 4. Homes
 
-The existing BH-Realtors commission framework, including its current rates, eligibility, referral relationships and applicable upliner arrangements, remains unchanged. BMC Homes referral attribution does not replace or modify the legacy BH-Realtors commission engine.
+The existing BH-Realtors referral attribution, eligibility checks, package access rules and eligible land-sale second-level arrangement are retained, subject to the approved asset-class rates in this policy. For newly paid qualifying land sales, the direct referring BH-Realtor earns 15%; the existing eligible 5% second-level land commission remains. For newly paid qualifying house sales, the direct referring BH-Realtor earns 5%, and no second-level property-sale commission is awarded. These rates are fixed by asset class, not by package tier. BMC Homes referral attribution does not replace the legacy BH-Realtors referral relationship.
 
 ## 5. Multi-division participation and controls
 
@@ -34,7 +37,7 @@ Agrovest and Travels & Tours must never generate recruitment-based, upliner or d
 
 ## 6. Payment, reversal and payout controls
 
-Commissions are calculated on gross customer payment received, not net profit. A commission is earned only after the applicable customer funds have been confirmed and cleared. A full refund, reversal or chargeback must reverse the corresponding unpaid commission entry. A partial refund or a recovery against an already-paid commission requires a separately recorded Finance-approved adjustment; it must not be silently deducted from another commission or wallet. Payouts require authorized approval and a recorded payout reference.
+Commissions are calculated on the qualifying gross customer payment received, not net profit. Applicable WHT and approved administrative fees are deducted from the gross commission to determine the amount payable. A commission is earned only after the applicable customer funds have been confirmed and cleared. A full refund, reversal or chargeback must reverse the corresponding unpaid commission entry. A partial refund or a recovery against an already-paid commission requires a separately recorded Finance-approved adjustment; it must not be silently deducted from another commission or wallet. Payouts require authorized approval and a recorded payout reference.
 
 ## 7. Management authority
 

@@ -187,3 +187,41 @@ grant usage on schema public to anon, authenticated;
 grant execute on function public.user_has_permission(uuid,text) to anon, authenticated;
 
 -- The migration files are applied by the workflow after this fixture is loaded.
+
+
+-- Minimal legacy BH-Realtors property commission fixture for the campaign schedule migration.
+alter table public.profiles add column referred_by_id uuid references public.profiles(id);
+
+create table public.bh_property_sales (
+  id uuid primary key default gen_random_uuid(),
+  buyer_id uuid not null,
+  order_id uuid not null references public.orders(id),
+  property_id text not null,
+  plot_id text,
+  property_price numeric not null,
+  unique (buyer_id, property_id, plot_id)
+);
+create unique index bh_property_sales_no_plot_test_uidx
+  on public.bh_property_sales(buyer_id, property_id) where plot_id is null;
+
+create table public.mlm_commissions (
+  id uuid primary key default gen_random_uuid(),
+  source_purchase_id uuid,
+  source_order_id uuid,
+  source_property_sale_id uuid,
+  commission_source text not null,
+  beneficiary_id uuid not null,
+  sponsor_level integer not null,
+  commission_rate numeric not null,
+  commission_amount numeric not null,
+  status text not null,
+  description text
+);
+create unique index mlm_commissions_property_sale_test_uidx
+  on public.mlm_commissions(source_property_sale_id, beneficiary_id, sponsor_level);
+
+create or replace function public.bhrealtor_package_rank(_package text)
+returns integer language sql immutable
+as $$
+  select case _package when 'associate' then 1 when 'gold' then 2 when 'classic_gold' then 3 else 0 end
+$$;
