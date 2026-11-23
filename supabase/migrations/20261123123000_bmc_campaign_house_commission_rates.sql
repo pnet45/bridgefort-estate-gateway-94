@@ -77,7 +77,7 @@ begin
     end if;
 
     -- Apply a fixed business rate by asset class, never by BH-Realtors package tier.
-    if v_property_type = 'land' or v_property_type like '%estate land%' or v_property_type like '%plot%' then
+    if v_property_type like '%land%' or v_property_type like '%plot%' then
       v_seller_rate := 15;
       v_level1_rate := case
         when coalesce(v_level1_is_pbo, false)
