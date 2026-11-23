@@ -330,7 +330,6 @@ const BHRealtors: React.FC = () => {
               {packages.map((pkg) => {
                 const active = pkg.package_code === currentCode && isPbo;
                 const higher = !isPbo || rank[pkg.package_code] > currentRank;
-                const salesRate = 15;
                 const visual = packageVisuals[pkg.package_code] || packageVisuals.associate;
                 return (
                   <article key={pkg.package_code} className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl dark:bg-slate-950 ${active ? 'ring-2 ring-estate-purple ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-950' : 'border-slate-200 dark:border-white/10'}`}>
