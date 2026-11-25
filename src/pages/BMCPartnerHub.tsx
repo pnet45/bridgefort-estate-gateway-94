@@ -296,7 +296,7 @@ export default function BMCPartnerHub() {
             <span className="rounded-xl bg-estate-blue/10 p-3 text-estate-blue"><Coins className="h-5 w-5" /></span>
             <div>
               <h2 className="text-xl font-semibold text-foreground">BMC commission history</h2>
-              <p className="mt-1 text-sm text-muted-foreground">BMC Homes land sales earn 15% and house sales 5%; Agrovest and Travels earn 10% of cleared customer payments. BMC commissions are direct-only and held until the relevant division is approved. Applicable WHT and approved administrative fees are deducted from commission payable.</p>
+              <p className="mt-1 text-sm text-muted-foreground">BMC Homes land sales earn 15% and house sales 5%; Agrovest and Travels earn 10% of cleared customer payments. BMC commissions are direct-only and remain on hold until central identity KYC and the relevant division are approved. Applicable WHT and approved administrative fees are deducted from commission payable.</p>
             </div>
           </div>
           {commissionRows.length === 0 ? (
