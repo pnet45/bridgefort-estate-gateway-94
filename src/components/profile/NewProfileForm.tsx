@@ -73,9 +73,20 @@ const NewProfileForm = () => {
   if (user) lastAuthenticatedUserRef.current = user;
   const stableUser = user ?? (authLoading ? lastAuthenticatedUserRef.current : null);
   const userId = stableUser?.id ?? null;
+  const [isBmcPartner, setIsBmcPartner] = useState(Boolean(isBmcPartner));
+  // New BMC accounts are not BH-Realtors (is_pbo) accounts. Detect their
+  // central partner identity from the division registry instead.
+  useEffect(() => {
+    if (isBmcPartner) { setIsBmcPartner(true); return; }
+    if (!userId) { setIsBmcPartner(false); return; }
+    let active = true;
+    void supabase.from('bmc_partner_divisions').select('id').eq('user_id', userId).limit(1).maybeSingle()
+      .then(({ data, error }) => { if (active) setIsBmcPartner(!error && Boolean(data)); });
+    return () => { active = false; };
+  }, [userId, isBmcPartner]);
   // BMC identity verification is managed centrally in the BMC Partner Hub.
-  // Keep the client KYC flow, but do not expose it to BMCs.
-  const steps = profile?.is_pbo ? allSteps.filter(step => step.key !== 'identity' && step.key !== 'aml') : allSteps;
+  // Keep the client KYC flow, but do not expose it to any BMC account.
+  const steps = isBmcPartner ? allSteps.filter(step => step.key !== 'identity' && step.key !== 'aml') : allSteps;
   const [form, setForm] = useState<FormState>(initialForm);
   const [kycDocs, setKycDocs] = useState<Record<string, { url: string; name: string; type: string }>>({});
   const [activeStep, setActiveStep] = useState<StepKey>('personal');
@@ -140,7 +151,7 @@ const NewProfileForm = () => {
           setForm(prev => ({ ...prev, ...draft.form, ...(stableUser?.user_metadata?.referral_link === true && metadataReferralCode ? { referrerCode: metadataReferralCode } : {}) }));
           setKycDocs(draft.kycDocs || {});
           setTermsAccepted(draft.termsAccepted);
-          setActiveStep(profile?.is_pbo && (draft.activeStep === 'identity' || draft.activeStep === 'aml') ? 'personal' : draft.activeStep || 'personal');
+          setActiveStep(isBmcPartner && (draft.activeStep === 'identity' || draft.activeStep === 'aml') ? 'personal' : draft.activeStep || 'personal');
         }
         const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
         if (error) throw error;
@@ -167,7 +178,7 @@ const NewProfileForm = () => {
       finally { setLoading(false); }
     };
     load();
-  }, [userId, stableUser?.user_metadata?.referred_by_code]);
+  }, [userId, stableUser?.user_metadata?.referred_by_code, isBmcPartner]);
 
   // Flush the latest values before a mobile browser backgrounds or restores
   // this page around the native Android/iOS document picker.
