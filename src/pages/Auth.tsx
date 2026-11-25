@@ -77,7 +77,7 @@ const Auth = ({
       setReferralMessage('A unified BMC referral link was detected. Its attribution will be recorded across the relevant Bridgefort business.');
     }
 
-    if (refCode) {
+    if (refCode && !divisionReferralCode) {
       setSponsorCode(refCode);
       setSponsorCodeLocked(true);
       setIsLogin(false);
