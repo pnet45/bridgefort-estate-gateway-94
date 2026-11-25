@@ -108,7 +108,7 @@ export default function BMCPartnerHub() {
     const link = referralLinkFor(division, code);
     try {
       await navigator.clipboard.writeText(link);
-      toast({ title: 'Referral link copied', description: `Your approved ${divisionDetails[division].title} referral link is ready to share.` });
+      toast({ title: 'Referral link copied', description: `Your shared BMC referral link for ${divisionDetails[division].title} is ready to share.` });
     } catch {
       toast({ title: 'Unable to copy link', description: 'Please copy the referral link from the address field manually.', variant: 'destructive' });
     }
@@ -287,7 +287,7 @@ export default function BMCPartnerHub() {
             ))}
           </div>
           {divisionReferralCodes.length === 0 && !applications.some((application) => application.division === 'homes' && ['approved', 'legacy_existing'].includes(application.application_status) && referralCode) && (
-            <p className="mt-3 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No active division referral links are available yet. They will appear here after approval and activation.</p>
+            <p className="mt-3 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No unified BMC referral links are available yet. Refresh after the central referral-code migration has been enabled.</p>
           )}
         </section>
 
@@ -362,7 +362,7 @@ export default function BMCPartnerHub() {
         )}
 
         <section className="flex flex-wrap gap-3">
-          <Link to="/bh-realtors/legacy"><Button variant="outline">Existing BH-Realtors workspace</Button></Link>
+          {profile?.is_pbo && <Link to="/bh-realtors/legacy"><Button variant="outline">Existing BH-Realtors workspace</Button></Link>}
           <Link to="/bmc-partner-agreement"><Button variant="outline">BMC Partner Agreement</Button></Link>
           <Link to="/bmc-privacy-notice"><Button variant="outline">BMC Privacy Notice</Button></Link>
         </section>
