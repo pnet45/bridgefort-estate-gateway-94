@@ -114,7 +114,6 @@ export default function BMCPartnerHub() {
     }
   };
 
-  const existingDivisions = applications.map((application) => application.division);
   const availableDivisions = applications.filter((application) => application.application_status === 'referral_only').map((application) => application.division);
 
   const submitAdditionalApplications = async () => {
