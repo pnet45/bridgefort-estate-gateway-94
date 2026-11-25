@@ -42,6 +42,8 @@ const BHRealtorsWithdraw: React.FC = () => {
       const [{ data: profileRow, error: profileError }, { data: dashboard, error: dashboardError }, { data: kycRows, error: kycError }, { data: homesDivision, error: homesError }] = await Promise.all([
         supabase.from('profiles').select('banking_details').eq('id', user.id).single(),
         supabase.rpc('get_my_bhrealtor_dashboard'),
+        supabase.rpc('get_my_bmc_identity_kyc_status' as never, {} as never),
+        supabase.from('bmc_partner_divisions').select('application_status').eq('user_id', user.id).eq('division', 'homes').maybeSingle(),
       ]);
       if (profileError) throw profileError;
       if (dashboardError) throw dashboardError;
