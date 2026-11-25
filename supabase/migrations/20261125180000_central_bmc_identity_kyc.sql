@@ -75,7 +75,9 @@ select
   case
     when p.kyc_status = 'VERIFIED' then 'VERIFIED'
     when p.kyc_status = 'PENDING' then 'PENDING'
+    when p.kyc_status = 'UNDER_REVIEW' then 'UNDER_REVIEW'
     when p.kyc_status = 'REQUIRES_CORRECTION' then 'REQUIRES_CORRECTION'
+    when p.kyc_status = 'REJECTED' then 'REJECTED'
     else 'NOT_STARTED'
   end,
   jsonb_strip_nulls(jsonb_build_object(
@@ -94,10 +96,11 @@ select
     'id_issuing_authority', p.id_issuing_authority
   )),
   case when jsonb_typeof(p.kyc_docs) = 'object' then p.kyc_docs else '{}'::jsonb end,
-  case when p.kyc_status in ('PENDING','VERIFIED','REQUIRES_CORRECTION') then p.updated_at else null end,
+  case when p.kyc_status in ('PENDING','UNDER_REVIEW','VERIFIED','REQUIRES_CORRECTION','REJECTED') then p.updated_at else null end,
   case when p.kyc_status = 'VERIFIED' then p.updated_at else null end
 from public.profiles p
 where p.is_pbo is true
+   or exists (select 1 from public.bmc_partner_divisions d where d.user_id = p.id)
 on conflict (user_id) do nothing;
 
 create or replace function public.get_my_bmc_identity_kyc_status()
