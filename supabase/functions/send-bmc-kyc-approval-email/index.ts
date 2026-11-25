@@ -62,6 +62,19 @@ serve(async (req) => {
     const { data: recipient, error: recipientError } = await admin.auth.admin.getUserById(kyc.user_id);
     if (recipientError || !recipient.user?.email) return json({ error: "The BMC account has no deliverable email address" }, 404);
 
+    const { data: partnerProfile } = await admin
+      .from("profiles")
+      .select("is_pbo")
+      .eq("id", kyc.user_id)
+      .maybeSingle();
+    const isLegacyRealtorAccount = partnerProfile?.is_pbo === true;
+    const actionUrl = isLegacyRealtorAccount
+      ? "https://bridgeforthomes.com/bh-realtors/withdraw"
+      : "https://bridgeforthomes.com/bmc-partner-hub";
+    const actionLabel = isLegacyRealtorAccount
+      ? "Check Withdrawal Eligibility"
+      : "View BMC Partner Dashboard";
+
     const { data: estates, error: estatesError } = await admin
       .from("estate")
       .select("id,name")
@@ -81,7 +94,7 @@ serve(async (req) => {
       <p>Dear ${firstName},</p>
       <p>Bridgefort Homes Development Ltd has completed the manual review of your central BMC identity verification. Your identity is now marked as <strong>VERIFIED</strong> across Bridgefort Homes, Bridgefort Travels and Bridgefort Agrovest.</p>
       <p>This confirms your identity across all three businesses. It does not automatically approve a business division, create a commission, or guarantee a payout. Each division's approval, cleared-payment and applicable payout requirements continue to apply.</p>
-      <p style="margin:26px 0"><a href="https://bridgeforthomes.com/bmc-partner-hub" style="display:inline-block;background:#241047;color:#fff;text-decoration:none;padding:13px 22px;border-radius:7px;font-weight:700">View BMC Partner Dashboard</a></p>
+      <p style="margin:26px 0"><a href="${actionUrl}" style="display:inline-block;background:#241047;color:#fff;text-decoration:none;padding:13px 22px;border-radius:7px;font-weight:700">${actionLabel}</a></p>
       <h3 style="color:#241047">Properties you may wish to market</h3>
       <p>Here are up to three currently available Bridgefort estate properties:</p>
       <ul>${propertyHtml}</ul>
@@ -106,7 +119,7 @@ serve(async (req) => {
         to: [recipient.user.email],
         subject: "Your Bridgefort BMC identity verification is approved",
         html,
-        text: `Your Bridgefort BMC identity is verified across Homes, Travels and Agrovest. View your BMC partner dashboard at https://bridgeforthomes.com/bmc-partner-hub. This does not automatically approve a division or guarantee a payout.`,
+        text: `Your Bridgefort BMC identity is verified across Homes, Travels and Agrovest. ${actionLabel}: ${actionUrl}. This does not automatically approve a division or guarantee a payout.`,
       },
     });
     if (sent.error) return json({ success: false, error: sent.error.message || "Email delivery failed" }, 502);
