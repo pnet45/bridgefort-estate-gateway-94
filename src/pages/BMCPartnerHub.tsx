@@ -190,7 +190,7 @@ export default function BMCPartnerHub() {
           </div>
         </section>
 
-        <BMCIdentityKYC />
+        {(Boolean(profile?.is_pbo) || applications.length > 0) && <BMCIdentityKYC />}
 
         <section className="space-y-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
