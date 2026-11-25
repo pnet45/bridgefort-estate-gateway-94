@@ -682,63 +682,88 @@ const AdminCRMLeads: React.FC = () => {
 
       {/* Lead Form Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="bg-slate-50 border-slate-200">
-          <DialogHeader>
-            <DialogTitle className="text-slate-900">{editingLead ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
+        <DialogContent className="crm-lead-form-dialog w-[calc(100vw-1rem)] max-w-2xl max-h-[calc(100dvh-1rem)] overflow-y-auto overflow-x-hidden overscroll-contain bg-slate-50 border-slate-200 p-4 sm:max-h-[calc(100dvh-2rem)] sm:p-6">
+          <DialogHeader className="min-w-0">
+            <DialogTitle className="break-words text-slate-900">{editingLead ? 'Edit Lead' : 'Add New Lead'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <div>
+          <div className="min-w-0 space-y-3">
+            <div className="min-w-0">
               <Label className="text-slate-700">Name *</Label>
-              <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="bg-white border-slate-200 text-slate-900" />
+              <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className="w-full min-w-0 bg-white border-slate-200 text-slate-900" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
+            <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="min-w-0">
                 <Label className="text-slate-700">Email</Label>
-                <Input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} className="bg-white border-slate-200 text-slate-900" />
+                <Input value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} className="w-full min-w-0 bg-white border-slate-200 text-slate-900" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <Label className="text-slate-700">Phone</Label>
-                <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="bg-white border-slate-200 text-slate-900" />
+                <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} className="w-full min-w-0 bg-white border-slate-200 text-slate-900" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3"><div><Label className="text-slate-700">Assignee</Label><Select value={form.assigned_to || 'unassigned'} onValueChange={value => setForm(current => ({ ...current, assigned_to: value === 'unassigned' ? '' : value }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="unassigned">Unassigned</SelectItem>{teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ')}</SelectItem>)}</SelectContent></Select></div><div><Label className="text-slate-700">Priority</Label><Select value={form.priority} onValueChange={priority => setForm(current => ({ ...current, priority }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent></Select></div></div>
-            <div><Label className="text-slate-700">Property</Label><Select value={form.property_key || 'none'} onValueChange={property_key => setForm(current => ({ ...current, property_key: property_key === 'none' ? '' : property_key }))}><SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Select a property" /></SelectTrigger><SelectContent><SelectItem value="none">No linked property</SelectItem>{properties.map(property => <SelectItem key={`${property.kind}:${property.id}`} value={`${property.kind}:${property.id}`}>{property.name} · {property.kind}</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
+            <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="min-w-0">
+                <Label className="text-slate-700">Assignee</Label>
+                <Select value={form.assigned_to || 'unassigned'} onValueChange={value => setForm(current => ({ ...current, assigned_to: value === 'unassigned' ? '' : value }))}>
+                  <SelectTrigger className="w-full min-w-0 bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {teamMembers.map(member => <SelectItem key={member.id} value={member.id}>{[member.first_name, member.last_name].filter(Boolean).join(' ')}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="min-w-0">
+                <Label className="text-slate-700">Priority</Label>
+                <Select value={form.priority} onValueChange={priority => setForm(current => ({ ...current, priority }))}>
+                  <SelectTrigger className="w-full min-w-0 bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger>
+                  <SelectContent>{PRIORITIES.map(priority => <SelectItem key={priority} value={priority}>{priority}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="min-w-0">
+              <Label className="text-slate-700">Property</Label>
+              <Select value={form.property_key || 'none'} onValueChange={property_key => setForm(current => ({ ...current, property_key: property_key === 'none' ? '' : property_key }))}>
+                <SelectTrigger className="w-full min-w-0 bg-white border-slate-200 text-slate-900"><SelectValue placeholder="Select a property" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No linked property</SelectItem>
+                  {properties.map(property => <SelectItem key={`${property.kind}:${property.id}`} value={`${property.kind}:${property.id}`}>{property.name} · {property.kind}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="min-w-0">
                 <Label className="text-slate-700">Source</Label>
                 <Select value={form.source} onValueChange={v => setForm(p => ({ ...p, source: v }))}>
-                  <SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {SOURCES.map(s => <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>)}
-                  </SelectContent>
+                  <SelectTrigger className="w-full min-w-0 bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger>
+                  <SelectContent>{SOURCES.map(s => <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div>
+              <div className="min-w-0">
                 <Label className="text-slate-700">Status</Label>
                 <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v }))}>
-                  <SelectTrigger className="bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {STATUSES.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
-                  </SelectContent>
+                  <SelectTrigger className="w-full min-w-0 bg-white border-slate-200 text-slate-900"><SelectValue /></SelectTrigger>
+                  <SelectContent>{STATUSES.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
-            <div>
+            <div className="min-w-0">
               <Label className="text-slate-700">Estate Interest</Label>
-              <Input value={form.estate_interest} onChange={e => setForm(p => ({ ...p, estate_interest: e.target.value }))} placeholder="e.g., Hampton Court Phase 3" className="bg-white border-slate-200 text-slate-900" />
+              <Input value={form.estate_interest} onChange={e => setForm(p => ({ ...p, estate_interest: e.target.value }))} placeholder="e.g., Hampton Court Phase 3" className="w-full min-w-0 bg-white border-slate-200 text-slate-900" />
             </div>
-            <div>
+            <div className="min-w-0 overflow-hidden">
               <Label className="text-slate-700">Notes</Label>
-              <RichTextEditor
-                value={form.notes}
-                onChange={(html) => setForm(p => ({ ...p, notes: html }))}
-                maxLength={2000}
-                minHeightClassName="min-h-[100px]"
-              />
+              <div className="min-w-0 max-w-full overflow-x-auto">
+                <RichTextEditor
+                  value={form.notes}
+                  onChange={(html) => setForm(p => ({ ...p, notes: html }))}
+                  maxLength={2000}
+                  minHeightClassName="min-h-[100px]"
+                />
+              </div>
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancel</Button>
-              <Button onClick={handleSaveLead}>{editingLead ? 'Update' : 'Create'} Lead</Button>
+            <div className="flex min-w-0 flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsFormOpen(false)}>Cancel</Button>
+              <Button className="w-full sm:w-auto" onClick={handleSaveLead}>{editingLead ? 'Update' : 'Create'} Lead</Button>
             </div>
           </div>
         </DialogContent>
