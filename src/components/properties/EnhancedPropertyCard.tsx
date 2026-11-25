@@ -44,7 +44,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
     <Card
         className={`group relative overflow-hidden cursor-pointer transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 transform ${
           isHovered ? 'shadow-2xl -translate-y-1' : 'shadow-lg'
-        } ${!isAvailable ? 'opacity-75' : ''}`}
+        }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleViewDetails}
@@ -52,15 +52,15 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
         {/* Image Container */}
         <div className="relative h-32 overflow-hidden sm:h-44 lg:h-56">
           <div
-            className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10 transition-opacity duration-300 ${
-              isHovered ? 'opacity-100' : 'opacity-60'
+            className={`absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent z-10 transition-opacity duration-300 ${
+              isHovered ? 'opacity-35' : 'opacity-20'
             }`}
           />
           <img
             src={property.imageUrl}
             alt={property.title}
-            className={`w-full h-full object-cover transition-all duration-700 ${
-              isHovered ? 'scale-105 brightness-105' : 'scale-100'
+            className={`w-full h-full bg-muted object-contain p-1 transition-all duration-300 ${
+              isHovered ? 'scale-[1.01]' : 'scale-100'
             }`}
             loading="lazy"
             onError={(e) => {
@@ -83,7 +83,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
             <Button
               size="icon"
               variant="secondary"
-              className="rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg"
+              className="rounded-full bg-card/70 dark:bg-card/65 backdrop-blur-sm hover:bg-card/90 shadow-lg"
               onClick={(e) => {
                 e.stopPropagation();
                 setIsLiked(!isLiked);
@@ -112,11 +112,11 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
           {/* Status Badge */}
           <div className="absolute left-2 top-2 z-20 sm:left-4 sm:top-4">
             {!isAvailable ? (
-              <Badge variant="destructive" className="bg-destructive/90 text-white">
+              <Badge variant="destructive" className="bg-destructive/75 text-white backdrop-blur-sm">
                 SOLD OUT
               </Badge>
             ) : (
-              <Badge variant="secondary" className="bg-beauty-green/90 text-white">
+              <Badge variant="secondary" className="bg-beauty-green/75 text-white backdrop-blur-sm">
                 AVAILABLE
               </Badge>
             )}
@@ -124,7 +124,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
 
           {/* Price Overlay */}
           <div className="absolute bottom-2 left-2 z-20 sm:bottom-4 sm:left-4">
-            <div className="rounded-lg bg-card/95 px-2 py-1 shadow-lg backdrop-blur-sm sm:px-3 sm:py-2">
+            <div className="rounded-lg border border-border/40 bg-card/75 px-2 py-1 shadow-lg backdrop-blur-sm sm:px-3 sm:py-2">
               <p className="text-xs font-bold text-estate-blue sm:text-base">
                 {formatPrice(property.price)}
               </p>
