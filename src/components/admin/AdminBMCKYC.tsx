@@ -65,6 +65,14 @@ export default function AdminBMCKYC() {
     } else {
       toast({ title: 'BMC identity review updated', description: decision === 'approve' ? 'Central identity verification is now approved across the Bridgefort businesses.' : 'The review decision has been recorded.' });
       setReasons(current => ({ ...current, [row.kyc_id]: '' }));
+      if (decision === 'approve') {
+        const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-bmc-kyc-approval-email', { body: { kyc_id: row.kyc_id } });
+        if (emailError || !emailResult?.success) {
+          toast({ title: 'Approval saved; email needs retry', description: emailError?.message || emailResult?.error || 'The KYC approval is saved, but the notification could not be confirmed.', variant: 'destructive' });
+        } else {
+          toast({ title: 'Approval email sent', description: emailResult.duplicate ? 'The idempotent email event was already delivered.' : 'The BMC has been notified of the approval.' });
+        }
+      }
       await load();
     }
     setSavingId(null);
@@ -107,6 +115,17 @@ export default function AdminBMCKYC() {
                   {(signedDocuments[row.kyc_id] || []).map(doc => <a key={doc.key} href={doc.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-muted"><FileText className="h-4 w-4" /> {doc.name}</a>)}
                   {(signedDocuments[row.kyc_id] || []).length === 0 && <p className="text-sm text-muted-foreground">No document links could be generated. Refresh and confirm reviewer storage permission.</p>}
                 </div>
+                {row.status === 'VERIFIED' && (
+                  <div className="border-t pt-4">
+                    <Button size="sm" variant="outline" onClick={async () => {
+                      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-bmc-kyc-approval-email', { body: { kyc_id: row.kyc_id } });
+                      if (emailError || !emailResult?.success) toast({ title: 'Approval email retry failed', description: emailError?.message || emailResult?.error || 'Please retry later.', variant: 'destructive' });
+                      else toast({ title: 'Approval email confirmed', description: emailResult.duplicate ? 'This approval email was already delivered.' : 'The approval email has been sent.' });
+                    }}>
+                      <ShieldCheck className="mr-2 h-4 w-4" /> Retry approval email
+                    </Button>
+                  </div>
+                )}
                 {row.status !== 'VERIFIED' && (
                   <div className="space-y-3 border-t pt-4">
                     <Textarea value={reasons[row.kyc_id] || ''} onChange={event => setReasons(current => ({ ...current, [row.kyc_id]: event.target.value }))} placeholder="Review note (required for rejection or correction request)" rows={2} />
