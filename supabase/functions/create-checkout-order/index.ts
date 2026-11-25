@@ -105,12 +105,65 @@ serve(async (req) => {
     }
 
     let bmcReferralCodeId: string | null = null;
-    if (bmcReferralCode) {
-      const hasAgrovest = pricedItems.some((item) => String(item.property_type ?? '') === 'Agrovest');
-      const agrovestOnly = pricedItems.length > 0 && pricedItems.every((item) => String(item.property_type ?? '') === 'Agrovest');
-      if (hasAgrovest && !agrovestOnly) return json({ error: "Homes and Agrovest items must be checked out separately when using a division referral link." }, 400);
-      const referralDivision = agrovestOnly ? 'agrovest' : 'homes';
+    const hasAgrovest = pricedItems.some((item) => String(item.property_type ?? '') === 'Agrovest');
+    const agrovestOnly = pricedItems.length > 0 && pricedItems.every((item) => String(item.property_type ?? '') === 'Agrovest');
+    if (hasAgrovest && !agrovestOnly && bmcReferralCode) {
+      return json({ error: "Homes and Agrovest items must be checked out separately when using a division referral link." }, 400);
+    }
+    const referralDivision = agrovestOnly ? 'agrovest' : 'homes';
 
+    // A saved client-profile referral is the canonical direct referrer. A code
+    // supplied at checkout may confirm that same BMC, but cannot replace it.
+    const { data: priorAttributions, error: priorAttributionError } = await admin
+      .from("bmc_division_referral_attributions")
+      .select("referrer_user_id")
+      .eq("referred_user_id", userId);
+    if (priorAttributionError) throw priorAttributionError;
+    const priorReferrers = Array.from(new Set((priorAttributions ?? []).map((row) => row.referrer_user_id).filter(Boolean)));
+    if (hasAgrovest && !agrovestOnly && priorReferrers.length > 0) {
+      return json({ error: "Homes and Agrovest items must be checked out separately when using your saved BMC referral." }, 400);
+    }
+    if (priorReferrers.length > 1) {
+      return json({ error: "Your BMC referral history needs support review before checkout can be attributed." }, 409);
+    }
+
+    let savedReferral: { id: string } | null = null;
+    if (priorReferrers.length === 1) {
+      const savedReferrerId = String(priorReferrers[0]);
+      const { data: canonicalIdentity, error: canonicalIdentityError } = await admin
+        .from("bmc_identity_referral_codes")
+        .select("referral_code")
+        .eq("user_id", savedReferrerId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (canonicalIdentityError) throw canonicalIdentityError;
+      if (!canonicalIdentity) return json({ error: "Your saved BMC referral identity is inactive. Please contact support." }, 409);
+      const { data: savedCode, error: savedCodeError } = await admin
+        .from("bmc_division_referral_codes")
+        .select("id")
+        .eq("user_id", savedReferrerId)
+        .eq("referral_code", canonicalIdentity.referral_code)
+        .eq("division", referralDivision)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (savedCodeError) throw savedCodeError;
+      if (!savedCode) return json({ error: "Your saved BMC referral cannot be verified for this business division. Please contact support." }, 409);
+      savedReferral = savedCode;
+
+      if (bmcReferralCode) {
+        const { data: suppliedCode, error: suppliedCodeError } = await admin
+          .from("bmc_division_referral_codes")
+          .select("user_id")
+          .eq("referral_code", bmcReferralCode)
+          .eq("division", referralDivision)
+          .eq("is_active", true)
+          .maybeSingle();
+        if (suppliedCodeError) throw suppliedCodeError;
+        if (!suppliedCode || suppliedCode.user_id !== savedReferrerId) {
+          return json({ error: "The referral code supplied at checkout does not match the BMC already linked to your profile." }, 409);
+        }
+      }
+    } else if (bmcReferralCode) {
       const { data: referral, error: referralError } = await admin
         .from("bmc_division_referral_codes")
         .select("id, application_id")
@@ -120,10 +173,11 @@ serve(async (req) => {
         .maybeSingle();
       if (referralError) throw referralError;
       if (!referral) return json({ error: "This Bridgefort division referral link is invalid or inactive." }, 400);
-
-      // Attribution is captured before division approval; payment commission is held until approval.
-      bmcReferralCodeId = referral.id;
+      savedReferral = referral;
     }
+
+    bmcReferralCodeId = savedReferral?.id ?? null;
+
 
     const effectivePlan = isDocumentationPurchase ? "outright" : planType;
     const { months, rate } = PLAN_RATES[effectivePlan];
