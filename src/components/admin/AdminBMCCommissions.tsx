@@ -10,14 +10,14 @@ import { Coins, Loader2, RefreshCw, CheckCircle2 } from 'lucide-react';
 
 type Commission = {
   commission_id: string;
-  division: 'agrovest' | 'travels';
+  division: 'homes' | 'agrovest' | 'travels';
   referrer_user_id: string;
   referrer_name: string | null;
   source_type: string;
   gross_customer_payment: number;
   commission_rate: number;
   commission_amount: number;
-  status: 'earned' | 'paid' | 'reversed';
+  status: 'held' | 'earned' | 'paid' | 'reversed';
   payment_reference: string | null;
   created_at: string;
   paid_at: string | null;
@@ -51,6 +51,7 @@ export default function AdminBMCCommissions() {
   useEffect(() => { void load(); }, [load]);
 
   const totals = useMemo(() => ({
+    homes: rows.filter((row) => row.division === 'homes' && row.status === 'earned').reduce((sum, row) => sum + Number(row.commission_amount), 0),
     agrovest: rows.filter((row) => row.division === 'agrovest' && row.status === 'earned').reduce((sum, row) => sum + Number(row.commission_amount), 0),
     travels: rows.filter((row) => row.division === 'travels' && row.status === 'earned').reduce((sum, row) => sum + Number(row.commission_amount), 0),
   }), [rows]);
@@ -83,7 +84,7 @@ export default function AdminBMCCommissions() {
           <span className="rounded-xl bg-primary/10 p-3 text-primary"><Coins className="h-5 w-5" /></span>
           <div>
             <h2 className="text-2xl font-bold text-foreground">BMC Division Commissions</h2>
-            <p className="text-sm text-muted-foreground">Separate Agrovest and Travels direct-referral commissions. Homes remains in the BH-Realtors commission workspace.</p>
+            <p className="text-sm text-muted-foreground">Manage direct-only BMC commissions across Homes, Agrovest and Travels. Legacy BH-Realtors referrals remain on their existing commission rules.</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -91,6 +92,7 @@ export default function AdminBMCCommissions() {
             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All divisions</SelectItem>
+              <SelectItem value="homes">Homes</SelectItem>
               <SelectItem value="agrovest">Agrovest</SelectItem>
               <SelectItem value="travels">Travels</SelectItem>
             </SelectContent>
@@ -99,7 +101,12 @@ export default function AdminBMCCommissions() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="text-sm text-muted-foreground">Homes earned · awaiting payout</p>
+          <p className="mt-1 text-2xl font-bold text-foreground">{money(totals.homes)}</p>
+          <p className="mt-1 text-xs text-muted-foreground">15% land and 5% house sales</p>
+        </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-sm text-muted-foreground">Agrovest earned · awaiting payout</p>
           <p className="mt-1 text-2xl font-bold text-foreground">{money(totals.agrovest)}</p>
