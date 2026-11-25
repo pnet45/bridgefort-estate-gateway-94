@@ -629,6 +629,58 @@ create trigger bmc_release_commissions_after_kyc_verification
   after update of status on public.bmc_identity_kyc
   for each row execute function public.release_bmc_commissions_after_kyc_verification();
 
+
+-- Extend the existing management RPC to include BMC Homes commissions.
+create or replace function public.admin_list_bmc_division_commissions(_division text default null)
+returns table (
+  commission_id uuid,
+  division text,
+  referrer_user_id uuid,
+  referrer_name text,
+  source_type text,
+  gross_customer_payment numeric,
+  commission_rate numeric,
+  commission_amount numeric,
+  status text,
+  payment_reference text,
+  created_at timestamptz,
+  paid_at timestamptz,
+  payout_reference text
+)
+language plpgsql
+security definer
+set search_path = ''
+as $admin_list_bmc_division_commissions$
+declare
+  actor uuid := auth.uid();
+begin
+  if actor is null then raise exception 'Authentication required'; end if;
+  if not (
+    public.user_has_permission(actor, 'admin:manage_bmc_partners')
+    or public.user_has_permission(actor, 'admin:all')
+  ) then
+    raise exception 'BMC commission management permission required';
+  end if;
+  if _division is not null and _division not in ('homes','agrovest','travels') then
+    raise exception 'Invalid BMC commission division';
+  end if;
+
+  return query
+  select c.id, c.division, c.referrer_user_id,
+         nullif(trim(concat_ws(' ', p.first_name, p.last_name)), ''),
+         c.source_type, c.gross_customer_payment, c.commission_rate,
+         c.commission_amount, c.status, c.payment_reference,
+         c.created_at, c.paid_at, c.payout_reference
+  from public.bmc_division_commissions c
+  left join public.profiles p on p.id = c.referrer_user_id
+  where _division is null or c.division = _division
+  order by c.created_at desc;
+end;
+$admin_list_bmc_division_commissions$;
+
+revoke all on function public.admin_list_bmc_division_commissions(text) from public, anon;
+grant execute on function public.admin_list_bmc_division_commissions(text) to authenticated;
+
 -- BH-Realtors withdrawal remains on its existing wallet engine, but now also
 -- requires central BMC KYC and Homes approval (legacy_existing is grandfathered).
 create or replace function private.submit_withdrawal_request(
