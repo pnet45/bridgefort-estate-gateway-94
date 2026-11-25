@@ -274,8 +274,12 @@ begin
   if auth.uid() is null then raise exception 'Authentication required'; end if;
   return query
   select d.division, c.referral_code, c.created_at
-  from public.bmc_identity_referral_codes c
-  join public.bmc_partner_divisions d on d.user_id = c.user_id
+  from public.bmc_division_referral_codes c
+  join public.bmc_partner_divisions d on d.id = c.application_id
+  join public.bmc_identity_referral_codes identity_code
+    on identity_code.user_id = c.user_id
+   and identity_code.referral_code = c.referral_code
+   and identity_code.is_active is true
   where c.user_id = auth.uid()
     and c.is_active is true
     and d.application_status not in ('suspended','rejected','withdrawn')
