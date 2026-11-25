@@ -147,7 +147,7 @@ where c.status = 'earned'
     select 1 from public.bmc_partner_divisions d
     where d.user_id = c.referrer_user_id
       and d.division = c.division
-      and d.application_status = 'approved'
+      and (d.application_status = 'approved' or (c.division = 'homes' and d.application_status = 'legacy_existing'))
   );
 
 create or replace function public.admin_list_bmc_division_commissions(_division text default null)
