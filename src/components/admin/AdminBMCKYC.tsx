@@ -126,7 +126,7 @@ export default function AdminBMCKYC() {
                     </Button>
                   </div>
                 )}
-                {row.status !== 'VERIFIED' && (
+                {['PENDING','UNDER_REVIEW'].includes(row.status) && (
                   <div className="space-y-3 border-t pt-4">
                     <Textarea value={reasons[row.kyc_id] || ''} onChange={event => setReasons(current => ({ ...current, [row.kyc_id]: event.target.value }))} placeholder="Review note (required for rejection or correction request)" rows={2} />
                     <div className="flex flex-wrap gap-2">
