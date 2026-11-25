@@ -7,6 +7,13 @@ alter table public.bmc_partner_divisions
 alter table public.bmc_partner_divisions
   add constraint bmc_partner_divisions_application_status_check
   check (application_status in ('pending_review','referral_only','legacy_existing','approved','rejected','suspended','withdrawn'));
+alter table public.bmc_partner_divisions
+  drop constraint if exists bmc_partner_divisions_review_state_check;
+alter table public.bmc_partner_divisions
+  add constraint bmc_partner_divisions_review_state_check check (
+    (application_status in ('pending_review','referral_only','legacy_existing') and reviewed_at is null)
+    or (application_status in ('approved','rejected','suspended','withdrawn') and reviewed_at is not null)
+  );
 
 -- Existing per-division codes remain as legacy aliases. New BMC identities get
 -- one canonical code, mirrored into each division lookup so existing booking,
@@ -30,6 +37,7 @@ alter table public.bmc_division_referral_codes
   drop constraint if exists bmc_division_referral_codes_referral_code_key;
 alter table public.bmc_division_referral_codes
   drop constraint if exists bmc_division_referral_codes_application_id_key;
+alter table public.bmc_division_referral_codes drop constraint if exists bmc_division_referral_codes_application_unique;
 create unique index if not exists bmc_division_referral_codes_code_division_uidx
   on public.bmc_division_referral_codes(referral_code, division);
 create index if not exists bmc_division_referral_codes_application_idx
