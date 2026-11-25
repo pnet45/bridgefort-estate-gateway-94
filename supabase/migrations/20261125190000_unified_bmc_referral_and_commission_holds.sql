@@ -424,7 +424,7 @@ begin
     select 1 from public.bmc_partner_divisions d
     where d.user_id = new.referrer_user_id
       and d.division = new.division
-      and d.application_status = 'approved'
+      and (d.application_status = 'approved' or (new.division = 'homes' and d.application_status = 'legacy_existing'))
   ) then
     new.status := 'held';
   end if;
@@ -445,7 +445,7 @@ security definer
 set search_path = ''
 as $function$
 begin
-  if new.application_status = 'approved' then
+  if new.application_status = 'approved' or (new.division = 'homes' and new.application_status = 'legacy_existing') then
     update public.bmc_division_commissions
     set status = 'earned'
     where referrer_user_id = new.user_id
