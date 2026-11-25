@@ -187,6 +187,7 @@ jobs:
 
           const kyc = readFileSync('supabase/migrations/20261125180000_central_bmc_identity_kyc.sql', 'utf8');
           const referrals = readFileSync('supabase/migrations/20261125190000_unified_bmc_referral_and_commission_holds.sql', 'utf8');
+          const commissionEngine = readFileSync('supabase/migrations/20261121171609_bmc_division_commission_engine.sql', 'utf8');
           const auth = readFileSync('src/pages/Auth.tsx', 'utf8');
           const profileForm = readFileSync('src/components/profile/NewProfileForm.tsx', 'utf8');
           const adminKyc = readFileSync('src/components/admin/AdminBMCKYC.tsx', 'utf8');
@@ -207,7 +208,7 @@ jobs:
           assert.match(referrals, /award_bmc_homes_order_commission/i);
           assert.match(referrals, /release_bmc_commissions_after_kyc_verification/i);
           assert.match(referrals, /status in \('held','earned','paid','reversed'\)/i);
-          assert.match(referrals, /admin_mark_bmc_commission_paid/i);
+          assert.match(commissionEngine, /admin_mark_bmc_commission_paid/i);
 
           assert.match(auth, /normalizedSponsorCode = \(isRegisteringAsPBO && !sponsorCodeLocked\) \? ''/i);
           assert.match(auth, /bmc_referral_code: bmcReferralCode/i);
