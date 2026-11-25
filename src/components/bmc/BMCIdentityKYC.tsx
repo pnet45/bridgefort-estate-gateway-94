@@ -56,7 +56,7 @@ export default function BMCIdentityKYC() {
       const saved = existing.documents || {};
       setDocuments(Object.fromEntries(Object.entries(saved).map(([key, value]) => {
         const item = value as Record<string, string>;
-        return [key, { path: item.path || item, name: item.name || key, type: item.type || '' }];
+        return [key, { path: item.path || item.url || item, name: item.name || key, type: item.type || '' }];
       })));
     } else {
       setForm(current => ({
