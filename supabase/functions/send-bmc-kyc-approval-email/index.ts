@@ -106,7 +106,7 @@ serve(async (req) => {
         to: [recipient.user.email],
         subject: "Your Bridgefort BMC identity verification is approved",
         html,
-        text: `Your Bridgefort BMC identity is verified across Homes, Travels and Agrovest. Check withdrawal eligibility at https://bridgeforthomes.com/bh-realtors/withdraw. This does not automatically approve a division or guarantee a withdrawal.`,
+        text: `Your Bridgefort BMC identity is verified across Homes, Travels and Agrovest. View your BMC partner dashboard at https://bridgeforthomes.com/bmc-partner-hub. This does not automatically approve a division or guarantee a payout.`,
       },
     });
     if (sent.error) return json({ success: false, error: sent.error.message || "Email delivery failed" }, 502);
