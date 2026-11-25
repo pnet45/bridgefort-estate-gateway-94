@@ -179,6 +179,45 @@ jobs:
           console.log('BMC division commission separation and safeguards passed.');
           NODE
 
+      - name: Verify unified BMC identity, referral and payout safeguards
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+
+          const kyc = readFileSync('supabase/migrations/20261125180000_central_bmc_identity_kyc.sql', 'utf8');
+          const referrals = readFileSync('supabase/migrations/20261125190000_unified_bmc_referral_and_commission_holds.sql', 'utf8');
+          const auth = readFileSync('src/pages/Auth.tsx', 'utf8');
+          const profileForm = readFileSync('src/components/profile/NewProfileForm.tsx', 'utf8');
+          const adminKyc = readFileSync('src/components/admin/AdminBMCKYC.tsx', 'utf8');
+          const email = readFileSync('supabase/functions/send-bmc-kyc-approval-email/index.ts', 'utf8');
+
+          assert.match(kyc, /create table if not exists public\.bmc_identity_kyc/i);
+          assert.match(kyc, /submit_my_bmc_identity_kyc/i);
+          assert.match(kyc, /admin_review_bmc_identity_kyc/i);
+          assert.match(kyc, /admin_list_bmc_identity_kyc/i);
+          assert.match(kyc, /kyc-documents/i);
+          assert.match(kyc, /submit_withdrawal_request_pre_bmc_kyc/i);
+          assert.match(kyc, /status = 'VERIFIED'/i, 'central KYC must gate legacy withdrawals');
+
+          assert.match(referrals, /create table if not exists public\.bmc_identity_referral_codes/i);
+          assert.match(referrals, /ensure_bmc_identity_referral_code/i);
+          assert.match(referrals, /array\['homes','travels','agrovest'\]/i, 'one BMC identity code must cover all three divisions');
+          assert.match(referrals, /referral_only/i, 'referrals must be recordable before division approval');
+          assert.match(referrals, /award_bmc_homes_order_commission/i);
+          assert.match(referrals, /release_bmc_commissions_after_kyc_verification/i);
+          assert.match(referrals, /status in \('held','earned','paid','reversed'\)/i);
+          assert.match(referrals, /admin_mark_bmc_commission_paid/i);
+
+          assert.match(auth, /normalizedSponsorCode = \(isRegisteringAsPBO && !sponsorCodeLocked\) \? ''/i);
+          assert.match(auth, /bmc_referral_code: bmcReferralCode/i);
+          assert.match(profileForm, /step\.key !== 'identity'.*step\.key !== 'aml'.*step\.key !== 'referrer'/i);
+          assert.match(adminKyc, /send-bmc-kyc-approval-email/i);
+          assert.match(email, /sendTrackedEmail/i);
+          assert.match(email, /bmc-partner-hub/i);
+          console.log('Unified BMC identity, referral and payout safeguards passed.');
+          NODE
+
       - name: Lint
         run: npm run lint
 
