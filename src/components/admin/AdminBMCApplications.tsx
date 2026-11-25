@@ -19,7 +19,7 @@ type Commission = {
   gross_customer_payment: number;
   commission_rate: number;
   commission_amount: number;
-  status: 'earned' | 'paid' | 'reversed';
+  status: 'held' | 'earned' | 'paid' | 'reversed';
   payment_reference: string | null;
   created_at: string;
   paid_at: string | null;
@@ -30,7 +30,7 @@ type Application = {
   id: string;
   user_id: string;
   division: 'homes' | 'travels' | 'agrovest';
-  application_status: 'pending_review' | 'legacy_existing' | 'approved' | 'rejected' | 'suspended' | 'withdrawn';
+  application_status: 'pending_review' | 'referral_only' | 'legacy_existing' | 'approved' | 'rejected' | 'suspended' | 'withdrawn';
   requested_at: string;
   reviewed_at: string | null;
   review_note: string | null;
@@ -50,6 +50,7 @@ const divisionNames = {
 
 const statusNames: Record<Application['application_status'], string> = {
   pending_review: 'Pending review',
+  referral_only: 'Referral attribution only',
   legacy_existing: 'Legacy BH-Realtors',
   approved: 'Approved',
   rejected: 'Rejected',
@@ -206,7 +207,7 @@ export default function AdminBMCApplications({ canManage }: { canManage: boolean
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Coins className="h-5 w-5" /> BMC Division Commissions</CardTitle>
-            <p className="text-sm text-muted-foreground">Agrovest and Travels are separate 10% direct-referral commission ledgers. Homes remains under BH-Realtors. Only verified cleared customer payments qualify.</p>
+            <p className="text-sm text-muted-foreground">Agrovest and Travels are separate 10% direct-referral commission ledgers. Homes remains under the existing Homes commission process. Referrals are attributed immediately; unpaid commissions remain held until the referrer’s division is approved.</p>
           </CardHeader>
           <CardContent>
             {commissionLoading ? (
