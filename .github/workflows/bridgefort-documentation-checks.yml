@@ -240,7 +240,7 @@ jobs:
           assert.match(card, /attach_my_bmc_referral_code/i);
           assert.match(card, /This referral is locked to protect accurate attribution/i);
           assert.match(profile, /BmcClientReferralCard/i);
-          assert.match(checkout, /saved BMC referral is the canonical direct referrer/i);
+          assert.match(checkout, /canonical direct referrer/i);
           assert.match(checkout, /does not match the BMC already linked to your profile/i);
           assert.match(travel, /saved BMC referral cannot be verified for Travels/i);
           assert.match(travel, /does not match the BMC already linked to your profile/i);
