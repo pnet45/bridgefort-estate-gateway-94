@@ -356,4 +356,4 @@ begin
 end;
 $function$;
 
-revoke all on function private.submit_withdrawal_request(uuid,numeric,text,text,text) from public, anon, authenticated;
+revoke all on function private.submit_withdrawal_request(uuid,numeric,text,text,text) from public, anon;\ngrant execute on function private.submit_withdrawal_request(uuid,numeric,text,text,text) to authenticated;
