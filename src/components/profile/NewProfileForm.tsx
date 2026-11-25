@@ -80,7 +80,7 @@ const NewProfileForm = () => {
     if (profile?.is_pbo) { setIsBmcPartner(true); return; }
     if (!userId) { setIsBmcPartner(false); return; }
     let active = true;
-    void supabase.from('bmc_partner_divisions').select('id').eq('user_id', userId).limit(1).maybeSingle()
+    void (supabase as any).from('bmc_partner_divisions').select('id').eq('user_id', userId).limit(1).maybeSingle()
       .then(({ data, error }) => { if (active) setIsBmcPartner(!error && Boolean(data)); });
     return () => { active = false; };
   }, [userId, profile?.is_pbo]);
