@@ -12,7 +12,7 @@ import { notifyProfileUpdated } from '@/lib/profileEvents';
 import { ChevronLeft, ChevronRight, Check, Loader2, Save, ShieldCheck, Search, UserCheck, UserX, Lock } from 'lucide-react';
 import KYCUploadField from './KYCUploadField';
 
-const steps = [
+const allSteps = [
   { key: 'personal', label: 'Personal', description: 'Your basic information' },
   { key: 'identity', label: 'Identity', description: 'Identification & KYC' },
   { key: 'employment', label: 'Employment', description: 'Work & organisation' },
@@ -22,7 +22,7 @@ const steps = [
   { key: 'review', label: 'Review', description: 'Confirm & submit' },
 ] as const;
 
-type StepKey = typeof steps[number]['key'];
+type StepKey = typeof allSteps[number]['key'];
 type FormState = Record<string, any>;
 
 const initialForm: FormState = {
@@ -65,7 +65,7 @@ function readProfileDraft(userId: string): ProfileDraft | null {
 const incomeValue = (value: string) => ({ 'Below ₦1M': 500000, '₦1M - ₦5M': 3000000, '₦6M - ₦20M': 13000000, 'Above ₦20M': 25000000 }[value] ?? null);
 
 const NewProfileForm = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   // Keep the last authenticated identity while the auth provider is briefly
   // hydrating a resumed mobile session. This prevents the KYC form from
   // switching to its loading state and unmounting the native file input.
@@ -73,6 +73,9 @@ const NewProfileForm = () => {
   if (user) lastAuthenticatedUserRef.current = user;
   const stableUser = user ?? (authLoading ? lastAuthenticatedUserRef.current : null);
   const userId = stableUser?.id ?? null;
+  // BMC identity verification is managed centrally in the BMC Partner Hub.
+  // Keep the client KYC flow, but do not expose it to BMCs.
+  const steps = profile?.is_pbo ? allSteps.filter(step => step.key !== 'identity' && step.key !== 'aml') : allSteps;
   const [form, setForm] = useState<FormState>(initialForm);
   const [kycDocs, setKycDocs] = useState<Record<string, { url: string; name: string; type: string }>>({});
   const [activeStep, setActiveStep] = useState<StepKey>('personal');
@@ -137,7 +140,7 @@ const NewProfileForm = () => {
           setForm(prev => ({ ...prev, ...draft.form, ...(stableUser?.user_metadata?.referral_link === true && metadataReferralCode ? { referrerCode: metadataReferralCode } : {}) }));
           setKycDocs(draft.kycDocs || {});
           setTermsAccepted(draft.termsAccepted);
-          setActiveStep(draft.activeStep || 'personal');
+          setActiveStep(profile?.is_pbo && (draft.activeStep === 'identity' || draft.activeStep === 'aml') ? 'personal' : draft.activeStep || 'personal');
         }
         const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
         if (error) throw error;
@@ -347,7 +350,7 @@ const NewProfileForm = () => {
   const submitProfile = async () => {
     if (!termsAccepted || !userId || saving || !validateStep('review')) return;
     setSaving(true);
-    try { const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
+    try { const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: profile?.is_pbo ? 'Your BMC partner profile has been securely saved. Submit central KYC from the BMC Partner Hub.' : 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
     catch (error: any) { console.error('Profile submission error:', error); toast({ title: 'Submission failed', description: error?.message || 'Please try again.', variant: 'destructive' }); }
     finally { setSaving(false); }
   };
@@ -381,12 +384,12 @@ const NewProfileForm = () => {
         {form.referrerCode && !referralLookup && <div className="flex items-start gap-2 text-sm text-amber-700 dark:text-amber-300"><UserX className="mt-0.5 h-4 w-4 shrink-0" />Verify the code before saving this section.</div>}
         <div className="grid gap-5 md:grid-cols-2"><Field label="Referrer name" name="referrerName" /><Field label="Referrer phone" name="referrerPhone" /><Field label="Referrer email" name="referrerEmail" /></div>
       </div>;
-      case 'review': return <div className="space-y-5"><div className="rounded-xl bg-muted/50 p-5"><h3 className="font-semibold mb-4">Profile summary</h3><div className="grid gap-3 md:grid-cols-2 text-sm"><p><span className="text-muted-foreground">Name:</span> {form.firstName} {form.lastName}</p><p><span className="text-muted-foreground">Phone:</span> {form.phoneNumber || '—'}</p><p><span className="text-muted-foreground">Occupation:</span> {form.occupation || '—'}</p><p><span className="text-muted-foreground">ID:</span> {form.idType ? `${form.idType} • ${form.idNumber}` : '—'}</p><p><span className="text-muted-foreground">Income:</span> {form.annualIncome || '—'}</p><p><span className="text-muted-foreground">Source:</span> {form.sourceOfIncome || '—'}</p></div></div><div className="flex items-start gap-3 rounded-xl border p-5"><Checkbox id="terms" checked={termsAccepted} onCheckedChange={v => setTermsAccepted(!!v)} /><Label htmlFor="terms" className="leading-6">I confirm that the information supplied is accurate and complete, and I agree to Bridgefort's applicable subscription, KYC and compliance requirements.</Label></div></div>;
+      case 'review': return <div className="space-y-5"><div className="rounded-xl bg-muted/50 p-5"><h3 className="font-semibold mb-4">Profile summary</h3><div className="grid gap-3 md:grid-cols-2 text-sm"><p><span className="text-muted-foreground">Name:</span> {form.firstName} {form.lastName}</p><p><span className="text-muted-foreground">Phone:</span> {form.phoneNumber || '—'}</p><p><span className="text-muted-foreground">Occupation:</span> {form.occupation || '—'}</p>{!profile?.is_pbo && <p><span className="text-muted-foreground">ID:</span> {form.idType ? `${form.idType} • ${form.idNumber}` : '—'}</p>}<p><span className="text-muted-foreground">Income:</span> {form.annualIncome || '—'}</p><p><span className="text-muted-foreground">Source:</span> {form.sourceOfIncome || '—'}</p></div></div><div className="flex items-start gap-3 rounded-xl border p-5"><Checkbox id="terms" checked={termsAccepted} onCheckedChange={v => setTermsAccepted(!!v)} /><Label htmlFor="terms" className="leading-6">I confirm that the information supplied is accurate and complete, and I agree to Bridgefort's applicable subscription, KYC and compliance requirements.</Label></div></div>;
     }
   };
 
   if (loading) return <div className="max-w-5xl mx-auto p-6"><Card><CardContent className="py-16 flex items-center justify-center gap-3"><Loader2 className="h-6 w-6 animate-spin" /> Loading your profile…</CardContent></Card></div>;
-  return <div className="mx-auto max-w-5xl p-4 md:p-6"><Card className="overflow-hidden shadow-sm"><CardHeader className="border-b bg-muted/20 p-5 md:p-7"><div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><CardTitle className="text-xl md:text-2xl">Property Subscription / KYC Profile</CardTitle><p className="mt-1 text-sm text-muted-foreground">Save each section as you go. Your information is retained when you return later.</p></div><div className="text-right"><div className="text-2xl font-bold">{progress}%</div><div className="text-xs text-muted-foreground">Step {index + 1} of {steps.length}</div></div></div><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-estate-blue transition-all" style={{ width: `${progress}%` }} /></div><div className="grid grid-cols-2 gap-2 pt-2 sm:grid-cols-4 lg:grid-cols-7">{steps.map((s, i) => <button key={s.key} type="button" onClick={() => i <= index ? setActiveStep(s.key) : undefined} className={`rounded-lg px-2 py-2 text-left text-xs transition ${s.key === activeStep ? 'bg-estate-blue text-white' : i < index ? 'bg-muted text-foreground' : 'text-muted-foreground'} ${i <= index ? 'cursor-pointer' : 'cursor-default'}`}><div className="font-medium">{i + 1}. {s.label}</div><div className="hidden opacity-80 sm:block">{s.description}</div></button>)}</div></CardHeader><CardContent className="p-5 md:p-7"><div className="mb-6"><h2 className="text-lg font-semibold">{steps[index].label}</h2><p className="text-sm text-muted-foreground">{steps[index].description}</p></div>{section()}<div className="mt-8 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between"><Button type="button" variant="outline" onClick={() => index > 0 && setActiveStep(steps[index - 1].key)} disabled={index === 0 || saving} className="h-11"> <ChevronLeft className="mr-2 h-4 w-4" />Previous</Button><div className="flex flex-col gap-2 sm:flex-row">{savedStep === activeStep && <div className="flex items-center justify-center gap-2 px-3 text-sm text-emerald-600"><Check className="h-4 w-4" />Saved</div>}{!isLast ? <Button type="button" onClick={saveCurrentStep} disabled={saving} className="h-11 min-w-52 bg-estate-blue hover:bg-estate-darkBlue text-white font-semibold shadow-sm"><Save className="mr-2 h-4 w-4" />{saving ? 'Saving…' : 'Save and Continue'}<ChevronRight className="ml-2 h-4 w-4" /></Button> : <Button type="button" onClick={submitProfile} disabled={saving || !termsAccepted} className="h-11 min-w-52 bg-estate-blue hover:bg-estate-darkBlue text-white font-semibold">{saving ? 'Submitting…' : 'Submit Profile & KYC'}</Button>}</div></div></CardContent></Card></div>;
+  return <div className="mx-auto max-w-5xl p-4 md:p-6"><Card className="overflow-hidden shadow-sm"><CardHeader className="border-b bg-muted/20 p-5 md:p-7"><div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><CardTitle className="text-xl md:text-2xl">{profile?.is_pbo ? 'BMC Partner Profile' : 'Property Subscription / KYC Profile'}</CardTitle><p className="mt-1 text-sm text-muted-foreground">{profile?.is_pbo ? 'Manage your partner profile here. Complete your one-time central identity verification in the BMC Partner Hub.' : 'Save each section as you go. Your information is retained when you return later.'}</p></div><div className="text-right"><div className="text-2xl font-bold">{progress}%</div><div className="text-xs text-muted-foreground">Step {index + 1} of {steps.length}</div></div></div><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-estate-blue transition-all" style={{ width: `${progress}%` }} /></div><div className="grid grid-cols-2 gap-2 pt-2 sm:grid-cols-4 lg:grid-cols-7">{steps.map((s, i) => <button key={s.key} type="button" onClick={() => i <= index ? setActiveStep(s.key) : undefined} className={`rounded-lg px-2 py-2 text-left text-xs transition ${s.key === activeStep ? 'bg-estate-blue text-white' : i < index ? 'bg-muted text-foreground' : 'text-muted-foreground'} ${i <= index ? 'cursor-pointer' : 'cursor-default'}`}><div className="font-medium">{i + 1}. {s.label}</div><div className="hidden opacity-80 sm:block">{s.description}</div></button>)}</div></CardHeader><CardContent className="p-5 md:p-7"><div className="mb-6"><h2 className="text-lg font-semibold">{steps[index].label}</h2><p className="text-sm text-muted-foreground">{steps[index].description}</p></div>{section()}<div className="mt-8 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between"><Button type="button" variant="outline" onClick={() => index > 0 && setActiveStep(steps[index - 1].key)} disabled={index === 0 || saving} className="h-11"> <ChevronLeft className="mr-2 h-4 w-4" />Previous</Button><div className="flex flex-col gap-2 sm:flex-row">{savedStep === activeStep && <div className="flex items-center justify-center gap-2 px-3 text-sm text-emerald-600"><Check className="h-4 w-4" />Saved</div>}{!isLast ? <Button type="button" onClick={saveCurrentStep} disabled={saving} className="h-11 min-w-52 bg-estate-blue hover:bg-estate-darkBlue text-white font-semibold shadow-sm"><Save className="mr-2 h-4 w-4" />{saving ? 'Saving…' : 'Save and Continue'}<ChevronRight className="ml-2 h-4 w-4" /></Button> : <Button type="button" onClick={submitProfile} disabled={saving || !termsAccepted} className="h-11 min-w-52 bg-estate-blue hover:bg-estate-darkBlue text-white font-semibold">{saving ? 'Submitting…' : 'Submit Profile & KYC'}</Button>}</div></div></CardContent></Card></div>;
 };
 
 export default NewProfileForm;
