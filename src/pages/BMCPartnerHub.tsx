@@ -12,7 +12,7 @@ import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock, Arrow
 
 type Division = 'homes' | 'travels' | 'agrovest';
 type DivisionReferralCode = { division: Division; referral_code: string; created_at: string; };
-type BmcCommission = { commission_id: string; division: 'agrovest' | 'travels'; source_type: string; gross_customer_payment: number; commission_rate: number; commission_amount: number; status: 'earned' | 'paid' | 'reversed'; payment_reference: string | null; created_at: string; paid_at: string | null; payout_reference: string | null; };
+type BmcCommission = { commission_id: string; division: 'agrovest' | 'travels'; source_type: string; gross_customer_payment: number; commission_rate: number; commission_amount: number; status: 'held' | 'earned' | 'paid' | 'reversed'; payment_reference: string | null; created_at: string; paid_at: string | null; payout_reference: string | null; };
 
 type DivisionApplication = {
   id: string;
@@ -313,7 +313,7 @@ export default function BMCPartnerHub() {
                       <td className="p-3 text-foreground">{commission.commission_rate}%</td>
                       <td className="p-3 font-semibold text-foreground">{Number(commission.commission_amount).toLocaleString('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 })}</td>
                       <td className="p-3 font-mono text-xs text-muted-foreground">{commission.payment_reference || '—'}</td>
-                      <td className="p-3"><Badge variant="outline">{commission.status === 'earned' ? 'Earned · awaiting payout' : commission.status === 'paid' ? 'Paid' : 'Reversed'}</Badge></td>
+                      <td className="p-3"><Badge variant="outline">{commission.status === 'held' ? 'On hold · division approval pending' : commission.status === 'earned' ? 'Earned · awaiting payout' : commission.status === 'paid' ? 'Paid' : 'Reversed'}</Badge></td>
                       <td className="p-3 text-muted-foreground">{new Date(commission.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
