@@ -347,8 +347,8 @@ const NewProfileForm = () => {
     if (!userId || saving || !validateStep(activeStep)) return;
     setSaving(true); setSavedStep(null);
     try {
-      const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
-      if (form.referrerCode && !referralId) { setSaving(false); return; }
+      const referralId = isBmcPartner ? existingReferralId : referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
+      if (!isBmcPartner && form.referrerCode && !referralId) { setSaving(false); return; }
       const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, ...(isBmcPartner ? {} : { referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }) }, { onConflict: 'id' });
       if (error) throw error;
       if (form.referrerCode) setExistingReferralId(referralId); else if (activeStep === 'referrer') setExistingReferralId(null);
