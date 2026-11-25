@@ -28,7 +28,7 @@ const PropertyGrid: React.FC<PropertyGridProps> = ({ filterCategory, properties,
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
         {[0, 1, 2, 3, 4, 5].map((slot) => (
           <div key={slot} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="aspect-[16/10] animate-pulse bg-slate-200" />
@@ -56,7 +56,7 @@ const PropertyGrid: React.FC<PropertyGridProps> = ({ filterCategory, properties,
   // Use enhanced cards for homes and rentals or regular animated grid for others
   if (enhanced && (filterCategory === 'home' || filterCategory === 'rental')) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
         {displayProperties.map((property) => (
           <EnhancedPropertyCard key={property.id} property={property} />
         ))}

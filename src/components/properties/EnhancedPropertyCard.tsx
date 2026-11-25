@@ -50,7 +50,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
         onClick={handleViewDetails}
       >
         {/* Image Container */}
-        <div className="relative h-64 overflow-hidden">
+        <div className="relative h-32 overflow-hidden sm:h-44 lg:h-56">
           <div
             className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10 transition-opacity duration-300 ${
               isHovered ? 'opacity-100' : 'opacity-60'
@@ -76,7 +76,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
           
           {/* Floating Action Buttons */}
           <div
-            className={`absolute top-4 right-4 z-20 flex flex-col gap-2 transition-all duration-300 ${
+            className={`absolute right-2 top-2 z-20 flex flex-col gap-1 transition-all duration-300 md:right-4 md:top-4 md:gap-2 ${
               isHovered ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'
             }`}
           >
@@ -110,7 +110,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
           </div>
 
           {/* Status Badge */}
-          <div className="absolute top-4 left-4 z-20">
+          <div className="absolute left-2 top-2 z-20 sm:left-4 sm:top-4">
             {!isAvailable ? (
               <Badge variant="destructive" className="bg-destructive/90 text-white">
                 SOLD OUT
@@ -123,35 +123,35 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
           </div>
 
           {/* Price Overlay */}
-          <div className="absolute bottom-4 left-4 z-20">
-            <div className="bg-card/95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
-              <p className="text-lg font-bold text-estate-blue">
+          <div className="absolute bottom-2 left-2 z-20 sm:bottom-4 sm:left-4">
+            <div className="rounded-lg bg-card/95 px-2 py-1 shadow-lg backdrop-blur-sm sm:px-3 sm:py-2">
+              <p className="text-xs font-bold text-estate-blue sm:text-base">
                 {formatPrice(property.price)}
               </p>
             </div>
           </div>
         </div>
 
-        <CardContent className="p-6">
+        <CardContent className="min-w-0 space-y-2 p-3 sm:p-5">
           {/* Property Title */}
-          <h3 className="text-xl font-bold text-foreground mb-2 line-clamp-1 group-hover:text-estate-blue transition-colors duration-300">
+          <h3 className="line-clamp-2 break-words text-sm font-bold leading-tight text-foreground group-hover:text-estate-blue transition-colors duration-300 sm:text-lg">
             {property.title}
           </h3>
 
           <PropertyRatingBadge propertyId={property.id} className="mb-2" />
 
           {/* Location */}
-          <div className="flex items-center text-gray-600 mb-4">
-            <MapPin size={16} className="mr-2 text-estate-blue" />
-            <span className="text-sm truncate">{property.location}</span>
+          <div className="flex min-w-0 items-center text-gray-600">
+            <MapPin size={13} className="mr-1 shrink-0 text-estate-blue sm:mr-2 sm:h-4 sm:w-4" />
+            <span className="min-w-0 truncate text-[10px] sm:text-sm">{property.location}</span>
           </div>
 
           {/* Property Details */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4">
             {property.features?.includes('Bedrooms') || property.title.includes('bedroom') ? (
               <div className="flex items-center">
                 <Bed size={16} className="mr-1 text-gray-500" />
-                <span className="text-sm text-gray-600">
+                <span className="text-[10px] text-gray-600 sm:text-sm">
                   {property.title.match(/(\d+).?bed/i)?.[1] || '3'} Bed
                 </span>
               </div>
@@ -178,15 +178,15 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
               {property.propertyType}
             </Badge>
             
-            <div className="text-sm text-gray-500">
+            <div className="text-[10px] text-gray-500 sm:text-sm">
               {isAvailable ? `${property.availablePlots} unit${property.availablePlots > 1 ? 's' : ''} available` : 'Sold out'}
             </div>
           </div>
 
           {/* Hover Actions */}
           <div
-            className={`mt-4 transition-all duration-300 ${
-              isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            className={`mt-2 transition-all duration-300 sm:mt-4 ${
+              isHovered ? 'opacity-100 translate-y-0' : 'opacity-100 translate-y-0 md:opacity-0 md:translate-y-4'
             }`}
           >
             <Button

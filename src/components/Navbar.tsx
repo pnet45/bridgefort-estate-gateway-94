@@ -56,8 +56,8 @@ const Navbar = () => {
           </div>
 
           {/* Keep navigation in the middle column; allow horizontal overflow rather than overlap. */}
-          <div className="hidden min-w-0 items-center justify-center overflow-x-auto lg:flex">
-            <div className="flex min-w-max items-center justify-center gap-x-1 xl:gap-x-2 2xl:gap-x-3">
+          <div className="hidden min-w-0 items-center justify-center overflow-visible lg:flex">
+            <div className="flex min-w-0 flex-wrap items-center justify-center gap-x-1 gap-y-1 xl:gap-x-2 2xl:gap-x-3">
               <AnimatedNavLinks className="!px-2 !py-2 text-sm xl:text-base whitespace-nowrap" />
             </div>
           </div>
