@@ -179,7 +179,47 @@ serve(async (req) => {
     }
 
     let bmcReferralCodeId: string | null = null;
-    if (bmcReferralCode) {
+    if (customerId) {
+      const { data: priorAttributions, error: priorAttributionError } = await supabase
+        .from("bmc_division_referral_attributions")
+        .select("referrer_user_id")
+        .eq("referred_user_id", customerId);
+      if (priorAttributionError) throw priorAttributionError;
+      const priorReferrers = Array.from(new Set((priorAttributions ?? []).map((row) => row.referrer_user_id).filter(Boolean)));
+      if (priorReferrers.length > 1) {
+        return json({ error: "Your BMC referral history needs support review before this booking can be attributed." }, 409);
+      }
+
+      if (priorReferrers.length === 1) {
+        const savedReferrerId = String(priorReferrers[0]);
+        const { data: savedCode, error: savedCodeError } = await supabase
+          .from("bmc_division_referral_codes")
+          .select("id")
+          .eq("user_id", savedReferrerId)
+          .eq("division", "travels")
+          .eq("is_active", true)
+          .maybeSingle();
+        if (savedCodeError) throw savedCodeError;
+        if (!savedCode) return json({ error: "Your saved BMC referral cannot be verified for Travels. Please contact support." }, 409);
+        bmcReferralCodeId = savedCode.id;
+
+        if (bmcReferralCode) {
+          const { data: suppliedCode, error: suppliedCodeError } = await supabase
+            .from("bmc_division_referral_codes")
+            .select("user_id")
+            .eq("referral_code", bmcReferralCode)
+            .eq("division", "travels")
+            .eq("is_active", true)
+            .maybeSingle();
+          if (suppliedCodeError) throw suppliedCodeError;
+          if (!suppliedCode || suppliedCode.user_id !== savedReferrerId) {
+            return json({ error: "The referral code supplied for this booking does not match the BMC already linked to your profile." }, 409);
+          }
+        }
+      }
+    }
+
+    if (!bmcReferralCodeId && bmcReferralCode) {
       const { data: referral, error: referralError } = await supabase
         .from("bmc_division_referral_codes")
         .select("id, application_id")
@@ -189,10 +229,9 @@ serve(async (req) => {
         .maybeSingle();
       if (referralError) throw referralError;
       if (!referral) return json({ error: "This Bridgefort Travels referral link is invalid or inactive." }, 400);
-
-      // Referral attribution is allowed before division approval. Commission remains held until approval.
       bmcReferralCodeId = referral.id;
     }
+
 
     const { data: booking, error: insertError } = await supabase
       .from("travel_bookings")
