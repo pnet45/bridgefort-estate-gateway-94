@@ -80,8 +80,8 @@ serve(async (req) => {
       <h2 style="color:#241047">Your Bridgefort BMC identity is verified</h2>
       <p>Dear ${firstName},</p>
       <p>Bridgefort Homes Development Ltd has completed the manual review of your central BMC identity verification. Your identity is now marked as <strong>VERIFIED</strong> across Bridgefort Homes, Bridgefort Travels and Bridgefort Agrovest.</p>
-      <p>This confirms your identity only. It does not automatically approve a business division, create a commission, or guarantee a withdrawal. Each division's approval, cleared-payment and applicable withdrawal requirements continue to apply.</p>
-      <p style="margin:26px 0"><a href="https://bridgeforthomes.com/bh-realtors/withdraw" style="display:inline-block;background:#241047;color:#fff;text-decoration:none;padding:13px 22px;border-radius:7px;font-weight:700">Check Withdrawal Eligibility</a></p>
+      <p>This confirms your identity across all three businesses. It does not automatically approve a business division, create a commission, or guarantee a payout. Each division's approval, cleared-payment and applicable payout requirements continue to apply.</p>
+      <p style="margin:26px 0"><a href="https://bridgeforthomes.com/bmc-partner-hub" style="display:inline-block;background:#241047;color:#fff;text-decoration:none;padding:13px 22px;border-radius:7px;font-weight:700">View BMC Partner Dashboard</a></p>
       <h3 style="color:#241047">Properties you may wish to market</h3>
       <p>Here are up to three currently available Bridgefort estate properties:</p>
       <ul>${propertyHtml}</ul>
