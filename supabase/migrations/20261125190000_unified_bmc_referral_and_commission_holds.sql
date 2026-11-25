@@ -446,6 +446,21 @@ create trigger bmc_hold_unapproved_commission
   before insert or update of status on public.bmc_division_commissions
   for each row execute function public.hold_unapproved_bmc_division_commission();
 
+-- Reclassify any previously earned BMC commissions that do not yet meet both
+-- central identity and division-approval requirements.
+update public.bmc_division_commissions c
+set status = 'held'
+where c.status = 'earned'
+  and (
+    not exists (select 1 from public.bmc_identity_kyc k where k.user_id = c.referrer_user_id and k.status = 'VERIFIED')
+    or not exists (
+      select 1 from public.bmc_partner_divisions d
+      where d.user_id = c.referrer_user_id
+        and d.division = c.division
+        and (d.application_status = 'approved' or (c.division = 'homes' and d.application_status = 'legacy_existing'))
+    )
+  );
+
 create or replace function public.release_or_hold_bmc_division_commissions()
 returns trigger
 language plpgsql
