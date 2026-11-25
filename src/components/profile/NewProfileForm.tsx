@@ -73,17 +73,17 @@ const NewProfileForm = () => {
   if (user) lastAuthenticatedUserRef.current = user;
   const stableUser = user ?? (authLoading ? lastAuthenticatedUserRef.current : null);
   const userId = stableUser?.id ?? null;
-  const [isBmcPartner, setIsBmcPartner] = useState(Boolean(isBmcPartner));
+  const [isBmcPartner, setIsBmcPartner] = useState(Boolean(profile?.is_pbo));
   // New BMC accounts are not BH-Realtors (is_pbo) accounts. Detect their
   // central partner identity from the division registry instead.
   useEffect(() => {
-    if (isBmcPartner) { setIsBmcPartner(true); return; }
+    if (profile?.is_pbo) { setIsBmcPartner(true); return; }
     if (!userId) { setIsBmcPartner(false); return; }
     let active = true;
     void supabase.from('bmc_partner_divisions').select('id').eq('user_id', userId).limit(1).maybeSingle()
       .then(({ data, error }) => { if (active) setIsBmcPartner(!error && Boolean(data)); });
     return () => { active = false; };
-  }, [userId, isBmcPartner]);
+  }, [userId, profile?.is_pbo]);
   // BMC identity verification is managed centrally in the BMC Partner Hub.
   // Keep the client KYC flow, but do not expose it to any BMC account.
   const steps = isBmcPartner ? allSteps.filter(step => step.key !== 'identity' && step.key !== 'aml') : allSteps;
