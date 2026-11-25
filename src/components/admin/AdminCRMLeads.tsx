@@ -15,7 +15,7 @@ import { toast } from '@/hooks/use-toast';
 import {
   Plus, Search, Phone, Mail, User, Calendar, Clock,
   MessageSquare, Trash2, Pencil, CheckCircle, Filter,
-  PhoneCall, MailPlus, Users as UsersIcon, TrendingUp, Download, Target, CircleDollarSign, ChevronLeft, ChevronRight
+  PhoneCall, MailPlus, Users as UsersIcon, TrendingUp, Download, Target, CircleDollarSign, ChevronLeft, ChevronRight, Upload
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -100,6 +100,49 @@ const stripNextAction = (row: CRMLeadPageRow): Lead => {
 const EMPTY_CRM_METRICS: CRMLeadMetrics = {
   total: 0, new: 0, qualified: 0, won: 0, overdue: 0, won_value: 0, closed: 0, win_rate: 0,
 };
+
+type CsvImportFieldKey = 'name' | 'email' | 'phone' | 'source' | 'status' | 'priority' | 'estate_interest' | 'notes' | 'assigned_to' | 'conversion_value';
+const CSV_IMPORT_FIELDS: { key: CsvImportFieldKey; label: string; required?: boolean; aliases: string[] }[] = [
+  { key: 'name', label: 'Lead name', required: true, aliases: ['name', 'lead name', 'full name', 'customer name', 'client name'] },
+  { key: 'email', label: 'Email address', aliases: ['email', 'email address', 'e-mail'] },
+  { key: 'phone', label: 'Phone number', aliases: ['phone', 'phone number', 'mobile', 'mobile number', 'contact number', 'telephone'] },
+  { key: 'source', label: 'Lead source', aliases: ['source', 'lead source', 'channel'] },
+  { key: 'status', label: 'Lead status', aliases: ['status', 'lead status', 'stage'] },
+  { key: 'priority', label: 'Priority', aliases: ['priority', 'lead priority'] },
+  { key: 'estate_interest', label: 'Estate / property interest', aliases: ['estate interest', 'estate', 'property', 'property interest', 'interested property'] },
+  { key: 'notes', label: 'Notes', aliases: ['notes', 'note', 'comments', 'remarks', 'description'] },
+  { key: 'assigned_to', label: 'Assigned staff', aliases: ['assigned to', 'assignee', 'staff', 'sales agent', 'realtor'] },
+  { key: 'conversion_value', label: 'Conversion value (₦)', aliases: ['conversion value', 'deal value', 'value', 'amount'] },
+];
+
+const parseCsvText = (text: string): string[][] => {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = '';
+  let quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (char === '"') {
+      if (quoted && text[index + 1] === '"') { cell += '"'; index += 1; }
+      else quoted = !quoted;
+    } else if (char === ',' && !quoted) {
+      row.push(cell); cell = '';
+    } else if ((char === '\\n' || char === '\\r') && !quoted) {
+      if (char === '\\r' && text[index + 1] === '\\n') index += 1;
+      row.push(cell); cell = '';
+      if (row.some(value => value.trim() !== '')) rows.push(row);
+      row = [];
+    } else {
+      cell += char;
+    }
+  }
+  row.push(cell);
+  if (row.some(value => value.trim() !== '')) rows.push(row);
+  return rows;
+};
+
+const normalizeCsvHeader = (value: string) => value.replace(/^\\uFEFF/, '').trim().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
 interface TeamMember { id: string; first_name: string | null; last_name: string | null }
 interface PropertyOption { id: string; name: string; kind: 'estate' | 'listing' }
 
@@ -118,6 +161,13 @@ const AdminCRMLeads: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [csvRows, setCsvRows] = useState<string[][]>([]);
+  const [csvMappings, setCsvMappings] = useState<Record<string, string>>({});
+  const [csvFileName, setCsvFileName] = useState('');
+  const [csvImporting, setCsvImporting] = useState(false);
+  const [csvFileError, setCsvFileError] = useState('');
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
@@ -380,6 +430,124 @@ const AdminCRMLeads: React.FC = () => {
   useEffect(() => { setCurrentPage(page => Math.min(page, pageCount)); }, [pageCount]);
   const paginatedLeads = leads;
 
+
+  const handleCsvFile = async (file: File) => {
+    setCsvFileError('');
+    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') {
+      setCsvFileError('Please select a .csv file.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setCsvFileError('The CSV file must be 10 MB or smaller.');
+      return;
+    }
+    try {
+      const parsed = parseCsvText(await file.text());
+      if (parsed.length < 2) {
+        setCsvFileError('The file must contain a header row and at least one lead.');
+        return;
+      }
+      const headers = parsed[0].map((header, index) => header.trim() || `Column ${index + 1}`);
+      if (headers.length < 1) {
+        setCsvFileError('No column headers were found in this file.');
+        return;
+      }
+      const initialMappings: Record<string, string> = {};
+      CSV_IMPORT_FIELDS.forEach(field => {
+        const aliases = field.aliases.map(normalizeCsvHeader);
+        const match = headers.find(header => aliases.includes(normalizeCsvHeader(header)));
+        initialMappings[field.key] = match || '__skip__';
+      });
+      setCsvHeaders(headers);
+      setCsvRows(parsed.slice(1).filter(row => row.some(value => value.trim() !== '')));
+      setCsvMappings(initialMappings);
+      setCsvFileName(file.name);
+    } catch {
+      setCsvFileError('The CSV file could not be read. Please check its format and try again.');
+    }
+  };
+
+  const csvMappedRows = csvRows.map((cells, rowIndex) => {
+    const valueFor = (key: CsvImportFieldKey) => {
+      const header = csvMappings[key];
+      if (!header || header === '__skip__') return '';
+      const columnIndex = csvHeaders.indexOf(header);
+      return columnIndex >= 0 ? (cells[columnIndex] || '').trim() : '';
+    };
+    const name = valueFor('name');
+    const statusRaw = valueFor('status').toLowerCase().replace(/[ -]+/g, '_');
+    const priorityRaw = valueFor('priority').toLowerCase();
+    const sourceRaw = valueFor('source').toLowerCase().replace(/[ -]+/g, '_');
+    const assignedRaw = valueFor('assigned_to');
+    const assignee = teamMembers.find(member => {
+      const fullName = [member.first_name, member.last_name].filter(Boolean).join(' ').trim();
+      return member.id === assignedRaw || fullName.toLowerCase() === assignedRaw.toLowerCase();
+    });
+    const conversionRaw = valueFor('conversion_value').replace(/[₦,\\s]/g, '');
+    const conversionValue = conversionRaw ? Number(conversionRaw) : null;
+    const errors: string[] = [];
+    if (!name) errors.push('Lead name is required');
+    if (statusRaw && !STATUSES.includes(statusRaw)) errors.push(`Invalid status: ${valueFor('status')}`);
+    if (priorityRaw && !PRIORITIES.includes(priorityRaw)) errors.push(`Invalid priority: ${valueFor('priority')}`);
+    if (assignedRaw && !assignee) errors.push(`Staff not matched: ${assignedRaw}`);
+    if (conversionRaw && (!Number.isFinite(conversionValue) || Number(conversionValue) < 0)) errors.push('Conversion value must be a valid non-negative number');
+    return {
+      line: rowIndex + 2,
+      errors,
+      payload: {
+        name,
+        email: valueFor('email') || null,
+        phone: valueFor('phone') || null,
+        source: sourceRaw || 'website',
+        status: statusRaw || 'new',
+        priority: priorityRaw || 'medium',
+        estate_interest: valueFor('estate_interest') || null,
+        notes: valueFor('notes') || null,
+        assigned_to: assignee?.id || null,
+        conversion_value: conversionValue,
+      },
+    };
+  });
+  const csvValidRows = csvMappedRows.filter(row => row.errors.length === 0);
+  const csvInvalidRows = csvMappedRows.filter(row => row.errors.length > 0);
+
+  const handleImportCsv = async () => {
+    if (!csvValidRows.length || !csvMappings.name || csvMappings.name === '__skip__') {
+      toast({ title: 'Check the CSV field mapping', description: 'Map a Lead name column and ensure at least one valid row is available.', variant: 'destructive' });
+      return;
+    }
+    setCsvImporting(true);
+    let imported = 0;
+    try {
+      for (let offset = 0; offset < csvValidRows.length; offset += 100) {
+        const batch = csvValidRows.slice(offset, offset + 100).map(row => row.payload);
+        const { error } = await supabase.from('crm_leads').insert(batch);
+        if (error) throw new Error(`Imported ${imported} rows before an error: ${error.message}`);
+        imported += batch.length;
+      }
+      toast({
+        title: 'CSV import completed',
+        description: `${imported} leads imported. ${csvInvalidRows.length} rows skipped due to validation errors.`,
+      });
+      setIsImportOpen(false);
+      setCsvHeaders([]);
+      setCsvRows([]);
+      setCsvMappings({});
+      setCsvFileName('');
+      setCsvFileError('');
+      fetchLeads();
+    } catch (error) {
+      toast({
+        title: 'CSV import partially completed',
+        description: error instanceof Error ? error.message : 'The import could not be completed.',
+        variant: 'destructive',
+      });
+      fetchLeads();
+    } finally {
+      setCsvImporting(false);
+    }
+  };
+
   const handleExportCsv = async () => {
     const exportPageSize = 1000;
     const exportRows: Lead[] = [];
@@ -476,6 +644,9 @@ const AdminCRMLeads: React.FC = () => {
         <Button variant={overdueOnly ? 'default' : 'outline'} onClick={() => setOverdueOnly(value => !value)}><Clock className="h-4 w-4 mr-1" />Overdue</Button>
         <Button onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' }); setIsFormOpen(true); }} className="gap-1">
           <Plus className="h-4 w-4" /> Add Lead
+        </Button>
+        <Button variant="outline" onClick={() => { setIsImportOpen(true); setCsvFileError(''); }} className="gap-1 border-slate-200 text-slate-900 hover:bg-white">
+          <Upload className="h-4 w-4" /> Import CSV
         </Button>
         <Button variant="outline" onClick={handleExportCsv} className="gap-1 border-slate-200 text-slate-900 hover:bg-white">
           <Download className="h-4 w-4" /> Export CSV
@@ -679,6 +850,72 @@ const AdminCRMLeads: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* CSV Lead Import Dialog */}
+      <Dialog open={isImportOpen} onOpenChange={open => { if (!csvImporting) setIsImportOpen(open); }}>
+        <DialogContent className="w-[calc(100vw-1rem)] max-w-4xl max-h-[calc(100dvh-1rem)] overflow-y-auto overflow-x-hidden bg-slate-50 p-4 sm:p-6">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900">Import leads from CSV</DialogTitle>
+            <p className="text-sm text-slate-600">Choose a CSV file, map its columns to CRM fields, review the preview, then import valid rows.</p>
+          </DialogHeader>
+          <div className="space-y-4 min-w-0">
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4">
+              <Label htmlFor="crm-leads-csv-file" className="text-slate-800">CSV file</Label>
+              <Input id="crm-leads-csv-file" type="file" accept=".csv,text/csv" className="mt-2 w-full bg-white text-slate-900" disabled={csvImporting}
+                onChange={event => { const file = event.target.files?.[0]; if (file) void handleCsvFile(file); event.currentTarget.value = ''; }} />
+              <p className="mt-2 text-xs text-slate-500">Maximum file size: 10 MB. The first row must contain column headers.</p>
+              {csvFileName && <p className="mt-2 text-sm font-medium text-slate-700">Selected: {csvFileName}</p>}
+              {csvFileError && <p role="alert" className="mt-2 text-sm text-red-600">{csvFileError}</p>}
+            </div>
+            {csvHeaders.length > 0 && <>
+              <div>
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900">Map CSV columns to CRM fields</h3>
+                  <span className="text-xs text-slate-500">{csvRows.length} data rows detected</span>
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {CSV_IMPORT_FIELDS.map(field => (
+                    <div key={field.key} className="min-w-0 rounded-lg border border-slate-200 bg-white p-3">
+                      <Label className="mb-1 block text-slate-700">{field.label}{field.required ? ' *' : ''}</Label>
+                      <Select value={csvMappings[field.key] || '__skip__'} onValueChange={value => setCsvMappings(current => ({ ...current, [field.key]: value }))}>
+                        <SelectTrigger className="w-full min-w-0 bg-white text-slate-900"><SelectValue placeholder="Select CSV column" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__skip__">Do not import</SelectItem>
+                          {csvHeaders.map((header, index) => <SelectItem key={`${header}-${index}`} value={header}>{header}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
+                </div>
+                {!csvMappings.name || csvMappings.name === '__skip__' ? <p className="mt-2 text-sm text-red-600">Map a CSV column to Lead name. This field is required.</p> : null}
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900">Import preview</h3>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <span className="rounded-full bg-green-50 px-2 py-1 text-green-700">{csvValidRows.length} valid</span>
+                    <span className="rounded-full bg-red-50 px-2 py-1 text-red-700">{csvInvalidRows.length} need attention</span>
+                  </div>
+                </div>
+                <div className="mt-3 max-h-56 overflow-auto">
+                  <table className="w-full min-w-[540px] text-left text-xs">
+                    <thead className="sticky top-0 bg-slate-100 text-slate-600"><tr><th className="p-2">CSV row</th><th className="p-2">Lead name</th><th className="p-2">Phone</th><th className="p-2">Email</th><th className="p-2">Validation</th></tr></thead>
+                    <tbody>{csvMappedRows.slice(0, 10).map(row => <tr key={row.line} className="border-t border-slate-100"><td className="p-2">{row.line}</td><td className="p-2">{row.payload.name || '—'}</td><td className="p-2">{row.payload.phone || '—'}</td><td className="p-2">{row.payload.email || '—'}</td><td className="p-2">{row.errors.length ? <span className="text-red-600">{row.errors.join('; ')}</span> : <span className="text-green-700">Ready</span>}</td></tr>)}</tbody>
+                  </table>
+                </div>
+                {csvMappedRows.length > 10 && <p className="mt-2 text-xs text-slate-500">Showing the first 10 of {csvMappedRows.length} rows.</p>}
+                {csvInvalidRows.length > 0 && <p className="mt-2 text-xs text-slate-600">Rows with validation errors will be skipped. Staff assignment must match an active CRM assignee by full name or user ID.</p>}
+              </div>
+            </>}
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" className="w-full sm:w-auto" disabled={csvImporting} onClick={() => setIsImportOpen(false)}>Cancel</Button>
+              <Button type="button" className="w-full sm:w-auto" disabled={csvImporting || !csvValidRows.length || !csvMappings.name || csvMappings.name === '__skip__'} onClick={() => void handleImportCsv()}>
+                {csvImporting ? 'Importing…' : `Import ${csvValidRows.length} valid leads`}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Lead Form Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
