@@ -234,6 +234,7 @@ begin
          k.documents, k.submitted_at, k.reviewed_at, k.reviewed_by, k.review_note
   from public.bmc_identity_kyc k
   join auth.users u on u.id = k.user_id
+  where k.status <> 'NOT_STARTED'
   order by case k.status when 'PENDING' then 0 when 'UNDER_REVIEW' then 1 else 2 end,
            k.submitted_at desc nulls last;
 end;
@@ -283,6 +284,7 @@ begin
   for update;
   if not found then raise exception 'BMC KYC submission not found'; end if;
   if target.status = 'VERIFIED' then raise exception 'Verified BMC KYC cannot be changed through this review action'; end if;
+  if target.status not in ('PENDING','UNDER_REVIEW') then raise exception 'Only submitted BMC KYC records can be reviewed'; end if;
 
   update public.bmc_identity_kyc
   set status = next_status,
