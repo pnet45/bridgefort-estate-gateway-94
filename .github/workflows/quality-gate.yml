@@ -61,3 +61,6 @@ jobs:
 
       - name: Test webhook security helpers
         run: deno test supabase/functions/_shared/webhookSecurity_test.ts
+
+      - name: Type-check BMC KYC approval email function
+        run: deno check supabase/functions/send-bmc-kyc-approval-email/index.ts
