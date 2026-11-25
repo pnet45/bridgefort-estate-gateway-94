@@ -52,8 +52,8 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
         {/* Image Container */}
         <div className="relative h-32 overflow-hidden sm:h-44 lg:h-56">
           <div
-            className={`absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent z-10 transition-opacity duration-300 ${
-              isHovered ? 'opacity-35' : 'opacity-20'
+            className={`absolute inset-0 bg-black/10 z-10 pointer-events-none transition-opacity duration-300 ${
+              isHovered ? 'opacity-30' : 'opacity-15'
             }`}
           />
           <img
@@ -99,7 +99,7 @@ const EnhancedPropertyCard: React.FC<EnhancedPropertyCardProps> = ({
             <Button
               size="icon"
               variant="secondary"
-              className="rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg"
+              className="rounded-full bg-card/70 dark:bg-card/65 backdrop-blur-sm hover:bg-card/90 shadow-lg"
               onClick={(e) => {
                 e.stopPropagation();
                 handleViewDetails();
