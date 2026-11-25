@@ -404,6 +404,21 @@ alter table public.bmc_division_commissions
 alter table public.bmc_division_commissions
   add constraint bmc_division_commissions_status_check
   check (status in ('held','earned','paid','reversed'));
+alter table public.bmc_division_commissions
+  drop constraint if exists bmc_division_commissions_division_check;
+alter table public.bmc_division_commissions
+  add constraint bmc_division_commissions_division_check
+  check (division in ('homes','agrovest','travels'));
+alter table public.bmc_division_commissions
+  drop constraint if exists bmc_division_commissions_source_type_check;
+alter table public.bmc_division_commissions
+  add constraint bmc_division_commissions_source_type_check
+  check (source_type in ('homes_payment','agrovest_payment','travel_payment'));
+alter table public.bmc_division_commissions
+  drop constraint if exists bmc_division_commissions_commission_rate_check;
+alter table public.bmc_division_commissions
+  add constraint bmc_division_commissions_commission_rate_check
+  check (commission_rate > 0 and commission_rate <= 100);
 
 create or replace function public.hold_unapproved_bmc_division_commission()
 returns trigger
@@ -417,6 +432,7 @@ begin
     where d.user_id = new.referrer_user_id
       and d.division = new.division
       and (d.application_status = 'approved' or (new.division = 'homes' and d.application_status = 'legacy_existing'))
+      and exists (select 1 from public.bmc_identity_kyc k where k.user_id = new.referrer_user_id and k.status = 'VERIFIED')
   ) then
     new.status := 'held';
   end if;
@@ -442,7 +458,8 @@ begin
     set status = 'earned'
     where referrer_user_id = new.user_id
       and division = new.division
-      and status = 'held';
+      and status = 'held'
+      and exists (select 1 from public.bmc_identity_kyc k where k.user_id = new.user_id and k.status = 'VERIFIED');
   elsif new.application_status in ('suspended','rejected','withdrawn','pending_review','referral_only') then
     update public.bmc_division_commissions
     set status = 'held'
@@ -459,6 +476,139 @@ drop trigger if exists bmc_release_or_hold_division_commissions on public.bmc_pa
 create trigger bmc_release_or_hold_division_commissions
   after update of application_status on public.bmc_partner_divisions
   for each row execute function public.release_or_hold_bmc_division_commissions();
+
+
+-- Homes BMC referral commissions use the central BMC ledger. Legacy BH-Realtors
+-- referral codes continue through the existing MLM commission function.
+create or replace function public.award_bmc_homes_order_commission()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  attribution public.bmc_division_referral_attributions;
+  item jsonb;
+  property_type text;
+  unit_price numeric;
+  quantity numeric;
+  gross_total numeric := 0;
+  commission_total numeric := 0;
+  item_rate numeric;
+  effective_rate numeric;
+begin
+  if new.payment_status is distinct from 'paid'
+     or old.payment_status is not distinct from 'paid' then
+    return new;
+  end if;
+
+  select a.* into attribution
+  from public.bmc_division_referral_attributions a
+  where a.source_type = 'order'
+    and a.source_record_id = new.id
+    and a.division = 'homes'
+  for share;
+
+  if not found or attribution.referrer_user_id = new.user_id then
+    return new;
+  end if;
+
+  for item in
+    select value from jsonb_array_elements(coalesce(new.items, '[]'::jsonb))
+  loop
+    property_type := lower(trim(coalesce(
+      nullif(item ->> 'property_type',''),
+      nullif(item ->> 'type',''),
+      nullif(item ->> 'category',''),
+      ''
+    )));
+    if property_type = 'agrovest'
+       or property_type ilike 'documentation%'
+       or property_type ilike '%subscription%'
+       or property_type ilike '%promo%' then
+      continue;
+    end if;
+
+    if property_type like '%land%' or property_type like '%plot%' then
+      item_rate := 15;
+    elsif property_type like '%house%'
+       or property_type like '%home%'
+       or property_type like '%apartment%'
+       or property_type like '%flat%'
+       or property_type like '%duplex%'
+       or property_type like '%bungalow%'
+       or property_type like '%terrace%'
+       or property_type like '%residential%' then
+      item_rate := 5;
+    else
+      continue;
+    end if;
+
+    unit_price := coalesce(nullif(item ->> 'price','')::numeric, 0);
+    quantity := greatest(1, coalesce(nullif(item ->> 'quantity','')::numeric, 1));
+    if unit_price <= 0 then continue; end if;
+
+    gross_total := gross_total + (unit_price * quantity);
+    commission_total := commission_total + round(unit_price * quantity * item_rate / 100, 2);
+  end loop;
+
+  if gross_total <= 0 or commission_total <= 0 then
+    return new;
+  end if;
+
+  effective_rate := round((commission_total / gross_total) * 100, 2);
+  insert into public.bmc_division_commissions (
+    division, referral_attribution_id, referrer_user_id,
+    source_type, source_record_id, gross_customer_payment,
+    commission_rate, commission_amount, status, payment_reference
+  ) values (
+    'homes', attribution.id, attribution.referrer_user_id,
+    'homes_payment', new.id, round(gross_total, 2),
+    effective_rate, round(commission_total, 2), 'earned',
+    nullif(trim(coalesce(new.payment_reference,'')), '')
+  )
+  on conflict (source_type, source_record_id) do nothing;
+
+  return new;
+end;
+$function$;
+
+revoke all on function public.award_bmc_homes_order_commission() from public, anon, authenticated;
+drop trigger if exists bmc_award_homes_order_commission on public.orders;
+create trigger bmc_award_homes_order_commission
+  after update of payment_status on public.orders
+  for each row execute function public.award_bmc_homes_order_commission();
+
+-- When a central identity is approved after a division was already approved,
+-- release only that BMC's held commissions for divisions already eligible.
+create or replace function public.release_bmc_commissions_after_kyc_verification()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+begin
+  if old.status is distinct from 'VERIFIED' and new.status = 'VERIFIED' then
+    update public.bmc_division_commissions c
+    set status = 'earned'
+    where c.referrer_user_id = new.user_id
+      and c.status = 'held'
+      and exists (
+        select 1 from public.bmc_partner_divisions d
+        where d.user_id = new.user_id
+          and d.division = c.division
+          and (d.application_status = 'approved' or (c.division = 'homes' and d.application_status = 'legacy_existing'))
+      );
+  end if;
+  return new;
+end;
+$function$;
+
+revoke all on function public.release_bmc_commissions_after_kyc_verification() from public, anon, authenticated;
+drop trigger if exists bmc_release_commissions_after_kyc_verification on public.bmc_identity_kyc;
+create trigger bmc_release_commissions_after_kyc_verification
+  after update of status on public.bmc_identity_kyc
+  for each row execute function public.release_bmc_commissions_after_kyc_verification();
 
 -- BH-Realtors withdrawal remains on its existing wallet engine, but now also
 -- requires central BMC KYC and Homes approval (legacy_existing is grandfathered).
