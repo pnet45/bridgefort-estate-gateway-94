@@ -10,6 +10,7 @@ import { getAllowedAdminTabs, isAdminRole } from '@/lib/rbac';
 import UserManagementTab from '@/components/dashboard/tabs/UserManagementTab';
 import AdminApprovalsHub from '@/components/admin/AdminApprovalsHub';
 import AdminBMCApplications from '@/components/admin/AdminBMCApplications';
+import AdminBMCKYC from '@/components/admin/AdminBMCKYC';
 import AdminBMCCommissions from '@/components/admin/AdminBMCCommissions';
 import AdminEmailCenter from '@/components/admin/AdminEmailCenter';
 import AdminDashboardStats from '@/components/admin/AdminDashboardStats';
@@ -56,7 +57,7 @@ const AdminConsole = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const canReviewReports = isGlobalAdmin || userRole === 'admin_acct';
   const canManageHR = isGlobalAdmin || userRole === 'admin_acct';
-  const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isGlobalAdmin) { tabs.add('overview'); tabs.add('permissions'); tabs.add('travels'); tabs.add('documentation'); } if (canReviewReports) tabs.add('reports'); if (canManageHR) tabs.add('hr-workspace'); if (hasPermission('admin:view_approvals') || hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin) tabs.add('bmc-applications'); if (hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin) tabs.add('bmc-commissions'); return Array.from(tabs); }, [permissions, isGlobalAdmin, canReviewReports, canManageHR, hasPermission]);
+  const allowedTabs = useMemo(() => { const tabs = new Set(getAllowedAdminTabs(permissions)); if (isGlobalAdmin) { tabs.add('overview'); tabs.add('permissions'); tabs.add('travels'); tabs.add('documentation'); } if (canReviewReports) tabs.add('reports'); if (canManageHR) tabs.add('hr-workspace'); if (hasPermission('admin:view_approvals') || hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin) tabs.add('bmc-applications'); if (hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin) { tabs.add('bmc-commissions'); tabs.add('bmc-kyc'); } return Array.from(tabs); }, [permissions, isGlobalAdmin, canReviewReports, canManageHR, hasPermission]);
   const [loading, setLoading] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -110,6 +111,7 @@ const AdminConsole = () => {
         {hasPermission('admin:view_users') && <TabsTrigger value="users" className={`${ADMIN_TAB_CLASS} mt-3 border-t border-slate-200 pt-3 lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Users className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Users</span></TabsTrigger>}
         {hasPermission('admin:view_approvals') && <TabsTrigger value="approvals" className={`${ADMIN_TAB_CLASS} relative lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><UserCheck className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Approvals</span>{pendingCount > 0 && <span className="ml-1 h-5 min-w-5 px-1 bg-red-500 rounded-full text-[10px] flex items-center justify-center text-white">{pendingCount > 99 ? '99+' : pendingCount}</span>}</TabsTrigger>}
         {(hasPermission('admin:view_approvals') || hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin) && <TabsTrigger value="bmc-applications" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Building2 className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>BMC Applications</span></TabsTrigger>}
+        {(hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin) && <TabsTrigger value="bmc-kyc" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Shield className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>BMC KYC Review</span></TabsTrigger>}
         {(hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin) && <TabsTrigger value="bmc-commissions" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><DollarSign className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>BMC Commissions</span></TabsTrigger>}
         {hasPermission('admin:view_subscribers') && <TabsTrigger value="subscribers" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Users className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Subscribers</span></TabsTrigger>}
         {hasPermission('admin:view_email_center') && <TabsTrigger value="emails" className={`${ADMIN_TAB_CLASS} lg:w-full lg:justify-start lg:min-h-10 ${sidebarCollapsed ? "lg:justify-center lg:px-2" : ""}`}><Mail className="h-4 w-4 shrink-0"/><span className={sidebarCollapsed ? "lg:hidden" : ""}>Emails</span></TabsTrigger>}
@@ -135,6 +137,7 @@ const AdminConsole = () => {
       <TabsContent value="users" className="min-w-0"><UserManagementTab/></TabsContent>
       <TabsContent value="approvals" className="min-w-0"><AdminApprovalsHub onCountChange={setPendingCount}/></TabsContent>
       {(hasPermission('admin:view_approvals') || hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin) && <TabsContent value="bmc-applications" className="min-w-0"><AdminBMCApplications canManage={hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin} /></TabsContent>}
+      {(hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin) && <TabsContent value="bmc-kyc" className="min-w-0"><AdminBMCKYC /></TabsContent>}
       {(hasPermission('admin:manage_bmc_partners') || hasPermission('admin:all') || isGlobalAdmin) && <TabsContent value="bmc-commissions" className="min-w-0"><AdminBMCCommissions /></TabsContent>}
       <TabsContent value="subscribers" className="min-w-0"><AdminEstateSubscribers/></TabsContent>
       <TabsContent value="emails" className="min-w-0"><AdminEmailCenter/></TabsContent>
