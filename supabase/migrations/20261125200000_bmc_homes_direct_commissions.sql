@@ -30,14 +30,15 @@ declare
   attribution public.bmc_division_referral_attributions;
   item_row jsonb;
   asset_type text;
-  property_id text;
-  plot_id text;
+  v_property_id text;
+  v_plot_id text;
   quantity numeric;
   gross_amount numeric;
   rate numeric;
   sale_id uuid;
 begin
-  if new.payment_status <> 'paid' or old.payment_status = 'paid' then
+  if new.payment_status is distinct from 'paid'
+     or old.payment_status is not distinct from 'paid' then
     return new;
   end if;
   if new.bmc_referral_code_id is null then return new; end if;
@@ -83,33 +84,33 @@ begin
       continue;
     end if;
 
-    property_id := nullif(item_row->>'property_id','');
-    plot_id := nullif(item_row->>'plot_id','');
+    v_property_id := nullif(item_row->>'property_id','');
+    v_plot_id := nullif(item_row->>'plot_id','');
     quantity := greatest(1, coalesce((item_row->>'quantity')::numeric,1));
     gross_amount := coalesce((item_row->>'price')::numeric,0) * quantity;
-    if property_id is null or gross_amount <= 0 then continue; end if;
+    if v_property_id is null or gross_amount <= 0 then continue; end if;
 
     sale_id := null;
-    if plot_id is not null then
+    if v_plot_id is not null then
       insert into public.bh_property_sales(buyer_id, order_id, property_id, plot_id, property_price)
-      values (new.user_id, new.id, property_id, plot_id, gross_amount)
-      on conflict (buyer_id, property_id, plot_id) do nothing
+      values (new.user_id, new.id, v_property_id, v_plot_id, gross_amount)
+      on conflict (buyer_id, property_id, plot_id) where plot_id is not null do nothing
       returning id into sale_id;
       if sale_id is null then
         select s.id into sale_id from public.bh_property_sales s
         where s.buyer_id = new.user_id and s.order_id = new.id
-          and s.property_id = property_id and s.plot_id = plot_id
+          and s.property_id = v_property_id and s.plot_id = v_plot_id
         limit 1;
       end if;
     else
       insert into public.bh_property_sales(buyer_id, order_id, property_id, property_price)
-      values (new.user_id, new.id, property_id, gross_amount)
+      values (new.user_id, new.id, v_property_id, gross_amount)
       on conflict (buyer_id, property_id) where plot_id is null do nothing
       returning id into sale_id;
       if sale_id is null then
         select s.id into sale_id from public.bh_property_sales s
         where s.buyer_id = new.user_id and s.order_id = new.id
-          and s.property_id = property_id and s.plot_id is null
+          and s.property_id = v_property_id and s.plot_id is null
         limit 1;
       end if;
     end if;
