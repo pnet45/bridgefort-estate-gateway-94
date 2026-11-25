@@ -172,11 +172,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
         }}
       >
         {/* Image Container */}
-        <div className="relative h-64 overflow-hidden">
+        <div className="relative h-28 overflow-hidden sm:h-40 lg:h-52">
           <img 
             src={images[currentImageIndex]} 
             alt={property.title}
-            className="w-full h-full object-contain bg-gray-100 transition-transform duration-300"
+            className="h-full w-full bg-gray-100 object-cover transition-transform duration-300"
             loading="lazy"
             onError={handleImageError}
           />
@@ -256,7 +256,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           </div>
           {/* Compare toggle */}
           <label
-            className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-white/90 rounded-full px-2.5 py-1 text-xs font-medium text-estate-blue cursor-pointer select-none"
+            className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[9px] font-medium text-estate-blue cursor-pointer select-none sm:bottom-3 sm:right-3 sm:gap-1.5 sm:px-2.5 sm:text-xs"
             onClick={(e) => e.stopPropagation()}
           >
             <Checkbox
@@ -278,14 +278,14 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           </label>
         </div>
         {/* Content */}
-        <div className="p-6">
-          <h3 className="text-xl font-bold text-foreground mb-2 hover:text-estate-blue transition-colors">
+        <div className="min-w-0 space-y-2 p-2.5 sm:space-y-3 sm:p-4">
+          <h3 className="line-clamp-2 min-h-[2.5rem] break-words text-sm font-bold leading-tight text-foreground hover:text-estate-blue transition-colors sm:min-h-0 sm:text-lg">
             {property.title}
           </h3>
           <PropertyRatingBadge propertyId={property.id} className="mb-2" />
-          <div className="flex items-center text-gray-600 mb-3">
-            <MapPin size={16} className="mr-2 text-estate-red" />
-            <span className="text-sm">{property.location}</span>
+          <div className="flex min-w-0 items-start text-gray-600">
+            <MapPin size={13} className="mr-1 mt-0.5 shrink-0 text-estate-red sm:mr-2 sm:h-4 sm:w-4" />
+            <span className="line-clamp-2 min-w-0 break-words text-[10px] leading-tight sm:text-sm">{property.location}</span>
           </div>
           
           {/* Room info for homes */}
@@ -307,20 +307,20 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           )}
           
           {/* Property Stats */}
-          <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+          <div className="grid grid-cols-1 gap-1 text-[10px] leading-tight sm:grid-cols-2 sm:gap-2 sm:text-xs">
             <div className="flex items-center">
-              <Maximize size={16} className="mr-2 text-estate-blue" />
+              <Maximize size={12} className="mr-1 shrink-0 text-estate-blue sm:mr-2 sm:h-4 sm:w-4" />
               <span>{property.sqm} sqm{!isHome ? ' per plot' : ''}</span>
             </div>
             <div className="flex items-center">
-              <Users size={16} className="mr-2 text-estate-blue" />
+              <Users size={12} className="mr-1 shrink-0 text-estate-blue sm:mr-2 sm:h-4 sm:w-4" />
               <span>{property.availablePlots} {isHome ? 'Units' : 'Plots'} Available</span>
             </div>
           </div>
           
           {/* Price */}
-          <div className="mb-4">
-            <p className="text-2xl font-bold text-estate-red">{property.price}</p>
+          <div className="mb-2 sm:mb-4">
+            <p className="break-words text-sm font-bold leading-tight text-estate-red sm:text-xl lg:text-2xl">{property.price}</p>
             {property.pricePerPlot > 0 && !isHome && (
               <p className="text-sm text-gray-600">₦{property.pricePerPlot.toLocaleString()} per plot</p>
             )}
@@ -348,10 +348,10 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             </div>
           </div>
           {/* Action Buttons */}
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-1.5 sm:flex-row sm:gap-2">
             <Button
               variant="outline"
-              className="flex-1 border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white transition-colors"
+              className="h-8 min-w-0 flex-1 px-1 text-[10px] leading-tight border-estate-blue text-estate-blue hover:bg-estate-blue hover:text-white transition-colors sm:h-10 sm:px-3 sm:text-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/properties/estates/${property.id}`);
@@ -361,7 +361,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             </Button>
             {!isSoldOut && (
               <Button
-                className="flex-1 bg-estate-red hover:bg-red-600 text-white transition-colors"
+                className="h-8 min-w-0 flex-1 px-1 text-[10px] leading-tight bg-estate-red hover:bg-red-600 text-white transition-colors sm:h-10 sm:px-3 sm:text-sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleAddToCart();
