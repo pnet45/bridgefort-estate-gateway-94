@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
+import BMCIdentityKYC from '@/components/bmc/BMCIdentityKYC';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -187,6 +188,8 @@ export default function BMCPartnerHub() {
             </div>
           </div>
         </section>
+
+        <BMCIdentityKYC />
 
         <section className="space-y-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
