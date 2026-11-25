@@ -207,7 +207,7 @@ export default function AdminBMCApplications({ canManage }: { canManage: boolean
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Coins className="h-5 w-5" /> BMC Division Commissions</CardTitle>
-            <p className="text-sm text-muted-foreground">Agrovest and Travels are separate 10% direct-referral commission ledgers. Homes remains under the existing Homes commission process. Referrals are attributed immediately; unpaid commissions remain held until the referrer’s division is approved.</p>
+            <p className="text-sm text-muted-foreground">Homes, Agrovest and Travels use the unified BMC referral identity and commission ledger. Referrals are attributed immediately; commissions remain held until central KYC and the relevant division approval are complete. Legacy BH-Realtors referral codes and historical commission records remain preserved.</p>
           </CardHeader>
           <CardContent>
             {commissionLoading ? (
