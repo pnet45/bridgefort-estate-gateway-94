@@ -39,11 +39,11 @@ serve(async (req) => {
     const actor = authData.user.id;
     const { data: canReview, error: permissionError } = await admin.rpc("user_has_permission", {
       _user_id: actor,
-      _permission: "admin:manage_bmc_partners",
+      _permission_key: "admin:manage_bmc_partners",
     });
     const { data: isGlobalAdmin } = await admin.rpc("user_has_permission", {
       _user_id: actor,
-      _permission: "admin:all",
+      _permission_key: "admin:all",
     });
     if (permissionError || !(canReview || isGlobalAdmin)) return json({ error: "BMC KYC review permission required" }, 403);
 
