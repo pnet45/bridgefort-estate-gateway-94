@@ -335,6 +335,8 @@ create policy "Authorized BMC KYC reviewers can view KYC documents"
 -- then delegates to the existing locked-wallet implementation.
 alter function private.submit_withdrawal_request(uuid,numeric,text,text,text)
   rename to submit_withdrawal_request_pre_bmc_kyc;
+revoke all on function private.submit_withdrawal_request_pre_bmc_kyc(uuid,numeric,text,text,text)
+  from public, anon, authenticated;
 
 create or replace function private.submit_withdrawal_request(
   p_user_id uuid,
