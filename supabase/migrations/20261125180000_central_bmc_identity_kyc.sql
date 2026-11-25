@@ -325,6 +325,10 @@ create policy "Authorized BMC KYC reviewers can view KYC documents"
   on storage.objects for select to authenticated
   using (
     bucket_id = 'kyc-documents'
+    and exists (
+      select 1 from public.bmc_identity_kyc k
+      where k.user_id::text = split_part(name, '/', 1)
+    )
     and (
       public.user_has_permission((select auth.uid()), 'admin:manage_bmc_partners'::text)
       or public.user_has_permission((select auth.uid()), 'admin:all'::text)
