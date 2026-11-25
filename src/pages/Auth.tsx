@@ -463,7 +463,7 @@ const Auth = ({
           role: isRegisteringAsPBO ? 'bmc_applicant' : 'client',
         });
         captureEvent('user_signed_up', {
-          account_type: isRegisteringAsPBO ? 'realtor' : 'client',
+          account_type: isRegisteringAsPBO ? 'bmc_partner' : 'client',
           has_sponsor: Boolean(sponsorCode.trim()),
           auth_method: 'password',
         });
