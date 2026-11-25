@@ -41,7 +41,7 @@ export default function BMCIdentityKYC() {
     setLoading(true);
     const [{ data: statusData, error: statusError }, { data: existing, error: existingError }] = await Promise.all([
       supabase.rpc('get_my_bmc_identity_kyc_status' as never, {} as never) as unknown as Promise<{ data: Array<{ status: KycStatus; review_note: string | null }> | null; error: { message: string } | null }>,
-      supabase.from('bmc_identity_kyc').select('identity_data,documents').eq('user_id', user.id).maybeSingle(),
+      (supabase as any).from('bmc_identity_kyc').select('identity_data,documents').eq('user_id', user.id).maybeSingle(),
     ]);
     if (statusError) {
       console.warn('Central BMC KYC status is unavailable:', statusError.message);
