@@ -300,7 +300,7 @@ export default function BMCPartnerHub() {
             </div>
           </div>
           {commissionRows.length === 0 ? (
-            <p className="mt-4 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No Agrovest or Travels commission entries are available yet. A referral or enquiry alone does not earn commission; the qualifying customer payment must be confirmed and cleared.</p>
+            <p className="mt-4 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No BMC commission entries are available yet. A referral or enquiry alone does not earn commission; the qualifying customer payment must be confirmed and cleared, and central KYC plus the relevant division approval must be complete.</p>
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
