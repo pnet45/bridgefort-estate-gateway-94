@@ -120,6 +120,9 @@ serve(async (req) => {
       .eq("referred_user_id", userId);
     if (priorAttributionError) throw priorAttributionError;
     const priorReferrers = Array.from(new Set((priorAttributions ?? []).map((row) => row.referrer_user_id).filter(Boolean)));
+    if (hasAgrovest && !agrovestOnly && priorReferrers.length > 0) {
+      return json({ error: "Homes and Agrovest items must be checked out separately when using your saved BMC referral." }, 400);
+    }
     if (priorReferrers.length > 1) {
       return json({ error: "Your BMC referral history needs support review before checkout can be attributed." }, 409);
     }
