@@ -127,8 +127,8 @@ const parseCsvText = (text: string): string[][] => {
       else quoted = !quoted;
     } else if (char === ',' && !quoted) {
       row.push(cell); cell = '';
-    } else if ((char === '\\n' || char === '\\r') && !quoted) {
-      if (char === '\\r' && text[index + 1] === '\\n') index += 1;
+    } else if ((char === '\n' || char === '\r') && !quoted) {
+      if (char === '\r' && text[index + 1] === '\n') index += 1;
       row.push(cell); cell = '';
       if (row.some(value => value.trim() !== '')) rows.push(row);
       row = [];
@@ -141,7 +141,7 @@ const parseCsvText = (text: string): string[][] => {
   return rows;
 };
 
-const normalizeCsvHeader = (value: string) => value.replace(/^\\uFEFF/, '').trim().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const normalizeCsvHeader = (value: string) => value.replace(/^\uFEFF/, '').trim().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
 interface TeamMember { id: string; first_name: string | null; last_name: string | null }
 interface PropertyOption { id: string; name: string; kind: 'estate' | 'listing' }
@@ -483,7 +483,7 @@ const AdminCRMLeads: React.FC = () => {
       const fullName = [member.first_name, member.last_name].filter(Boolean).join(' ').trim();
       return member.id === assignedRaw || fullName.toLowerCase() === assignedRaw.toLowerCase();
     });
-    const conversionRaw = valueFor('conversion_value').replace(/[₦,\\s]/g, '');
+    const conversionRaw = valueFor('conversion_value').replace(/[₦,\s]/g, '');
     const conversionValue = conversionRaw ? Number(conversionRaw) : null;
     const errors: string[] = [];
     if (!name) errors.push('Lead name is required');
