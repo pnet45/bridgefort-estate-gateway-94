@@ -645,7 +645,7 @@ const AdminCRMLeads: React.FC = () => {
         <Button onClick={() => { setEditingLead(null); setForm({ name: '', email: '', phone: '', source: 'website', status: 'new', estate_interest: '', notes: '', assigned_to: '', priority: 'medium', property_key: '' }); setIsFormOpen(true); }} className="gap-1">
           <Plus className="h-4 w-4" /> Add Lead
         </Button>
-        <Button variant="outline" onClick={() => { setIsImportOpen(true); setCsvFileError(''); }} className="gap-1 border-slate-200 text-slate-900 hover:bg-white">
+        <Button variant="outline" onClick={() => { setCsvHeaders([]); setCsvRows([]); setCsvMappings({}); setCsvFileName(''); setCsvFileError(''); setIsImportOpen(true); }} className="gap-1 border-slate-200 text-slate-900 hover:bg-white">
           <Upload className="h-4 w-4" /> Import CSV
         </Button>
         <Button variant="outline" onClick={handleExportCsv} className="gap-1 border-slate-200 text-slate-900 hover:bg-white">
@@ -861,7 +861,7 @@ const AdminCRMLeads: React.FC = () => {
           <div className="space-y-4 min-w-0">
             <div className="rounded-xl border border-dashed border-slate-300 bg-white p-4">
               <Label htmlFor="crm-leads-csv-file" className="text-slate-800">CSV file</Label>
-              <Input id="crm-leads-csv-file" type="file" accept=".csv,text/csv" className="mt-2 w-full bg-white text-slate-900" disabled={csvImporting}
+              <input id="crm-leads-csv-file" type="file" accept=".csv,text/csv" className="mt-2 block w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium" disabled={csvImporting}
                 onChange={event => { const file = event.target.files?.[0]; if (file) void handleCsvFile(file); event.currentTarget.value = ''; }} />
               <p className="mt-2 text-xs text-slate-500">Maximum file size: 10 MB. The first row must contain column headers.</p>
               {csvFileName && <p className="mt-2 text-sm font-medium text-slate-700">Selected: {csvFileName}</p>}
