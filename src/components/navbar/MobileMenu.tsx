@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,8 @@ import {
   Users,
   Plane,
   Sprout,
-  PiggyBank
+  PiggyBank,
+  ChevronDown
 } from 'lucide-react';
 import CartIcon from '../ecommerce/CartIcon';
 
@@ -32,6 +33,7 @@ interface MobileMenuProps {
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowLogin }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [propertiesOpen, setPropertiesOpen] = useState(false);
   
   const handleSignOut = async () => {
     await signOut();
@@ -43,8 +45,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
     { name: 'Home', icon: <Home size={20} />, path: '/' },
     { name: 'About Us', icon: <Info size={20} />, path: '/about' },
     { name: 'Gallery', icon: <ImageIcon size={20} />, path: '/gallery' },
-    { name: 'Estate Lands', icon: <Building size={20} />, path: '/properties/estates' },
-    { name: 'Homes', icon: <Home size={20} />, path: '/homes-sales' },
     //{ name: 'Apartments for Rent', icon: <Building size={20} />, path: '/properties/apartments' },
     { name: 'Services', icon: <Briefcase size={20} />, path: '/services' },
     { name: 'Training', icon: <GraduationCap size={20} />, path: '/training' },
@@ -80,6 +80,42 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
             <span className="mr-3 text-gray-500 dark:text-gray-400 group-hover:text-estate-blue transition-all duration-300">{item.icon}</span>
             <span className="font-medium group-hover:text-estate-blue transition-colors">{item.name}</span>
           </Link>
+          {item.name === 'About Us' && (
+            <div className="border-l-2 border-transparent">
+              <button
+                type="button"
+                aria-expanded={propertiesOpen}
+                aria-controls="mobile-property-links"
+                onClick={() => setPropertiesOpen((open) => !open)}
+                className="group flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-estate-blue/10 dark:text-gray-300"
+              >
+                <span className="flex items-center">
+                  <Building size={20} className="mr-3 text-gray-500 transition-colors group-hover:text-estate-blue dark:text-gray-400" />
+                  <span className="font-medium group-hover:text-estate-blue">Properties</span>
+                </span>
+                <ChevronDown size={18} className={`transition-transform duration-200 ${propertiesOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {propertiesOpen && (
+                <div id="mobile-property-links" className="bg-estate-blue/5 py-1 dark:bg-white/5">
+                  {[
+                    { name: 'Estate Lands', path: '/properties/estates' },
+                    { name: '5K Daily Promo', path: '/5k-daily-promo' },
+                    { name: 'Homes Sales', path: '/homes-sales' },
+                    { name: 'Apartments for Rent', path: '/properties/apartments' },
+                  ].map((propertyItem) => (
+                    <Link
+                      key={propertyItem.path}
+                      to={propertyItem.path}
+                      onClick={toggleMenu}
+                      className="block py-3 pl-14 pr-4 text-sm font-medium text-foreground transition-colors hover:bg-estate-blue/10 hover:text-estate-blue"
+                    >
+                      {propertyItem.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         ))}
 
         <div className="border-t dark:border-white/10 mt-2 pt-2 px-4">
