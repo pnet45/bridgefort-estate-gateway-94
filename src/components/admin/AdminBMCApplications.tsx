@@ -12,7 +12,7 @@ type AuditEvent = { audit_id: string; event_type: string; previous_status: strin
 
 type Commission = {
   commission_id: string;
-  division: 'agrovest' | 'travels';
+  division: 'homes' | 'agrovest' | 'travels';
   referrer_user_id: string;
   referrer_name: string | null;
   source_type: string;
