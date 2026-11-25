@@ -160,7 +160,7 @@ begin
   end loop;
 
   foreach document_key in array array['passport_photo','identity_document'] loop
-    document_path := nullif(trim(coalesce(_documents ->> document_key, '')), '');
+    document_path := nullif(trim(coalesce(_documents -> document_key ->> 'path', _documents -> document_key ->> 'url', _documents ->> document_key, '')), '');
     if document_path is null or document_path not like actor::text || '/%' then
       raise exception 'Upload a valid % document to your private KYC folder', document_key;
     end if;
