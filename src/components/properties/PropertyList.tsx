@@ -131,7 +131,7 @@ const PropertyList: React.FC = () => {
 
   if (loading && filteredProperties.length === 0) {
     return (
-      <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading properties">
+      <section className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3" aria-label="Loading properties">
         {Array.from({ length: propertiesPerPage }, (_, index) => (
           <div key={index} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-slate-900">
             <div className="aspect-[16/10] animate-pulse bg-muted" />
