@@ -67,8 +67,8 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
       
       <nav className="flex flex-col">
         {menuItems.map((item, idx) => (
+          <React.Fragment key={item.name}>
           <Link
-            key={item.name}
             to={item.path}
             className="group flex items-center px-4 py-3 hover:bg-estate-blue/10 hover:pl-6 transition-all duration-300 border-l-2 border-transparent hover:border-estate-blue dark:text-gray-300"
             onClick={toggleMenu}
@@ -116,6 +116,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
               )}
             </div>
           )}
+          </React.Fragment>
         ))}
 
         <div className="border-t dark:border-white/10 mt-2 pt-2 px-4">
