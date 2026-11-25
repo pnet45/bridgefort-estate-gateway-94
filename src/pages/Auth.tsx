@@ -74,7 +74,7 @@ const Auth = ({
     if (divisionReferralCode) {
       setBmcReferralCode(divisionReferralCode);
       setIsLogin(false);
-      setReferralMessage('A Bridgefort Homes BMC referral link was detected. Its attribution will be verified separately from BH-Realtors sponsor membership.');
+      setReferralMessage('A unified BMC referral link was detected. Its attribution will be recorded across the relevant Bridgefort business.');
     }
 
     if (refCode) {
@@ -351,7 +351,7 @@ const Auth = ({
       // }
 
       setRememberMe(true);
-      const normalizedSponsorCode = isRegisteringAsPBO ? '' : sponsorCode.trim().toUpperCase();
+      const normalizedSponsorCode = (isRegisteringAsPBO && !sponsorCodeLocked) ? '' : sponsorCode.trim().toUpperCase();
       // Persist the captured code in auth metadata as a recovery path when
       // email confirmation means signup has no authenticated session yet.
       const signupMetadata = {
