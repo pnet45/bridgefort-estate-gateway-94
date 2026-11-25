@@ -177,6 +177,9 @@ begin
   if current_status = 'VERIFIED' then
     raise exception 'Your central BMC identity is already verified';
   end if;
+  if current_status in ('PENDING','UNDER_REVIEW') then
+    raise exception 'Your central BMC identity submission is already awaiting review';
+  end if;
 
   insert into public.bmc_identity_kyc
     (user_id, status, identity_data, documents, submitted_at, reviewed_at, reviewed_by, review_note)
@@ -277,7 +280,7 @@ begin
     else null
   end;
   if next_status is null then raise exception 'Invalid KYC review decision'; end if;
-  if next_status <> 'VERIFIED' and coalesce(length(trim(_reason)),0) < 5 then
+  if next_status in ('REJECTED','REQUIRES_CORRECTION') and coalesce(length(trim(_reason)),0) < 5 then
     raise exception 'A clear review reason is required for this decision';
   end if;
 
