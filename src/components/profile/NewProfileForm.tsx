@@ -86,7 +86,7 @@ const NewProfileForm = () => {
   }, [userId, profile?.is_pbo]);
   // BMC identity verification is managed centrally in the BMC Partner Hub.
   // Keep the client KYC flow, but do not expose it to any BMC account.
-  const steps = isBmcPartner ? allSteps.filter(step => step.key !== 'identity' && step.key !== 'aml') : allSteps;
+  const steps = isBmcPartner ? allSteps.filter(step => step.key !== 'identity' && step.key !== 'aml' && step.key !== 'referrer') : allSteps;
   const [form, setForm] = useState<FormState>(initialForm);
   const [kycDocs, setKycDocs] = useState<Record<string, { url: string; name: string; type: string }>>({});
   const [activeStep, setActiveStep] = useState<StepKey>('personal');
@@ -151,7 +151,7 @@ const NewProfileForm = () => {
           setForm(prev => ({ ...prev, ...draft.form, ...(stableUser?.user_metadata?.referral_link === true && metadataReferralCode ? { referrerCode: metadataReferralCode } : {}) }));
           setKycDocs(draft.kycDocs || {});
           setTermsAccepted(draft.termsAccepted);
-          setActiveStep(isBmcPartner && (draft.activeStep === 'identity' || draft.activeStep === 'aml') ? 'personal' : draft.activeStep || 'personal');
+          setActiveStep(isBmcPartner && (draft.activeStep === 'identity' || draft.activeStep === 'aml' || draft.activeStep === 'referrer') ? 'personal' : draft.activeStep || 'personal');
         }
         const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
         if (error) throw error;
@@ -228,7 +228,7 @@ const NewProfileForm = () => {
   }, [userId, loading, form, kycDocs, activeStep, termsAccepted]);
 
   const payload = useMemo(() => ({
-    id: userId || '', referred_by_id: referralLookup?.realtor_id || null, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, first_name: form.firstName || null, last_name: form.lastName || null, date_of_birth: form.dateOfBirth || null, gender: form.gender || null, marital_status: form.maritalStatus || null, spouse_name: form.spouseName || null, nationality: form.nationality || null, languages_spoken: form.languagesSpoken || [], phone_number: form.phoneNumber || null, state_of_origin: form.stateOfOrigin || null, local_government: form.localGovernment || null, address: form.address || null, current_residence: form.currentResidence || null,
+    id: userId || '', ...(isBmcPartner ? {} : { referred_by_id: referralLookup?.realtor_id || null, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }), first_name: form.firstName || null, last_name: form.lastName || null, date_of_birth: form.dateOfBirth || null, gender: form.gender || null, marital_status: form.maritalStatus || null, spouse_name: form.spouseName || null, nationality: form.nationality || null, languages_spoken: form.languagesSpoken || [], phone_number: form.phoneNumber || null, state_of_origin: form.stateOfOrigin || null, local_government: form.localGovernment || null, address: form.address || null, current_residence: form.currentResidence || null,
     occupation: form.occupation || null, employer_name: form.employerName || null, employer_address: form.employerAddress || null, employment_status: form.employmentStatus || null, employer_country: form.employerCountry || null, employment_role: form.employmentRole || null, nature_of_business: form.natureOfBusiness || null, is_organization: !!form.isOrganization, company_name: form.companyName || null, company_address: form.companyAddress || null, company_registration_number: form.companyRegistrationNumber || null, incorporation_country: form.incorporationCountry || null, incorporation_date: form.incorporationDate || null, nature_of_corporate_business: form.natureOfCorporateBusiness || null, sales_status: form.salesStatus || null,
     next_of_kin_name: form.nextOfKinName || null, next_of_kin_relationship: form.nextOfKinRelationship || null, next_of_kin_address: form.nextOfKinAddress || null, next_of_kin_phone: form.nextOfKinPhone || null, next_of_kin_email: form.nextOfKinEmail || null, source_of_income: form.sourceOfIncome || null, monthly_income: incomeValue(form.annualIncome), banking_details: form.bankName ? `${form.bankName} - ${form.accountNumber} - ${form.accountName}` : null, is_foreigner: !!form.isForeigner, residence_permit: form.residencePermit || null, visa_status: form.visaStatus || null, is_politically_exposed: !!form.isPoliticallyExposed, political_exposure_details: form.politicalExposureDetails || null, has_financial_crimes_history: !!form.hasFinancialCrimesHistory, financial_crimes_details: form.financialCrimesDetails || null, referrer_name: form.referrerName || null, referrer_phone: form.referrerPhone || null, referrer_email: form.referrerEmail || null, ...(isBmcPartner ? {} : { id_type: form.idType || null, id_number: form.idNumber || null, id_country_of_issue: form.idCountryOfIssue || null, id_date_of_issue: form.idDateOfIssue || null, id_expiry: form.idExpiry || null, id_issuing_authority: form.idIssuingAuthority || null, kyc_docs: kycDocs }), terms_accepted: termsAccepted, profile_status: 'IN_PROGRESS', updated_at: new Date().toISOString(),
   }), [form, kycDocs, termsAccepted, userId, referralLookup?.realtor_id, isBmcPartner]);
@@ -349,7 +349,7 @@ const NewProfileForm = () => {
     try {
       const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
       if (form.referrerCode && !referralId) { setSaving(false); return; }
-      const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }, { onConflict: 'id' });
+      const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, ...(isBmcPartner ? {} : { referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }) }, { onConflict: 'id' });
       if (error) throw error;
       if (form.referrerCode) setExistingReferralId(referralId); else if (activeStep === 'referrer') setExistingReferralId(null);
       setSavedStep(activeStep); notifyProfileUpdated(); toast({ title: 'Saved successfully', description: `${steps[index].label} information has been saved.` });
@@ -361,7 +361,7 @@ const NewProfileForm = () => {
   const submitProfile = async () => {
     if (!termsAccepted || !userId || saving || !validateStep('review')) return;
     setSaving(true);
-    try { const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: isBmcPartner ? 'Your BMC partner profile has been securely saved. Submit central KYC from the BMC Partner Hub.' : 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
+    try { const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, ...(isBmcPartner ? {} : { referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }), profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: isBmcPartner ? 'Your BMC partner profile has been securely saved. Submit central KYC from the BMC Partner Hub.' : 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
     catch (error: any) { console.error('Profile submission error:', error); toast({ title: 'Submission failed', description: error?.message || 'Please try again.', variant: 'destructive' }); }
     finally { setSaving(false); }
   };
