@@ -56,7 +56,7 @@ declare
 begin
   if _user_id is null then raise exception 'BMC user is required'; end if;
   insert into public.bmc_identity_referral_codes(user_id, referral_code)
-  values (_user_id, 'BMC-' || upper(substr(encode(extensions.gen_random_bytes(6), 'hex'), 1, 10)))
+  values (_user_id, 'BMC-' || upper(substr(encode(extensions.gen_random_bytes(8), 'hex'), 1, 16)))
   on conflict (user_id) do nothing;
 
   select c.referral_code into canonical_code
