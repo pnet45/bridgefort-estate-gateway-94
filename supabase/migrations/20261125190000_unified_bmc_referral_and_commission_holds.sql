@@ -55,14 +55,6 @@ declare
   app_id uuid;
 begin
   if _user_id is null then raise exception 'BMC user is required'; end if;
-  if not exists (
-    select 1 from public.profiles p where p.id = _user_id and p.is_pbo is true
-  ) and not exists (
-    select 1 from public.bmc_partner_divisions d where d.user_id = _user_id
-  ) then
-    raise exception 'A BMC identity is required before issuing a BMC referral code';
-  end if;
-
   insert into public.bmc_identity_referral_codes(user_id, referral_code)
   values (_user_id, 'BMC-' || upper(substr(encode(extensions.gen_random_bytes(6), 'hex'), 1, 10)))
   on conflict (user_id) do nothing;
@@ -258,7 +250,7 @@ set search_path = ''
 as $function$
 begin
   update public.bmc_division_referral_codes
-  set is_active = (new.application_status <> 'suspended'),
+  set is_active = (new.application_status not in ('suspended','rejected','withdrawn')),
       updated_at = now()
   where application_id = new.id;
   return new;
@@ -286,7 +278,7 @@ begin
   join public.bmc_partner_divisions d on d.user_id = c.user_id
   where c.user_id = auth.uid()
     and c.is_active is true
-    and d.application_status <> 'suspended'
+    and d.application_status not in ('suspended','rejected','withdrawn')
   order by d.division;
 end;
 $function$;
