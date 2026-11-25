@@ -73,11 +73,13 @@ const Auth = ({
 
     if (divisionReferralCode) {
       setBmcReferralCode(divisionReferralCode);
+      setSponsorCode('');
+      setSponsorCodeLocked(false);
       setIsLogin(false);
-      setReferralMessage('A Bridgefort Homes BMC referral link was detected. Its attribution will be verified separately from BH-Realtors sponsor membership.');
+      setReferralMessage('A unified BMC referral link was detected. Its attribution will be recorded across the relevant Bridgefort business.');
     }
 
-    if (refCode) {
+    if (refCode && !divisionReferralCode) {
       setSponsorCode(refCode);
       setSponsorCodeLocked(true);
       setIsLogin(false);
@@ -351,7 +353,7 @@ const Auth = ({
       // }
 
       setRememberMe(true);
-      const normalizedSponsorCode = sponsorCode.trim().toUpperCase();
+      const normalizedSponsorCode = (isRegisteringAsPBO && !sponsorCodeLocked) ? '' : sponsorCode.trim().toUpperCase();
       // Persist the captured code in auth metadata as a recovery path when
       // email confirmation means signup has no authenticated session yet.
       const signupMetadata = {
@@ -461,7 +463,7 @@ const Auth = ({
           role: isRegisteringAsPBO ? 'bmc_applicant' : 'client',
         });
         captureEvent('user_signed_up', {
-          account_type: isRegisteringAsPBO ? 'realtor' : 'client',
+          account_type: isRegisteringAsPBO ? 'bmc_partner' : 'client',
           has_sponsor: Boolean(sponsorCode.trim()),
           auth_method: 'password',
         });
@@ -667,19 +669,19 @@ const Auth = ({
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   {isRegisteringAsPBO
-                    ? 'Your existing BH-Realtors referral identity remains separate. BMC division referral links are issued only after the relevant division is approved.'
+                    ? 'BMC partners use one central referral code across Bridgefort Homes, Travels and Agrovest. Existing BH-Realtors codes remain valid for legacy referrals.'
                     : 'If a Bridgefort Homes BMC partner referred you, use their Homes referral link so attribution is captured separately from BH-Realtors membership.'}
                 </p>
 
-                <div>
+                {!isRegisteringAsPBO && <div>
                   <Label htmlFor="sponsorCode" className="flex items-center gap-1.5">
-                    BH-Realtors Referral Code (Optional)
+                    Legacy BH-Realtors Referral Code (Optional)
                     {sponsorCodeLocked && <Lock className="h-3 w-3 text-slate-400" />}
                   </Label>
                   <Input
                     type="text"
                     id="sponsorCode"
-                    placeholder="Enter a BH-Realtors referral code"
+                    placeholder="Enter an existing BH-Realtors referral code"
                     value={sponsorCode}
                     onChange={(e) => setSponsorCode(e.target.value)}
                     readOnly={sponsorCodeLocked}
@@ -687,8 +689,8 @@ const Auth = ({
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     {sponsorCodeLocked
-                      ? "This code came from your referral link and can't be changed here."
-                      : 'This field is only for the legacy BH-Realtors referral system. BMC division referral links are captured separately.'}
+                      ? "This legacy code came from your referral link and can't be changed here."
+                      : 'Existing BH-Realtors referral codes remain valid for legacy attribution. New partner registrations use BMC referral codes.'}
                   </p>
                   {referralMessage && <p className="text-xs text-emerald-600 mt-1">{referralMessage}</p>}
                   {referralEmailSent !== null && (
@@ -696,7 +698,12 @@ const Auth = ({
                       {referralEmailNotice || (referralEmailSent ? `Referral link emailed to ${email}` : 'Referral code created but email failed.')}
                     </div>
                   )}
-                </div>
+                </div>}
+                {isRegisteringAsPBO && <div>
+                  <Label htmlFor="bmcReferralCode">BMC Referral Code (Optional)</Label>
+                  <Input id="bmcReferralCode" value={bmcReferralCode} onChange={event => setBmcReferralCode(event.target.value.toUpperCase())} placeholder="Enter the referring BMC code" readOnly={new URLSearchParams(location.search).has('bmc_ref')} />
+                  <p className="mt-1 text-xs text-gray-500">One BMC referral code works across Bridgefort Homes, Travels and Agrovest. Referrals are recorded immediately; commission eligibility remains subject to the relevant division's approval.</p>
+                </div>}
 
                 {isRegisteringAsPBO && (
                   <fieldset className="rounded-lg border border-border p-3 space-y-3">

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
+import BMCIdentityKYC from '@/components/bmc/BMCIdentityKYC';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -11,12 +12,12 @@ import { RefreshCw, Loader2, Building2, Plane, Sprout, ShieldCheck, Clock, Arrow
 
 type Division = 'homes' | 'travels' | 'agrovest';
 type DivisionReferralCode = { division: Division; referral_code: string; created_at: string; };
-type BmcCommission = { commission_id: string; division: 'agrovest' | 'travels'; source_type: string; gross_customer_payment: number; commission_rate: number; commission_amount: number; status: 'earned' | 'paid' | 'reversed'; payment_reference: string | null; created_at: string; paid_at: string | null; payout_reference: string | null; };
+type BmcCommission = { commission_id: string; division: 'homes' | 'agrovest' | 'travels'; source_type: string; gross_customer_payment: number; commission_rate: number; commission_amount: number; status: 'held' | 'earned' | 'paid' | 'reversed'; payment_reference: string | null; created_at: string; paid_at: string | null; payout_reference: string | null; };
 
 type DivisionApplication = {
   id: string;
   division: Division;
-  application_status: 'pending_review' | 'legacy_existing' | 'approved' | 'rejected' | 'suspended' | 'withdrawn';
+  application_status: 'pending_review' | 'referral_only' | 'legacy_existing' | 'approved' | 'rejected' | 'suspended' | 'withdrawn';
   requested_at: string;
   reviewed_at: string | null;
 };
@@ -29,6 +30,7 @@ const divisionDetails: Record<Division, { title: string; description: string; ic
 
 const statusLabels: Record<DivisionApplication['application_status'], string> = {
   pending_review: 'Pending review',
+  referral_only: 'Referral attribution enabled · approval pending',
   legacy_existing: 'Existing BH-Realtors account',
   approved: 'Approved',
   rejected: 'Not approved',
@@ -38,6 +40,7 @@ const statusLabels: Record<DivisionApplication['application_status'], string> = 
 
 const statusStyles: Record<DivisionApplication['application_status'], string> = {
   pending_review: 'border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200',
+  referral_only: 'border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-500/40 dark:bg-slate-800 dark:text-slate-200',
   legacy_existing: 'border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-500/40 dark:bg-slate-800 dark:text-slate-200',
   approved: 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-200',
   rejected: 'border-rose-300 bg-rose-50 text-rose-800 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-200',
@@ -100,19 +103,18 @@ export default function BMCPartnerHub() {
   }, [user, authLoading, loadApplications]);
 
   const referralCode = profile?.pbo_referral_code || '';
-  const referralLinkFor = (division: Division, code: string) => `${window.location.origin}${division === 'homes' ? '/bridgefort-realtors-login' : division === 'travels' ? '/travels' : '/agrovest'}?bmc_ref=${encodeURIComponent(code)}`;
+  const referralLinkFor = (division: Division, code: string) => `${window.location.origin}${division === 'homes' ? '/properties/estates' : division === 'travels' ? '/travels' : '/agrovest'}?bmc_ref=${encodeURIComponent(code)}`;
   const copyReferralLink = async (division: Division, code: string) => {
     const link = referralLinkFor(division, code);
     try {
       await navigator.clipboard.writeText(link);
-      toast({ title: 'Referral link copied', description: `Your approved ${divisionDetails[division].title} referral link is ready to share.` });
+      toast({ title: 'Referral link copied', description: `Your shared BMC referral link for ${divisionDetails[division].title} is ready to share.` });
     } catch {
       toast({ title: 'Unable to copy link', description: 'Please copy the referral link from the address field manually.', variant: 'destructive' });
     }
   };
 
-  const existingDivisions = applications.map((application) => application.division);
-  const availableDivisions = (['homes', 'travels', 'agrovest'] as Division[]).filter((division) => !existingDivisions.includes(division));
+  const availableDivisions = applications.filter((application) => application.application_status === 'referral_only').map((application) => application.division);
 
   const submitAdditionalApplications = async () => {
     if (selectedAdditionalDivisions.length === 0 || !agreedToBmcTerms || !acknowledgedBmcPrivacy) return;
@@ -183,16 +185,18 @@ export default function BMCPartnerHub() {
             <div className="rounded-xl border border-border bg-muted/30 p-4">
               <p className="text-xs text-muted-foreground">BMC account reference</p>
               <p className="mt-1 font-mono text-lg font-semibold text-foreground">{'BMC-' + user.id.slice(0, 8).toUpperCase()}</p>
-              <p className="mt-1 text-xs text-muted-foreground">This reference identifies your account; it is not a shareable referral link. Division-specific referral links will be displayed only after the relevant division is approved and its referral workflow is activated. Your existing BH-Realtors referral identity remains preserved.</p>
+              <p className="mt-1 text-xs text-muted-foreground">This is your account reference. Your single shareable BMC referral code works across all three businesses. Any existing BH-Realtors referral code remains valid for legacy referrals.</p>
             </div>
           </div>
         </section>
+
+        {(Boolean(profile?.is_pbo) || applications.length > 0) && <BMCIdentityKYC />}
 
         <section className="space-y-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-xl font-semibold text-foreground">Your division applications</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Approval in one division does not automatically approve another.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Your single BMC referral code works across all three businesses. Each business division still has its own operational approval and commission eligibility.</p>
             </div>
             <Badge variant="outline">{applications.length} division {applications.length === 1 ? 'record' : 'records'}</Badge>
           </div>
@@ -222,7 +226,8 @@ export default function BMCPartnerHub() {
                       <Badge className={statusStyles[application.application_status]}>{statusLabels[application.application_status]}</Badge>
                     </div>
                     <p className="mt-4 text-xs text-muted-foreground">Application recorded {new Date(application.requested_at).toLocaleDateString()}</p>
-                    {application.application_status === 'pending_review' && <p className="mt-2 text-sm leading-5 text-muted-foreground">Your application is awaiting review. Division access and commission eligibility are not active until approval.</p>}
+                    {application.application_status === 'pending_review' && <p className="mt-2 text-sm leading-5 text-muted-foreground">Your application is awaiting review. Referral attribution is active, but commission eligibility and division access remain on hold until approval.</p>}
+                    {application.application_status === 'referral_only' && <p className="mt-2 text-sm leading-5 text-muted-foreground">Your central BMC referral code works for this business, so referrals can be recorded. Apply for this division when you are ready to request operational approval; commissions remain on hold until approval.</p>}
                     {application.application_status === 'legacy_existing' && <p className="mt-2 text-sm leading-5 text-muted-foreground">Your previous BH-Realtors account has been retained. This legacy status does not change your existing membership or independently approve other divisions.</p>}
                     {application.application_status === 'approved' && <p className="mt-2 flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300"><ShieldCheck className="h-4 w-4" /> Division approval recorded.</p>}
                     {application.application_status === 'rejected' && <p className="mt-2 text-sm text-muted-foreground">Contact Bridgefort support if you need clarification about this decision.</p>}
@@ -245,8 +250,8 @@ export default function BMCPartnerHub() {
         </section>
 
         <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
-          <h2 className="text-xl font-semibold text-foreground">Approved division referral links</h2>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">Only formally approved BMC divisions, or preserved legacy BH-Realtors Homes accounts, receive active share links. Referral activity is recorded for attribution; commission eligibility and any payment remain subject to the relevant approved written division schedule.</p>
+          <h2 className="text-xl font-semibold text-foreground">Your unified BMC referral code</h2>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">One BMC code works across Bridgefort Homes, Bridgefort Travels and Agrovest. Referrals are recorded even while a division is awaiting approval; commissions remain on hold until that division is approved and the qualifying customer payment clears.</p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {applications.some((application) => application.division === 'homes' && application.application_status === 'legacy_existing') && profile?.is_pbo && referralCode && (
               <article className="rounded-xl border border-border p-4">
@@ -269,7 +274,7 @@ export default function BMCPartnerHub() {
               <article key={item.division} className="rounded-xl border border-border p-4">
                 <p className="font-semibold text-foreground">{divisionDetails[item.division].title}</p>
                 <p className="mt-1 break-all font-mono text-sm text-muted-foreground">{item.referral_code}</p>
-                <p className="mt-2 text-xs text-muted-foreground">Approved division referral link</p>
+                <p className="mt-2 text-xs text-muted-foreground">Shared BMC referral code</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Button size="sm" variant="outline" className="flex-1" onClick={() => void copyReferralLink(item.division, item.referral_code)}>
                     <Copy className="mr-2 h-4 w-4" /> Copy link
@@ -282,7 +287,7 @@ export default function BMCPartnerHub() {
             ))}
           </div>
           {divisionReferralCodes.length === 0 && !applications.some((application) => application.division === 'homes' && ['approved', 'legacy_existing'].includes(application.application_status) && referralCode) && (
-            <p className="mt-3 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No active division referral links are available yet. They will appear here after approval and activation.</p>
+            <p className="mt-3 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No unified BMC referral links are available yet. Refresh after the central referral-code migration has been enabled.</p>
           )}
         </section>
 
@@ -291,11 +296,11 @@ export default function BMCPartnerHub() {
             <span className="rounded-xl bg-estate-blue/10 p-3 text-estate-blue"><Coins className="h-5 w-5" /></span>
             <div>
               <h2 className="text-xl font-semibold text-foreground">BMC commission history</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Agrovest lease partnerships and Travels earn 10% of cleared customer payments. BH-Realtors land sales earn 15%; house sales earn 5%. Applicable WHT and approved administrative fees are deducted from commission payable.</p>
+              <p className="mt-1 text-sm text-muted-foreground">BMC Homes land sales earn 15% and house sales 5%; Agrovest and Travels earn 10% of cleared customer payments. BMC commissions are direct-only and remain on hold until central identity KYC and the relevant division are approved. Applicable WHT and approved administrative fees are deducted from commission payable.</p>
             </div>
           </div>
           {commissionRows.length === 0 ? (
-            <p className="mt-4 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No Agrovest or Travels commission entries are available yet. A referral or enquiry alone does not earn commission; the qualifying customer payment must be confirmed and cleared.</p>
+            <p className="mt-4 rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">No BMC commission entries are available yet. A referral or enquiry alone does not earn commission; the qualifying customer payment must be confirmed and cleared, and central KYC plus the relevant division approval must be complete.</p>
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
@@ -308,7 +313,7 @@ export default function BMCPartnerHub() {
                       <td className="p-3 text-foreground">{commission.commission_rate}%</td>
                       <td className="p-3 font-semibold text-foreground">{Number(commission.commission_amount).toLocaleString('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 2 })}</td>
                       <td className="p-3 font-mono text-xs text-muted-foreground">{commission.payment_reference || '—'}</td>
-                      <td className="p-3"><Badge variant="outline">{commission.status === 'earned' ? 'Earned · awaiting payout' : commission.status === 'paid' ? 'Paid' : 'Reversed'}</Badge></td>
+                      <td className="p-3"><Badge variant="outline">{commission.status === 'held' ? 'On hold · division approval pending' : commission.status === 'earned' ? 'Earned · awaiting payout' : commission.status === 'paid' ? 'Paid' : 'Reversed'}</Badge></td>
                       <td className="p-3 text-muted-foreground">{new Date(commission.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
@@ -357,7 +362,7 @@ export default function BMCPartnerHub() {
         )}
 
         <section className="flex flex-wrap gap-3">
-          <Link to="/bh-realtors/legacy"><Button variant="outline">Existing BH-Realtors workspace</Button></Link>
+          {profile?.is_pbo && <Link to="/bh-realtors/legacy"><Button variant="outline">Existing BH-Realtors workspace</Button></Link>}
           <Link to="/bmc-partner-agreement"><Button variant="outline">BMC Partner Agreement</Button></Link>
           <Link to="/bmc-privacy-notice"><Button variant="outline">BMC Privacy Notice</Button></Link>
         </section>

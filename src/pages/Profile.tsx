@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
@@ -9,7 +9,7 @@ import NewProfileForm from '@/components/profile/NewProfileForm';
 import { Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 const Profile = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const lastAuthenticatedUserIdRef = useRef<string | null>(user?.id ?? null);
   if (user?.id) lastAuthenticatedUserIdRef.current = user.id;
   // Retain the authenticated ID during a temporary auth hydration window so
@@ -21,6 +21,16 @@ const Profile = () => {
   const [completion, setCompletion] = useState(0);
   const [profileStatus, setProfileStatus] = useState('DRAFT');
   const [kycStatus, setKycStatus] = useState('NOT_STARTED');
+  const [isBmcPartner, setIsBmcPartner] = useState(Boolean(profile?.is_pbo));
+
+  useEffect(() => {
+    if (!userId) { setIsBmcPartner(false); return; }
+    if (profile?.is_pbo) { setIsBmcPartner(true); return; }
+    let active = true;
+    void (supabase as any).from('bmc_partner_divisions').select('id').eq('user_id', userId).limit(1).maybeSingle()
+      .then(({ data, error }) => { if (active) setIsBmcPartner(!error && Boolean(data)); });
+    return () => { active = false; };
+  }, [userId, profile?.is_pbo]);
 
   // Redirect only when the initial auth check has completed without a user.
   useEffect(() => {
@@ -81,11 +91,11 @@ const Profile = () => {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="flex items-center gap-2 text-sm font-semibold text-estate-blue"><ShieldCheck className="h-4 w-4" />Profile readiness</div>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-1">Your completion is calculated from the information required by Bridgefort.</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">Your completion is calculated from the information required by Bridgefort.</p>{isBmcPartner && <Link to="/bmc-partner-hub" className="mt-2 inline-block text-xs font-semibold text-estate-blue underline">Manage your central BMC identity verification</Link>}
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">{profileStatus.replace(/_/g, ' ')}</span>
-                  {kycStatus === 'VERIFIED' && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
+                  {!isBmcPartner && kycStatus === 'VERIFIED' && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
                 </div>
               </div>
               <div className="mt-4">

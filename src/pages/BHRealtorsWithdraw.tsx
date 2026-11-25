@@ -19,6 +19,8 @@ const BHRealtorsWithdraw: React.FC = () => {
   const navigate = useNavigate();
   const [walletBalance, setWalletBalance] = useState(0);
   const [canWithdraw, setCanWithdraw] = useState(false);
+  const [centralKycStatus, setCentralKycStatus] = useState('NOT_STARTED');
+  const [homesDivisionStatus, setHomesDivisionStatus] = useState('');
   const [packageName, setPackageName] = useState('Associate');
   const [pendingAmount, setPendingAmount] = useState(0);
   const [balanceHidden, setBalanceHidden] = useState(false);
@@ -37,16 +39,25 @@ const BHRealtorsWithdraw: React.FC = () => {
     if (!user) return;
     setLoading(true);
     try {
-      const [{ data: profileRow, error: profileError }, { data: dashboard, error: dashboardError }] = await Promise.all([
+      const [{ data: profileRow, error: profileError }, { data: dashboard, error: dashboardError }, { data: kycRows, error: kycError }, { data: homesDivision, error: homesError }] = await Promise.all([
         supabase.from('profiles').select('banking_details').eq('id', user.id).single(),
         supabase.rpc('get_my_bhrealtor_dashboard'),
+        supabase.rpc('get_my_bmc_identity_kyc_status' as never, {} as never),
+        (supabase as any).from('bmc_partner_divisions').select('application_status').eq('user_id', user.id).eq('division', 'homes').maybeSingle(),
       ]);
       if (profileError) throw profileError;
       if (dashboardError) throw dashboardError;
+      if (kycError) throw kycError;
+      if (homesError) throw homesError;
       const summary = (dashboard || {}) as any;
       const wallet = Number(summary.available_balance ?? summary.profile?.wallet_balance ?? 0);
       setWalletBalance(wallet);
-      setCanWithdraw(Boolean(summary.can_withdraw));
+      const kycRow = Array.isArray(kycRows) ? kycRows[0] : null;
+      const kycStatus = String(kycRow?.status || 'NOT_STARTED');
+      const homesStatus = String(homesDivision?.application_status || '');
+      setCentralKycStatus(kycStatus);
+      setHomesDivisionStatus(homesStatus);
+      setCanWithdraw(Boolean(summary.can_withdraw) && kycStatus === 'VERIFIED' && ['approved','legacy_existing'].includes(homesStatus));
       setPackageName(String(summary.profile?.package || 'associate').replace(/_/g, ' '));
       setPendingAmount(Number(summary.pending_withdrawal_total || 0));
       if (profileRow?.banking_details) {
@@ -83,7 +94,7 @@ const BHRealtorsWithdraw: React.FC = () => {
       toast({ title: 'Bank details missing', description: 'Complete your BHRealtors bank details before requesting a withdrawal.', variant: 'destructive' }); return;
     }
     if (!canWithdraw) {
-      toast({ title: 'Withdrawal not available', description: 'Your current BHRealtors package does not have withdrawal access yet.', variant: 'destructive' }); return;
+      toast({ title: 'Withdrawal not available', description: 'Complete central BMC identity verification and confirm Homes division and membership eligibility before requesting a withdrawal.', variant: 'destructive' }); return;
     }
     if (!numericAmount || numericAmount <= 0 || numericAmount > walletBalance) {
       toast({ title: 'Invalid withdrawal amount', description: amountError || 'Enter a valid amount within your available balance.', variant: 'destructive' }); return;
@@ -139,6 +150,19 @@ const BHRealtorsWithdraw: React.FC = () => {
             <div className="mt-3 flex flex-wrap gap-2 text-xs"><Badge variant={canWithdraw ? 'default' : 'secondary'}>{canWithdraw ? 'Withdrawal enabled' : 'Withdrawal locked'}</Badge><span className="rounded-full bg-slate-100 px-2.5 py-1 capitalize text-slate-600">{packageName} package</span>{pendingAmount > 0 && <span className="rounded-full bg-amber-50 px-2.5 py-1 text-amber-700">₦{pendingAmount.toLocaleString()} pending</span>}</div><p className="text-xs text-slate-500 mt-2">Only available commissions can be withdrawn. Your bank details are captured from your Realtor profile.</p>
           </div>
 
+          {centralKycStatus !== 'VERIFIED' && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              <p className="font-semibold">Central BMC identity verification required</p>
+              <p className="mt-1">Your KYC is currently {centralKycStatus.replace(/_/g, ' ').toLowerCase()}. Complete the single BMC verification to use withdrawal services across Bridgefort businesses.</p>
+              <Link to="/bmc-partner-hub" className="mt-2 inline-flex font-semibold underline">Go to BMC Partner Hub</Link>
+            </div>
+          )}
+          {!['approved','legacy_existing'].includes(homesDivisionStatus) && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              <p className="font-semibold">Bridgefort Homes division approval required</p>
+              <p className="mt-1">Referral attribution may be recorded before approval, but Homes commission withdrawals remain unavailable until the Homes division is approved. Your existing BH-Realtors status is preserved where applicable.</p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="rounded-3xl border border-slate-200 bg-white p-6"><Label htmlFor="wd-amount">Amount to withdraw (₦)</Label><Input id="wd-amount" type="number" min={1} max={walletBalance} value={amount} onChange={e => setAmount(e.target.value)} placeholder="e.g. 20000" required />{amountError ? <p className="text-xs text-destructive mt-2">{amountError}</p> : <p className="text-xs text-slate-500 mt-2">Maximum: ₦{walletBalance.toLocaleString()}</p>}</div>
 
@@ -147,7 +171,7 @@ const BHRealtorsWithdraw: React.FC = () => {
             <div className="rounded-3xl border border-slate-200 bg-white p-6"><Label htmlFor="wd-password" className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Confirm your password</Label><Input id="wd-password" type="password" value={password} onChange={e => { setPassword(e.target.value); setPasswordVerified(null); }} onBlur={verifyPassword} placeholder="Your account password" required />{verifyingPassword ? <p className="text-xs text-slate-500 mt-2 flex gap-1"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Verifying…</p> : passwordVerified === true ? <p className="text-xs text-emerald-600 mt-2 flex gap-1"><Check className="h-3.5 w-3.5" /> Password verified</p> : passwordVerified === false ? <p className="text-xs text-destructive mt-2 flex gap-1"><X className="h-3.5 w-3.5" /> Incorrect password</p> : <p className="text-xs text-slate-400 mt-2">Password verification is required for withdrawal.</p>}</div>
 
             <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900"><p className="flex gap-2"><AlertTriangle className="h-4 w-4 shrink-0" /> Withdrawal requests are reviewed by authorized admins before payout.</p><p className="flex gap-2 mt-2"><Clock className="h-4 w-4 shrink-0" /> Approved payouts are normally processed within the company's payout window.</p></div>
-            <Button type="submit" disabled={submitting || !canWithdraw || walletBalance <= 0 || passwordVerified !== true || !!amountError || !bank} className="w-full bg-estate-blue hover:bg-estate-darkBlue">{submitting ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Submitting request…</span> : !canWithdraw ? 'Withdrawal unavailable for this package' : walletBalance <= 0 ? 'No available balance' : 'Submit Withdrawal Request'}</Button>
+            <Button type="submit" disabled={submitting || !canWithdraw || walletBalance <= 0 || passwordVerified !== true || !!amountError || !bank} className="w-full bg-estate-blue hover:bg-estate-darkBlue">{submitting ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Submitting request…</span> : !canWithdraw ? centralKycStatus !== 'VERIFIED' ? 'Complete central BMC KYC first' : 'Withdrawal eligibility not yet met' : walletBalance <= 0 ? 'No available balance' : 'Submit Withdrawal Request'}</Button>
           </form>
 
           <div className="rounded-3xl border border-slate-200 bg-white p-6"><p className="font-semibold mb-4">Your withdrawal requests</p>{history.length === 0 ? <p className="text-sm text-slate-500">You haven't requested a withdrawal yet.</p> : <div className="space-y-3">{history.map(h => <div key={h.id} className="flex items-center justify-between rounded-xl bg-slate-50 p-3"><div><p className="font-semibold">₦{Number(h.amount).toLocaleString()}</p><p className="text-xs text-slate-500">{new Date(h.created_at).toLocaleString()}</p></div>{statusBadge(h.status)}</div>)}</div>}</div>

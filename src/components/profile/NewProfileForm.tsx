@@ -12,7 +12,7 @@ import { notifyProfileUpdated } from '@/lib/profileEvents';
 import { ChevronLeft, ChevronRight, Check, Loader2, Save, ShieldCheck, Search, UserCheck, UserX, Lock } from 'lucide-react';
 import KYCUploadField from './KYCUploadField';
 
-const steps = [
+const allSteps = [
   { key: 'personal', label: 'Personal', description: 'Your basic information' },
   { key: 'identity', label: 'Identity', description: 'Identification & KYC' },
   { key: 'employment', label: 'Employment', description: 'Work & organisation' },
@@ -22,7 +22,7 @@ const steps = [
   { key: 'review', label: 'Review', description: 'Confirm & submit' },
 ] as const;
 
-type StepKey = typeof steps[number]['key'];
+type StepKey = typeof allSteps[number]['key'];
 type FormState = Record<string, any>;
 
 const initialForm: FormState = {
@@ -65,7 +65,7 @@ function readProfileDraft(userId: string): ProfileDraft | null {
 const incomeValue = (value: string) => ({ 'Below ₦1M': 500000, '₦1M - ₦5M': 3000000, '₦6M - ₦20M': 13000000, 'Above ₦20M': 25000000 }[value] ?? null);
 
 const NewProfileForm = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   // Keep the last authenticated identity while the auth provider is briefly
   // hydrating a resumed mobile session. This prevents the KYC form from
   // switching to its loading state and unmounting the native file input.
@@ -73,6 +73,20 @@ const NewProfileForm = () => {
   if (user) lastAuthenticatedUserRef.current = user;
   const stableUser = user ?? (authLoading ? lastAuthenticatedUserRef.current : null);
   const userId = stableUser?.id ?? null;
+  const [isBmcPartner, setIsBmcPartner] = useState(Boolean(profile?.is_pbo));
+  // New BMC accounts are not BH-Realtors (is_pbo) accounts. Detect their
+  // central partner identity from the division registry instead.
+  useEffect(() => {
+    if (profile?.is_pbo) { setIsBmcPartner(true); return; }
+    if (!userId) { setIsBmcPartner(false); return; }
+    let active = true;
+    void (supabase as any).from('bmc_partner_divisions').select('id').eq('user_id', userId).limit(1).maybeSingle()
+      .then(({ data, error }) => { if (active) setIsBmcPartner(!error && Boolean(data)); });
+    return () => { active = false; };
+  }, [userId, profile?.is_pbo]);
+  // BMC identity verification is managed centrally in the BMC Partner Hub.
+  // Keep the client KYC flow, but do not expose it to any BMC account.
+  const steps = isBmcPartner ? allSteps.filter(step => step.key !== 'identity' && step.key !== 'aml' && step.key !== 'referrer') : allSteps;
   const [form, setForm] = useState<FormState>(initialForm);
   const [kycDocs, setKycDocs] = useState<Record<string, { url: string; name: string; type: string }>>({});
   const [activeStep, setActiveStep] = useState<StepKey>('personal');
@@ -137,7 +151,7 @@ const NewProfileForm = () => {
           setForm(prev => ({ ...prev, ...draft.form, ...(stableUser?.user_metadata?.referral_link === true && metadataReferralCode ? { referrerCode: metadataReferralCode } : {}) }));
           setKycDocs(draft.kycDocs || {});
           setTermsAccepted(draft.termsAccepted);
-          setActiveStep(draft.activeStep || 'personal');
+          setActiveStep(isBmcPartner && (draft.activeStep === 'identity' || draft.activeStep === 'aml' || draft.activeStep === 'referrer') ? 'personal' : draft.activeStep || 'personal');
         }
         const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
         if (error) throw error;
@@ -164,7 +178,7 @@ const NewProfileForm = () => {
       finally { setLoading(false); }
     };
     load();
-  }, [userId, stableUser?.user_metadata?.referred_by_code]);
+  }, [userId, stableUser?.user_metadata?.referred_by_code, isBmcPartner]);
 
   // Flush the latest values before a mobile browser backgrounds or restores
   // this page around the native Android/iOS document picker.
@@ -214,10 +228,10 @@ const NewProfileForm = () => {
   }, [userId, loading, form, kycDocs, activeStep, termsAccepted]);
 
   const payload = useMemo(() => ({
-    id: userId || '', referred_by_id: referralLookup?.realtor_id || null, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, first_name: form.firstName || null, last_name: form.lastName || null, date_of_birth: form.dateOfBirth || null, gender: form.gender || null, marital_status: form.maritalStatus || null, spouse_name: form.spouseName || null, nationality: form.nationality || null, languages_spoken: form.languagesSpoken || [], phone_number: form.phoneNumber || null, state_of_origin: form.stateOfOrigin || null, local_government: form.localGovernment || null, address: form.address || null, current_residence: form.currentResidence || null,
+    id: userId || '', ...(isBmcPartner ? {} : { referred_by_id: referralLookup?.realtor_id || null, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }), first_name: form.firstName || null, last_name: form.lastName || null, date_of_birth: form.dateOfBirth || null, gender: form.gender || null, marital_status: form.maritalStatus || null, spouse_name: form.spouseName || null, nationality: form.nationality || null, languages_spoken: form.languagesSpoken || [], phone_number: form.phoneNumber || null, state_of_origin: form.stateOfOrigin || null, local_government: form.localGovernment || null, address: form.address || null, current_residence: form.currentResidence || null,
     occupation: form.occupation || null, employer_name: form.employerName || null, employer_address: form.employerAddress || null, employment_status: form.employmentStatus || null, employer_country: form.employerCountry || null, employment_role: form.employmentRole || null, nature_of_business: form.natureOfBusiness || null, is_organization: !!form.isOrganization, company_name: form.companyName || null, company_address: form.companyAddress || null, company_registration_number: form.companyRegistrationNumber || null, incorporation_country: form.incorporationCountry || null, incorporation_date: form.incorporationDate || null, nature_of_corporate_business: form.natureOfCorporateBusiness || null, sales_status: form.salesStatus || null,
-    next_of_kin_name: form.nextOfKinName || null, next_of_kin_relationship: form.nextOfKinRelationship || null, next_of_kin_address: form.nextOfKinAddress || null, next_of_kin_phone: form.nextOfKinPhone || null, next_of_kin_email: form.nextOfKinEmail || null, source_of_income: form.sourceOfIncome || null, monthly_income: incomeValue(form.annualIncome), banking_details: form.bankName ? `${form.bankName} - ${form.accountNumber} - ${form.accountName}` : null, is_foreigner: !!form.isForeigner, residence_permit: form.residencePermit || null, visa_status: form.visaStatus || null, is_politically_exposed: !!form.isPoliticallyExposed, political_exposure_details: form.politicalExposureDetails || null, has_financial_crimes_history: !!form.hasFinancialCrimesHistory, financial_crimes_details: form.financialCrimesDetails || null, referrer_name: form.referrerName || null, referrer_phone: form.referrerPhone || null, referrer_email: form.referrerEmail || null, id_type: form.idType || null, id_number: form.idNumber || null, id_country_of_issue: form.idCountryOfIssue || null, id_date_of_issue: form.idDateOfIssue || null, id_expiry: form.idExpiry || null, id_issuing_authority: form.idIssuingAuthority || null, kyc_docs: kycDocs, terms_accepted: termsAccepted, profile_status: 'IN_PROGRESS', updated_at: new Date().toISOString(),
-  }), [form, kycDocs, termsAccepted, userId, referralLookup?.realtor_id]);
+    next_of_kin_name: form.nextOfKinName || null, next_of_kin_relationship: form.nextOfKinRelationship || null, next_of_kin_address: form.nextOfKinAddress || null, next_of_kin_phone: form.nextOfKinPhone || null, next_of_kin_email: form.nextOfKinEmail || null, source_of_income: form.sourceOfIncome || null, monthly_income: incomeValue(form.annualIncome), banking_details: form.bankName ? `${form.bankName} - ${form.accountNumber} - ${form.accountName}` : null, is_foreigner: !!form.isForeigner, residence_permit: form.residencePermit || null, visa_status: form.visaStatus || null, is_politically_exposed: !!form.isPoliticallyExposed, political_exposure_details: form.politicalExposureDetails || null, has_financial_crimes_history: !!form.hasFinancialCrimesHistory, financial_crimes_details: form.financialCrimesDetails || null, referrer_name: form.referrerName || null, referrer_phone: form.referrerPhone || null, referrer_email: form.referrerEmail || null, ...(isBmcPartner ? {} : { id_type: form.idType || null, id_number: form.idNumber || null, id_country_of_issue: form.idCountryOfIssue || null, id_date_of_issue: form.idDateOfIssue || null, id_expiry: form.idExpiry || null, id_issuing_authority: form.idIssuingAuthority || null, kyc_docs: kycDocs }), terms_accepted: termsAccepted, profile_status: 'IN_PROGRESS', updated_at: new Date().toISOString(),
+  }), [form, kycDocs, termsAccepted, userId, referralLookup?.realtor_id, isBmcPartner]);
 
   const validateStep = (step: StepKey) => {
     const required: Record<StepKey, string[]> = { personal: ['firstName', 'lastName', 'dateOfBirth', 'gender', 'phoneNumber'], identity: ['idType', 'idNumber'], employment: ['occupation'], financial: ['sourceOfIncome', 'annualIncome'], aml: [], referrer: [], review: [] };
@@ -333,9 +347,9 @@ const NewProfileForm = () => {
     if (!userId || saving || !validateStep(activeStep)) return;
     setSaving(true); setSavedStep(null);
     try {
-      const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
-      if (form.referrerCode && !referralId) { setSaving(false); return; }
-      const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }, { onConflict: 'id' });
+      const referralId = isBmcPartner ? existingReferralId : referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : (activeStep === 'referrer' ? null : existingReferralId || referralLookup?.realtor_id || null);
+      if (!isBmcPartner && form.referrerCode && !referralId) { setSaving(false); return; }
+      const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, ...(isBmcPartner ? {} : { referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }) }, { onConflict: 'id' });
       if (error) throw error;
       if (form.referrerCode) setExistingReferralId(referralId); else if (activeStep === 'referrer') setExistingReferralId(null);
       setSavedStep(activeStep); notifyProfileUpdated(); toast({ title: 'Saved successfully', description: `${steps[index].label} information has been saved.` });
@@ -347,7 +361,7 @@ const NewProfileForm = () => {
   const submitProfile = async () => {
     if (!termsAccepted || !userId || saving || !validateStep('review')) return;
     setSaving(true);
-    try { const referralId = referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null, profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
+    try { const referralId = isBmcPartner ? existingReferralId : referralCodeLocked && existingReferralId ? existingReferralId : form.referrerCode ? await resolveReferralBeforeSave() : existingReferralId || referralLookup?.realtor_id || null; if (!isBmcPartner && form.referrerCode && !referralId) { setSaving(false); return; } const { error } = await supabase.from('profiles').upsert({ ...payload, id: userId, ...(isBmcPartner ? {} : { referred_by_id: referralId, referred_by_code: form.referrerCode ? String(form.referrerCode).trim().toUpperCase() : null }), profile_status: 'IN_PROGRESS', terms_accepted: true }, { onConflict: 'id' }); if (error) throw error; notifyProfileUpdated(); toast({ title: 'Profile submitted', description: isBmcPartner ? 'Your BMC partner profile has been securely saved. Submit central KYC from the BMC Partner Hub.' : 'Your profile and KYC information have been securely saved.' }); window.sessionStorage.removeItem(profileDraftKey(userId)); }
     catch (error: any) { console.error('Profile submission error:', error); toast({ title: 'Submission failed', description: error?.message || 'Please try again.', variant: 'destructive' }); }
     finally { setSaving(false); }
   };
@@ -381,12 +395,12 @@ const NewProfileForm = () => {
         {form.referrerCode && !referralLookup && <div className="flex items-start gap-2 text-sm text-amber-700 dark:text-amber-300"><UserX className="mt-0.5 h-4 w-4 shrink-0" />Verify the code before saving this section.</div>}
         <div className="grid gap-5 md:grid-cols-2"><Field label="Referrer name" name="referrerName" /><Field label="Referrer phone" name="referrerPhone" /><Field label="Referrer email" name="referrerEmail" /></div>
       </div>;
-      case 'review': return <div className="space-y-5"><div className="rounded-xl bg-muted/50 p-5"><h3 className="font-semibold mb-4">Profile summary</h3><div className="grid gap-3 md:grid-cols-2 text-sm"><p><span className="text-muted-foreground">Name:</span> {form.firstName} {form.lastName}</p><p><span className="text-muted-foreground">Phone:</span> {form.phoneNumber || '—'}</p><p><span className="text-muted-foreground">Occupation:</span> {form.occupation || '—'}</p><p><span className="text-muted-foreground">ID:</span> {form.idType ? `${form.idType} • ${form.idNumber}` : '—'}</p><p><span className="text-muted-foreground">Income:</span> {form.annualIncome || '—'}</p><p><span className="text-muted-foreground">Source:</span> {form.sourceOfIncome || '—'}</p></div></div><div className="flex items-start gap-3 rounded-xl border p-5"><Checkbox id="terms" checked={termsAccepted} onCheckedChange={v => setTermsAccepted(!!v)} /><Label htmlFor="terms" className="leading-6">I confirm that the information supplied is accurate and complete, and I agree to Bridgefort's applicable subscription, KYC and compliance requirements.</Label></div></div>;
+      case 'review': return <div className="space-y-5"><div className="rounded-xl bg-muted/50 p-5"><h3 className="font-semibold mb-4">Profile summary</h3><div className="grid gap-3 md:grid-cols-2 text-sm"><p><span className="text-muted-foreground">Name:</span> {form.firstName} {form.lastName}</p><p><span className="text-muted-foreground">Phone:</span> {form.phoneNumber || '—'}</p><p><span className="text-muted-foreground">Occupation:</span> {form.occupation || '—'}</p>{!isBmcPartner && <p><span className="text-muted-foreground">ID:</span> {form.idType ? `${form.idType} • ${form.idNumber}` : '—'}</p>}<p><span className="text-muted-foreground">Income:</span> {form.annualIncome || '—'}</p><p><span className="text-muted-foreground">Source:</span> {form.sourceOfIncome || '—'}</p></div></div><div className="flex items-start gap-3 rounded-xl border p-5"><Checkbox id="terms" checked={termsAccepted} onCheckedChange={v => setTermsAccepted(!!v)} /><Label htmlFor="terms" className="leading-6">I confirm that the information supplied is accurate and complete, and I agree to Bridgefort's applicable subscription, KYC and compliance requirements.</Label></div></div>;
     }
   };
 
   if (loading) return <div className="max-w-5xl mx-auto p-6"><Card><CardContent className="py-16 flex items-center justify-center gap-3"><Loader2 className="h-6 w-6 animate-spin" /> Loading your profile…</CardContent></Card></div>;
-  return <div className="mx-auto max-w-5xl p-4 md:p-6"><Card className="overflow-hidden shadow-sm"><CardHeader className="border-b bg-muted/20 p-5 md:p-7"><div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><CardTitle className="text-xl md:text-2xl">Property Subscription / KYC Profile</CardTitle><p className="mt-1 text-sm text-muted-foreground">Save each section as you go. Your information is retained when you return later.</p></div><div className="text-right"><div className="text-2xl font-bold">{progress}%</div><div className="text-xs text-muted-foreground">Step {index + 1} of {steps.length}</div></div></div><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-estate-blue transition-all" style={{ width: `${progress}%` }} /></div><div className="grid grid-cols-2 gap-2 pt-2 sm:grid-cols-4 lg:grid-cols-7">{steps.map((s, i) => <button key={s.key} type="button" onClick={() => i <= index ? setActiveStep(s.key) : undefined} className={`rounded-lg px-2 py-2 text-left text-xs transition ${s.key === activeStep ? 'bg-estate-blue text-white' : i < index ? 'bg-muted text-foreground' : 'text-muted-foreground'} ${i <= index ? 'cursor-pointer' : 'cursor-default'}`}><div className="font-medium">{i + 1}. {s.label}</div><div className="hidden opacity-80 sm:block">{s.description}</div></button>)}</div></CardHeader><CardContent className="p-5 md:p-7"><div className="mb-6"><h2 className="text-lg font-semibold">{steps[index].label}</h2><p className="text-sm text-muted-foreground">{steps[index].description}</p></div>{section()}<div className="mt-8 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between"><Button type="button" variant="outline" onClick={() => index > 0 && setActiveStep(steps[index - 1].key)} disabled={index === 0 || saving} className="h-11"> <ChevronLeft className="mr-2 h-4 w-4" />Previous</Button><div className="flex flex-col gap-2 sm:flex-row">{savedStep === activeStep && <div className="flex items-center justify-center gap-2 px-3 text-sm text-emerald-600"><Check className="h-4 w-4" />Saved</div>}{!isLast ? <Button type="button" onClick={saveCurrentStep} disabled={saving} className="h-11 min-w-52 bg-estate-blue hover:bg-estate-darkBlue text-white font-semibold shadow-sm"><Save className="mr-2 h-4 w-4" />{saving ? 'Saving…' : 'Save and Continue'}<ChevronRight className="ml-2 h-4 w-4" /></Button> : <Button type="button" onClick={submitProfile} disabled={saving || !termsAccepted} className="h-11 min-w-52 bg-estate-blue hover:bg-estate-darkBlue text-white font-semibold">{saving ? 'Submitting…' : 'Submit Profile & KYC'}</Button>}</div></div></CardContent></Card></div>;
+  return <div className="mx-auto max-w-5xl p-4 md:p-6"><Card className="overflow-hidden shadow-sm"><CardHeader className="border-b bg-muted/20 p-5 md:p-7"><div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div><CardTitle className="text-xl md:text-2xl">{isBmcPartner ? 'BMC Partner Profile' : 'Property Subscription / KYC Profile'}</CardTitle><p className="mt-1 text-sm text-muted-foreground">{isBmcPartner ? 'Manage your partner profile here. Complete your one-time central identity verification in the BMC Partner Hub.' : 'Save each section as you go. Your information is retained when you return later.'}</p></div><div className="text-right"><div className="text-2xl font-bold">{progress}%</div><div className="text-xs text-muted-foreground">Step {index + 1} of {steps.length}</div></div></div><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-estate-blue transition-all" style={{ width: `${progress}%` }} /></div><div className="grid grid-cols-2 gap-2 pt-2 sm:grid-cols-4 lg:grid-cols-7">{steps.map((s, i) => <button key={s.key} type="button" onClick={() => i <= index ? setActiveStep(s.key) : undefined} className={`rounded-lg px-2 py-2 text-left text-xs transition ${s.key === activeStep ? 'bg-estate-blue text-white' : i < index ? 'bg-muted text-foreground' : 'text-muted-foreground'} ${i <= index ? 'cursor-pointer' : 'cursor-default'}`}><div className="font-medium">{i + 1}. {s.label}</div><div className="hidden opacity-80 sm:block">{s.description}</div></button>)}</div></CardHeader><CardContent className="p-5 md:p-7"><div className="mb-6"><h2 className="text-lg font-semibold">{steps[index].label}</h2><p className="text-sm text-muted-foreground">{steps[index].description}</p></div>{section()}<div className="mt-8 flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between"><Button type="button" variant="outline" onClick={() => index > 0 && setActiveStep(steps[index - 1].key)} disabled={index === 0 || saving} className="h-11"> <ChevronLeft className="mr-2 h-4 w-4" />Previous</Button><div className="flex flex-col gap-2 sm:flex-row">{savedStep === activeStep && <div className="flex items-center justify-center gap-2 px-3 text-sm text-emerald-600"><Check className="h-4 w-4" />Saved</div>}{!isLast ? <Button type="button" onClick={saveCurrentStep} disabled={saving} className="h-11 min-w-52 bg-estate-blue hover:bg-estate-darkBlue text-white font-semibold shadow-sm"><Save className="mr-2 h-4 w-4" />{saving ? 'Saving…' : 'Save and Continue'}<ChevronRight className="ml-2 h-4 w-4" /></Button> : <Button type="button" onClick={submitProfile} disabled={saving || !termsAccepted} className="h-11 min-w-52 bg-estate-blue hover:bg-estate-darkBlue text-white font-semibold">{saving ? 'Submitting…' : 'Submit Profile & KYC'}</Button>}</div></div></CardContent></Card></div>;
 };
 
 export default NewProfileForm;

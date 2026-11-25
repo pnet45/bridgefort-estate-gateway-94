@@ -121,14 +121,7 @@ serve(async (req) => {
       if (referralError) throw referralError;
       if (!referral) return json({ error: "This Bridgefort division referral link is invalid or inactive." }, 400);
 
-      const { data: approvedApplication, error: applicationError } = await admin
-        .from("bmc_partner_divisions")
-        .select("id")
-        .eq("id", referral.application_id)
-        .eq("application_status", "approved")
-        .maybeSingle();
-      if (applicationError) throw applicationError;
-      if (!approvedApplication) return json({ error: "This Bridgefort division referral link is no longer active." }, 400);
+      // Attribution is captured before division approval; payment commission is held until approval.
       bmcReferralCodeId = referral.id;
     }
 

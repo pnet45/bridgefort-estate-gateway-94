@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { CartItem, Plot, Customer, PaymentInfo, Order, EcommerceContextType } from './types';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from "@/integrations/supabase/client";
@@ -6,8 +7,18 @@ import { supabase } from "@/integrations/supabase/client";
 const EcommerceContext = createContext<EcommerceContextType | undefined>(undefined);
 
 export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Preserve a BMC referral code across navigation so Homes and Agrovest
+  // property cards can attach it to checkout even after the query string changes.
+  useEffect(() => {
+    const code = new URLSearchParams(location.search).get('bmc_ref')?.trim().toUpperCase();
+    if (code) {
+      try { window.sessionStorage.setItem('bridgefort:bmc-referral-code', code); } catch { /* session storage may be unavailable */ }
+    }
+  }, [location.search]);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -27,19 +38,22 @@ export const EcommerceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [cart]);
 
   const addToCart = (plot: Plot, quantity: number = 1) => {
+    let inheritedBmcCode = '';
+    try { inheritedBmcCode = window.sessionStorage.getItem('bridgefort:bmc-referral-code') || ''; } catch { /* optional attribution enhancement */ }
+    const attributedPlot = plot.bmcReferralCode ? plot : (inheritedBmcCode ? { ...plot, bmcReferralCode: inheritedBmcCode } : plot);
     setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.plot.id === plot.id);
+      const existingItem = prevCart.find(item => item.plot.id === attributedPlot.id);
       
       if (existingItem) {
         // Update quantity of existing item
         return prevCart.map(item =>
-          item.plot.id === plot.id
-            ? { ...item, quantity: item.quantity + quantity }
+          item.plot.id === attributedPlot.id
+            ? { ...item, plot: { ...item.plot, bmcReferralCode: attributedPlot.bmcReferralCode || item.plot.bmcReferralCode }, quantity: item.quantity + quantity }
             : item
         );
       } else {
         // Add new item
-        return [...prevCart, { plot, quantity }];
+        return [...prevCart, { plot: attributedPlot, quantity }];
       }
     });
 

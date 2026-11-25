@@ -10,8 +10,8 @@ BMC commissions are calculated and reported independently for each business divi
 
 | Division | Commission | Attribution |
 |---|---:|---|
-| BH-Realtors land sales | 15% | Existing BH-Realtors direct referral attribution; eligible legacy land-sale upliner arrangement retained |
-| BH-Realtors house sales | 5% | Direct referring BH-Realtor; no additional second-level house-sale commission |
+| Bridgefort Homes land sales (BMC code) | 15% | Direct BMC referral; no BMC upliner commission |
+| Bridgefort Homes house sales (BMC code) | 5% | Direct BMC referral; no second-level house-sale commission |
 | Bridgefort Agrovest | 10% of each cleared customer instalment | Direct referral only; no upliner/downline |
 | Bridgefort Travels & Tours | 10% of full customer payment received | Direct referral only; no upliner/downline |
 
@@ -27,13 +27,13 @@ An approved BMC with an approved Travels division referral is entitled to 10% of
 
 ## 4. Homes
 
-The existing BH-Realtors referral attribution, eligibility checks, package access rules and eligible land-sale second-level arrangement are retained, subject to the approved asset-class rates in this policy. For newly paid qualifying land sales, the direct referring BH-Realtor earns 15%; the existing eligible 5% second-level land commission remains. For newly paid qualifying house sales, the direct referring BH-Realtor earns 5%, and no second-level property-sale commission is awarded. These rates are fixed by asset class, not by package tier. BMC Homes referral attribution does not replace the legacy BH-Realtors referral relationship.
+For a transaction attributed with a canonical BMC referral code, the direct BMC earns 15% on qualifying land/plot sales and 5% on qualifying house, apartment and other residential sales. BMC Homes commissions are direct-only; no second-level or recruitment-based commission is created. The relevant Homes division must be approved before a commission becomes payable. If a qualifying customer payment clears before approval, the commission is recorded as held and released only after approval. Existing BH-Realtors referral codes remain valid and continue through the legacy BH-Realtors commission rules, including the existing eligible second-level land-sale arrangement. A BMC referral attribution does not create or modify a legacy BH-Realtors sponsor relationship.
 
 ## 5. Multi-division participation and controls
 
-A BMC may be approved for one or more divisions. Each transaction must be attributed to its correct division. Referral codes are division-specific. Cross-division attribution, self-referrals, duplicate commissions and unauthorized commission claims are prohibited.
+A BMC receives one canonical referral code accepted across Homes, Travels and Agrovest. Referral attribution may be recorded while a division is pending approval; commission remains held until that division is approved. Each transaction is attributed to its correct division. Self-referrals, duplicate commissions and unauthorized commission claims are prohibited.
 
-Agrovest and Travels & Tours must never generate recruitment-based, upliner or downline commissions. Their commission records are maintained separately from the BH-Realtors MLM commission ledger and wallet.
+BMC Homes, Agrovest and Travels & Tours commissions are direct-only and are maintained separately from the legacy BH-Realtors MLM commission ledger and wallet. Existing BH-Realtors codes continue to use the legacy MLM rules.
 
 ## 6. Payment, reversal and payout controls
 
