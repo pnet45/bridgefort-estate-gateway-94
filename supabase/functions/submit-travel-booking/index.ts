@@ -192,10 +192,19 @@ serve(async (req) => {
 
       if (priorReferrers.length === 1) {
         const savedReferrerId = String(priorReferrers[0]);
+        const { data: canonicalIdentity, error: canonicalIdentityError } = await supabase
+          .from("bmc_identity_referral_codes")
+          .select("referral_code")
+          .eq("user_id", savedReferrerId)
+          .eq("is_active", true)
+          .maybeSingle();
+        if (canonicalIdentityError) throw canonicalIdentityError;
+        if (!canonicalIdentity) return json({ error: "Your saved BMC referral identity is inactive. Please contact support." }, 409);
         const { data: savedCode, error: savedCodeError } = await supabase
           .from("bmc_division_referral_codes")
           .select("id")
           .eq("user_id", savedReferrerId)
+          .eq("referral_code", canonicalIdentity.referral_code)
           .eq("division", "travels")
           .eq("is_active", true)
           .maybeSingle();
