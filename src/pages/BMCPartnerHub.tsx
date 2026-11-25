@@ -103,7 +103,7 @@ export default function BMCPartnerHub() {
   }, [user, authLoading, loadApplications]);
 
   const referralCode = profile?.pbo_referral_code || '';
-  const referralLinkFor = (division: Division, code: string) => `${window.location.origin}${division === 'homes' ? '/bridgefort-realtors-login' : division === 'travels' ? '/travels' : '/agrovest'}?bmc_ref=${encodeURIComponent(code)}`;
+  const referralLinkFor = (division: Division, code: string) => `${window.location.origin}${division === 'homes' ? '/properties/estates' : division === 'travels' ? '/travels' : '/agrovest'}?bmc_ref=${encodeURIComponent(code)}`;
   const copyReferralLink = async (division: Division, code: string) => {
     const link = referralLinkFor(division, code);
     try {
