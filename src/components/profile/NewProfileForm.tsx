@@ -155,7 +155,7 @@ const NewProfileForm = () => {
           setForm(prev => ({ ...prev, ...draft.form, ...(stableUser?.user_metadata?.referral_link === true && metadataReferralCode ? { referrerCode: metadataReferralCode } : {}) }));
           setKycDocs(draft.kycDocs || {});
           setTermsAccepted(draft.termsAccepted);
-          setActiveStep(isBmcPartner && (draft.activeStep === 'identity' || draft.activeStep === 'aml' || draft.activeStep === 'referrer') ? 'personal' : draft.activeStep || 'personal');
+          setActiveStep(isBmcPartner && (draft.activeStep === 'identity' || draft.activeStep === 'referrer') ? 'personal' : draft.activeStep || 'personal');
         }
         const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
         if (error) throw error;
