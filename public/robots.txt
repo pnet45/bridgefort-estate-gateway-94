@@ -12,3 +12,14 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin-console
+Disallow: /admin-login
+Disallow: /dashboard
+Disallow: /auth
+Disallow: /cart
+Disallow: /payment-success
+Disallow: /listings/my
+Disallow: /listings/new
+Disallow: /listings/edit/
+
+Sitemap: https://www.bridgeforthomes.com/sitemap.xml
