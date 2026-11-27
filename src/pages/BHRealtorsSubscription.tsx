@@ -256,7 +256,7 @@ const BHRealtorsSubscription: React.FC = () => {
                   );
                 })}
                 <Link to="/bh-realtors" className="text-xs text-indigo-700 hover:underline block text-center">
-                  Back to BHRealtors dashboard
+                  Back to BMC Partner Hub
                 </Link>
               </CardContent>
             </Card>
