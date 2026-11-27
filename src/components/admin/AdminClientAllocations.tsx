@@ -434,7 +434,6 @@ const AdminClientAllocations: React.FC = () => {
                   {clientProperties.map(p => (
                     <SelectItem key={p.key} value={p.key}>
                       {p.property_name || p.property_type || 'Purchased property'}
-                      
                       {p.order_id ? ` • Order ${p.order_id.slice(0, 8)}` : ''}
                     </SelectItem>
                   ))}
