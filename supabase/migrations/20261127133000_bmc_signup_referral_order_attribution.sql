@@ -61,10 +61,11 @@ begin
       where coalesce(entries.item ->> 'property_type','') <> 'Agrovest'
     );
 
-    -- A single order attribution belongs to one division. Mixed carts must
-    -- not silently credit the wrong division.
+    -- A single order attribution belongs to one division. Reject a mixed
+    -- cart rather than silently dropping attribution or crediting the wrong
+    -- business. The customer can check out each division separately.
     if has_agrovest and has_non_agrovest then
-      return new;
+      raise exception 'Homes and Agrovest items must be checked out separately to preserve correct BMC referral attribution';
     end if;
 
     target_division := case when has_agrovest then 'agrovest' else 'homes' end;
