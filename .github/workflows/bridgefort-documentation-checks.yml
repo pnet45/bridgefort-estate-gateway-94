@@ -190,6 +190,8 @@ jobs:
           const commissionEngine = readFileSync('supabase/migrations/20261121171609_bmc_division_commission_engine.sql', 'utf8');
           const auth = readFileSync('src/pages/Auth.tsx', 'utf8');
           const profileForm = readFileSync('src/components/profile/NewProfileForm.tsx', 'utf8');
+          const profileReferralMigration = readFileSync('supabase/migrations/20261127153000_bmc_profile_referral_attribution.sql', 'utf8');
+          const profileDetailsMigration = readFileSync('supabase/migrations/20261127150000_profile_spouse_and_joint_purchase_details.sql', 'utf8');
           const adminKyc = readFileSync('src/components/admin/AdminBMCKYC.tsx', 'utf8');
           const email = readFileSync('supabase/functions/send-bmc-kyc-approval-email/index.ts', 'utf8');
 
@@ -216,6 +218,9 @@ jobs:
           assert.match(profileForm, /key: 'aml'/i, 'BMC profiles must retain the AML/CFT declaration step');
           assert.match(profileForm, /key: 'bmc-referral'/i, 'the general profile must keep BMC referral details separate from BH-Realtor referrals');
           assert.match(profileForm, /spousePhone.*jointPurchaserName/i, 'profile must support spouse and joint-purchase details');
+          assert.match(profileReferralMigration, /attach_bmc_profile_referral/i, 'profile BMC referral codes must be server-validated');
+          assert.match(profileReferralMigration, /source_type = 'signup'/i, 'profile BMC referrals must use durable signup attribution');
+          assert.match(profileDetailsMigration, /is_joint_purchase/i, 'joint purchase details must have persistent profile columns');
           assert.match(adminKyc, /send-bmc-kyc-approval-email/i);
           assert.match(email, /sendTrackedEmail/i);
           assert.match(email, /bmc-partner-hub/i);
