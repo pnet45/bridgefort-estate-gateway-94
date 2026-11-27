@@ -5,7 +5,8 @@ export interface Plot {
   propertyName: string;
   location: string;
   pricePerPlot: number;
-  plotNumber: number;
+  /** Legacy cart metadata only; no plot is selected before verified allocation. */
+  plotNumber?: number;
   imageUrl: string;
   size: number;
   propertyType: string;
