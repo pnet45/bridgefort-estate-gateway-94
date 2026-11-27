@@ -4,7 +4,7 @@ const BridgefortRealtorsAuth = () => {
   return (
     <Auth
       pageTitle="BMC Partner Network"
-      redirectAfterSignIn="/bh-realtors"
+      redirectAfterSignIn="/bmc-partner-hub"
       redirectAfterSignUp="/profile"
     />
   );
