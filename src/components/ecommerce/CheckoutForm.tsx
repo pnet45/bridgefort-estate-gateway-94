@@ -77,7 +77,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         ...previous,
         firstName: previous.firstName || data.first_name || '',
         lastName: previous.lastName || data.last_name || '',
-        email: previous.email || user.email || '',
+        email: user.email || previous.email,
         phone: previous.phone || data.phone_number || '',
         address: previous.address || data.address || data.current_residence || '',
       }));
