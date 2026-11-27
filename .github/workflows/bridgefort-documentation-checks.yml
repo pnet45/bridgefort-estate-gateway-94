@@ -209,9 +209,9 @@ jobs:
           assert.match(referrals, /award_bmc_homes_order_commission/i);
           assert.match(referrals, /release_bmc_commissions_after_kyc_verification/i);
           assert.match(referrals, /status in \('held','earned','paid','reversed'\)/i);
-          assert.match(signupOrderAttribution, /signup_attribution\\.source_type = 'signup'/i, 'later purchases must inherit trusted signup referral attribution');
-          assert.match(signupOrderAttribution, /signup_attribution\\.referred_user_id = new\\.user_id/i, 'signup attribution must match the purchasing customer');
-          assert.match(signupOrderAttribution, /target_code\\.division = target_division/i, 'signup referral must resolve to the purchased business division');
+          assert.match(signupOrderAttribution, /signup_attribution\.source_type = 'signup'/i, 'later purchases must inherit trusted signup referral attribution');
+          assert.match(signupOrderAttribution, /signup_attribution\.referred_user_id = new\.user_id/i, 'signup attribution must match the purchasing customer');
+          assert.match(signupOrderAttribution, /target_code\.division = target_division/i, 'signup referral must resolve to the purchased business division');
           assert.match(signupOrderAttribution, /source_type, source_record_id/i, 'order attribution must be recorded once per order');
           assert.match(commissionEngine, /admin_mark_bmc_commission_paid/i);
 
