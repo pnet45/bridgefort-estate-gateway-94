@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import KYCUploadField from '@/components/profile/KYCUploadField';
 import { toast } from '@/hooks/use-toast';
+import { notifyProfileUpdated } from '@/lib/profileEvents';
 import { Loader2, ShieldCheck, Clock, AlertCircle } from 'lucide-react';
 
 type KycStatus = 'NOT_STARTED' | 'PENDING' | 'UNDER_REVIEW' | 'REQUIRES_CORRECTION' | 'VERIFIED' | 'REJECTED';
@@ -125,7 +126,38 @@ export default function BMCIdentityKYC() {
     if (error) {
       toast({ title: 'KYC submission failed', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'BMC identity submitted', description: 'Your single central KYC submission is now awaiting administrator review.' });
+      const { error: profileSyncError } = await supabase.from('profiles').update({
+        first_name: form.first_name || null,
+        last_name: form.last_name || null,
+        date_of_birth: form.date_of_birth || null,
+        nationality: form.nationality || null,
+        phone_number: form.phone_number || null,
+        current_residence: form.address || null,
+        id_type: form.id_type || null,
+        id_number: form.id_number || null,
+        id_country_of_issue: form.id_country_of_issue || null,
+        id_date_of_issue: form.id_date_of_issue || null,
+        id_expiry: form.id_expiry || null,
+        id_issuing_authority: form.id_issuing_authority || null,
+        spouse_name: form.spouse_name || null,
+        spouse_phone: form.spouse_phone || null,
+        spouse_email: form.spouse_email || null,
+        spouse_address: form.spouse_address || null,
+        is_joint_purchase: Boolean(form.is_joint_purchase),
+        joint_purchaser_name: form.is_joint_purchase ? (form.joint_purchaser_name || null) : null,
+        joint_purchaser_phone: form.is_joint_purchase ? (form.joint_purchaser_phone || null) : null,
+        joint_purchaser_email: form.is_joint_purchase ? (form.joint_purchaser_email || null) : null,
+        joint_purchaser_relationship: form.is_joint_purchase ? (form.joint_purchaser_relationship || null) : null,
+        updated_at: new Date().toISOString(),
+      }).eq('id', user.id);
+
+      if (profileSyncError) {
+        console.warn('BMC KYC was submitted, but profile details could not be synchronised:', profileSyncError);
+        toast({ title: 'BMC identity submitted', description: 'Your KYC is awaiting review. Some profile fields could not be synchronised; please review your profile later.' });
+      } else {
+        notifyProfileUpdated();
+        toast({ title: 'BMC identity submitted', description: 'Your central KYC is awaiting review and matching details have been synchronised to your Bridgefort profile.' });
+      }
       await load();
     }
     setSaving(false);
