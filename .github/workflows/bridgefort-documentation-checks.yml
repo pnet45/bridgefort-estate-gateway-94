@@ -212,7 +212,10 @@ jobs:
 
           assert.match(auth, /normalizedSponsorCode = \(isRegisteringAsPBO && !sponsorCodeLocked\) \? ''/i);
           assert.match(auth, /bmc_referral_code: bmcReferralCode/i);
-          assert.match(profileForm, /step\.key !== 'identity'.*step\.key !== 'aml'.*step\.key !== 'referrer'/i);
+          assert.match(profileForm, /step\.key !== 'identity'.*step\.key !== 'referrer'/i);
+          assert.match(profileForm, /key: 'aml'/i, 'BMC profiles must retain the AML/CFT declaration step');
+          assert.match(profileForm, /key: 'bmc-referral'/i, 'the general profile must keep BMC referral details separate from BH-Realtor referrals');
+          assert.match(profileForm, /spousePhone.*jointPurchaserName/i, 'profile must support spouse and joint-purchase details');
           assert.match(adminKyc, /send-bmc-kyc-approval-email/i);
           assert.match(email, /sendTrackedEmail/i);
           assert.match(email, /bmc-partner-hub/i);
