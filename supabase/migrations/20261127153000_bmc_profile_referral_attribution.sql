@@ -16,7 +16,8 @@ declare
   actor_id uuid := auth.uid();
   normalized_code text := upper(trim(coalesce(_code, '')));
   canonical_referrer_id uuid;
-  homes_code_id uuid;
+  signup_code_id uuid;
+  signup_division text;
   existing_referrer_id uuid;
   display_name text;
 begin
@@ -40,20 +41,20 @@ begin
     raise exception 'You cannot use your own BMC referral code';
   end if;
 
-  select division_code.id
-    into homes_code_id
+  select division_code.id, division_code.division
+    into signup_code_id, signup_division
   from public.bmc_division_referral_codes division_code
   join public.bmc_partner_divisions application
     on application.id = division_code.application_id
   where division_code.user_id = canonical_referrer_id
     and division_code.referral_code = normalized_code
-    and division_code.division = 'homes'
     and division_code.is_active is true
     and application.application_status not in ('suspended','rejected','withdrawn')
+  order by case division_code.division when 'homes' then 0 when 'travels' then 1 else 2 end
   limit 1;
 
-  if homes_code_id is null then
-    raise exception 'This BMC referral identity is not active for Homes referrals';
+  if signup_code_id is null or signup_division is null then
+    raise exception 'This BMC referral identity is not active for any business division';
   end if;
 
   select attribution.referrer_user_id
@@ -71,7 +72,7 @@ begin
   insert into public.bmc_division_referral_attributions
     (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
   values
-    (homes_code_id, 'homes', canonical_referrer_id, actor_id, 'signup', actor_id)
+    (signup_code_id, signup_division, canonical_referrer_id, actor_id, 'signup', actor_id)
   on conflict (source_type, source_record_id) do nothing;
 
   update public.profiles
