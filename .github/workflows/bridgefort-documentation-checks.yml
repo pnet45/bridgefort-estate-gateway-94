@@ -213,6 +213,8 @@ jobs:
           assert.match(signupOrderAttribution, /signup_attribution\.referred_user_id = new\.user_id/i, 'signup attribution must match the purchasing customer');
           assert.match(signupOrderAttribution, /target_code\.division = target_division/i, 'signup referral must resolve to the purchased business division');
           assert.match(signupOrderAttribution, /source_type, source_record_id/i, 'order attribution must be recorded once per order');
+          assert.match(signupOrderAttribution, /record_bmc_travel_booking_referral/i, 'signup attribution must also carry into later Travels bookings');
+          assert.match(signupOrderAttribution, /target_code\.division = 'travels'/i, 'Travels signup fallback must resolve a Travels-specific referral code');
           assert.match(commissionEngine, /admin_mark_bmc_commission_paid/i);
 
           assert.match(auth, /normalizedSponsorCode = \(isRegisteringAsPBO && !sponsorCodeLocked\) \? ''/i);
