@@ -63,7 +63,7 @@ type DashboardData = {
   withdrawals?: Array<{ id: string; amount: number; status: string; created_at: string }>;
 };
 
-const BHRealtors: React.FC = () => {
+const BHRealtors: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
   const { packages } = usePublicMlmPackages();
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [selectedPackage, setSelectedPackage] = useState<BhRealtorsPackage>(bhRealtorsPackages[0]);
@@ -180,20 +180,20 @@ const BHRealtors: React.FC = () => {
   if (!user) {
     return (
       <div className="flex min-h-screen flex-col bg-slate-100 dark:bg-slate-950">
-        <Navbar />
+        {!embedded && <Navbar />}
         <main className="container-custom flex-1 pt-32">
           <h1 className="text-3xl font-bold text-estate-blue dark:text-white">BHRealtors</h1>
           <p className={`mt-2 ${muted}`}>Sign in to join and manage your Realtor network.</p>
           <Link to="/bridgefort-realtors-login"><Button className="mt-5">Realtors Login</Button></Link>
         </main>
-        <Footer />
+        {!embedded && <Footer />}
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-slate-100 transition-colors duration-300 dark:bg-slate-950">
-      <Navbar />
+      {!embedded && <Navbar />}
       <main className="pb-16 pt-24">
         <div className="container-custom space-y-8">
           <section className="relative isolate min-h-[440px] overflow-hidden rounded-[2rem] border border-white/20 shadow-2xl">
@@ -381,7 +381,7 @@ const BHRealtors: React.FC = () => {
           {isRealtor && <section className={`${glass} rounded-3xl p-6`}><div className="mb-4 flex items-center gap-2"><TrendingUp className="h-5 w-5 text-estate-purple" /><h2 className="font-bold text-slate-950 dark:text-white">Recent withdrawals</h2></div>{withdrawals?.length ? <div className="space-y-2">{withdrawals.map((item) => <div key={item.id} className="flex items-center justify-between rounded-xl bg-white/40 p-3 dark:bg-white/5"><div><p className="font-semibold text-slate-950 dark:text-white">{naira(item.amount)}</p><p className={`text-xs ${muted}`}>{new Date(item.created_at).toLocaleString('en-NG')}</p></div><Badge>{item.status}</Badge></div>)}</div> : <p className={muted}>No withdrawal requests yet.</p>}</section>}
         </div>
       </main>
-      <Footer />
+      {!embedded && <Footer />}
       <RealtorsRegistrationForm open={registrationOpen} onClose={() => setRegistrationOpen(false)} selectedPackage={selectedPackage} onComplete={() => { setRegistrationOpen(false); void refreshProfile(); void load(); }} />
     </div>
   );
