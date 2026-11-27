@@ -245,9 +245,9 @@ const EstateDetails: React.FC = () => {
   const estateDetails = getEstateDetails(property.title);
   const propertyPDF = getPropertyPDF(property.title);
   const propertyDescription = property.description || '';
-  const seoTitle = `${property.title} in ${property.location} | Bridgefort Homes`;
-  const seoDescription = (propertyDescription.trim() || `Explore ${property.title} in ${property.location}. View property details, current availability, pricing and subscription options from Bridgefort Homes Development Ltd.`)
-    .replace(/\s+/g, ' ')
+  const seoLocation = property.location?.trim();
+  const seoTitle = `${property.title}${seoLocation ? ` in ${seoLocation}` : ''} | Bridgefort Homes`;
+  const seoDescription = (propertyDescription.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || `Explore ${property.title}${seoLocation ? ` in ${seoLocation}` : ' in Nigeria'}. View property details, current availability, pricing and subscription options from Bridgefort Homes Development Ltd.`)
     .slice(0, 160);
   const canonicalUrl = `https://www.bridgeforthomes.com/properties/estates/${property.id}`;
 
