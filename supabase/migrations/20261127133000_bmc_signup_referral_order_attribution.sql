@@ -175,7 +175,6 @@ begin
      and target_code.division = 'travels'
      and target_code.is_active is true
     where signup_attribution.source_type = 'signup'
-      and signup_attribution.division = 'homes'
       and signup_attribution.referred_user_id = new.customer_id
     order by signup_attribution.created_at desc
     limit 1
