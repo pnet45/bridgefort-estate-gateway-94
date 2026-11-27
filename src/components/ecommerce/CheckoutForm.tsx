@@ -119,7 +119,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
             item_id: item.plot.id,
             property_id: item.plot.propertyId,
             property_type: item.plot.propertyType,
-            plot_number: item.plot.plotNumber,
             quantity: item.quantity,
           })),
           plan_type: selectedPlan.type,
