@@ -85,7 +85,10 @@ serve(async (req) => {
         const { data: estate } = await admin.from("estate").select("name, actual_price, promo_price, prelaunch_price, is_sold_out").eq("id", propertyId).maybeSingle();
         if (estate) {
           if (estate.is_sold_out) return json({ error: `${estate.name} is sold out` }, 400);
-          unitPrice = Number(estate.actual_price ?? estate.promo_price ?? estate.prelaunch_price ?? 0);
+          // Keep server-authoritative checkout pricing aligned with the public
+          // property cards and detail pages: active promo, then pre-launch,
+          // then the standard actual price. The browser never supplies a price.
+          unitPrice = Number(estate.promo_price ?? estate.prelaunch_price ?? estate.actual_price ?? 0);
           label = String(estate.name ?? "Estate plot");
         } else {
           // Listings use price_amount as the single authoritative sale price.
