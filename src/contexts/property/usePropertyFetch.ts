@@ -55,7 +55,7 @@ export function usePropertyFetch(searchQuery: string, filters: Filters) {
             imageUrl: estate.media && estate.media.length > 0 ? estate.media[0] : "/placeholder.svg",
             size: estate.size || 0,
             sqm: estate.size || 0,
-            propertyType: estate.type || (estate.property_category === "home" ? "Residential" : "Land"),
+            propertyType: estate.type || (estate.property_category === "home" ? "Residential" : estate.property_category === "commercial" ? "Commercial" : "Land"),
             property_category: estate.property_category || "land",
             bedrooms: estate.bedrooms == null ? undefined : Number(estate.bedrooms),
             bathrooms: estate.bathrooms == null ? undefined : Number(estate.bathrooms),
