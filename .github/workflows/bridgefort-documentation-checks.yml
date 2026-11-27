@@ -216,6 +216,8 @@ jobs:
           assert.match(signupOrderAttribution, /record_bmc_travel_booking_referral/i, 'signup attribution must also carry into later Travels bookings');
           assert.match(signupOrderAttribution, /target_code\.division = 'travels'/i, 'Travels signup fallback must resolve a Travels-specific referral code');
           assert.match(signupOrderAttribution, /trusted\.referrer_user_id <> referral\.user_id/i, 'conflicting checkout codes must not replace trusted profile/signup attribution');
+          assert.match(signupOrderAttribution, /order by case c\.division when 'homes' then 0 when 'travels' then 1 else 2 end/i, 'signup referrals must be resolved from any active business division');
+          assert.doesNotMatch(signupOrderAttribution, /signup_attribution\.division = 'homes'/i, 'signup fallback must not require Homes approval for Travels or Agrovest attribution');
           assert.match(commissionEngine, /admin_mark_bmc_commission_paid/i);
 
           assert.match(auth, /normalizedSponsorCode = \(isRegisteringAsPBO && !sponsorCodeLocked\) \? ''/i);
