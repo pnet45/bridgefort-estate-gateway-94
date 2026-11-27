@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, ArrowRight } from 'lucide-react';
 import { locations } from '@/data/locations';
 
-const SITE_URL = 'https://bridgefort.lovable.app';
+const SITE_URL = 'https://www.bridgeforthomes.com';
 
 const LocationsIndex = () => {
   return (
