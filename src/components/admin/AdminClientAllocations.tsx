@@ -454,9 +454,9 @@ const AdminClientAllocations: React.FC = () => {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium">Allocated Plot *</label>
-              <Input className="mt-1" disabled={!form.user_id || !form.estate_id || !selectedPropertyKey} value={form.plot_id} onChange={e => setField('plot_id', e.target.value)} placeholder={selectedPropertyKey && form.estate_id ? 'Enter allocated plot number/details' : 'Select client, purchased property and estate first'} />
-              <p className="text-xs text-muted-foreground mt-1">Enter the plot actually allocated in the selected estate. This is separate from the property the client originally purchased.</p>
+              <label className="text-sm font-medium">Actual Allocated Plot Number *</label>
+              <Input className="mt-1" disabled={!form.user_id || !form.estate_id || !selectedPropertyKey} value={form.plot_id} onChange={e => setField('plot_id', e.target.value)} placeholder={selectedPropertyKey && form.estate_id ? 'Enter the actual allocated plot number (e.g. A12)' : 'Select client, purchased property and estate first'} />
+              <p className="text-xs text-muted-foreground mt-1">Enter the real plot number assigned by Bridgefort after allocation is verified. This is not generated at checkout and can be updated by authorised administrators.</p>
             </div>
             <div><label className="text-sm font-medium">Plot label / description</label><Input className="mt-1" disabled={!form.user_id || !form.estate_id || !selectedPropertyKey} value={form.plot_label} onChange={e => setField('plot_label', e.target.value)} placeholder="e.g. 500sqm corner plot" /></div>
             <div><label className="text-sm font-medium">Property ID</label><Input className="mt-1" value={form.property_id} readOnly placeholder="Selected from client property" /></div>
