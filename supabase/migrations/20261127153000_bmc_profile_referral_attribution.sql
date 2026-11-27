@@ -31,8 +31,7 @@ begin
   select identity_code.user_id
     into canonical_referrer_id
   from public.bmc_identity_referral_codes identity_code
-  where identity_code.referral_code = normalized_code
-    and identity_code.is_active is true;
+  where identity_code.referral_code = normalized_code;
 
   if canonical_referrer_id is null then
     raise exception 'BMC referral code is invalid or inactive';
@@ -41,24 +40,8 @@ begin
     raise exception 'You cannot use your own BMC referral code';
   end if;
 
-  select division_code.id, division_code.division
-    into signup_code_id, signup_division
-  from public.bmc_division_referral_codes division_code
-  join public.bmc_partner_divisions application
-    on application.id = division_code.application_id
-  where division_code.user_id = canonical_referrer_id
-    and division_code.referral_code = normalized_code
-    and division_code.is_active is true
-    and application.application_status not in ('suspended','rejected','withdrawn')
-  order by case division_code.division when 'homes' then 0 when 'travels' then 1 else 2 end
-  limit 1;
-
-  if signup_code_id is null or signup_division is null then
-    raise exception 'This BMC referral identity is not active for any business division';
-  end if;
-
-  select attribution.referrer_user_id
-    into existing_referrer_id
+  select attribution.referrer_user_id, attribution.referral_code_id, attribution.division
+    into existing_referrer_id, signup_code_id, signup_division
   from public.bmc_division_referral_attributions attribution
   where attribution.source_type = 'signup'
     and attribution.referred_user_id = actor_id
@@ -69,11 +52,38 @@ begin
     raise exception 'A BMC referral is already linked to this account and cannot be changed';
   end if;
 
-  insert into public.bmc_division_referral_attributions
-    (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
-  values
-    (signup_code_id, signup_division, canonical_referrer_id, actor_id, 'signup', actor_id)
-  on conflict (source_type, source_record_id) do nothing;
+  if existing_referrer_id is null then
+    if not exists (
+      select 1 from public.bmc_identity_referral_codes identity_code
+      where identity_code.user_id = canonical_referrer_id
+        and identity_code.referral_code = normalized_code
+        and identity_code.is_active is true
+    ) then
+      raise exception 'BMC referral code is inactive';
+    end if;
+
+    select division_code.id, division_code.division
+      into signup_code_id, signup_division
+    from public.bmc_division_referral_codes division_code
+    join public.bmc_partner_divisions application
+      on application.id = division_code.application_id
+    where division_code.user_id = canonical_referrer_id
+      and division_code.referral_code = normalized_code
+      and division_code.is_active is true
+      and application.application_status not in ('suspended','rejected','withdrawn')
+    order by case division_code.division when 'homes' then 0 when 'travels' then 1 else 2 end
+    limit 1;
+
+    if signup_code_id is null or signup_division is null then
+      raise exception 'This BMC referral identity is not active for any business division';
+    end if;
+
+    insert into public.bmc_division_referral_attributions
+      (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
+    values
+      (signup_code_id, signup_division, canonical_referrer_id, actor_id, 'signup', actor_id)
+    on conflict (source_type, source_record_id) do nothing;
+  end if;
 
   update public.profiles
   set bmc_referred_by_code = normalized_code,
