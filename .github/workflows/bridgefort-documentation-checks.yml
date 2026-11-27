@@ -187,6 +187,7 @@ jobs:
 
           const kyc = readFileSync('supabase/migrations/20261125180000_central_bmc_identity_kyc.sql', 'utf8');
           const referrals = readFileSync('supabase/migrations/20261125190000_unified_bmc_referral_and_commission_holds.sql', 'utf8');
+          const signupOrderAttribution = readFileSync('supabase/migrations/20261127133000_bmc_signup_referral_order_attribution.sql', 'utf8');
           const commissionEngine = readFileSync('supabase/migrations/20261121171609_bmc_division_commission_engine.sql', 'utf8');
           const auth = readFileSync('src/pages/Auth.tsx', 'utf8');
           const profileForm = readFileSync('src/components/profile/NewProfileForm.tsx', 'utf8');
@@ -208,6 +209,15 @@ jobs:
           assert.match(referrals, /award_bmc_homes_order_commission/i);
           assert.match(referrals, /release_bmc_commissions_after_kyc_verification/i);
           assert.match(referrals, /status in \('held','earned','paid','reversed'\)/i);
+          assert.match(signupOrderAttribution, /signup_attribution\.source_type = 'signup'/i, 'later purchases must inherit trusted signup referral attribution');
+          assert.match(signupOrderAttribution, /signup_attribution\.referred_user_id = new\.user_id/i, 'signup attribution must match the purchasing customer');
+          assert.match(signupOrderAttribution, /target_code\.division = target_division/i, 'signup referral must resolve to the purchased business division');
+          assert.match(signupOrderAttribution, /source_type, source_record_id/i, 'order attribution must be recorded once per order');
+          assert.match(signupOrderAttribution, /record_bmc_travel_booking_referral/i, 'signup attribution must also carry into later Travels bookings');
+          assert.match(signupOrderAttribution, /target_code\.division = 'travels'/i, 'Travels signup fallback must resolve a Travels-specific referral code');
+          assert.match(signupOrderAttribution, /trusted\.referrer_user_id <> referral\.user_id/i, 'conflicting checkout codes must not replace trusted profile/signup attribution');
+          assert.match(signupOrderAttribution, /order by case c\.division when 'homes' then 0 when 'travels' then 1 else 2 end/i, 'signup referrals must be resolved from any active business division');
+          assert.doesNotMatch(signupOrderAttribution, /signup_attribution\.division = 'homes'/i, 'signup fallback must not require Homes approval for Travels or Agrovest attribution');
           assert.match(commissionEngine, /admin_mark_bmc_commission_paid/i);
 
           assert.match(auth, /normalizedSponsorCode = \(isRegisteringAsPBO && !sponsorCodeLocked\) \? ''/i);
