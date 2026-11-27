@@ -93,5 +93,5 @@ begin
 end;
 $function$;
 
-revoke all on function public.attach_bmc_profile_referral(text) from public, anon;
+revoke all on function public.attach_bmc_profile_referral(text) from public, anon, authenticated;
 grant execute on function public.attach_bmc_profile_referral(text) to authenticated;
