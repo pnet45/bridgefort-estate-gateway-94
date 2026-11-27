@@ -22,7 +22,7 @@ interface CheckoutFormProps {
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   const { cart, getTotalAmount, clearCart } = useEcommerce();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { execute: executeRecaptcha } = useRecaptchaV3();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -52,15 +52,14 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   } | null>(null);
 
   React.useEffect(() => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to proceed with checkout",
-        variant: "destructive"
-      });
-      navigate('/auth?next=%2Fcart', { replace: true });
-    }
-  }, [user, navigate]);
+    if (authLoading || user) return;
+    toast({
+      title: "Login Required",
+      description: "Please log in to proceed with checkout",
+      variant: "destructive"
+    });
+    navigate('/auth?next=%2Fcart', { replace: true });
+  }, [authLoading, user, navigate]);
 
   const validateStep1 = () => {
     return customerInfo.firstName && customerInfo.lastName && 
