@@ -182,7 +182,7 @@ const BHRealtors: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
       <div className="flex min-h-screen flex-col bg-slate-100 dark:bg-slate-950">
         {!embedded && <Navbar />}
         <main className="container-custom flex-1 pt-32">
-          <h1 className="text-3xl font-bold text-estate-blue dark:text-white">BHRealtors</h1>
+          <h1 className="text-3xl font-bold text-estate-blue dark:text-white" >Legacy BH-Realtors Membership</h1>
           <p className={`mt-2 ${muted}`}>Sign in to join and manage your Realtor network.</p>
           <Link to="/bridgefort-realtors-login"><Button className="mt-5">Realtors Login</Button></Link>
         </main>
@@ -202,7 +202,7 @@ const BHRealtors: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
             <div className="absolute inset-0 bg-gradient-to-br from-estate-blue/90 via-slate-950/45 to-black/80" />
             <div className="relative z-10 flex min-h-[440px] flex-col justify-between p-6 md:p-12">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <Badge className="border border-white/20 bg-white/10 text-white backdrop-blur-xl">BHREALTORS • NETWORK • PROPERTY</Badge>
+                <Badge className="border border-white/20 bg-white/10 text-white backdrop-blur-xl">LEGACY MEMBER NETWORK</Badge>
                 <Button variant="outline" onClick={() => void load()} disabled={busy} className="border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white">
                   {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />} Refresh
                 </Button>
@@ -210,7 +210,7 @@ const BHRealtors: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
               <div className="max-w-4xl">
                 <p className="text-sm font-semibold uppercase tracking-[0.28em] text-white/75">Build income. Build ownership. Build a network.</p>
                 <h1 className="mt-3 text-4xl font-black leading-tight text-white md:text-6xl">Turn relationships into <span className="text-cyan-200">opportunity</span>.</h1>
-                <p className="mt-5 max-w-3xl text-base leading-7 text-slate-100 md:text-lg">BHRealtors gives you more than a referral link. Build a genuine sales network, introduce people to quality real estate opportunities, earn according to your package, and grow through property.</p>
+                <p className="mt-5 max-w-3xl text-base leading-7 text-slate-100 md:text-lg">Your legacy membership keeps existing package, referral-network, property-sales, wallet and commission records available inside the BMC Partner Hub.</p>
                 <div className="mt-7 flex flex-wrap gap-3">
                   <a href="#packages"><Button className="bg-white text-slate-950 hover:bg-slate-100">Explore Packages</Button></a>
                   <Link to="/bmc-partner-hub"><Button variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white">BMC Partner Hub</Button></Link>
@@ -285,7 +285,7 @@ const BHRealtors: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
             <section className={`${glass} rounded-3xl border-amber-200/60 p-6`}>
               <div className="flex items-start gap-3">
                 <LockKeyhole className="mt-1 h-5 w-5 shrink-0 text-amber-600" />
-                <div><h2 className="font-bold text-slate-950 dark:text-white">BHRealtors membership is not active yet</h2><p className={`mt-1 text-sm ${muted}`}>Your Realtor account is currently inactive. Once activation is completed, your network dashboard and withdrawal tools will become available.</p></div>
+                <div><h2 className="font-bold text-slate-950 dark:text-white">Legacy Realtor membership is not active yet</h2><p className={`mt-1 text-sm ${muted}`}>Your Realtor account is currently inactive. Once activation is completed, your network dashboard and withdrawal tools will become available.</p></div>
               </div>
             </section>
           )}
@@ -294,7 +294,7 @@ const BHRealtors: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
             <div className="absolute right-0 top-0 h-48 w-48 overflow-hidden rounded-bl-[5rem] opacity-90"><img src="/images/Luxury Homes.jpeg" alt="Luxury real estate" className="h-full w-full object-cover" /></div>
             <div className="relative max-w-3xl pr-4 md:pr-40">
               <div className="flex items-center gap-3"><Building2 className="h-6 w-6 text-estate-purple" /><h2 className="text-2xl font-black text-estate-blue dark:text-white">Sell property. Build trust. Create wealth.</h2></div>
-              <p className={`mt-4 leading-7 ${muted}`}>Real estate is a long-term wealth strategy. With BHRealtors, your work is about helping people secure land and property while building a professional sales network.</p>
+              <p className={`mt-4 leading-7 ${muted}`}>Real estate is a long-term wealth strategy. Your legacy Realtor membership supports property sales and your existing referral network.</p>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl bg-slate-900/5 p-4 dark:bg-white/5"><Target className="h-5 w-5 text-estate-purple" /><p className={`mt-2 text-sm ${muted}`}>Find genuine buyers</p></div>
                 <div className="rounded-2xl bg-slate-900/5 p-4 dark:bg-white/5"><Users className="h-5 w-5 text-estate-purple" /><p className={`mt-2 text-sm ${muted}`}>Grow your network</p></div>
@@ -307,7 +307,7 @@ const BHRealtors: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
             <>
               <section className={`${glass} overflow-hidden rounded-3xl p-5 sm:p-7`}>
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Your BHRealtors referral identity</p><h2 className="mt-1 text-2xl font-black text-estate-blue dark:text-white">Referral code & client linking</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-200">Share your personal code and link with clients or prospective Realtors. Active and inactive BHRealtors members can share this link and receive referral attribution. Commission eligibility remains subject to active membership when a qualifying transaction occurs.</p></div>
+                  <div className="min-w-0"><p className="text-xs font-bold uppercase tracking-[0.2em] text-estate-purple">Your legacy BH-Realtors referral identity</p><h2 className="mt-1 text-2xl font-black text-estate-blue dark:text-white">Referral code & client linking</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-200">Share your personal code and link with clients or prospective Realtors. Active and inactive legacy members can share this link and receive referral attribution. Commission eligibility remains subject to active membership when a qualifying transaction occurs.</p></div>
                   <div className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-estate-purple/20 bg-estate-purple/5 p-2"><code className="min-w-0 flex-1 truncate px-3 text-base font-black tracking-wider text-estate-purple">{referralCode}</code><Button type="button" onClick={copyReferralCode} variant="outline" className="shrink-0">{copiedCode ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4" />}{copiedCode ? 'Copied' : 'Copy'}</Button></div>
                 </div>
               </section>
@@ -334,7 +334,7 @@ const BHRealtors: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
                 return (
                   <article key={pkg.package_code} className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-white shadow-xl transition duration-300 hover:-translate-y-1 hover:shadow-2xl dark:bg-slate-950 ${active ? 'ring-2 ring-estate-purple ring-offset-2 ring-offset-slate-100 dark:ring-offset-slate-950' : 'border-slate-200 dark:border-white/10'}`}>
                     <div className={`relative h-32 overflow-hidden bg-gradient-to-br ${visual.accent}`}>
-                      <img src={visual.image} alt={`${pkg.package_name} BHRealtors package`} className="h-full w-full object-cover opacity-55 mix-blend-overlay transition duration-500 group-hover:scale-105 group-hover:opacity-70" />
+                      <img src={visual.image} alt={`${pkg.package_name} legacy Realtor package`} className="h-full w-full object-cover opacity-55 mix-blend-overlay transition duration-500 group-hover:scale-105 group-hover:opacity-70" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                       <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">{visual.icon}{visual.label}</div>
                       <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between gap-3"><div><p className="text-sm font-semibold text-white/80">{pkg.package_name}</p><p className="mt-1 text-2xl font-black text-white">{naira(pkg.price)}</p></div>{active && <Badge className="border border-white/20 bg-white/20 text-white">Current</Badge>}</div>
@@ -359,7 +359,7 @@ const BHRealtors: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
           {isPbo && !referralCode && (
             <section className={`${glass} rounded-3xl border-amber-300/60 p-5 sm:p-7`}>
               <h2 className="text-xl font-bold text-slate-950 dark:text-white">Your BH Referral Code</h2>
-              <p className={`${muted} mt-2 text-sm leading-6`}>Your account is recognised as a BHRealtors member, but a referral code has not loaded yet. Refresh this page once. If it is still missing, ask the BHRealtors administrator to verify your member record so your unique code and sharing tools can be enabled.</p>
+              <p className={`${muted} mt-2 text-sm leading-6`}>Your account is recognised as a legacy Realtor member, but a referral code has not loaded yet. Refresh this page once. If it is still missing, ask the Bridgefort administrator to verify your member record so your unique code and sharing tools can be enabled.</p>
               <Button type="button" variant="outline" className="mt-4" onClick={() => { void refreshProfile(); void load(); }} disabled={busy}><RefreshCw className="mr-2 h-4 w-4" />Refresh referral details</Button>
             </section>
           )}
