@@ -97,7 +97,6 @@ begin
      and target_code.division = target_division
      and target_code.is_active is true
     where signup_attribution.source_type = 'signup'
-      and signup_attribution.division = 'homes'
       and signup_attribution.referred_user_id = new.user_id
     order by signup_attribution.created_at desc
     limit 1
@@ -199,3 +198,48 @@ end;
 $function$;
 
 revoke all on function public.record_bmc_travel_booking_referral() from public, anon, authenticated;
+
+
+-- Record a canonical signup referral using any active division-specific code.
+-- This allows a BMC who is active in Travels or Agrovest (but not Homes) to
+-- retain attribution for that division without inventing a Homes approval.
+create or replace function public.record_bmc_homes_signup_referral()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  referral public.bmc_division_referral_codes;
+  submitted_code text;
+begin
+  submitted_code := upper(trim(coalesce(new.raw_user_meta_data ->> 'bmc_referral_code','')));
+  if submitted_code = '' then return new; end if;
+
+  select c.* into referral
+  from public.bmc_division_referral_codes c
+  join public.bmc_identity_referral_codes identity_code
+    on identity_code.user_id = c.user_id
+   and identity_code.referral_code = c.referral_code
+   and identity_code.is_active is true
+  join public.bmc_partner_divisions application
+    on application.id = c.application_id
+  where c.referral_code = submitted_code
+    and c.is_active is true
+    and application.application_status not in ('suspended','rejected','withdrawn')
+  order by case c.division when 'homes' then 0 when 'travels' then 1 else 2 end,
+           c.created_at
+  limit 1
+  for share of c;
+
+  if found and referral.user_id <> new.id then
+    insert into public.bmc_division_referral_attributions
+      (referral_code_id, division, referrer_user_id, referred_user_id, source_type, source_record_id)
+    values (referral.id, referral.division, referral.user_id, new.id, 'signup', new.id)
+    on conflict (source_type, source_record_id) do nothing;
+  end if;
+  return new;
+end;
+$function$;
+
+revoke all on function public.record_bmc_homes_signup_referral() from public, anon, authenticated;
