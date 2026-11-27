@@ -40,6 +40,22 @@ serve(async (req) => {
     const customerEmail = String(customer.email ?? "");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) return json({ error: "Invalid email" }, 400);
     const admin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+
+    // Enforce the same profile-completion gate on the server. Client-side
+    // checks alone can be bypassed by calling this function directly.
+    const { data: profile, error: profileError } = await admin
+      .from("profiles")
+      .select("profile_completed, account_locked")
+      .eq("id", userId)
+      .maybeSingle();
+    if (profileError) throw profileError;
+    if (!profile || profile.profile_completed !== true) {
+      return json({ error: "Please complete your profile before placing an order." }, 403);
+    }
+    if (profile.account_locked === true) {
+      return json({ error: "Your account is currently restricted. Please contact support." }, 403);
+    }
+
     const pricedItems: Array<Record<string, unknown>> = [];
     let principal = 0;
     let isDocumentationPurchase = false;
@@ -101,7 +117,7 @@ serve(async (req) => {
 
       if (!unitPrice || unitPrice <= 0) return json({ error: "Price unavailable for an item in your cart" }, 400);
       principal += unitPrice * quantity;
-      pricedItems.push({ plot_id: itemId, item_id: itemId, property_id: propertyId, property_type: propertyType, property_name: label, plot_number: raw?.plot_number ?? null, quantity, price: unitPrice, price_source: "server_authoritative", investment_unit: propertyType === 'Agrovest' ? (AGROVEST_PRICING[String(itemId).replace(/^agrovest-/, '').toLowerCase()]?.unit ?? 'unit') : undefined });
+      pricedItems.push({ plot_id: itemId, item_id: itemId, property_id: propertyId, property_type: propertyType, property_name: label, quantity, price: unitPrice, price_source: "server_authoritative", investment_unit: propertyType === 'Agrovest' ? (AGROVEST_PRICING[String(itemId).replace(/^agrovest-/, '').toLowerCase()]?.unit ?? 'unit') : undefined });
     }
 
     let bmcReferralCodeId: string | null = null;

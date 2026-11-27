@@ -129,7 +129,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
     const plot = {
       id: `${property.id}-plot-${Date.now()}`,
       propertyId: property.id,
-      plotNumber: Math.floor(Math.random() * property.totalPlots) + 1,
+      // No plot is selected or reserved at cart time. Actual plot details are
+      // entered only after the company's allocation process verifies them.
       size: property.sqm,
       pricePerPlot: property.pricePerPlot,
       propertyName: property.title,
