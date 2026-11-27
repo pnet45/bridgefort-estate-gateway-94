@@ -68,7 +68,7 @@ const PropertyFilters = () => {
         <div className="bg-white p-6 rounded-lg shadow-md mb-6 animate-fade-in animate-scale-in">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Transaction</label>
               <select
                 id="category"
                 name="category"
@@ -77,8 +77,8 @@ const PropertyFilters = () => {
                 onChange={handleFilterChange}
               >
                 <option value="all">All</option>
-                <option value="buy">Buy</option>
-                <option value="rent">Rent</option>
+                <option value="buy">For Sale</option>
+                <option value="rent">For Rent</option>
               </select>
             </div>
 
