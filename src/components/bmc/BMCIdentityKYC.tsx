@@ -132,6 +132,7 @@ export default function BMCIdentityKYC() {
         date_of_birth: form.date_of_birth || null,
         nationality: form.nationality || null,
         phone_number: form.phone_number || null,
+        address: form.address || null,
         current_residence: form.address || null,
         id_type: form.id_type || null,
         id_number: form.id_number || null,
