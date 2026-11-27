@@ -144,6 +144,7 @@ const NewProfileForm = () => {
         const draft = readProfileDraft(userId);
         const metadataReferralCode = String(stableUser?.user_metadata?.referred_by_code || '').trim().toUpperCase();
         const metadataBmcReferralCode = String(stableUser?.user_metadata?.bmc_referral_code || '').trim().toUpperCase();
+        if (metadataBmcReferralCode) { setBmcReferralCodeLocked(true); setForm(prev => ({ ...prev, bmcReferralCode: metadataBmcReferralCode })); }
         if (metadataReferralCode) {
           setReferralCodeLocked(stableUser?.user_metadata?.referral_link === true);
           setForm(prev => ({ ...prev, referrerCode: metadataReferralCode }));
@@ -239,7 +240,7 @@ const NewProfileForm = () => {
   }), [form, kycDocs, termsAccepted, userId, referralLookup?.realtor_id, isBmcPartner]);
 
   const validateStep = (step: StepKey) => {
-    const required: Record<StepKey, string[]> = { personal: ['firstName', 'lastName', 'dateOfBirth', 'gender', 'phoneNumber'], identity: ['idType', 'idNumber'], employment: ['occupation'], financial: ['sourceOfIncome', 'annualIncome'], aml: [], referrer: [], review: [] };
+    const required: Record<StepKey, string[]> = { personal: ['firstName', 'lastName', 'dateOfBirth', 'gender', 'phoneNumber'], identity: ['idType', 'idNumber'], employment: ['occupation'], financial: ['sourceOfIncome', 'annualIncome'], aml: [], referrer: [], 'bmc-referral': [], review: [] };
     const missing = required[step].filter(key => !String(form[key] ?? '').trim());
     if (missing.length) { toast({ title: 'Complete this section', description: 'Please provide all required fields before continuing.', variant: 'destructive' }); return false; }
     if (step === 'review' && !termsAccepted) { toast({ title: 'Terms required', description: 'Please accept the declaration before submitting your profile.', variant: 'destructive' }); return false; }
