@@ -58,7 +58,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
         description: "Please log in to proceed with checkout",
         variant: "destructive"
       });
-      navigate('/auth');
+      navigate('/auth?next=%2Fcart', { replace: true });
     }
   }, [user, navigate]);
 
@@ -119,7 +119,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
             item_id: item.plot.id,
             property_id: item.plot.propertyId,
             property_type: item.plot.propertyType,
-            plot_number: item.plot.plotNumber,
+            plot_number: item.plot.plotNumber > 0 ? item.plot.plotNumber : null,
             quantity: item.quantity,
           })),
           plan_type: selectedPlan.type,
