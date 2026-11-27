@@ -61,6 +61,32 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
     navigate('/auth?next=%2Fcart', { replace: true });
   }, [authLoading, user, navigate]);
 
+  React.useEffect(() => {
+    if (!user?.id) return;
+    let active = true;
+
+    const loadSavedCustomerDetails = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, phone_number, address, current_residence')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!active || error || !data) return;
+      setCustomerInfo((previous) => ({
+        ...previous,
+        firstName: previous.firstName || data.first_name || '',
+        lastName: previous.lastName || data.last_name || '',
+        email: previous.email || user.email || '',
+        phone: previous.phone || data.phone_number || '',
+        address: previous.address || data.address || data.current_residence || '',
+      }));
+    };
+
+    void loadSavedCustomerDetails();
+    return () => { active = false; };
+  }, [user?.id, user?.email]);
+
   const validateStep1 = () => {
     return customerInfo.firstName && customerInfo.lastName && 
            customerInfo.email && customerInfo.phone && customerInfo.address;
