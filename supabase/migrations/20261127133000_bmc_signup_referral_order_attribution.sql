@@ -25,6 +25,18 @@ begin
       raise exception 'Invalid or inactive Bridgefort division referral code';
     end if;
 
+    -- A trusted signup/profile referral cannot be replaced by a different
+    -- code entered later at checkout.
+    if new.user_id is not null and exists (
+      select 1
+      from public.bmc_division_referral_attributions trusted
+      where trusted.source_type = 'signup'
+        and trusted.referred_user_id = new.user_id
+        and trusted.referrer_user_id <> referral.user_id
+    ) then
+      raise exception 'This customer is already linked to a different BMC partner and the referral cannot be changed at checkout';
+    end if;
+
     if jsonb_typeof(coalesce(new.items,'[]'::jsonb)) <> 'array'
        or jsonb_array_length(coalesce(new.items,'[]'::jsonb)) = 0 then
       raise exception 'Referral code cannot be used with this order';
@@ -131,6 +143,18 @@ begin
 
     if not found then
       raise exception 'Invalid or inactive Bridgefort Travels referral code';
+    end if;
+
+    -- Preserve an existing signup/profile sponsor. A conflicting explicit
+    -- booking code must not redirect an established downline.
+    if new.customer_id is not null and exists (
+      select 1
+      from public.bmc_division_referral_attributions trusted
+      where trusted.source_type = 'signup'
+        and trusted.referred_user_id = new.customer_id
+        and trusted.referrer_user_id <> referral.user_id
+    ) then
+      raise exception 'This customer is already linked to a different BMC partner and the referral cannot be changed on this booking';
     end if;
   else
     if new.customer_id is null then
