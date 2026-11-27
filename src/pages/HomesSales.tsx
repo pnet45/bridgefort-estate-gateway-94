@@ -7,11 +7,21 @@ import PropertyGrid from '../components/properties/PropertyGrid';
 import { PropertyProvider } from '../contexts/property';
 import { Home, MapPin, Bed, Bath, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 const HomesSales = () => {
   return (
     <PropertyProvider>
       <div className="flex flex-col min-h-screen">
+        <Helmet>
+          <title>Luxury Homes & Apartments for Sale and Rent | Bridgefort Homes</title>
+          <meta name="description" content="Discover luxury houses, apartments and rental properties in Lagos, Ogun and other Nigerian locations. Explore property details and contact Bridgefort Homes to arrange an inspection." />
+          <link rel="canonical" href="https://www.bridgeforthomes.com/homes-sales" />
+          <meta property="og:title" content="Luxury Homes & Apartments | Bridgefort Homes" />
+          <meta property="og:description" content="Explore homes, apartments and rental properties across Nigeria." />
+          <meta property="og:url" content="https://www.bridgeforthomes.com/homes-sales" />
+          <meta property="og:type" content="website" />
+        </Helmet>
         <Navbar />
         
         {/* Hero Section */}

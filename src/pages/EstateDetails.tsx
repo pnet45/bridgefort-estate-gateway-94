@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Download, MapPin, ShoppingCart, Building2, Calendar, Phone, Mail, MapIcon,
@@ -244,6 +245,11 @@ const EstateDetails: React.FC = () => {
   const estateDetails = getEstateDetails(property.title);
   const propertyPDF = getPropertyPDF(property.title);
   const propertyDescription = property.description || '';
+  const seoLocation = property.location?.trim();
+  const seoTitle = `${property.title}${seoLocation ? ` in ${seoLocation}` : ''} | Bridgefort Homes`;
+  const seoDescription = (propertyDescription.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || `Explore ${property.title}${seoLocation ? ` in ${seoLocation}` : ' in Nigeria'}. View property details, current availability, pricing and subscription options from Bridgefort Homes Development Ltd.`)
+    .slice(0, 160);
+  const canonicalUrl = `https://www.bridgeforthomes.com/properties/estates/${property.id}`;
 
   const openFullscreenMedia = (url: string, index: number) => {
     setFullscreenMedia(url);
@@ -294,6 +300,15 @@ const EstateDetails: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
+      <Helmet>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="website" />
+      </Helmet>
       <Navbar />
 
       <div className="flex-1 pt-[88px] lg:pt-[104px]">

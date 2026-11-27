@@ -7,11 +7,21 @@ import PropertyList from '../components/properties/PropertyList';
 import SubscriptionGuide from '../components/properties/SubscriptionGuide';
 import PurchaseGuide from '../components/properties/PurchaseGuide';
 import { PropertyProvider } from '../contexts/property';
+import { Helmet } from 'react-helmet-async';
 
 const Properties = () => {
   return (
     <PropertyProvider>
       <div className="flex flex-col min-h-screen">
+        <Helmet>
+          <title>Land & Property for Sale in Nigeria | Bridgefort Homes</title>
+          <meta name="description" content="Explore available residential estates, land plots and commercial properties across Nigeria. Compare locations, prices and flexible subscription options with Bridgefort Homes." />
+          <link rel="canonical" href="https://www.bridgeforthomes.com/properties" />
+          <meta property="og:title" content="Land & Property for Sale in Nigeria | Bridgefort Homes" />
+          <meta property="og:description" content="Explore available estates, land plots and commercial properties across Nigeria." />
+          <meta property="og:url" content="https://www.bridgeforthomes.com/properties" />
+          <meta property="og:type" content="website" />
+        </Helmet>
         <Navbar />
         <PropertyHero />
 
