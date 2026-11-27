@@ -1,6 +1,6 @@
 
 import React, { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/auth';
 import { EcommerceProvider } from '@/contexts/ecommerce';
@@ -75,7 +75,6 @@ const BridgefortRealtorsAuth = lazy(() => import('@/pages/BridgefortRealtorsAuth
 const AnnouncementArticle = lazy(() => import('@/pages/AnnouncementArticle'));
 const LocationsIndex = lazy(() => import('@/pages/LocationsIndex'));
 const LocationLanding = lazy(() => import('@/pages/LocationLanding'));
-const BHRealtors = lazy(() => import('@/pages/BHRealtors'));
 const BMCPartnerHub = lazy(() => import('@/pages/BMCPartnerHub'));
 const BMC = lazy(() => import('@/pages/BMC'));
 const BHRealtorsWithdraw = lazy(() => import('@/pages/BHRealtorsWithdraw'));
@@ -231,7 +230,7 @@ function AppLayout() {
                     } />
                     <Route path="/bh-realtors/legacy" element={
                       <PrivateRoute>
-                        <BHRealtors />
+                        <Navigate to="/bmc-partner-hub#legacy-bh-membership" replace />
                       </PrivateRoute>
                     } />
                     <Route path="/bh-realtors/withdraw" element={

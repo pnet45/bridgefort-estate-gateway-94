@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Building2, Plane, Sprout, Printer, GraduationCap, TrendingUp, Users, Settings, Trophy, Phone, Mail, Globe2 } from 'lucide-react';
 
 const commissions = [
-  { title: 'Land sales', rate: '15%', note: 'Through BH-Realtors', icon: Building2 },
-  { title: 'House sales', rate: '5%', note: 'Through BH-Realtors', icon: Building2 },
+  { title: 'Land sales', rate: '15%', note: 'Eligible BMC-referred purchases', icon: Building2 },
+  { title: 'House sales', rate: '5%', note: 'Eligible BMC-referred purchases', icon: Building2 },
   { title: 'Agribusiness lease partnerships', rate: '10%', note: 'Agrovest', icon: Sprout },
   { title: 'Foreign travels & tours', rate: '10%', note: 'Bridgefort Travels', icon: Plane },
 ];

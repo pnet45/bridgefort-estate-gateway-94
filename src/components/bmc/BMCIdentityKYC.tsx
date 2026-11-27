@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import KYCUploadField from '@/components/profile/KYCUploadField';
 import { toast } from '@/hooks/use-toast';
+import { notifyProfileUpdated } from '@/lib/profileEvents';
 import { Loader2, ShieldCheck, Clock, AlertCircle } from 'lucide-react';
 
 type KycStatus = 'NOT_STARTED' | 'PENDING' | 'UNDER_REVIEW' | 'REQUIRES_CORRECTION' | 'VERIFIED' | 'REJECTED';
@@ -31,7 +32,7 @@ export default function BMCIdentityKYC() {
     first_name: '', last_name: '', date_of_birth: '', nationality: '',
     phone_number: '', address: '', id_type: '', id_number: '',
     id_country_of_issue: '', id_date_of_issue: '', id_expiry: '',
-    id_issuing_authority: '',
+    id_issuing_authority: '', spouse_name: '', spouse_phone: '', spouse_email: '', spouse_address: '', is_joint_purchase: false, joint_purchaser_name: '', joint_purchaser_phone: '', joint_purchaser_email: '', joint_purchaser_relationship: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,7 +53,24 @@ export default function BMCIdentityKYC() {
       setReviewNote(row?.review_note || '');
     }
     if (!existingError && existing) {
-      setForm(current => ({ ...current, ...(existing.identity_data || {}) }));
+      const savedIdentity = (existing.identity_data || {}) as Record<string, any>;
+      setForm(current => ({
+        ...current,
+        ...savedIdentity,
+        first_name: savedIdentity.first_name || current.first_name || profile?.first_name || '',
+        last_name: savedIdentity.last_name || current.last_name || profile?.last_name || '',
+        phone_number: savedIdentity.phone_number || current.phone_number || profile?.phone_number || '',
+        address: savedIdentity.address || current.address || profile?.current_residence || profile?.address || '',
+        spouse_name: savedIdentity.spouse_name || current.spouse_name || (profile as any)?.spouse_name || '',
+        spouse_phone: savedIdentity.spouse_phone || current.spouse_phone || (profile as any)?.spouse_phone || '',
+        spouse_email: savedIdentity.spouse_email || current.spouse_email || (profile as any)?.spouse_email || '',
+        spouse_address: savedIdentity.spouse_address || current.spouse_address || (profile as any)?.spouse_address || '',
+        is_joint_purchase: savedIdentity.is_joint_purchase ?? (profile as any)?.is_joint_purchase ?? false,
+        joint_purchaser_name: savedIdentity.joint_purchaser_name || (profile as any)?.joint_purchaser_name || '',
+        joint_purchaser_phone: savedIdentity.joint_purchaser_phone || (profile as any)?.joint_purchaser_phone || '',
+        joint_purchaser_email: savedIdentity.joint_purchaser_email || (profile as any)?.joint_purchaser_email || '',
+        joint_purchaser_relationship: savedIdentity.joint_purchaser_relationship || (profile as any)?.joint_purchaser_relationship || '',
+      }));
       const saved = existing.documents || {};
       setDocuments(Object.fromEntries(Object.entries(saved).map(([key, value]) => {
         const item = value as Record<string, string>;
@@ -73,6 +91,15 @@ export default function BMCIdentityKYC() {
         id_date_of_issue: current.id_date_of_issue || profile?.id_date_of_issue || '',
         id_expiry: current.id_expiry || profile?.id_expiry || '',
         id_issuing_authority: current.id_issuing_authority || profile?.id_issuing_authority || '',
+        spouse_name: current.spouse_name || (profile as any)?.spouse_name || '',
+        spouse_phone: current.spouse_phone || (profile as any)?.spouse_phone || '',
+        spouse_email: current.spouse_email || (profile as any)?.spouse_email || '',
+        spouse_address: current.spouse_address || (profile as any)?.spouse_address || '',
+        is_joint_purchase: current.is_joint_purchase ?? (profile as any)?.is_joint_purchase ?? false,
+        joint_purchaser_name: current.joint_purchaser_name || (profile as any)?.joint_purchaser_name || '',
+        joint_purchaser_phone: current.joint_purchaser_phone || (profile as any)?.joint_purchaser_phone || '',
+        joint_purchaser_email: current.joint_purchaser_email || (profile as any)?.joint_purchaser_email || '',
+        joint_purchaser_relationship: current.joint_purchaser_relationship || (profile as any)?.joint_purchaser_relationship || '',
       }));
     }
     setLoading(false);
@@ -80,7 +107,7 @@ export default function BMCIdentityKYC() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const setField = (key: string, value: string) => setForm(current => ({ ...current, [key]: value }));
+  const setField = (key: string, value: string | boolean) => setForm(current => ({ ...current, [key]: value }));
   const upload = (key: string) => (path: string, name: string, type: string) => {
     setDocuments(current => ({ ...current, [key]: { path, name, type } }));
   };
@@ -99,7 +126,39 @@ export default function BMCIdentityKYC() {
     if (error) {
       toast({ title: 'KYC submission failed', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'BMC identity submitted', description: 'Your single central KYC submission is now awaiting administrator review.' });
+      const { error: profileSyncError } = await supabase.from('profiles').update({
+        first_name: form.first_name || null,
+        last_name: form.last_name || null,
+        date_of_birth: form.date_of_birth || null,
+        nationality: form.nationality || null,
+        phone_number: form.phone_number || null,
+        address: form.address || null,
+        current_residence: form.address || null,
+        id_type: form.id_type || null,
+        id_number: form.id_number || null,
+        id_country_of_issue: form.id_country_of_issue || null,
+        id_date_of_issue: form.id_date_of_issue || null,
+        id_expiry: form.id_expiry || null,
+        id_issuing_authority: form.id_issuing_authority || null,
+        spouse_name: form.spouse_name || null,
+        spouse_phone: form.spouse_phone || null,
+        spouse_email: form.spouse_email || null,
+        spouse_address: form.spouse_address || null,
+        is_joint_purchase: Boolean(form.is_joint_purchase),
+        joint_purchaser_name: form.is_joint_purchase ? (form.joint_purchaser_name || null) : null,
+        joint_purchaser_phone: form.is_joint_purchase ? (form.joint_purchaser_phone || null) : null,
+        joint_purchaser_email: form.is_joint_purchase ? (form.joint_purchaser_email || null) : null,
+        joint_purchaser_relationship: form.is_joint_purchase ? (form.joint_purchaser_relationship || null) : null,
+        updated_at: new Date().toISOString(),
+      }).eq('id', user.id);
+
+      if (profileSyncError) {
+        console.warn('BMC KYC was submitted, but profile details could not be synchronised:', profileSyncError);
+        toast({ title: 'BMC identity submitted', description: 'Your KYC is awaiting review. Some profile fields could not be synchronised; please review your profile later.' });
+      } else {
+        notifyProfileUpdated();
+        toast({ title: 'BMC identity submitted', description: 'Your central KYC is awaiting review and matching details have been synchronised to your Bridgefort profile.' });
+      }
       await load();
     }
     setSaving(false);
@@ -144,6 +203,22 @@ export default function BMCIdentityKYC() {
                 </div>
               ))}
             </div>
+            <section className="space-y-3 rounded-xl border p-4">
+              <h3 className="font-semibold text-foreground">Spouse and joint-purchase details</h3>
+              <p className="text-sm text-muted-foreground">These fields are prefilled from your Bridgefort profile where available. Review them and update any changes before submitting.</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {([['spouse_name','Spouse full name','text'],['spouse_phone','Spouse phone','tel'],['spouse_email','Spouse email','email'],['spouse_address','Spouse address','text'],['joint_purchaser_name','Joint purchaser full name','text'],['joint_purchaser_phone','Joint purchaser phone','tel'],['joint_purchaser_email','Joint purchaser email','email'],['joint_purchaser_relationship','Relationship to primary purchaser','text']] as const).map(([key,label,type]) => (
+                  <div key={key} className="space-y-2">
+                    <Label htmlFor={key}>{label}</Label>
+                    <Input id={key} type={type} value={String(form[key] || '')} onChange={event => setField(key,event.target.value)} />
+                  </div>
+                ))}
+                <label className="flex items-center gap-2 text-sm sm:col-span-2">
+                  <input type="checkbox" checked={Boolean(form.is_joint_purchase)} onChange={event => setField('is_joint_purchase', event.target.checked)} />
+                  This purchase / subscription is intended to be jointly owned
+                </label>
+              </div>
+            </section>
             <div className="grid gap-3 sm:grid-cols-2">
               <KYCUploadField label="Passport photograph" bucket="kyc-documents" userId={user?.id || ''} docKey="passport_photo" existingUrl={documents.passport_photo?.path} existingName={documents.passport_photo?.name} existingType={documents.passport_photo?.type} onUploaded={upload('passport_photo')} />
               <KYCUploadField label="Government-issued identity document" bucket="kyc-documents" userId={user?.id || ''} docKey="identity_document" existingUrl={documents.identity_document?.path} existingName={documents.identity_document?.name} existingType={documents.identity_document?.type} onUploaded={upload('identity_document')} />

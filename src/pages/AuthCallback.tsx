@@ -32,7 +32,7 @@ const AuthCallback = () => {
           .select('is_pbo')
           .eq('id', userId)
           .single();
-        if (profileRow?.is_pbo) destination = '/bh-realtors';
+        if (profileRow?.is_pbo) destination = '/bmc-partner-hub';
       } catch (e) {
         // If the profile lookup fails for any reason, fall back to the
         // regular client dashboard rather than blocking sign-in entirely.

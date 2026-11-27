@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/auth';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import BMCIdentityKYC from '@/components/bmc/BMCIdentityKYC';
+import BHRealtors from '@/pages/BHRealtors';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
@@ -361,8 +362,23 @@ export default function BMCPartnerHub() {
           </section>
         )}
 
+        {profile?.is_pbo && (
+          <section id="legacy-bh-membership" className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold text-foreground">Legacy BH-Realtors membership and network</h2>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">Your previous BH-Realtors membership, package, downline, sales, wallet, commission history and withdrawal workflow are retained and accessible here. These legacy records remain separate from BMC division applications and BMC commission eligibility.</p>
+            </div>
+            <details className="group rounded-xl border border-border">
+              <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-estate-blue">Open legacy membership workspace</summary>
+              <div className="border-t border-border p-2 sm:p-4">
+                <BHRealtors embedded />
+              </div>
+            </details>
+          </section>
+        )}
+
         <section className="flex flex-wrap gap-3">
-          {profile?.is_pbo && <Link to="/bh-realtors/legacy"><Button variant="outline">Existing BH-Realtors workspace</Button></Link>}
+          {profile?.is_pbo && <a href="#legacy-bh-membership" className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted">Legacy BH-Realtors membership</a>}
           <Link to="/bmc-partner-agreement"><Button variant="outline">BMC Partner Agreement</Button></Link>
           <Link to="/bmc-privacy-notice"><Button variant="outline">BMC Privacy Notice</Button></Link>
         </section>
