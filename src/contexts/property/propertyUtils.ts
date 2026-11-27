@@ -22,36 +22,41 @@ export const applyFilters = (
     });
   }
 
-  // Apply category filter
-  if (filterOptions.category && filterOptions.category !== 'all') {
-    // Filter by category (could be extended based on your data model)
+  // Transaction category uses the explicit sale/rent flags from the estate record.
+  if (filterOptions.category === 'buy') {
+    filtered = filtered.filter(property => property.is_for_sale === true);
+  } else if (filterOptions.category === 'rent') {
+    filtered = filtered.filter(property => property.is_for_rent === true);
   }
 
-  // Apply type filter
+  // Property type maps the customer-facing filters to the estate categories.
   if (filterOptions.type && filterOptions.type !== 'all') {
-    filtered = filtered.filter(property =>
-      property.propertyType.toLowerCase() === filterOptions.type.toLowerCase()
-    );
+    const requestedType = filterOptions.type.toLowerCase();
+    filtered = filtered.filter(property => {
+      const category = String(property.property_category || '').toLowerCase();
+      const type = String(property.propertyType || '').toLowerCase();
+      if (requestedType === 'residential') return category === 'home' || category === 'residential' || type === 'residential' || type === 'apartment';
+      if (requestedType === 'commercial') return category === 'commercial' || type === 'commercial';
+      if (requestedType === 'land') return category === 'land' || type === 'land';
+      return type === requestedType;
+    });
   }
+
+  const getPriceValue = (property: Property) => {
+    if (filterOptions.category === 'rent') return Number(property.monthlyRent ?? property.annualRent ?? 0);
+    return property.price
+      ? parseInt(property.price.replace(/[^\d]/g, ''), 10)
+      : property.pricePerPlot || 0;
+  };
 
   // Apply min price filter
   if (filterOptions.minPrice) {
-    filtered = filtered.filter(property => {
-      const priceValue = property.price 
-        ? parseInt(property.price.replace(/[^\d]/g, ''), 10)
-        : property.pricePerPlot || 0;
-      return priceValue >= Number(filterOptions.minPrice);
-    });
+    filtered = filtered.filter(property => getPriceValue(property) >= Number(filterOptions.minPrice));
   }
 
   // Apply max price filter
   if (filterOptions.maxPrice) {
-    filtered = filtered.filter(property => {
-      const priceValue = property.price 
-        ? parseInt(property.price.replace(/[^\d]/g, ''), 10)
-        : property.pricePerPlot || 0;
-      return priceValue <= Number(filterOptions.maxPrice);
-    });
+    filtered = filtered.filter(property => getPriceValue(property) <= Number(filterOptions.maxPrice));
   }
 
   return filtered;

@@ -23,7 +23,7 @@ export function usePropertyFetch(searchQuery: string, filters: Filters) {
       const propertyData = await refreshPublicDataCache<Property[]>(PUBLIC_ESTATE_CACHE_KEY, async () => {
         const { data: estates, error } = await supabase
           .from("estate")
-          .select("id,name,location,promo_price,prelaunch_price,actual_price,total_plots,sold_plots,media,size,type,property_category,phase,description,sub_form,scheme");
+          .select("id,name,location,promo_price,prelaunch_price,actual_price,total_plots,sold_plots,media,size,type,property_category,phase,description,sub_form,scheme,bedrooms,bathrooms,is_for_sale,is_for_rent,monthly_rent,annual_rent");
 
         if (error) throw error;
 
@@ -55,8 +55,14 @@ export function usePropertyFetch(searchQuery: string, filters: Filters) {
             imageUrl: estate.media && estate.media.length > 0 ? estate.media[0] : "/placeholder.svg",
             size: estate.size || 0,
             sqm: estate.size || 0,
-            propertyType: estate.type || "Land",
+            propertyType: estate.type || (estate.property_category === "home" ? "Residential" : estate.property_category === "commercial" ? "Commercial" : "Land"),
             property_category: estate.property_category || "land",
+            bedrooms: estate.bedrooms == null ? undefined : Number(estate.bedrooms),
+            bathrooms: estate.bathrooms == null ? undefined : Number(estate.bathrooms),
+            is_for_sale: typeof estate.is_for_sale === "boolean" ? estate.is_for_sale : undefined,
+            is_for_rent: typeof estate.is_for_rent === "boolean" ? estate.is_for_rent : undefined,
+            monthlyRent: estate.monthly_rent == null ? undefined : Number(estate.monthly_rent),
+            annualRent: estate.annual_rent == null ? undefined : Number(estate.annual_rent),
             phase: estate.phase || 1,
             totalPlots,
             availablePlots,
