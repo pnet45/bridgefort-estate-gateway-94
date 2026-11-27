@@ -270,20 +270,23 @@ const EstateDetails: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!user) {
-      toast({ title: 'Login Required', description: 'Please login to add properties to cart.', variant: 'destructive' });
+      toast({ title: 'Login Required', description: 'Please sign in to add properties to your cart.', variant: 'destructive' });
+      navigate(`/auth?next=${encodeURIComponent(`/properties/estates/${property.id}`)}`);
       return;
     }
     if (!profileCompleted) {
       toast({ title: 'Profile Incomplete', description: 'Please complete your profile before purchasing properties.', variant: 'destructive' });
+      navigate('/profile');
       return;
     }
     const plot: Plot = {
-      id: `${property.id}-plot-1`,
+      id: `${property.id}-estate-subscription`,
       propertyId: property.id,
       propertyName: property.title,
       location: property.location,
       pricePerPlot: parseFloat(property.price.replace(/[^0-9.]/g, '')) || 500000,
-      plotNumber: 1,
+      // The estate subscription does not reserve or assign a numbered plot.
+      plotNumber: 0,
       imageUrl: property.imageUrl,
       size: 500,
       propertyType: property.propertyType,
