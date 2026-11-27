@@ -84,7 +84,12 @@ const MainCartContent: React.FC<MainCartContentProps> = ({
                               <p className="text-sm text-gray-500">
                                 {item.plot.propertyType === 'Agrovest'
                                   ? (item.plot.unit || 'plot') + ' subscription'
-                                  : 'Plot #' + item.plot.plotNumber + ' • ' + item.plot.size + 'sqm'}
+                                  : item.plot.propertyType.startsWith('Documentation')
+                                    ? 'Documentation service'
+                                    : item.plot.plotNumber > 0
+                                      ? `Plot #${item.plot.plotNumber}`
+                                      : 'Plot allocation after payment verification'}
+                                {item.plot.size > 0 && item.plot.propertyType !== 'Agrovest' && item.plot.propertyType !== 'Documentation' ? ` • ${item.plot.size}sqm` : ''}
                                 {' • '}{item.plot.propertyType}
                               </p>
                               <p className="text-lg font-bold text-estate-red">
