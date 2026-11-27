@@ -76,9 +76,9 @@ const NavbarUserMenu = ({ profile, userRole }: NavbarUserMenuProps) => {
             <User size={16} className="mr-2" />
             Dashboard
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/bh-realtors')}>
+          <DropdownMenuItem onClick={() => navigate('/bmc-partner-hub')}>
             <Users size={16} className="mr-2" />
-            BHRealtors
+            BMC Partner Hub
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowProfilePreview(true)}>
             <Eye size={16} className="mr-2" />
