@@ -106,7 +106,7 @@ export default function BMCIdentityKYC() {
 
   useEffect(() => { void load(); }, [load]);
 
-  const setField = (key: string, value: string) => setForm(current => ({ ...current, [key]: value }));
+  const setField = (key: string, value: string | boolean) => setForm(current => ({ ...current, [key]: value }));
   const upload = (key: string) => (path: string, name: string, type: string) => {
     setDocuments(current => ({ ...current, [key]: { path, name, type } }));
   };
