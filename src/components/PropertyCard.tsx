@@ -114,8 +114,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   const handleAddToCart = () => {
     // Check if user is logged in
     if (!user) {
-      setProfileCheckMessage("Please log in to add properties to your cart.");
-      setShowProfileCheck(true);
+      navigate('/auth?next=%2Fproperties');
       return;
     }
     
@@ -127,9 +126,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
     }
 
     const plot = {
-      id: `${property.id}-plot-${Date.now()}`,
+      id: `${property.id}-estate-subscription`,
       propertyId: property.id,
-      plotNumber: Math.floor(Math.random() * property.totalPlots) + 1,
+      // A plot number must only be shown after an authorised allocation.
+      // The customer is subscribing to the estate here, not selecting a plot.
+      plotNumber: 0,
       size: property.sqm,
       pricePerPlot: property.pricePerPlot,
       propertyName: property.title,

@@ -22,7 +22,7 @@ interface CheckoutFormProps {
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   const { cart, getTotalAmount, clearCart } = useEcommerce();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { execute: executeRecaptcha } = useRecaptchaV3();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -52,15 +52,40 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   } | null>(null);
 
   React.useEffect(() => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to proceed with checkout",
-        variant: "destructive"
-      });
-      navigate('/auth');
-    }
-  }, [user, navigate]);
+    if (authLoading || user) return;
+    toast({
+      title: "Login Required",
+      description: "Please log in to proceed with checkout",
+      variant: "destructive"
+    });
+    navigate('/auth?next=%2Fcart', { replace: true });
+  }, [authLoading, user, navigate]);
+
+  React.useEffect(() => {
+    if (!user?.id) return;
+    let active = true;
+
+    const loadSavedCustomerDetails = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, phone_number, address, current_residence')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (!active || error || !data) return;
+      setCustomerInfo((previous) => ({
+        ...previous,
+        firstName: previous.firstName || data.first_name || '',
+        lastName: previous.lastName || data.last_name || '',
+        email: user.email || previous.email,
+        phone: previous.phone || data.phone_number || '',
+        address: previous.address || data.address || data.current_residence || '',
+      }));
+    };
+
+    void loadSavedCustomerDetails();
+    return () => { active = false; };
+  }, [user?.id, user?.email]);
 
   const validateStep1 = () => {
     return customerInfo.firstName && customerInfo.lastName && 
@@ -119,7 +144,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
             item_id: item.plot.id,
             property_id: item.plot.propertyId,
             property_type: item.plot.propertyType,
-            plot_number: item.plot.plotNumber,
+            plot_number: null,
             quantity: item.quantity,
           })),
           plan_type: selectedPlan.type,
