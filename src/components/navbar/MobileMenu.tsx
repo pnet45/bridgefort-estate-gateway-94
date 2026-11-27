@@ -53,7 +53,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, toggleMenu, shouldShowL
     { name: '5K Daily Promo', icon: <PiggyBank size={20} />, path: '/5k-daily-promo' },
     { name: 'Travels', icon: <Plane size={20} />, path: '/travels' },
     { name: 'Blog', icon: <BookOpen size={20} />, path: '/blog' },
-    { name: 'BHRealtors', icon: <Users size={20} />, path: '/bh-realtors' },
     { name: 'Contact', icon: <Phone size={20} />, path: '/contact' },
   ];
   
