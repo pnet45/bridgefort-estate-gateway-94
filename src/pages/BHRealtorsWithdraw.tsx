@@ -139,7 +139,7 @@ const BHRealtorsWithdraw: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Navbar />
       <main className="flex-grow pt-28 pb-12"><div className="container-custom max-w-3xl">
-        <button onClick={() => navigate('/bh-realtors')} className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-estate-blue mb-6"><ArrowLeft className="h-4 w-4" /> Back to BHRealtors Dashboard</button>
+        <button onClick={() => navigate('/bmc-partner-hub')} className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-estate-blue mb-6"><ArrowLeft className="h-4 w-4" /> Back to BMC Partner Hub</button>
         <h1 className="text-3xl font-bold text-estate-blue mb-1">Withdraw Commission</h1>
         <p className="text-slate-600 mb-8">Request a payout from your available commission wallet balance.</p>
 
