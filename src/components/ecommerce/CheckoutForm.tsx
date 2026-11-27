@@ -22,7 +22,7 @@ interface CheckoutFormProps {
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
   const { cart, getTotalAmount, clearCart } = useEcommerce();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { execute: executeRecaptcha } = useRecaptchaV3();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -38,6 +38,19 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onBack }) => {
     country: 'Nigeria',
     zipCode: ''
   });
+
+  // Prefill customer details from the verified account profile. Keep any
+  // values the customer has already typed if the profile finishes loading later.
+  React.useEffect(() => {
+    if (!profile) return;
+    setCustomerInfo((current) => ({
+      ...current,
+      firstName: current.firstName || profile.first_name || '',
+      lastName: current.lastName || profile.last_name || '',
+      phone: current.phone || profile.phone_number || '',
+      address: current.address || profile.address || '',
+    }));
+  }, [profile]);
 
   const [selectedPlan, setSelectedPlan] = useState<{
     months: number;
