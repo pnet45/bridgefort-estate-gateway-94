@@ -101,7 +101,7 @@ serve(async (req) => {
 
       if (!unitPrice || unitPrice <= 0) return json({ error: "Price unavailable for an item in your cart" }, 400);
       principal += unitPrice * quantity;
-      pricedItems.push({ plot_id: itemId, item_id: itemId, property_id: propertyId, property_type: propertyType, property_name: label, plot_number: raw?.plot_number ?? null, quantity, price: unitPrice, price_source: "server_authoritative", investment_unit: propertyType === 'Agrovest' ? (AGROVEST_PRICING[String(itemId).replace(/^agrovest-/, '').toLowerCase()]?.unit ?? 'unit') : undefined });
+      pricedItems.push({ plot_id: itemId, item_id: itemId, property_id: propertyId, property_type: propertyType, property_name: label, quantity, price: unitPrice, price_source: "server_authoritative", investment_unit: propertyType === 'Agrovest' ? (AGROVEST_PRICING[String(itemId).replace(/^agrovest-/, '').toLowerCase()]?.unit ?? 'unit') : undefined });
     }
 
     let bmcReferralCodeId: string | null = null;
