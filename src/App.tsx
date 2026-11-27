@@ -75,7 +75,6 @@ const BridgefortRealtorsAuth = lazy(() => import('@/pages/BridgefortRealtorsAuth
 const AnnouncementArticle = lazy(() => import('@/pages/AnnouncementArticle'));
 const LocationsIndex = lazy(() => import('@/pages/LocationsIndex'));
 const LocationLanding = lazy(() => import('@/pages/LocationLanding'));
-const BHRealtors = lazy(() => import('@/pages/BHRealtors'));
 const BMCPartnerHub = lazy(() => import('@/pages/BMCPartnerHub'));
 const BMC = lazy(() => import('@/pages/BMC'));
 const BHRealtorsWithdraw = lazy(() => import('@/pages/BHRealtorsWithdraw'));
